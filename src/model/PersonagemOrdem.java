@@ -105,6 +105,15 @@ public class PersonagemOrdem extends BaseModel {
 
     public int compareToByNumber(Object o) {
         PersonagemOrdem outro = (PersonagemOrdem) o;
-        return (this.getOrdem().getNumero() - outro.getOrdem().getNumero());
+        try {
+            return (this.getOrdem().getNumero() - outro.getOrdem().getNumero());
+        } catch (NullPointerException ex) {
+            //zzz: 497/498
+            if (this.getOrdem() == null) {
+                return (497 - outro.getOrdem().getNumero());
+            } else {
+                return (this.getOrdem().getNumero() - 497);
+            }
+        }
     }
 }
