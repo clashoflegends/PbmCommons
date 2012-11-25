@@ -148,7 +148,11 @@ public class ArtefatoFacade implements Serializable {
         return SysApoio.iif(isLatente(artefato), labels.getString("SIM"), labels.getString("NAO"));
     }
 
-    public String getPoder(Artefato artefato) {
+    public String getHabilidade(Artefato artefato) {
         return artefato.getPrimario() + " +" + artefato.getValor();
+    }
+
+    public int getValorPoder(Artefato artefato) {
+        return artefato.getValorPoder();
     }
 }

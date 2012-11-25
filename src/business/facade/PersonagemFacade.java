@@ -263,8 +263,7 @@ public class PersonagemFacade implements Serializable {
      * @param tipo 0 = todos - self
      * @param tipo 1 = mesma nacao - self
      * @param tipo 2 = outras nacoes - self
-     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao -
-     * self + Null (optional)
+     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao - self + Null (optional)
      * @param tipo 4 = todos + self
      * @return
      */
@@ -290,12 +289,13 @@ public class PersonagemFacade implements Serializable {
             Iterator lista = personagem.getLocal().getPersonagens().values().iterator();
             while (lista.hasNext()) {
                 Personagem pers = (Personagem) lista.next();
-//                if (personagem != pers && personagem.getNacao() == pers.getNacao() && pers.isComandante()) {
-                if (personagem != pers && pers.isComandante()) {
+                if (pers.isComandante()) {
                     ret.add(pers);
                 }
             }
-            ret.remove(personagem);
+            if (personagem.isComandaExercito()) {
+                ret.remove(personagem);
+            }
         } else if (tipo == 4) {
             ret.addAll(personagem.getLocal().getPersonagens().values());
         }
@@ -537,9 +537,8 @@ public class PersonagemFacade implements Serializable {
      */
     private int doCalculaDueloNatural(Personagem personagem) {
         /**
-         * calcular o duelo: definir maior duelo por pericia, com artefatos ai
-         * somar 25% dos duelos das demais pericias. ai somar bonus de duelo e
-         * bonus de artefato de combate
+         * calcular o duelo: definir maior duelo por pericia, com artefatos ai somar 25% dos duelos das demais pericias.
+         * ai somar bonus de duelo e bonus de artefato de combate
          */
         float duelo;
         duelo = getMaiorDueloNatural(personagem);
