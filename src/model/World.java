@@ -76,6 +76,10 @@ public class World implements Serializable {
         this.cidades = cidades;
     }
 
+    public void addCidade(Cidade cidade) {
+        this.cidades.put(cidade.getCoordenadas(), cidade);
+    }
+
     public void addLocal(Local local) {
         this.locais.put(local.getCodigo(), local);
     }
@@ -115,18 +119,4 @@ public class World implements Serializable {
     public SortedMap<String, Personagem> getPersonagens() {
         return personagens;
     }
-
-//    public String getFileName() {
-//        String nmArquivo = String.format(label.getString("FILENAME.SAVE.PARTIDA"),
-//                this.getPartida().getId(),
-//                this.getPartida().getTurno(),
-//                this.getPartida().getJogadorAtivo().getLogin());
-//        return nmArquivo;
-//    }
-
-//    public String getDirName() {
-//        return SettingsManager.getInstance().getSaveDir() + String.format("%s_%s/",
-//                SysApoio.lpad(this.getPartida().getId() + "", '0', 3),
-//                this.getPartida().getCodigo());
-//    }
 }

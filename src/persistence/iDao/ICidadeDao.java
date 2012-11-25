@@ -20,4 +20,6 @@ public interface ICidadeDao {
     public Cidade get(int id) throws PersistenceException;
 
     public SortedMap<String, Cidade> list(Partida partida) throws PersistenceException;
+
+    public void update(Cidade cidade);
 }

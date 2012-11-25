@@ -23,6 +23,10 @@ public abstract class WorldManagerBase implements Serializable {
         world.addLocal(local);
     }
 
+    public void addCidade(Cidade cidade) {
+        world.addCidade(cidade);
+    }
+
     public SortedMap<String, Artefato> getArtefatos() {
         return world.getArtefatos();
     }
