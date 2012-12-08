@@ -25,48 +25,38 @@ public class NacaoFacade implements Serializable {
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final CidadeFacade cidadeFacade = new CidadeFacade();
     //TODO: carregar do banco de dados. Cenario?
+//    private static final int[][] podeLord = {
+//        {0, 1, 0, 0, 0, 0, 0},
+//        {1, 0, 2, 0, 0, 2, 2},
+//        {0, 1, 0, 2, 0, 2, 2},
+//        {0, 1, 0, 0, 2, 2, 2},
+//        {0, 0, 1, 0, 0, 2, 2},
+//        {1, 0, 0, 0, 0, 0, 0},
+//        {0, 0, 1, 0, 0, 0, 0}
+//    };
     private static final int[][] podeAny = {
         {0, 1, 0, 0, 0, 0, 0},
         {1, 0, 2, 0, 0, 2, 2},
         {0, 1, 0, 2, 0, 2, 2},
-        {0, 1, 0, 0, 2, 2, 2},
-        {0, 0, 1, 0, 0, 2, 2},
-        {1, 0, 0, 0, 0, 0, 0},
-        {0, 0, 1, 0, 0, 0, 0}
-    };
-    private static final int[][] podeLord = {
-        {0, 1, 0, 0, 0, 0, 0},
-        {1, 0, 2, 0, 0, 2, 2},
-        {0, 1, 0, 2, 0, 2, 2},
-        {0, 1, 0, 0, 2, 2, 2},
+        {0, 1, 0, 0, 0, 2, 2},
         {0, 0, 1, 0, 0, 2, 2},
         {1, 0, 0, 0, 0, 0, 0},
         {0, 0, 1, 0, 0, 0, 0}
     };
     private static final int[][] podeVassal = {
         {0, 1, 0, 0, 0, 0, 0},
+        {1, 0, 2, 0, 0, 0, 0},
+        {0, 1, 0, 2, 0, 0, 0},
+        {0, 1, 0, 0, 0, 0, 0},
+        {0, 0, 1, 0, 0, 0, 0},
         {1, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 2, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0},
-        {1, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0}
+        {0, 0, 1, 0, 0, 0, 0}
     };
-
-    /**
-     * @return the podeLord
-     */
-    public static int[][] getPodeLord() {
-        return podeLord;
-    }
 
     public static int[][] getPodeAny() {
         return podeAny;
     }
 
-    /**
-     * @return the podeVassal
-     */
     public static int[][] getPodeVassal() {
         return podeVassal;
     }
@@ -295,7 +285,7 @@ public class NacaoFacade implements Serializable {
         if (this.isVassal(nacaoBase)) {
             pode = getPodeVassal();
         } else {
-            pode = getPodeLord();
+            pode = getPodeAny();
         }
         int relacionamento = nacaoBase.getRelacionamento(nacaoAlvo);
         List<String[]> ret = new ArrayList<String[]>();
