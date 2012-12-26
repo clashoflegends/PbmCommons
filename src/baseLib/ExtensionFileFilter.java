@@ -20,7 +20,6 @@ public class ExtensionFileFilter extends FileFilter implements FilenameFilter, S
     String startWith = "";
 
     public ExtensionFileFilter(String description, String extension, String startWith) {
-        
         this(description, new String[]{extension});
         this.startWith = startWith.toLowerCase();
     }
@@ -40,7 +39,7 @@ public class ExtensionFileFilter extends FileFilter implements FilenameFilter, S
     }
 
     private void toLower(String array[]) {
-        for (int i = 0,  n = array.length; i < n; i++) {
+        for (int i = 0, n = array.length; i < n; i++) {
             array[i] = array[i].toLowerCase();
         }
     }
@@ -65,7 +64,7 @@ public class ExtensionFileFilter extends FileFilter implements FilenameFilter, S
     }
 
     private boolean checkExtensions(String fileName) {
-        for (int i = 0,  n = extensions.length; i < n; i++) {
+        for (int i = 0, n = extensions.length; i < n; i++) {
             if (fileName.endsWith("." + extensions[i]) && fileName.startsWith(startWith)) {
                 return true;
             }

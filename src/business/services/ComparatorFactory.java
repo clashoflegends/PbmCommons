@@ -4,8 +4,11 @@
  */
 package business.services;
 
+import java.io.File;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import model.Ordem;
 import model.Pelotao;
@@ -93,5 +96,14 @@ public class ComparatorFactory implements Serializable {
 
     public static void getComparatorProdutoDescSorter(List<Produto> lista) {
         Collections.sort(lista, new ComparatorBaseModelSorter(true));
+    }
+
+    public static void getComparatorFileTimeSorter(File[] files) {
+        Arrays.sort(files, new Comparator<File>() {
+            @Override
+            public int compare(File f1, File f2) {
+                return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+            }
+        });
     }
 }
