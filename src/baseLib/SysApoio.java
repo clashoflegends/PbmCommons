@@ -319,7 +319,11 @@ public class SysApoio implements Serializable {
             if (!ret.equalsIgnoreCase("")) {
                 ret += " ";
             }
-            ret += palavra[ii].substring(0, 1).toUpperCase() + palavra[ii].substring(1);
+            try {
+                ret += palavra[ii].substring(0, 1).toUpperCase() + palavra[ii].substring(1);
+            } catch (java.lang.StringIndexOutOfBoundsException e) {
+                //double spaces were sent, resulting in a null word. safe to ignore
+           }
         }
         return ret;
     }
