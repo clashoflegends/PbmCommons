@@ -234,6 +234,7 @@ public class MapaManager implements Serializable {
         //grava numero hex
         big.setColor(Color.BLACK);
         big.drawString(localFacade.getCoordenadas(local), x + 16, y + 18);
+        
         //exercitos presentes
         SortedMap<Nacao, Image> armyList = new TreeMap<Nacao, Image>();
         //monta a lista das nacoes com exercitos presentes no local
