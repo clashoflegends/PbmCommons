@@ -5,6 +5,8 @@
 package baseLib;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.apache.commons.logging.Log;
@@ -72,6 +74,14 @@ public class GenericoComboBoxModel extends DefaultComboBoxModel implements Combo
                     return ii;
                 }
             }
+        }
+        return ret;
+    }
+
+    public List<GenericoComboObject> getElementAll() {
+        List<GenericoComboObject> ret = new ArrayList();
+        for (int ii = 0; ii < getSize(); ii++) {
+            ret.add((GenericoComboObject) getElementAt(ii));
         }
         return ret;
     }
