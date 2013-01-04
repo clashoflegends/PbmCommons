@@ -5,6 +5,7 @@
 package business;
 
 import baseLib.SysApoio;
+import baseLib.SysProperties;
 import business.facade.*;
 import business.services.TagManager;
 import java.awt.*;
@@ -65,7 +66,11 @@ public class MapaManager implements Serializable {
         desenhoTerrenos = new Image[terrenos.length];
         for (int ii = 0; ii < terrenos.length; ii++) {
             //FIXME: Buscar imagens de um JAR. colocar imagens num jar em separado, para facilitar downloads.
-            desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".gif"));
+            if (SysProperties.getProps("MapTiles", "2d").equalsIgnoreCase("3d")) {
+                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".png"));
+            } else {
+                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".gif"));
+            }
             imageFactory.addImage(desenho);
             this.desenhoTerrenos[ii] = desenho;
         }
@@ -234,7 +239,7 @@ public class MapaManager implements Serializable {
         //grava numero hex
         big.setColor(Color.BLACK);
         big.drawString(localFacade.getCoordenadas(local), x + 16, y + 18);
-        
+
         //exercitos presentes
         SortedMap<Nacao, Image> armyList = new TreeMap<Nacao, Image>();
         //monta a lista das nacoes com exercitos presentes no local

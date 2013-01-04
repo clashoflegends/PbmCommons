@@ -44,6 +44,7 @@ public class SysProperties implements Serializable {
             + "MyEmail=user@domain, define your email address.\n"
             + "OverrideElimination=0|1 -> allows you to send actions past elimination.\n"
             + "ShowArmyMovPath=0|1|2 -> allows you to see all possible movement paths for an army(1) or navy(2). (0) disable it.\n"
+            + "MapTiles = 2d | 3d, changes the basic hex terrain tiles.\n"
             + "\n";
 
     private void setPropDefault() {
@@ -66,6 +67,7 @@ public class SysProperties implements Serializable {
         getProps().setProperty("HexTagStyle", "0");
         getProps().setProperty("HexTagFrame", "0");
         getProps().setProperty("ShowArmyMovPath", "1");
+        getProps().setProperty("MapTiles", "2d");
     }
 
     /**
