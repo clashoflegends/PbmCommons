@@ -27,7 +27,7 @@ public class DialogTextArea extends javax.swing.JDialog implements Serializable 
     public DialogTextArea(boolean modal) {
         super(new JFrame(), modal);
         this.setAlwaysOnTop(true);
-        this.setPreferredSize(new Dimension(600, 300));
+        this.setPreferredSize(new Dimension(500, 400));
         initComponents();
         //this.add(detAjuda);
     }

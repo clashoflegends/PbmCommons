@@ -68,6 +68,7 @@ public class SysProperties implements Serializable {
         getProps().setProperty("HexTagFrame", "0");
         getProps().setProperty("ShowArmyMovPath", "1");
         getProps().setProperty("MapTiles", "2d");
+        getProps().setProperty("KeepPopupOpen", "0");
     }
 
     /**
