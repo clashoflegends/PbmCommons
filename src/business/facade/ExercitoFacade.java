@@ -6,6 +6,7 @@ package business.facade;
 
 import business.ArmyPath;
 import business.MovimentoExercito;
+import business.interfaces.IExercito;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ public class ExercitoFacade implements Serializable {
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final CenarioFacade cenarioFacade = new CenarioFacade();
     private static final LocalFacade localFacade = new LocalFacade();
+    private static final BattleSimFacade battleSimFacade = new BattleSimFacade();
 
     public String getClima(Exercito exercito) {
         return localFacade.getClima(this.getLocal(exercito));
@@ -58,9 +60,6 @@ public class ExercitoFacade implements Serializable {
         return localFacade.getTerrenoNome(this.getLocal(exercito));
     }
 
-    /**
-     * Capitao fulano *
-     */
     public String getComandanteTitulo(Exercito exercito, Cenario cenario) {
         if (isGuarnicao(exercito)) {
             return String.format(labels.getString("GUARNICAO.NOME"),
@@ -77,6 +76,21 @@ public class ExercitoFacade implements Serializable {
             } catch (NullPointerException ex) {
                 return labels.getString("COMANDANTE.DESCONHECIDO");
             }
+        }
+    }
+
+    public String getComandanteTitulo(ExercitoSim exercito, Cenario cenario) {
+        try {
+            return String.format("%s %s",
+                    cenarioFacade.getTituloPericia(cenario,
+                    CenarioFacade.COMANDANTE,
+                    exercito.getPericiaComandante()),
+                    exercito.getComandanteNome());
+        } catch (NullPointerException ex) {
+            return String.format(labels.getString("GUARNICAO.NOME"),
+                    labels.getString("GUARNICAO"),
+                    getNacaoNome(exercito),
+                    getNomeLocal(exercito));
         }
     }
 
@@ -117,7 +131,7 @@ public class ExercitoFacade implements Serializable {
         }
     }
 
-    public String getNacaoNome(Exercito exercito) {
+    public String getNacaoNome(IExercito exercito) {
         try {
             return exercito.getNacao().getNome();
         } catch (NullPointerException ex) {
@@ -312,7 +326,7 @@ public class ExercitoFacade implements Serializable {
         return tpTropa.isBarcos();
     }
 
-    public String getNomeLocal(Exercito exercito) {
+    public String getNomeLocal(IExercito exercito) {
         try {
             if (exercito.getLocal().getCidade().getNome() != null) {
                 return exercito.getLocal().getCidade().getNome();
@@ -336,78 +350,19 @@ public class ExercitoFacade implements Serializable {
     }
 
     public int getAtaquePelotao(Pelotao pelotao, Exercito exercito) {
-        int ret = 0;
-        try {
-            int forcaTrop = this.getAtaqueBasicoPelotao(pelotao.getTipoTropa(), exercito) * pelotao.getQtd()
-                    * (pelotao.getTreino() + pelotao.getModAtaque() + 100) / 300;
-//                    * (pelotao.getTreino() + pelotao.getModAtaque() + pelotao.getTipoTropa().getBonusTatica(this.getTatica())) / 300;
-            int bonusMod = 0;
-            try {
-                bonusMod += exercito.getComandante().getPericiaComandante();
-            } catch (NullPointerException e) {
-                //nao tem comandante, assume 0
-            }
-            bonusMod += exercito.getMoral();
-            bonusMod += 100 * 2;
-            bonusMod = bonusMod / 4;
-            ret = forcaTrop * bonusMod / 100;
-        } catch (NullPointerException e) {
-        }
-        return ret;
-    }
-
-    private int getAtaqueBasicoPelotao(TipoTropa tpTropa, Exercito exercito) {
-        try {
-            Local local = exercito.getLocal();
-            int tropasValor = tpTropa.getAtaqueTerreno().get(local.getTerreno());
-            if (tpTropa.hasHabilidade(";TTD;") && local.getCidade() != null) {
-                //D = ataque dobrado se defendendo cidade
-                try {
-                    NacaoFacade nf = new NacaoFacade();
-                    if (nf.isAliado(exercito.getNacao(), local.getCidade().getNacao())) {
-                        tropasValor = tropasValor * 2;
-                    }
-                } catch (NullPointerException e) {
-                }
-            }
-            return (tropasValor);
-        } catch (NullPointerException e) {
-            //nao tem a tropa, retorna forca 0
-            return 0;
-        }
+        return (int) battleSimFacade.getAtaquePelotao(pelotao, exercito);
     }
 
     public int getDefesaPelotao(Pelotao pelotao, Exercito exercito) {
-        try {
-            Local local = exercito.getLocal();
-            float defesa = pelotao.getTipoTropa().getDefesaTerreno().get(local.getTerreno());
-            //float defesa = this.getHexAtual().getTerrenoCenario().getTropasValor(tpTropa);
-            if (pelotao.getTipoTropa().hasHabilidade(";TTD;")) {
-                //D = defesa eh metade do ataque
-                defesa = defesa / 2f;
-            }
-            float vlArmadura = (float) pelotao.getModDefesa();
-            return (int) (pelotao.getQtd() * defesa * (1F + vlArmadura / 100F));
-        } catch (NullPointerException e) {
-            //nao tem a tropa, retorna forca 0
-            return 0;
-        }
+        return (int) battleSimFacade.getDefesaPelotao(pelotao, exercito.getLocal().getTerreno());
     }
 
-    public int getAtaque(Exercito exercito) {
-        int ret = 0;
-        for (Pelotao pelotao : exercito.getPelotoes().values()) {
-            ret += getAtaquePelotao(pelotao, exercito);
-        }
-        return ret;
+    public int getAtaqueExercito(IExercito exercito, boolean naval) {
+        return (int) battleSimFacade.getAtaqueExercito(exercito, naval);
     }
 
-    public int getDefesa(Exercito exercito) {
-        int total = 0;
-        for (Pelotao pelotao : exercito.getPelotoes().values()) {
-            total += getDefesaPelotao(pelotao, exercito);
-        }
-        return total;
+    public int getDefesaExercito(IExercito exercito, boolean naval) {
+        return battleSimFacade.getDefesaExercito(exercito, naval);
     }
 
     public List<TipoTropa> getTipoTropas(Exercito exercito) {
@@ -478,6 +433,10 @@ public class ExercitoFacade implements Serializable {
                 } catch (NullPointerException ex) {
                     //not found, new path
                     prevCost = 0;
+                }
+                if (movEx.isPorAgua() && !localFacade.isAgua(vizinho)) {
+                    //overwrite cost to end water movement. consuming all remaining points for the move, minimum of 1.
+                    cost = Math.max(1, movEx.getLimiteMovimento() - prevCost);
                 }
                 final int totalCost = cost + prevCost;
                 if (totalCost > 0 && totalCost <= movEx.getLimiteMovimento()) {

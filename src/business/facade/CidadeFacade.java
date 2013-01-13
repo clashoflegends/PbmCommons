@@ -27,6 +27,7 @@ public class CidadeFacade implements Serializable {
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final NacaoFacade nacaoFacade = new NacaoFacade();
     private static final LocalFacade localFacade = new LocalFacade();
+    private static final BattleSimFacade combatSimFacade = new BattleSimFacade();
 
     public int getArrecadacaoImpostos(Cidade cidade) {
         return cidade.getArrecadacaoImpostos();
@@ -253,19 +254,10 @@ public class CidadeFacade implements Serializable {
     }
 
     public int getDefesa(Cidade cidade) {
-        return getDefesa(cidade.getTamanho(), cidade.getFortificacao(), cidade.getLealdade());
+        return combatSimFacade.getDefesa(cidade);
     }
 
     public int getDefesa(int tamanho, int fortificacao, int lealdade) {
-        final int[] bonusFortificacaoCumulativo = {0, 2000, 6000, 10000, 16000, 24000};
-        final int[] bonusTamanho = {0, 200, 500, 1000, 2500, 5000};
-        int ret = 0;
-        ret += bonusTamanho[tamanho] + bonusFortificacaoCumulativo[fortificacao];
-        if (lealdade == 0) {
-            ret += ret;
-        } else {
-            ret += ret * lealdade / 100;
-        }
-        return ret;
+        return combatSimFacade.getDefesa(tamanho, fortificacao, lealdade);
     }
 }

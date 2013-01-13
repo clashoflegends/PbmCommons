@@ -4,7 +4,7 @@
  */
 package business;
 
-import baseLib.SysApoio;
+import business.converter.ConverterFactory;
 import business.facade.ExercitoFacade;
 import business.facade.LocalFacade;
 import java.io.Serializable;
@@ -247,7 +247,7 @@ public final class MovimentoExercito implements Serializable, Cloneable {
             } else {
                 boolean aux = true;
                 for (int ii = min + 1; aux && ii <= max - 1; ii++) {
-                    if (!getOrigem().isRio(SysApoio.getDirecao(ii))) {
+                    if (!getOrigem().isRio(ConverterFactory.getDirecao(ii))) {
                         aux = false;
                     }
                 }
@@ -255,7 +255,7 @@ public final class MovimentoExercito implements Serializable, Cloneable {
                     //testa pelo outro lado
                     aux = true;
                     for (int ii = max + 1; aux && ii <= min + 6 - 1; ii++) {
-                        if (!getOrigem().isRio(SysApoio.getDirecao(ii))) {
+                        if (!getOrigem().isRio(ConverterFactory.getDirecao(ii))) {
                             aux = false;
                         }
                     }

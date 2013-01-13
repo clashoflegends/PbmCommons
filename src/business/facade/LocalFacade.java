@@ -5,6 +5,7 @@
 package business.facade;
 
 import baseLib.SysApoio;
+import business.converter.ConverterFactory;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -160,7 +161,7 @@ public class LocalFacade implements Serializable {
     public boolean isRioLado(Local local, int direcao) {
         boolean ret = false;
         for (int ii = -1; !ret && ii <= 1; ii++) {
-            int temp = SysApoio.getDirecao(direcao + ii);
+            int temp = ConverterFactory.getDirecao(direcao + ii);
             if (!ret && local.isRio(temp)) {
                 ret = true;
             }
@@ -191,7 +192,7 @@ public class LocalFacade implements Serializable {
     }
 
     public String getIdentificacaoVizinho(Local atual, String nmDirecao) {
-        return getIdentificacaoVizinho(atual, SysApoio.direcaoToInt(nmDirecao));
+        return getIdentificacaoVizinho(atual, ConverterFactory.direcaoToInt(nmDirecao));
     }
 
     public String getIdentificacaoVizinho(Local atual, int direcao) {

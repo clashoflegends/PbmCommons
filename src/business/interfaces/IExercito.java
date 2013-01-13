@@ -4,7 +4,11 @@
  */
 package business.interfaces;
 
+import java.util.SortedMap;
 import model.Local;
+import model.Nacao;
+import model.Pelotao;
+import model.Terreno;
 
 /**
  *
@@ -17,4 +21,10 @@ public interface IExercito {
     public int getPericiaComandante();
 
     public Local getLocal();
+
+    public Terreno getTerreno();
+
+    public Nacao getNacao();
+
+    public SortedMap<String, Pelotao> getPelotoes();
 }

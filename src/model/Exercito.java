@@ -5,6 +5,7 @@
 package model;
 
 import baseLib.BaseModel;
+import business.interfaces.IExercito;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -12,7 +13,7 @@ import java.util.TreeMap;
  *
  * @author gurgel
  */
-public class Exercito extends BaseModel {
+public class Exercito extends BaseModel implements IExercito {
 
     private int moral = 0;
     private int comida = 0;
@@ -35,10 +36,12 @@ public class Exercito extends BaseModel {
         return comandante;
     }
 
+    @Override
     public Nacao getNacao() {
         return this.nacao;
     }
 
+    @Override
     public SortedMap<String, Pelotao> getPelotoes() {
         return this.tropas;
     }
@@ -62,6 +65,7 @@ public class Exercito extends BaseModel {
         this.comandante = personagem;
     }
 
+    @Override
     public int getMoral() {
         return moral;
     }
@@ -90,6 +94,7 @@ public class Exercito extends BaseModel {
         this.nacao = nacao;
     }
 
+    @Override
     public Local getLocal() {
         return local;
     }
@@ -130,5 +135,19 @@ public class Exercito extends BaseModel {
     @Override
     public String toString() {
         return this.getNome() + "-" + this.getLocal().getCoordenadas() + "-" + getClass().getName() + "@" + Integer.toHexString(hashCode());
+    }
+
+    @Override
+    public int getPericiaComandante() {
+        try {
+            return getComandante().getPericiaComandante();
+        } catch (NullPointerException ex) {
+            return 0;
+        }
+    }
+
+    @Override
+    public Terreno getTerreno() {
+        return getLocal().getTerreno();
     }
 }
