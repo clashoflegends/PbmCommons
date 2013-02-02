@@ -75,6 +75,10 @@ public abstract class WorldManagerBase implements Serializable {
         return world.getPartida().getJogadorAtivo().isNacao(nacao);
     }
 
+    public boolean isJogadorAtivoNpc() {
+        return world.getPartida().getJogadorAtivo().getId() == 1;
+    }
+
     public void destroyWorld() {
         this.world = null;
     }
