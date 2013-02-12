@@ -41,11 +41,12 @@ public class MapaManager implements Serializable {
     private Cenario cenario;
     private JPanel form;
     private ImageIcon tagImage;
-    private static final int dtPersonagem = 0, dtNpc = 1, dtArtefato = 2, dtGoldmine = 3, dtNavio = 4, dtTag = 5, dtFogofwar = 6;
+    private static final int dtPersonagem = 0, dtNpc = 1, dtArtefato = 2, dtGoldmine = 3, dtNavio = 4, dtTag = 5, dtFogofwar = 6, dtPersonagemOutra = 7;
     private static final LocalFacade localFacade = new LocalFacade();
     private static final CidadeFacade cidadeFacade = new CidadeFacade();
     private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
     private static final PersonagemFacade personagemFacade = new PersonagemFacade();
+    private static final JogadorFacade jogadorFacade = new JogadorFacade();
     private static final ArtefatoFacade artefatoFacade = new ArtefatoFacade();
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private ImageFactory imageFactory;
@@ -88,7 +89,7 @@ public class MapaManager implements Serializable {
             imageFactory.addImage(desenho);
             this.desenhoTerrenoDetalhes[ii] = desenho;
         }
-        String[] detalhes = {"personagem", "npc", "artefato", "goldmine", "navio", "tag", "fogofwar"};
+        String[] detalhes = {"personagem", "npc", "artefato", "goldmine", "navio", "tag", "fogofwar", "pers_other"};
         desenhoDetalhes = new Image[detalhes.length];
         for (int ii = 0; ii < detalhes.length; ii++) {
             desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + detalhes[ii] + ".gif"));
@@ -131,7 +132,7 @@ public class MapaManager implements Serializable {
         return tagImage;
     }
 
-    private void printHex(Graphics2D big, Local local) {
+    private void printHex(Graphics2D big, Local local, Jogador observer) {
         int x = 0, y = 0, row = 0, col = 0;
         //calcula coordenadas e posicao no grafico.
         col = localFacade.getCol(local) - 1;
@@ -285,6 +286,10 @@ public class MapaManager implements Serializable {
                 int dx = 04 + 8;
                 int dy = 22 - 3;
                 big.drawImage(this.desenhoDetalhes[dtNpc], x + dx, y + dy, form);
+            } else if (!jogadorFacade.isMine(pers, observer)) {
+                int dx = 04 + 8;
+                int dy = 22 - 3 + 4;
+                big.drawImage(this.desenhoDetalhes[dtPersonagemOutra], x + dx, y + dy, form);
             } else {
                 int dx = 04;
                 int dy = 22;
@@ -293,7 +298,7 @@ public class MapaManager implements Serializable {
         }
     }
 
-    public BufferedImage printMapaGeral(Collection<Local> listaLocal) {
+    public BufferedImage printMapaGeral(Collection<Local> listaLocal, Jogador observer) {
         //FIXME: imprimir em layers, permitindo visao do terreno, visao dos personagens, duplo clique para posicionar coisas, etc...
         log.debug("Escrevendo: MapaGeral...");
         Point farPoint = getMapMaxSize(listaLocal);
@@ -312,7 +317,7 @@ public class MapaManager implements Serializable {
         Iterator listaLocais = listaLocal.iterator();
         while (listaLocais.hasNext()) {
             Local local = (Local) listaLocais.next();
-            printHex(big, local);
+            printHex(big, local, observer);
         }
         big.dispose(); //libera memoria
         return megaMap;
@@ -609,6 +614,11 @@ public class MapaManager implements Serializable {
 
         //imprime detalhes
         image = desenhoDetalhes[dtPersonagem];
+        big.drawImage(image, x, y, form);
+        big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
+        y += image.getWidth(form) + gap;
+
+        image = desenhoDetalhes[dtPersonagemOutra];
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
