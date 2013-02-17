@@ -589,7 +589,7 @@ public class MapaManager implements Serializable {
         y = 50;
         legendas = new String[]{
             "EXERCITO.RASTRO",
-            "PERSONAGEM", "PERSONAGEM.NPC", "DB.ORDEM.PARAMETRO.ARTEFATO", "ZONA.ECONOMICA", "NAVIOS.PRESENTES"
+            "PERSONAGEM", "PERSONAGEM.OUTRA.NACAO", "PERSONAGEM.NPC", "DB.ORDEM.PARAMETRO.ARTEFATO", "ZONA.ECONOMICA", "NAVIOS.PRESENTES"
         };
         legendaCounter = 0;
         //imprime rastro do exercito
