@@ -6,6 +6,7 @@ package business.facade;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import model.*;
@@ -99,11 +100,23 @@ public class NacaoFacade implements Serializable {
     }
 
     public int getCustoExercito(Nacao nacao) {
-        //FIXME: buscar guarnicoes
         int ret = 0;
         for (Personagem personagem : nacao.getPersonagens()) {
             if (nacao == personagem.getNacao() && personagem.isComandaExercito()) {
                 for (Pelotao pelotao : personagem.getExercito().getPelotoes().values()) {
+                    ret += pelotao.getQtd() * pelotao.getTipoTropa().getUpkeepMoney();
+                }
+            }
+        }
+        return ret;
+    }
+
+    public int getCustoExercitoGuarnicao(Nacao nacao, Collection<Exercito> exercitos) {
+        int ret = 0;
+        ExercitoFacade ef = new ExercitoFacade();
+        for (Exercito exercito : exercitos) {
+            if (nacao == ef.getNacao(exercito) && ef.isGuarnicao(exercito)) {
+                for (Pelotao pelotao : exercito.getPelotoes().values()) {
                     ret += pelotao.getQtd() * pelotao.getTipoTropa().getUpkeepMoney();
                 }
             }
