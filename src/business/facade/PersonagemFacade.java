@@ -406,6 +406,16 @@ public class PersonagemFacade implements Serializable {
         }
     }
 
+    public boolean isInCidadeVassalo(Personagem personagem) {
+        //cidade propria ou aliada
+        try {
+            return (this.isInCidadePropria(personagem)
+                    || personagem.getLocal().getCidade().getNacao().getRelacionamento(personagem.getNacao()) == 3);
+        } catch (NullPointerException ex) {
+            return false;
+        }
+    }
+
     public boolean isLocalConhecido(Personagem personagem) {
         boolean ret = true;
         if (personagem.getVida() <= 0) {
