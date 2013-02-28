@@ -518,7 +518,7 @@ public class PersonagemFacade implements Serializable {
             temp[aTitulo] = labels.getString("MORTO");
         } else {
             int nn = (int) (personagem.getVida() / 10);
-            temp[aTitulo] = Msgs.tituloAtributoVida[nn];
+            temp[aTitulo] = Msgs.tituloAtributoVida[Math.min(nn, Msgs.tituloAtributoVida.length - 1)];
         }
         temp[aNatural] = personagem.getVida() + "";
         return temp;
