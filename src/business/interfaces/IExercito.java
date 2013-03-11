@@ -27,4 +27,7 @@ public interface IExercito {
     public Nacao getNacao();
 
     public SortedMap<String, Pelotao> getPelotoes();
+
+    @Override
+    public String toString();
 }
