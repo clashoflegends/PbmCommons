@@ -169,7 +169,7 @@ public class LocalFacade implements Serializable {
         return ret;
     }
 
-    public boolean isNavios(Local local) {
+    public boolean isBarcos(Local local) {
         ExercitoFacade exercitoFacade = new ExercitoFacade();
         for (Exercito exercito : local.getExercitos().values()) {
             if (exercitoFacade.isEsquadra(exercito)) {

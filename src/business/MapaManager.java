@@ -232,7 +232,7 @@ public class MapaManager implements Serializable {
             big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
         }
         //navios presentes
-        if (localFacade.isNavios(local)) {
+        if (localFacade.isBarcos(local)) {
             int dx = 34;
             int dy = 30;
             big.drawImage(this.desenhoDetalhes[dtNavio], x + dx, y + dy, form);
