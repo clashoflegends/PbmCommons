@@ -81,7 +81,8 @@ public class MapaManager implements Serializable {
             "riacho_no", "riacho_ne", "riacho_l", "riacho_se", "riacho_so", "riacho_o",
             "rio_no", "rio_ne", "rio_l", "rio_se", "rio_so", "rio_o",
             "road_no", "road_ne", "road_l", "road_se", "road_so", "road_o",
-            "vau_no", "vau_ne", "vau_l", "vau_se", "vau_so", "vau_o"
+            "vau_no", "vau_ne", "vau_l", "vau_se", "vau_so", "vau_o",
+            "water_NW", "water_NE", "water_E", "water_SE", "water_SW", "water_W"
         };
         desenhoTerrenoDetalhes = new Image[detalhesTerreno.length];
         for (int ii = 0; ii < detalhesTerreno.length; ii++) {
@@ -167,6 +168,10 @@ public class MapaManager implements Serializable {
             //detalhe ponte
             if (localFacade.isPonte(local, direcao)) {
                 big.drawImage(this.desenhoTerrenoDetalhes[direcao - 1], x, y, form);
+            }
+            //detalhe landing
+            if (localFacade.isLanding(local, direcao)) {
+                big.drawImage(this.desenhoTerrenoDetalhes[direcao + 29], x, y, form);
             }
             //detalhe vau
             if (localFacade.isVau(local, direcao)) {
@@ -487,7 +492,7 @@ public class MapaManager implements Serializable {
         }
         //detalhe de terrenos
         legendas = new String[]{
-            "TERRENO.PONTE", "TERRENO.RIACHO", "TERRENO.RIO", "TERRENO.ESTRADA", "TERRENO.VAU",
+            "TERRENO.PONTE", "TERRENO.RIACHO", "TERRENO.RIO", "TERRENO.ESTRADA", "TERRENO.VAU", "TERRENO.LANDING",
             "TAG", "LOCAL.VISIVEL", "LOCAL.FOGOFWAR"
         };
         x += 200;

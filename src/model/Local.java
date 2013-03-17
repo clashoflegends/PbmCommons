@@ -17,7 +17,7 @@ public class Local extends BaseModel implements Cloneable {
     private int clima;
     private boolean visible = false, producaoInfo = false;
     private String coordenadas;
-    private String estrada, rio, riacho, vau, ponte, rastro;
+    private String estrada, rio, riacho, vau, ponte, rastro, landing = "";
     private Terreno terreno;
     private Cidade cidade;
     private SortedMap<Produto, Integer> producao = new TreeMap<Produto, Integer>();
@@ -25,6 +25,11 @@ public class Local extends BaseModel implements Cloneable {
     private SortedMap<String, Exercito> indiceExercito = new TreeMap<String, Exercito>();
     private SortedMap<String, Artefato> indiceArtefato = new TreeMap<String, Artefato>();
     private String visibilidadeNacao;  //manter em string por causa da forma de carga, aonde cada jogador tem uma visibilidade diferente da nacao. Usar sortedMap vai quebrar...
+
+    @Override
+    public Local clone() throws CloneNotSupportedException {
+        return (Local) super.clone();
+    }
 
     public SortedMap<String, Artefato> getArtefatos() {
         return this.indiceArtefato;
@@ -101,6 +106,10 @@ public class Local extends BaseModel implements Cloneable {
 
     public boolean isRastro(Integer direcao) {
         return this.rastro.indexOf(direcao.toString()) != -1;
+    }
+
+    public boolean isLanding(Integer direcao) {
+        return this.landing.indexOf(direcao.toString()) != -1;
     }
 
     public Terreno getTerreno() {
@@ -276,11 +285,6 @@ public class Local extends BaseModel implements Cloneable {
         return producaoClima[clima][produto.getId()];
     }
 
-    @Override
-    public Local clone() throws CloneNotSupportedException {
-        return (Local) super.clone();
-    }
-
     public boolean isVisible() {
         return visible;
     }
@@ -309,5 +313,13 @@ public class Local extends BaseModel implements Cloneable {
 
     public String getVisibilidadeNacao() {
         return this.visibilidadeNacao;
+    }
+
+    public String getLanding() {
+        return landing;
+    }
+
+    public void setLanding(String landing) {
+        this.landing = landing;
     }
 }

@@ -127,6 +127,10 @@ public class LocalFacade implements Serializable {
         return local.isPonte(direcao);
     }
 
+    public boolean isLanding(Local local, int direcao) {
+        return local.isLanding(direcao);
+    }
+
     public boolean isRiacho(Local local, int direcao) {
         return local.isRiacho(direcao);
     }
