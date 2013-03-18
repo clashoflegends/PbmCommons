@@ -145,20 +145,6 @@ public class CidadeFacade implements Serializable {
     }
 
     public Color getNacaoColor(Cidade cidade) {
-        int id;
-//        int[][] cor = {
-//            {180, 180, 180},
-//            {255, 0, 0},
-//            {0, 0, 255},
-//            {255, 255, 0},
-//            {0, 255, 0}};
-        /*
-         *
-         * @DB.NACAO.NOME.ESPARTA# red @DB.NACAO.NOME.ATENAS# blue
-         * @DB.NACAO.NOME.MACEDONIA# yellow @DB.NACAO.NOME.PERSIA# green
-         * @DB.NACAO.NOME.TRACIA# @DB.NACAO.NOME.MILLETUS#
-         * @DB.NACAO.NOME.ILLYRIA# @DB.NACAO.NOME.EPIRUS#
-         */
         int[][] cor = {
             {180, 180, 180},
             {255, 0, 0}, //red A
@@ -176,16 +162,36 @@ public class CidadeFacade implements Serializable {
             {0, 128, 255}, //azul medio
             {0, 0, 0} //preto
         };
+        final Color[] color = {
+            new Color(180, 180, 180), //0
+            new Color(255, 0, 0), //1    red A
+            new Color(0, 0, 255), //2    azul B
+            new Color(255, 255, 0), //3  amarelo A
+            new Color(0, 128, 0), //4    verde B
+            new Color(0, 255, 255), //5  azul claro B
+            new Color(255, 110, 110), //6    pink A
+            new Color(255, 128, 0), //7  laranja
+            new Color(128, 255, 0), //8  verde amarelado
+            new Color(128, 128, 0), //9  olive
+            new Color(0, 255, 128), //10 verde claro B
+            new Color(255, 255, 255), //11   branco
+            new Color(128, 0, 255), //12 roxo
+            new Color(0, 128, 255), //13 azul medio
+            new Color(0, 0, 0), //14 preto
+            new Color(25, 25, 25), //15  dark gray
+            new Color(255, 0, 255), //16 Fuchsia
+            new Color(0, 128, 128), //17 teal
+            new Color(255, 215, 32), //18 Gold
+            new Color(218, 165, 32), //19 
+            new Color(180, 0, 128), //20
+            new Color(0, 180, 128), //21
+            new Color(175, 238, 238), //22 paleturquoise
+            new Color(255, 255, 255) //23
+        };
         try {
-            id = SysApoio.parseInt(cidade.getNacao().getCodigo());
-        } catch (NullPointerException ex) {
-            //nacao desconhecida
-            id = 0;
-        }
-        try {
-            return (new Color(cor[id][0], cor[id][1], cor[id][2]));
-        } catch (java.lang.ArrayIndexOutOfBoundsException e) {
-            return (new Color(cor[0][0], cor[0][1], cor[0][2]));
+            return color[SysApoio.parseInt(cidade.getNacao().getCodigo())];
+        } catch (Exception ex) {
+            return color[0];
         }
     }
 
