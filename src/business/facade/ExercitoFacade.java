@@ -14,7 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedMap;
 import model.*;
-import msgs.Msgs;
+import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
@@ -44,14 +44,14 @@ public class ExercitoFacade implements Serializable {
         String ret;
         if (isGuarnicao(exercito)) {
             if (isEsquadra(exercito) || exercito.getTamanhoEsquadra() > 0) {
-                ret = Msgs.guarnicaoTamanho[exercito.getTamanhoEsquadra()];
+                ret = BaseMsgs.guarnicaoTamanho[exercito.getTamanhoEsquadra()];
             } else {
-                ret = Msgs.guarnicaoTamanho[exercito.getTamanhoExercito()];
+                ret = BaseMsgs.guarnicaoTamanho[exercito.getTamanhoExercito()];
             }
         } else if (isEsquadra(exercito) || exercito.getTamanhoEsquadra() > 0) {
-            ret = Msgs.esquadraTamanho[exercito.getTamanhoEsquadra()];
+            ret = BaseMsgs.esquadraTamanho[exercito.getTamanhoEsquadra()];
         } else {
-            ret = Msgs.exercitoTamanho[exercito.getTamanhoExercito()];
+            ret = BaseMsgs.exercitoTamanho[exercito.getTamanhoExercito()];
         }
         return ret;
     }

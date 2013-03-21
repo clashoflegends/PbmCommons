@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import model.*;
-import msgs.Msgs;
+import msgs.BaseMsgs;
+import msgs.ColorFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
@@ -42,7 +43,7 @@ public class CidadeFacade implements Serializable {
     }
 
     public String getDocasNome(Cidade cidade) {
-        return Msgs.cidadeDocas[cidade.getDocas()];
+        return BaseMsgs.cidadeDocas[cidade.getDocas()];
     }
 
     public Jogador getJogador(Cidade cidade) {
@@ -80,11 +81,11 @@ public class CidadeFacade implements Serializable {
     }
 
     public String getFortificacaoNome(Cidade cidade) {
-        return Msgs.cidadeFortificacao[cidade.getFortificacao()];
+        return BaseMsgs.cidadeFortificacao[cidade.getFortificacao()];
     }
 
     public String getFortificacaoNome(int fortificacao) {
-        return Msgs.cidadeFortificacao[fortificacao];
+        return BaseMsgs.cidadeFortificacao[fortificacao];
     }
 
     public int getTamanho(Cidade cidade) {
@@ -92,17 +93,17 @@ public class CidadeFacade implements Serializable {
     }
 
     public String getTamanhoNome(Cidade cidade) {
-        return Msgs.cidadeTamanho[cidade.getTamanho()];
+        return BaseMsgs.cidadeTamanho[cidade.getTamanho()];
     }
 
     public String getTamanhoNome(int tamanho) {
-        return Msgs.cidadeTamanho[tamanho];
+        return BaseMsgs.cidadeTamanho[tamanho];
     }
 
     public String getTamanhoFortificacao(Cidade cidade) {
-        String ret = Msgs.cidadeTamanho[cidade.getTamanho()];
+        String ret = BaseMsgs.cidadeTamanho[cidade.getTamanho()];
         if (cidade.isFortificado()) {
-            ret += "/" + Msgs.cidadeFortificacao[cidade.getFortificacao()];
+            ret += "/" + BaseMsgs.cidadeFortificacao[cidade.getFortificacao()];
         }
         return ret;
     }
@@ -144,54 +145,29 @@ public class CidadeFacade implements Serializable {
         return listaPresencas;
     }
 
-    public Color getNacaoColor(Cidade cidade) {
-        int[][] cor = {
-            {180, 180, 180},
-            {255, 0, 0}, //red A
-            {0, 0, 255}, //azul B
-            {255, 255, 0}, //amarelo A
-            {0, 128, 0}, //verde B
-            {0, 255, 255}, //azul claro B
-            {255, 110, 110}, //pink A
-            {255, 128, 0}, //laranja
-            {128, 255, 0}, //verde amarelado
-            {185, 185, 0}, //verde/amarelo A
-            {0, 255, 128}, //verde claro B
-            {255, 255, 255}, //branco
-            {128, 0, 255}, //roxo
-            {0, 128, 255}, //azul medio
-            {0, 0, 0} //preto
-        };
-        final Color[] color = {
-            new Color(180, 180, 180), //0
-            new Color(255, 0, 0), //1    red A
-            new Color(0, 0, 255), //2    azul B
-            new Color(255, 255, 0), //3  amarelo A
-            new Color(0, 128, 0), //4    verde B
-            new Color(0, 255, 255), //5  azul claro B
-            new Color(255, 110, 110), //6    pink A
-            new Color(255, 128, 0), //7  laranja
-            new Color(128, 255, 0), //8  verde amarelado
-            new Color(128, 128, 0), //9  olive
-            new Color(0, 255, 128), //10 verde claro B
-            new Color(255, 255, 255), //11   branco
-            new Color(128, 0, 255), //12 roxo
-            new Color(0, 128, 255), //13 azul medio
-            new Color(0, 0, 0), //14 preto
-            new Color(25, 25, 25), //15  dark gray
-            new Color(255, 0, 255), //16 Fuchsia
-            new Color(0, 128, 128), //17 teal
-            new Color(255, 215, 32), //18 Gold
-            new Color(218, 165, 32), //19 
-            new Color(180, 0, 128), //20
-            new Color(0, 180, 128), //21
-            new Color(175, 238, 238), //22 paleturquoise
-            new Color(255, 255, 255) //23
-        };
+    public Color getNacaoColorFill(Cidade cidade) {
+        //FIXME: move para nacaoFacade
         try {
-            return color[SysApoio.parseInt(cidade.getNacao().getCodigo())];
+            if (cidade.getNacao().getFillColor() == null) {
+                return ColorFactory.colorFill[SysApoio.parseInt(cidade.getNacao().getCodigo())];
+            } else {
+                return cidade.getNacao().getFillColor();
+            }
         } catch (Exception ex) {
-            return color[0];
+            return ColorFactory.colorFill[0];
+        }
+    }
+
+    public Color getNacaoColorBorder(Cidade cidade) {
+        //FIXME: move para nacaoFacade
+        try {
+            if (cidade.getNacao().getBorderColor() == null) {
+                return ColorFactory.colorBorder[SysApoio.parseInt(cidade.getNacao().getCodigo())];
+            } else {
+                return cidade.getNacao().getBorderColor();
+            }
+        } catch (Exception ex) {
+            return ColorFactory.colorBorder[0];
         }
     }
 

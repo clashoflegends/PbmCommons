@@ -5,7 +5,7 @@
 package model;
 
 import baseLib.BaseModel;
-import msgs.Msgs;
+import msgs.BaseMsgs;
 
 /**
  *
@@ -71,7 +71,7 @@ public class Feitico extends BaseModel {
 
     @Override
     public String getComboDisplay() {
-        return String.format("%s [%s] (%s)", this.getNome(), this.getLivroFeitico(), Msgs.dificuldade[this.getDificuldade()]);
+        return String.format("%s [%s] (%s)", this.getNome(), this.getLivroFeitico(), BaseMsgs.dificuldade[this.getDificuldade()]);
     }
 
     @Override

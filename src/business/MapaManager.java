@@ -22,6 +22,7 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import model.*;
+import msgs.ColorFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
@@ -201,13 +202,13 @@ public class MapaManager implements Serializable {
                     cpEscondido = 9;
                 }
                 //desenha cidade
-                Image colorCp = setNacaoColor(
+                Image colorCp = ColorFactory.setNacaoColor(
                         this.desenhoCidades[cidadeFacade.getTamanho(cidade) + 6 + cpEscondido],
-                        cidadeFacade.getNacaoColor(cidade),
+                        cidadeFacade.getNacaoColorFill(cidade),
+                        cidadeFacade.getNacaoColorBorder(cidade),
                         form);
                 largura = colorCp.getWidth(form);
                 altura = colorCp.getHeight(form);
-//            big.drawImage(cp, x + (ImageFactory.HEX_SIZE - largura) / 2, y + 34 - altura, form);
                 big.drawImage(colorCp, x + (ImageFactory.HEX_SIZE - largura) / 2, y + 34 - altura, form);
 
                 //desenha docas
@@ -429,36 +430,6 @@ public class MapaManager implements Serializable {
             ret = 0;
         }
         return ret;
-    }
-
-    private static Image setNacaoColor(Image image, final Color nacaoCor, JPanel form) {
-        ImageFilter filter = new RGBImageFilter() {
-            @Override
-            public final int filterRGB(int x, int y, int rgb) {
-                if (rgb == -197116) {     // "recheio"
-                    //Color col = new Color(255, 0, 0);
-                    rgb = (new Color(nacaoCor.getRed(), nacaoCor.getGreen(), nacaoCor.getBlue(), 255)).getRGB();
-                } else if (rgb == -16514556) {  // borda
-                } else if (rgb == 16515588) { // fundo
-                    //Color col = new Color(255, 0, 0);
-                    rgb = (new Color(nacaoCor.getRed(), nacaoCor.getGreen(), nacaoCor.getBlue(), 0)).getRGB();
-                }
-                return rgb;
-            }
-        };
-
-        ImageProducer ip = new FilteredImageSource(image.getSource(), filter);
-        image = Toolkit.getDefaultToolkit().createImage(ip);
-        MediaTracker mt = new MediaTracker(form);
-        mt.addImage(image, 0);
-        //this.desenhoCPs = desenho;
-        try {
-            mt.waitForAll();
-        } catch (InterruptedException e) {
-            log.fatal("Problem", e);
-        }
-
-        return image;
     }
 
     public void printLegenda(String dirName) {

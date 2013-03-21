@@ -11,7 +11,7 @@ import persistence.SettingsManager;
  *
  * @author jmoura
  */
-public final class Msgs {
+public final class BaseMsgs {
 
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     //utilizada em Feitico

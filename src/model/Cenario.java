@@ -6,7 +6,7 @@ package model;
 
 import baseLib.BaseModel;
 import java.util.*;
-import msgs.Msgs;
+import msgs.BaseMsgs;
 
 /**
  *
@@ -30,10 +30,10 @@ public class Cenario extends BaseModel {
 
     public Cenario() {
         // PENDING: mover titulos para properties ou banco de dados
-        this.tituloPericia[0] = Msgs.tituloPericiaComandante;
-        this.tituloPericia[1] = Msgs.tituloPericiaAgente;
-        this.tituloPericia[2] = Msgs.tituloPericiaEmissario;
-        this.tituloPericia[3] = Msgs.tituloPericiaMago;
+        this.tituloPericia[0] = BaseMsgs.tituloPericiaComandante;
+        this.tituloPericia[1] = BaseMsgs.tituloPericiaAgente;
+        this.tituloPericia[2] = BaseMsgs.tituloPericiaEmissario;
+        this.tituloPericia[3] = BaseMsgs.tituloPericiaMago;
     }
 
     public SortedMap<String, Ordem> getOrdens() {
@@ -105,7 +105,7 @@ public class Cenario extends BaseModel {
     }
 
     public String[][] getTaticas() {
-        return Msgs.taticas;
+        return BaseMsgs.taticas;
     }
 
     public void setTerrenos(SortedMap<String, Terreno> list) {

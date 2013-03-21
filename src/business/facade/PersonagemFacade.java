@@ -8,7 +8,7 @@ import baseLib.SysApoio;
 import java.io.Serializable;
 import java.util.*;
 import model.*;
-import msgs.Msgs;
+import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
@@ -445,7 +445,7 @@ public class PersonagemFacade implements Serializable {
         try {
             int nn = (int) (exercito.getComandante().getPericiaComandanteNatural() / 10);
             return (String.format("%s %s",
-                    Msgs.tituloPericiaComandante[Math.max(1, nn)],
+                    BaseMsgs.tituloPericiaComandante[Math.max(1, nn)],
                     exercito.getComandante().getNome()));
         } catch (NullPointerException e) {
             return labels.getString("UM.DESCONHECIDO");
@@ -518,7 +518,7 @@ public class PersonagemFacade implements Serializable {
             temp[aTitulo] = labels.getString("MORTO");
         } else {
             int nn = (int) (personagem.getVida() / 10);
-            temp[aTitulo] = Msgs.tituloAtributoVida[Math.min(nn, Msgs.tituloAtributoVida.length - 1)];
+            temp[aTitulo] = BaseMsgs.tituloAtributoVida[Math.min(nn, BaseMsgs.tituloAtributoVida.length - 1)];
         }
         temp[aNatural] = personagem.getVida() + "";
         return temp;

@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import model.*;
-import msgs.Msgs;
+import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
@@ -234,7 +234,7 @@ public class NacaoFacade implements Serializable {
     }
 
     public String getRelacionamento(Nacao nacaoJogador, Nacao nacaoAlvo) {
-        return Msgs.nacaoRelacionamento[nacaoJogador.getRelacionamento(nacaoAlvo) + 2];
+        return BaseMsgs.nacaoRelacionamento[nacaoJogador.getRelacionamento(nacaoAlvo) + 2];
     }
 
     public SortedMap<Nacao, Integer> getRelacionamentos(Nacao nacao) {

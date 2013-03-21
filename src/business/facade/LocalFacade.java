@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import model.*;
-import msgs.Msgs;
+import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
@@ -77,7 +77,7 @@ public class LocalFacade implements Serializable {
 
     public String getClima(Local local) {
         try {
-            return Msgs.localClima[local.getClima()];
+            return BaseMsgs.localClima[local.getClima()];
         } catch (NullPointerException ex) {
             return "-";
         }

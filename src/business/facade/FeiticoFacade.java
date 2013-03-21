@@ -6,7 +6,7 @@ package business.facade;
 
 import java.io.Serializable;
 import model.Feitico;
-import msgs.Msgs;
+import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
@@ -23,7 +23,7 @@ public class FeiticoFacade implements Serializable {
 
     public String getDificuldadeDisplay(Feitico feitico) {
         try {
-            return Msgs.dificuldade[feitico.getDificuldade()];
+            return BaseMsgs.dificuldade[feitico.getDificuldade()];
         } catch (NullPointerException ex) {
             return "-";
         }

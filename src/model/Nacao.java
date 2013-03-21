@@ -5,6 +5,7 @@
 package model;
 
 import baseLib.BaseModel;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -22,6 +23,7 @@ public class Nacao extends BaseModel {
     private Cidade capital;
     private Jogador jogador;
     private Raca raca;
+    private Color fillColor, borderColor;
     private Extrato extrato = new Extrato();
     private List<Cidade> cidades = new ArrayList();
     private List<Personagem> personagens = new ArrayList();
@@ -179,5 +181,21 @@ public class Nacao extends BaseModel {
      */
     public void setAtiva(boolean ativa) {
         this.ativa = ativa;
+    }
+
+    public Color getFillColor() {
+        return fillColor;
+    }
+
+    public void setFillColor(Color fill) {
+        this.fillColor = fill;
+    }
+
+    public Color getBorderColor() {
+        return borderColor;
+    }
+
+    public void setBorderColor(Color border) {
+        this.borderColor = border;
     }
 }
