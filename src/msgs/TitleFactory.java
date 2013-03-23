@@ -131,7 +131,7 @@ public class TitleFactory implements Serializable {
         }
         if (requisitos.contains("cpv")) {
             //nao pode estar sitiado
-            ret += separator + labels.getString("REQUISITO.AJUDA.CPP");
+            ret += separator + labels.getString("REQUISITO.AJUDA.CPV");
         }
         if (requisitos.contains("cppr")) {
             ret += separator + labels.getString("REQUISITO.AJUDA.CPPR");
