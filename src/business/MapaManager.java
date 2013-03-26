@@ -62,20 +62,7 @@ public class MapaManager implements Serializable {
     private void carregaDesenhosDisponiveis() {
         log.debug("Carregando: Desenhos...");
         Image desenho = null;
-        String[] terrenos = {"vazio", "mar", "costa", "litoral", "floresta", "planicie",
-            "montanha", "colinas", "pantano", "deserto"
-        };
-        desenhoTerrenos = new Image[terrenos.length];
-        for (int ii = 0; ii < terrenos.length; ii++) {
-            //FIXME: Buscar imagens de um JAR. colocar imagens num jar em separado, para facilitar downloads.
-            if (SysProperties.getProps("MapTiles", "2d").equalsIgnoreCase("3d")) {
-                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".png"));
-            } else {
-                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".gif"));
-            }
-            imageFactory.addImage(desenho);
-            this.desenhoTerrenos[ii] = desenho;
-        }
+        carregaTerrenos();
 
         String[] detalhesTerreno = {
             "ponte_no", "ponte_ne", "ponte_l", "ponte_se", "ponte_so", "ponte_o",
@@ -318,11 +305,7 @@ public class MapaManager implements Serializable {
         big.clearRect(0, 0, farPoint.x, farPoint.y);
         big.setColor(Color.BLACK);
         big.setFont(new Font("Verdana", Font.PLAIN, 10));
-
-        //inicia o desenho. Lista todos os Hexagonos e imprime.
-        Iterator listaLocais = listaLocal.iterator();
-        while (listaLocais.hasNext()) {
-            Local local = (Local) listaLocais.next();
+        for (Local local : listaLocal) {
             printHex(big, local, observer);
         }
         big.dispose(); //libera memoria
@@ -657,5 +640,41 @@ public class MapaManager implements Serializable {
         }
         Local ret = locais.get(SysApoio.pointToCoord(col + 1, row + 1));
         return ret;
+    }
+
+    private void carregaTerrenos() {
+        Image desenho = null;
+        String[] terrenos = {"vazio", "mar", "costa", "litoral", "floresta", "planicie",
+            "montanha", "colinas", "pantano", "deserto"
+        };
+        desenhoTerrenos = new Image[terrenos.length];
+        for (int ii = 0; ii < terrenos.length; ii++) {
+            //FIXME: Buscar imagens de um JAR. colocar imagens num jar em separado, para facilitar downloads.
+            if (terrenos[ii].equals("mar") && !SysProperties.getProps("ImagemMar", "-").equals("-")) {
+                desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemMar", "-"));
+            } else if (terrenos[ii].equals("costa") && !SysProperties.getProps("ImagemCosta", "-").equals("-")) {
+                desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemCosta", "-"));
+            } else if (terrenos[ii].equals("litoral") && !SysProperties.getProps("ImagemLitoral", "-").equals("-")) {
+                desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemLitoral", "-"));
+            } else if (terrenos[ii].equals("floresta") && !SysProperties.getProps("ImagemFloresta", "-").equals("-")) {
+                desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemFloresta", "-"));
+            } else if (terrenos[ii].equals("planicie") && !SysProperties.getProps("ImagemPlanicie", "-").equals("-")) {
+                desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemPlanicie", "-"));
+            } else if (terrenos[ii].equals("montanha") && !SysProperties.getProps("ImagemMontanha", "-").equals("-")) {
+                desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemMontanha", "-"));
+            } else if (terrenos[ii].equals("colinas") && !SysProperties.getProps("ImagemColinas", "-").equals("-")) {
+                desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemColinas", "-"));
+            } else if (terrenos[ii].equals("pantano") && !SysProperties.getProps("ImagemPantano", "-").equals("-")) {
+                desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemPantano", "-"));
+            } else if (terrenos[ii].equals("deserto") && !SysProperties.getProps("ImagemDeserto", "-").equals("-")) {
+                desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemDeserto", "-"));
+            } else if (SysProperties.getProps("MapTiles", "2d").equalsIgnoreCase("3d")) {
+                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".png"));
+            } else {
+                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".gif"));
+            }
+            imageFactory.addImage(desenho);
+            this.desenhoTerrenos[ii] = desenho;
+        }
     }
 }
