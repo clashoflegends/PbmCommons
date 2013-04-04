@@ -44,15 +44,15 @@ public class SysBanco {
     private static void criaConn() {
         try {
             log.info("Conectando ao banco de dados:" + SysProperties.getProps("bdDatabase"));
-            Class.forName("com.mysql.jdbc.Driver");
-            String conexao = "jdbc:mysql://localhost:3306/" + SysProperties.getProps("bdDatabase");
-            setConn(DriverManager.getConnection(conexao, SysProperties.getProps("bdLogin"),SysProperties.getProps("bdSenha")));
+//            Class.forName("com.mysql.jdbc.Driver");
+            String conexao = "jdbc:mysql://localhost/" + SysProperties.getProps("bdDatabase");
+            setConn(DriverManager.getConnection(conexao, SysProperties.getProps("bdLogin"), SysProperties.getProps("bdSenha")));
         } catch (SQLException e) {
             log.error("Banco fora do ar.", e);
             throw new UnsupportedOperationException("Banco fora do ar.");
-        } catch (ClassNotFoundException e) {
-            log.error("texto: ClassNotFoundException....", e);
-            throw new UnsupportedOperationException("Para tudo que nao ta indo bem.");
+//        } catch (ClassNotFoundException e) {
+//            log.error("texto: ClassNotFoundException....", e);
+//            throw new UnsupportedOperationException("Para tudo que nao ta indo bem.");
         }
     }
 
