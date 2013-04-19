@@ -95,21 +95,38 @@ public class ImageFactory implements Serializable {
     private String[] getExercitoStrings(boolean all) {
         if (all) {
             return new String[]{"neutral.png", "KingsCourt.gif", "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
-                        "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
-                        "NightsWatch.png", "FreeCities.png", "Wildlings.png", "neutral2.png", "neutral3.png",
-                        "Esparta.gif", "Atenas.gif", "Macedonia.gif", "Persia.gif",
-                        "Tracia.gif", "Milletus.gif", "Illyria.gif", "Epirus.gif",
-                        "Twainek.gif", "Frusodian.gif"
-                    };
+                "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
+                "NightsWatch.png",
+                "Bolton.gif",
+                "Yronwood.gif",
+                "Stormend.gif",
+                "Frey.gif",
+                "Hightower.gif",
+                "Volantis.gif",
+                "Pentos.gif",
+                "Braavos.png",
+                "FreeCities.png", "Wildlings.png", "neutral2.png", "neutral3.png",
+                "Esparta.gif", "Atenas.gif", "Macedonia.gif", "Persia.gif",
+                "Tracia.gif", "Milletus.gif", "Illyria.gif", "Epirus.gif",
+                "Twainek.gif", "Frusodian.gif"
+            };
         } else if (cenario.isGrecia()) {
             return new String[]{"neutral.png", "Esparta.gif", "Atenas.gif", "Macedonia.gif", "Persia.gif",
-                        "Tracia.gif", "Milletus.gif", "Illyria.gif", "Epirus.gif"};
+                "Tracia.gif", "Milletus.gif", "Illyria.gif", "Epirus.gif"};
         } else if (cenario.isArzhog()) {
             return new String[]{"neutral.png", "Twainek.gif", "Frusodian.gif"};
         } else if (cenario.isGot()) {
             return new String[]{"neutral.png", "KingsCourt.gif", "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
-                        "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
-                        "NightsWatch.png", "FreeCities.png", "Wildlings.png", "neutral2.png", "neutral3.png"};
+                "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
+                "NightsWatch.png", "FreeCities.png", "Wildlings.png", "neutral2.png", "neutral3.png",
+                "Bolton.gif",
+                "Yronwood.gif",
+                "Stormend.gif",
+                "Frey.gif",
+                "Hightower.gif",
+                "Volantis.gif",
+                "Pentos.gif"
+            };
         } else {
             return new String[]{"Neutro.gif"};
         }

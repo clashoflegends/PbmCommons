@@ -171,9 +171,7 @@ public class PersonagemFacade implements Serializable {
         SortedMap<Integer, PersonagemFeitico> smRet = new TreeMap();
         //PersonagemFeitico[] ret = null;
         if (personagem.isMago()) {
-            Iterator lista = personagem.getFeiticos().values().iterator();
-            while (lista.hasNext()) {
-                PersonagemFeitico magia = (PersonagemFeitico) lista.next();
+            for (PersonagemFeitico magia : personagem.getFeiticos().values()) {
                 try {
                     if (magia.getFeitico().getOrdem() == ordem) {
                         smRet.put(magia.getFeitico().getNumero(), magia);
@@ -273,9 +271,7 @@ public class PersonagemFacade implements Serializable {
             ret.addAll(personagem.getLocal().getPersonagens().values());
             ret.remove(personagem);
         } else if (tipo == 1) {
-            Iterator lista = personagem.getLocal().getPersonagens().values().iterator();
-            while (lista.hasNext()) {
-                Personagem pers = (Personagem) lista.next();
+            for (Personagem pers : personagem.getLocal().getPersonagens().values()) {
                 if (personagem != pers && personagem.getNacao() == pers.getNacao()) {
                     ret.add(pers);
                 }
@@ -286,9 +282,7 @@ public class PersonagemFacade implements Serializable {
             ret.removeAll(personagem.getNacao().getPersonagens());
             ret.remove(personagem);
         } else if (tipo == 3) {
-            Iterator lista = personagem.getLocal().getPersonagens().values().iterator();
-            while (lista.hasNext()) {
-                Personagem pers = (Personagem) lista.next();
+            for (Personagem pers : personagem.getLocal().getPersonagens().values()) {
                 if (pers.isComandante()) {
                     ret.add(pers);
                 }

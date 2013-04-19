@@ -95,9 +95,7 @@ public class Cenario extends BaseModel {
 
     public void setProdutos(SortedMap<String, Produto> produtos) {
         this.produtos = produtos;
-        Iterator lista = this.produtos.values().iterator();
-        while (lista.hasNext()) {
-            Produto produto = (Produto) lista.next();
+        for (Produto produto : this.produtos.values()) {
             if (produto.isMoney()) {
                 this.setMoney(produto);
             }

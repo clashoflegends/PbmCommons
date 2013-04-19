@@ -249,16 +249,20 @@ public class ExercitoFacade implements Serializable {
     }
 
     public float getPesoPelotao(Pelotao pelotao) {
-        if (pelotao.getTipoTropa().hasHabilidade(";TTT;")) {
+        return getPesoPelotao(pelotao.getTipoTropa(), pelotao.getQtd());
+    }
+
+    public float getPesoPelotao(TipoTropa tropa, int qtd) {
+        if (tropa.hasHabilidade(";TTT;")) {
             //conta capacidade de carga
             //capacidade += pelotao.getQtd() * SHIP_CAPACITY;
-        } else if (pelotao.getTipoTropa().isBarcos()) {
+        } else if (tropa.isBarcos()) {
             //nao conta outros navios...
-        } else if (pelotao.getTipoTropa().hasHabilidade(";TT2;")) {
+        } else if (tropa.hasHabilidade(";TT2;")) {
             //se cavalaria, conta dobrado
-            return pelotao.getQtd() * 2f;
+            return qtd * 2f;
         } else {
-            return pelotao.getQtd();
+            return qtd;
         }
         return 0;
     }
