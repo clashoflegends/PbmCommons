@@ -129,9 +129,7 @@ public class CidadeFacade implements Serializable {
         List listaPresencas = new ArrayList();
         //lista personagems
         try {
-            Iterator lista = cidade.getLocal().getPersonagens().values().iterator();
-            while (lista.hasNext()) {
-                Personagem personagem = (Personagem) lista.next();
+            for (Personagem personagem : cidade.getLocal().getPersonagens().values()) {
                 if (personagemFacade.isComandaExercito(personagem)) {
                     listaPresencas.add(personagem.getExercito());
                 } else {

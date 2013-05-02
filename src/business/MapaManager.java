@@ -504,61 +504,14 @@ public class MapaManager implements Serializable {
             y += img.getWidth(form) + gap;
         }
 
-
-        //exercito
-        x += 250;
-        y = 50;
-        legendas = new String[]{
-            "DB.NACAO.NOME.NONE",
-            "DB.NACAO.NOME.KINGSCOURT",
-            "DB.NACAO.NOME.ARRYN",
-            "DB.NACAO.NOME.BARATHEON",
-            "DB.NACAO.NOME.GREYJOY",
-            "DB.NACAO.NOME.LANNISTER",
-            "DB.NACAO.NOME.MARTELL",
-            "DB.NACAO.NOME.STARK",
-            "DB.NACAO.NOME.TARGARYEN",
-            "DB.NACAO.NOME.TULLY",
-            "DB.NACAO.NOME.TYRELL",
-            "DB.NACAO.NOME.NIGHTWATCH",
-            "DB.NACAO.NOME.BOLTON",
-            "DB.NACAO.NOME.YRONWOOD",
-            "DB.NACAO.NOME.STORMEND",
-            "DB.NACAO.NOME.FREY",
-            "DB.NACAO.NOME.HIGHTOWER",
-            "DB.NACAO.NOME.VOLANTIS",
-            "DB.NACAO.NOME.PENTOS",
-            "DB.NACAO.NOME.BRAAVOS",
-            "DB.NACAO.NOME.FREECITIES",
-            "DB.NACAO.NOME.WILDLINGS",
-            "DB.NACAO.NOME.NEUTRAL1",
-            "DB.NACAO.NOME.WHITEWALKERS",
-            "DB.NACAO.NOME.ESPARTA",
-            "DB.NACAO.NOME.ATENAS",
-            "DB.NACAO.NOME.MACEDONIA",
-            "DB.NACAO.NOME.PERSIA",
-            "DB.NACAO.NOME.TRACIA",
-            "DB.NACAO.NOME.MILLETUS",
-            "DB.NACAO.NOME.ILLYRIA",
-            "DB.NACAO.NOME.EPIRUS",
-            "DB.NACAO.NOME.TWAINEK",
-            "DB.NACAO.NOME.FRUSODIAN"
-        };
-        legendaCounter = 0;
-        for (Image img : imageFactory.getExercitosAll()) {
-            big.drawImage(img, x, y, form);
-            big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + img.getWidth(form), y + 2 + img.getHeight(form) / 2);
-            y += img.getWidth(form) + gap;
-        }
-
         //detalhes
         x += 250;
         y = 50;
+        legendaCounter = 0;
         legendas = new String[]{
             "EXERCITO.RASTRO",
             "PERSONAGEM", "PERSONAGEM.OUTRA.NACAO", "PERSONAGEM.NPC", "DB.ORDEM.PARAMETRO.ARTEFATO", "ZONA.ECONOMICA", "NAVIOS.PRESENTES"
         };
-        legendaCounter = 0;
         //imprime rastro do exercito
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         big.setStroke(new BasicStroke(
@@ -609,6 +562,57 @@ public class MapaManager implements Serializable {
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
+
+        int breakLine = legendaCounter;
+
+        //exercito
+        legendas = new String[]{
+            "DB.NACAO.NOME.NONE",
+            "DB.NACAO.NOME.KINGSCOURT",
+            "DB.NACAO.NOME.KINGSCOURT",
+            "DB.NACAO.NOME.ARRYN",
+            "DB.NACAO.NOME.BARATHEON",
+            "DB.NACAO.NOME.GREYJOY",
+            "DB.NACAO.NOME.LANNISTER",
+            "DB.NACAO.NOME.MARTELL",
+            "DB.NACAO.NOME.STARK",
+            "DB.NACAO.NOME.TARGARYEN",
+            "DB.NACAO.NOME.TULLY",
+            "DB.NACAO.NOME.TYRELL",
+            "DB.NACAO.NOME.NIGHTWATCH",
+            "DB.NACAO.NOME.BOLTON",
+            "DB.NACAO.NOME.YRONWOOD",
+            "DB.NACAO.NOME.STORMEND",
+            "DB.NACAO.NOME.FREY",
+            "DB.NACAO.NOME.HIGHTOWER",
+            "DB.NACAO.NOME.VOLANTIS",
+            "DB.NACAO.NOME.PENTOS",
+            "DB.NACAO.NOME.BRAAVOS",
+            "DB.NACAO.NOME.FREECITIES",
+            "DB.NACAO.NOME.WILDLINGS",
+            "DB.NACAO.NOME.NEUTRAL1",
+            "DB.NACAO.NOME.WHITEWALKERS",
+            "DB.NACAO.NOME.ESPARTA",
+            "DB.NACAO.NOME.ATENAS",
+            "DB.NACAO.NOME.MACEDONIA",
+            "DB.NACAO.NOME.PERSIA",
+            "DB.NACAO.NOME.TRACIA",
+            "DB.NACAO.NOME.MILLETUS",
+            "DB.NACAO.NOME.ILLYRIA",
+            "DB.NACAO.NOME.EPIRUS",
+            "DB.NACAO.NOME.TWAINEK",
+            "DB.NACAO.NOME.FRUSODIAN"
+        };
+        legendaCounter = 0;
+        for (Image img : imageFactory.getExercitosAll()) {
+            if (legendaCounter + breakLine == 28) {
+                x += 250;
+                y = 50;
+            }
+            big.drawImage(img, x, y, form);
+            big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + img.getWidth(form), y + 2 + img.getHeight(form) / 2);
+            y += img.getWidth(form) + gap;
+        }
 
         //finaliza
         big.dispose();

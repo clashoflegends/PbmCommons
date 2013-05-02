@@ -94,16 +94,17 @@ public class ImageFactory implements Serializable {
 
     private String[] getExercitoStrings(boolean all) {
         if (all) {
-            return new String[]{"neutral.png", "KingsCourt.gif", "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
+            return new String[]{"neutral.png", "KingsCourt.gif", "Jofrey.png", 
+                "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
                 "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
                 "NightsWatch.png",
-                "Bolton.gif",
-                "Yronwood.gif",
-                "Stormend.gif",
-                "Frey.gif",
+                "Bolton.png",
+                "Yronwood.png",
+                "Stannis.gif",
+                "Frey.png",
                 "Hightower.gif",
-                "Volantis.gif",
-                "Pentos.gif",
+                "Volantis.png",
+                "Pentos.png",
                 "Braavos.png",
                 "FreeCities.png", "Wildlings.png", "neutral2.png", "neutral3.png",
                 "Esparta.gif", "Atenas.gif", "Macedonia.gif", "Persia.gif",
@@ -119,13 +120,14 @@ public class ImageFactory implements Serializable {
             return new String[]{"neutral.png", "KingsCourt.gif", "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
                 "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
                 "NightsWatch.png", "FreeCities.png", "Wildlings.png", "neutral2.png", "neutral3.png",
-                "Bolton.gif",
-                "Yronwood.gif",
-                "Stormend.gif",
-                "Frey.gif",
+                "Bolton.png",
+                "Yronwood.png",
+                "Stannis.gif",
+                "Frey.png",
                 "Hightower.gif",
-                "Volantis.gif",
-                "Pentos.gif"
+                "Volantis.png",
+                "Pentos.png",
+                "Jofrey.png"
             };
         } else {
             return new String[]{"Neutro.gif"};
@@ -152,6 +154,8 @@ public class ImageFactory implements Serializable {
     public void waitForAll() {
         try {
             mt.waitForAll();
+        } catch (NullPointerException e) {
+            log.error("problema na carga de imagens:", e);
         } catch (InterruptedException e) {
             log.error("problema na carga de imagens:", e);
         }
