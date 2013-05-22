@@ -140,6 +140,10 @@ public class TipoTropa extends BaseModel {
         return this.hasHabilidade(";TTN;");
     }
 
+    public boolean isAuctionable() {
+        return this.hasHabilidade(";LNA;");
+    }
+
     public boolean isTransferable() {
         return this.hasHabilidade(";TNN;");
     }
