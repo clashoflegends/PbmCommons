@@ -141,7 +141,7 @@ public class TipoTropa extends BaseModel {
     }
 
     public boolean isAuctionable() {
-        return this.hasHabilidade(";LNA;");
+        return !this.hasHabilidade(";LNA;");
     }
 
     public boolean isEncounterTrigger() {
