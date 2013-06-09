@@ -34,7 +34,7 @@ public class SysProperties implements Serializable {
             //            + "doneDir = server side use, no effect on the Counselor\n"
             //            + "local = server side use, no effect on the Counselor\n"
             //            + "database = server side use, no effect on the Counselor\n"
-            + "language = pt/en, to define the GUI language\n"
+            + "language = en/pt/it, to define the GUI language\n"
             + "splitSize = 300, define the size of the left side screen split.\n"
             + "CopyActionsPopUp = 0|1 -> Yes|No, displays a popup when copying Actions to clipboard.\n"
             + "CopyActionsOrder = 0|1 -> execution|alphabeticaly, selects the order the commands will appear.\n"
