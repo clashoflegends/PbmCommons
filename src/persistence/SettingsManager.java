@@ -23,6 +23,7 @@ public class SettingsManager implements Serializable {
     private BundleManager bundleManager;
     private static final Log log = LogFactory.getLog(SettingsManager.class);
     private boolean worldBuilder = false;
+    private boolean portrait = false;
     private boolean radialMenu = false;
 
     private SettingsManager() {
@@ -76,11 +77,14 @@ public class SettingsManager implements Serializable {
     }
 
     public void setLanguage(String lng) {
-        if (lng.equalsIgnoreCase("en")) {
-            SettingsManager.getInstance().locale = new Locale("en");
-        } else {
+        if (lng.equalsIgnoreCase("pt")) {
             SettingsManager.getInstance().locale = new Locale("pt");
+        } else if (lng.equalsIgnoreCase("it")) {
+            SettingsManager.getInstance().locale = new Locale("it");
+        } else {
+            SettingsManager.getInstance().locale = new Locale("en");
         }
+
         Locale.setDefault(SettingsManager.getInstance().locale);
 //        log.info("Novo local:" + SettingsManager.getInstance().locale);
     }
@@ -108,5 +112,19 @@ public class SettingsManager implements Serializable {
      */
     public void setRadialMenu(boolean radialMenu) {
         this.radialMenu = radialMenu;
+    }
+
+    /**
+     * @return the portrait
+     */
+    public boolean isPortrait() {
+        return portrait;
+    }
+
+    /**
+     * @param portrait the portrait to set
+     */
+    public void setPortrait(boolean portrait) {
+        this.portrait = portrait;
     }
 }
