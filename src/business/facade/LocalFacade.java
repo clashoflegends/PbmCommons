@@ -7,6 +7,7 @@ package business.facade;
 import baseLib.SysApoio;
 import business.converter.ConverterFactory;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import model.*;
@@ -92,7 +93,8 @@ public class LocalFacade implements Serializable {
     }
 
     /**
-     * Deve ser utilizado quando importa o observador, no caso, se cidade é oculta.
+     * Deve ser utilizado quando importa o observador, no caso, se cidade é
+     * oculta.
      *
      * @param local
      * @param observer
@@ -110,7 +112,8 @@ public class LocalFacade implements Serializable {
     }
 
     /**
-     * Este deve ser usado para verificar a existencia da cidade, sem importar se é oculta.
+     * Este deve ser usado para verificar a existencia da cidade, sem importar
+     * se é oculta.
      *
      * @param local
      * @return
@@ -268,6 +271,21 @@ public class LocalFacade implements Serializable {
             int colDestino = this.getCol(destino);
             return SysApoio.getDistancia(colOrigem, colDestino, rowOrigem, rowDestino);
         }
+    }
+
+    public HashMap<Local, Integer> getLocalRange(Local local, int range, boolean borderOnly, SortedMap<String, Local> listLocais) {
+        HashMap<Local, Integer> list = new HashMap<Local, Integer>();
+        for (Local target : listLocais.values()) {
+            final int distancia = getDistancia(local, target);
+            if (borderOnly && distancia == range) {
+                //no filling, border only
+                list.put(target, distancia);
+            } else if ( distancia <= range) {
+                //with filling
+                list.put(target, distancia);
+            }
+        }
+        return list;
     }
 
     public boolean isAgua(Local local) {
