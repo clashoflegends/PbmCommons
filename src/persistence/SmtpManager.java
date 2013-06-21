@@ -4,11 +4,11 @@
  */
 package persistence;
 
+import baseLib.SysProperties;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -78,7 +78,7 @@ public class SmtpManager implements Serializable {
         Authenticator authenticator = null;
         Properties props = System.getProperties();
         props.put("mail.smtp.host", getHostSmtp());
-        props.put("mail." + protocol + ".auth", "true");
+        props.put("mail." + getProtocol() + ".auth", "true");
         if (isGmail()) {
             setFrom("clashoflegends.thegame@gmail.com");
             props.put("mail.smtp.port", "587");
@@ -86,7 +86,7 @@ public class SmtpManager implements Serializable {
             authenticator = new javax.mail.Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(loginNameSmtp, pwdSmtp);
+                    return new PasswordAuthentication(getLoginNameSmtp(), getPwdSmtp());
                 }
             };
         }
@@ -95,7 +95,7 @@ public class SmtpManager implements Serializable {
         return session != null;
     }
 
-    public boolean createMsg() throws PersistenceException {
+    private boolean createMsg() throws PersistenceException {
         boolean ret = false;
         try {
             // create a message
@@ -161,7 +161,7 @@ public class SmtpManager implements Serializable {
         // send the message
         try {
 
-            transport = session.getTransport(protocol);
+            transport = session.getTransport(getProtocol());
             transport.connect(getLoginNameSmtp(), getPwdSmtp());
             transport.sendMessage(msg, msg.getAllRecipients());
             clear();
@@ -204,25 +204,15 @@ public class SmtpManager implements Serializable {
         return ret;
     }
 
-    public boolean sendOld() throws PersistenceException {
+    public boolean sendCounselor() throws PersistenceException {
         boolean ret = false;
         try {
+            doLoadSmtpProperties();
             // create some properties and get the default Session
             Authenticator authenticator = null;
             Properties props = System.getProperties();
             props.put("mail.smtp.host", getHostSmtp());
-            props.put("mail." + protocol + ".auth", "true");
-            if (isGmail()) {
-                setFrom("clashoflegends.thegame@gmail.com");
-                props.put("mail.smtp.port", "587");
-                props.put("mail.smtp.starttls.enable", "true");
-                authenticator = new javax.mail.Authenticator() {
-                    @Override
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(loginNameSmtp, pwdSmtp);
-                    }
-                };
-            }
+            props.put("mail." + getProtocol() + ".auth", "true");
             session = Session.getInstance(props, authenticator);
             session.setDebug(mailDebug);
         } catch (NullPointerException ex) {
@@ -271,7 +261,7 @@ public class SmtpManager implements Serializable {
             msg.setSentDate(new Date());
 
             // send the message
-            transport = session.getTransport(protocol);
+            transport = session.getTransport(getProtocol());
             try {
                 transport.connect(getLoginNameSmtp(), getPwdSmtp());
                 transport.sendMessage(msg, msg.getAllRecipients());
@@ -438,5 +428,27 @@ public class SmtpManager implements Serializable {
      */
     public void setGmail(boolean isGmail) {
         this.gmail = isGmail;
+    }
+
+    private void doLoadSmtpProperties() {
+        if(SysProperties.isSet("mail.smtp.server")){
+            setHostSmtp(SysProperties.getProps("mail.smtp.server"));
+            setLoginNameSmtp(SysProperties.getProps("mail.smtp.user"));
+            setPwdSmtp(SysProperties.getProps("mail.smtp.passwd"));
+        }
+    }
+
+    /**
+     * @return the protocol
+     */
+    public String getProtocol() {
+        return protocol;
+    }
+
+    /**
+     * @param protocol the protocol to set
+     */
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 }

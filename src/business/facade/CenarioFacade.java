@@ -94,6 +94,10 @@ public class CenarioFacade implements Serializable {
         return cenario.getTaticas();
     }
 
+    public Collection<TipoTropa> getTipoTropas(Cenario cenario) {
+        return cenario.getTipoTropas().values();
+    }
+
     public Collection<TipoTropa> getTipoTropas(Cenario cenario, Raca racaCidade, Raca racaPersonagem) {
         Set<TipoTropa> tropas = new TreeSet<TipoTropa>();
         if (racaCidade == racaPersonagem) {
@@ -122,9 +126,7 @@ public class CenarioFacade implements Serializable {
     private List getProdutosArmor(Cenario cenario) {
         List<Produto> ret = new ArrayList();
         ret.add(this.getProdutoArmorDefault());
-        Iterator lista = cenario.getProdutos().values().iterator();
-        while (lista.hasNext()) {
-            Produto produto = (Produto) lista.next();
+        for (Produto produto : cenario.getProdutos().values()) {
             if (produto.isArmor()) {
                 ret.add(produto);
             }
@@ -135,9 +137,7 @@ public class CenarioFacade implements Serializable {
     private List getProdutosWeapon(Cenario cenario) {
         List ret = new ArrayList();
         ret.add(this.getProdutoWeaponDefault());
-        Iterator lista = cenario.getProdutos().values().iterator();
-        while (lista.hasNext()) {
-            Produto produto = (Produto) lista.next();
+        for (Produto produto : cenario.getProdutos().values()) {
             if (produto.isWeapon()) {
                 ret.add(produto);
             }
