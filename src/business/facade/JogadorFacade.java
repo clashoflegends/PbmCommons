@@ -28,6 +28,8 @@ public class JogadorFacade implements Serializable {
             return false;
         }
     }
-//    public List findByCriteria(Jogador , ... ){
-//    }
+
+    public boolean isReportCompact(Jogador jogador) {
+        return jogador.hasHabilidade(";JRC;");
+    }
 }
