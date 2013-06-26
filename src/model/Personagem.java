@@ -23,6 +23,7 @@ public class Personagem extends BaseModel {
     private int periciaFurtividade = 0, periciaFurtividadeNatural = 0;
     private boolean refem = false, npc = false;
     private String resultados = "";
+    private String portraiFilename = "";
     private Local local;
     private Local localOrigem;
     private Exercito exercito = null;
@@ -495,5 +496,19 @@ public class Personagem extends BaseModel {
      */
     public void setOrdensExtraQt(int extraOrdens) {
         this.ordensExtraQt = extraOrdens;
+    }
+
+    /**
+     * @return the portraiFilename
+     */
+    public String getPortraiFilename() {
+        return portraiFilename;
+    }
+
+    /**
+     * @param portraiFilename the portraiFilename to set
+     */
+    public void setPortraiFilename(String portraiFilename) {
+        this.portraiFilename = portraiFilename;
     }
 }

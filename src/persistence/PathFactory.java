@@ -48,6 +48,10 @@ public class PathFactory implements Serializable {
                 partida.getCodigo());
     }
 
+    public static String getPortraitDirName() {
+        return SettingsManager.getInstance().getSaveDir() + "images/Pers/";
+    }
+
     public static ExtensionFileFilter getFilterAcoes() {
         return new ExtensionFileFilter(label.getString("FILTRO.ACOES"), "rc.egf", "");
     }
