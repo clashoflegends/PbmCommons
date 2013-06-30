@@ -130,20 +130,21 @@ public class Local extends BaseModel implements Cloneable {
 
     /*
      * ProduçAo alterada pelo clima e demais fatores.<br> Producao natural
-     * (original) deve ser utilizado o metodo getProducaoBase()
+     * (original) deve ser utilizado o metodo getProducaoNatural()
      */
-    public int getProducao(Produto produto) {
+    public int getProducaoClima(Produto produto) {
         try {
-            int ret = (Integer) producao.get(produto);
-            ret = ret * this.getProducaoClima(this.getClima(), produto);
-            ret = ret / 100;
-            return ret;
+            return producao.get(produto) * this.getProducaoClimaFactor(produto) / 100;
         } catch (NullPointerException ex) {
             return 0;
         }
     }
 
-    public void addProducao(Produto produto, int qtd) {
+    public int getProducaoNatural(Produto produto) {
+        return producao.get(produto);
+    }
+
+    public void setProducao(Produto produto, int qtd) {
         this.producao.put(produto, qtd);
     }
 
@@ -215,7 +216,87 @@ public class Local extends BaseModel implements Cloneable {
         this.indiceArtefato.remove(artefato.getCodigo());
     }
 
-    private int getProducaoClima(int clima, Produto produto) {
+//    private int getProducaoClimaOld( Produto produto) {
+//        // PENDING: mover para o banco de dados.
+//        int[][] producaoClima = new int[8][8];
+//        producaoClima[0][0] = 0;
+//        producaoClima[0][1] = 0;
+//        producaoClima[0][2] = 0;
+//        producaoClima[0][3] = 0;
+//        producaoClima[0][4] = 0;
+//        producaoClima[0][5] = 0;
+//        producaoClima[0][6] = 0;
+//        producaoClima[0][7] = 0;
+//        producaoClima[1][0] = 10;
+//        producaoClima[1][1] = 30;
+//        producaoClima[1][2] = 30;
+//        producaoClima[1][3] = 30;
+//        producaoClima[1][4] = 10;
+//        producaoClima[1][5] = 10;
+//        producaoClima[1][6] = 10;
+//        producaoClima[1][7] = 30;
+//        producaoClima[2][0] = 20;
+//        producaoClima[2][1] = 40;
+//        producaoClima[2][2] = 40;
+//        producaoClima[2][3] = 40;
+//        producaoClima[2][4] = 20;
+//        producaoClima[2][5] = 20;
+//        producaoClima[2][6] = 20;
+//        producaoClima[2][7] = 40;
+//        producaoClima[3][0] = 30;
+//        producaoClima[3][1] = 60;
+//        producaoClima[3][2] = 60;
+//        producaoClima[3][3] = 60;
+//        producaoClima[3][4] = 30;
+//        producaoClima[3][5] = 30;
+//        producaoClima[3][6] = 30;
+//        producaoClima[3][7] = 60;
+//        producaoClima[4][0] = 80;
+//        producaoClima[4][1] = 100;
+//        producaoClima[4][2] = 100;
+//        producaoClima[4][3] = 100;
+//        producaoClima[4][4] = 80;
+//        producaoClima[4][5] = 80;
+//        producaoClima[4][6] = 80;
+//        producaoClima[4][7] = 100;
+//        producaoClima[5][0] = 90;
+//        producaoClima[5][1] = 100;
+//        producaoClima[5][2] = 100;
+//        producaoClima[5][3] = 100;
+//        producaoClima[5][4] = 90;
+//        producaoClima[5][5] = 90;
+//        producaoClima[5][6] = 90;
+//        producaoClima[5][7] = 100;
+//        producaoClima[6][0] = 100;
+//        producaoClima[6][1] = 100;
+//        producaoClima[6][2] = 100;
+//        producaoClima[6][3] = 100;
+//        producaoClima[6][4] = 100;
+//        producaoClima[6][5] = 100;
+//        producaoClima[6][6] = 100;
+//        producaoClima[6][7] = 100;
+//        producaoClima[7][0] = 80;
+//        producaoClima[7][1] = 80;
+//        producaoClima[7][2] = 80;
+//        producaoClima[7][3] = 80;
+//        producaoClima[7][4] = 80;
+//        producaoClima[7][5] = 80;
+//        producaoClima[7][6] = 80;
+//        producaoClima[7][7] = 80;
+//        return producaoClima[clima][produto.getId()];
+//    }
+    /**
+     * outra coisa, um dia, colocar no banco de dados
+     */
+//    private void getProducaoClima(int clima, Produto produto) {
+//        //YYY: clean up
+//        if (this.getIdPartida() >= 122 || this.getIdPartida() == 119) {
+//            getProducaoClimaNew();
+//        } else {
+//            getProducaoClimaOld();
+//        }
+//    }
+    private int getProducaoClimaFactor(Produto produto) {
         // PENDING: mover para o banco de dados.
         int[][] producaoClima = new int[8][8];
         producaoClima[0][0] = 0;
@@ -226,63 +307,70 @@ public class Local extends BaseModel implements Cloneable {
         producaoClima[0][5] = 0;
         producaoClima[0][6] = 0;
         producaoClima[0][7] = 0;
+
         producaoClima[1][0] = 10;
         producaoClima[1][1] = 30;
         producaoClima[1][2] = 30;
         producaoClima[1][3] = 30;
         producaoClima[1][4] = 10;
-        producaoClima[1][5] = 10;
+        producaoClima[1][5] = 40;
         producaoClima[1][6] = 10;
         producaoClima[1][7] = 30;
-        producaoClima[2][0] = 20;
-        producaoClima[2][1] = 40;
-        producaoClima[2][2] = 40;
-        producaoClima[2][3] = 40;
-        producaoClima[2][4] = 20;
-        producaoClima[2][5] = 20;
-        producaoClima[2][6] = 20;
-        producaoClima[2][7] = 40;
-        producaoClima[3][0] = 30;
-        producaoClima[3][1] = 60;
-        producaoClima[3][2] = 60;
-        producaoClima[3][3] = 60;
-        producaoClima[3][4] = 30;
-        producaoClima[3][5] = 30;
-        producaoClima[3][6] = 30;
-        producaoClima[3][7] = 60;
+
+        producaoClima[2][0] = 40;
+        producaoClima[2][1] = 70;
+        producaoClima[2][2] = 70;
+        producaoClima[2][3] = 70;
+        producaoClima[2][4] = 60;
+        producaoClima[2][5] = 100;
+        producaoClima[2][6] = 40;
+        producaoClima[2][7] = 60;
+
+        producaoClima[3][0] = 60;
+        producaoClima[3][1] = 100;
+        producaoClima[3][2] = 100;
+        producaoClima[3][3] = 100;
+        producaoClima[3][4] = 60;
+        producaoClima[3][5] = 120;
+        producaoClima[3][6] = 60;
+        producaoClima[3][7] = 100;
+
         producaoClima[4][0] = 80;
         producaoClima[4][1] = 100;
         producaoClima[4][2] = 100;
         producaoClima[4][3] = 100;
         producaoClima[4][4] = 80;
-        producaoClima[4][5] = 80;
+        producaoClima[4][5] = 100;
         producaoClima[4][6] = 80;
         producaoClima[4][7] = 100;
+
         producaoClima[5][0] = 90;
-        producaoClima[5][1] = 100;
-        producaoClima[5][2] = 100;
-        producaoClima[5][3] = 100;
+        producaoClima[5][1] = 90;
+        producaoClima[5][2] = 90;
+        producaoClima[5][3] = 90;
         producaoClima[5][4] = 90;
         producaoClima[5][5] = 90;
         producaoClima[5][6] = 90;
-        producaoClima[5][7] = 100;
+        producaoClima[5][7] = 90;
+
         producaoClima[6][0] = 100;
-        producaoClima[6][1] = 100;
-        producaoClima[6][2] = 100;
-        producaoClima[6][3] = 100;
+        producaoClima[6][1] = 80;
+        producaoClima[6][2] = 80;
+        producaoClima[6][3] = 80;
         producaoClima[6][4] = 100;
-        producaoClima[6][5] = 100;
+        producaoClima[6][5] = 80;
         producaoClima[6][6] = 100;
-        producaoClima[6][7] = 100;
+        producaoClima[6][7] = 80;
+
         producaoClima[7][0] = 80;
-        producaoClima[7][1] = 80;
-        producaoClima[7][2] = 80;
-        producaoClima[7][3] = 80;
+        producaoClima[7][1] = 70;
+        producaoClima[7][2] = 70;
+        producaoClima[7][3] = 70;
         producaoClima[7][4] = 80;
-        producaoClima[7][5] = 80;
+        producaoClima[7][5] = 60;
         producaoClima[7][6] = 80;
         producaoClima[7][7] = 80;
-        return producaoClima[clima][produto.getId()];
+        return producaoClima[getClima()][produto.getId()];
     }
 
     public boolean isVisible() {

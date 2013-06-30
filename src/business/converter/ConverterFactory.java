@@ -6,7 +6,10 @@ package business.converter;
 
 import baseLib.SysApoio;
 import java.io.Serializable;
+import java.util.List;
+import java.util.SortedMap;
 import model.Local;
+import model.Produto;
 import persistence.BundleManager;
 import persistence.SettingsManager;
 
@@ -113,6 +116,7 @@ public final class ConverterFactory implements Serializable {
         }
         return ret;
     }
+
     public static int getDirecao(int direcao) {
         int ret = direcao;
         if (ret < 1) {
@@ -247,6 +251,15 @@ public final class ConverterFactory implements Serializable {
             ret = 7;
         }
         return ret;
+    }
+
+    public static Produto intToProduto(int tipoProduto, SortedMap<String, Produto>  produtos) {
+        for (Produto produto : produtos.values()) {
+            if (produto.getId() == tipoProduto) {
+                return produto;
+            }
+        }
+        return null;
     }
 
     public int estoqueToIntEnPt(String tpEstoque) {
