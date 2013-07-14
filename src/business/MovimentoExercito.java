@@ -25,6 +25,7 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     private int direcaoAnterior = 0; //direcao anterior
     private int direcao;
     private boolean comida;
+    private boolean moveMountain;
     private boolean cavalarias;
     private boolean porAgua;
     private boolean evasivo;
@@ -36,6 +37,7 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     public MovimentoExercito clone() throws CloneNotSupportedException {
         return (MovimentoExercito) super.clone();
     }
+
     /**
      *
      * @return 9999 if not possible.
@@ -106,6 +108,17 @@ public final class MovimentoExercito implements Serializable, Cloneable {
      */
     public void setComida(boolean comida) {
         this.comida = comida;
+    }
+
+    public boolean isMoveMountain() {
+        return moveMountain;
+    }
+
+    /**
+     * @param Montanha the comida to set
+     */
+    public void setMoveMountain(boolean Montanha) {
+        this.moveMountain = Montanha;
     }
 
     /**
@@ -304,10 +317,14 @@ public final class MovimentoExercito implements Serializable, Cloneable {
                     && !this.getOrigem().isEstrada(this.getDirecao())) {
                 // nao pode ser de montanha para montanha sem estrada
                 //movimento nao eh possivel
-                for (TipoTropa tpTropa : getTropas()) {
-                    if (!tpTropa.hasHabilidade(";TTM;")) {
-                        ret = 9999;
-                        break;
+                if (isMoveMountain()) {
+                    //entao pode mover na montanha (magia)
+                } else {
+                    for (TipoTropa tpTropa : getTropas()) {
+                        if (!tpTropa.isMoveMountain()) {
+                            ret = 9999;
+                            break;
+                        }
                     }
                 }
             }

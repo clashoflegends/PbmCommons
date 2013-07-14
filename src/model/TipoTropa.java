@@ -151,4 +151,8 @@ public class TipoTropa extends BaseModel {
     public boolean isTransferable() {
         return this.hasHabilidade(";TNN;");
     }
+
+    public boolean isMoveMountain() {
+        return this.hasHabilidade(";TTM;");
+    }
 }
