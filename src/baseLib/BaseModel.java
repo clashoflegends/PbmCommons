@@ -58,6 +58,17 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
         this.codigo = codigo;
     }
 
+    public String getHabilidadesToDb() {
+        String ret = ";";
+        for (String cdHab : getHabilidades().keySet()) {
+            ret += cdHab.substring(2);
+        }
+        if (ret.equals(";")) {
+            return ";-;";
+        }
+        return ret;
+    }
+
     /**
      * @return the habilidades
      */
