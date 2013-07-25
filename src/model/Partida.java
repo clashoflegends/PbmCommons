@@ -12,7 +12,7 @@ import baseLib.BaseModel;
  */
 public class Partida extends BaseModel {
 
-    private int numero, turno, turnoNext;
+    private int numero, turno, turnoNext, turnoMax = 999;
     private Cenario cenario;
     private Jogador jogadorAtivo; //jogador ativo
     private Mercado mercado;
@@ -45,6 +45,7 @@ public class Partida extends BaseModel {
 
     /**
      * Jogador ativo da partida. OWNER
+     *
      * @return
      */
     public Jogador getJogadorAtivo() {
@@ -103,5 +104,19 @@ public class Partida extends BaseModel {
      */
     public void setGameOver(boolean gameOver) {
         this.gameOver = gameOver;
+    }
+
+    /**
+     * @return the turnoMax
+     */
+    public int getTurnoMax() {
+        return turnoMax;
+    }
+
+    /**
+     * @param turnoMax the turnoMax to set
+     */
+    public void setTurnoMax(int turnoMax) {
+        this.turnoMax = turnoMax;
     }
 }

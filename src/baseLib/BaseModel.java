@@ -61,7 +61,7 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     public String getHabilidadesToDb() {
         String ret = ";";
         for (String cdHab : getHabilidades().keySet()) {
-            ret += cdHab.substring(2);
+            ret += cdHab.substring(1);
         }
         if (ret.equals(";")) {
             return ";-;";

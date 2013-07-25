@@ -11,6 +11,7 @@ import business.facade.PersonagemFacade;
 import java.io.Serializable;
 import model.Exercito;
 import model.Feitico;
+import model.Habilidade;
 import model.Ordem;
 import persistence.BundleManager;
 import persistence.SettingsManager;
@@ -21,10 +22,17 @@ import persistence.SettingsManager;
  */
 public class TitleFactory implements Serializable {
 
-    private static BundleManager labels = SettingsManager.getInstance().getBundleManager();
+    private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final PersonagemFacade personagemFacade = new PersonagemFacade();
     private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
     private static final AcaoFacade acaoFacade = new AcaoFacade();
+    private static final String[] tipoPersonagem = {labels.getString("QUALQUER"), labels.getString("COMANDANTE"),
+        labels.getString("AGENTE"), labels.getString("EMISSARIO"), labels.getString("MAGO"),
+        labels.getString("MILESTONE"), labels.getString("CIDADE")};
+
+    public static String[] getTipoPersonagem() {
+        return tipoPersonagem;
+    }
 
     public static String displayExercitotitulo(Exercito exercito) {
         String ret;
@@ -65,15 +73,68 @@ public class TitleFactory implements Serializable {
     public static String getOrdemDisplay(Ordem ordem) {
         String ret = ordem.getDescricao() + "\n";
         ret += String.format("%s: %s\n", labels.getString("PARAMETROS"), ordem.getParametros());
-        ret += String.format("%s: %s\n", labels.getString("WHO.CAN"), acaoFacade.getTipoPersonagem(ordem));
-        ret += String.format("%s: %s%s\n", labels.getString("TIPO"), acaoFacade.getTipoOrdem(ordem), getAjudaTipoOrdem(ordem));
-        ret += String.format("%s: %s\n", labels.getString("DIFICULDADE"), acaoFacade.getDificuldade(ordem));
+        ret += String.format("%s: %s\n", labels.getString("WHO.CAN"), getTipoPersonagem(ordem));
+        ret += String.format("%s: %s%s\n", labels.getString("TIPO"), getTipoOrdem(ordem), getAjudaTipoOrdem(ordem));
+        ret += String.format("%s: %s\n", labels.getString("DIFICULDADE"), getDificuldade(ordem));
         ret += String.format("%s: %s\n", labels.getString("IMPROVE"), acaoFacade.getImproveRank(ordem));
         if (acaoFacade.getCusto(ordem) > 0) {
             ret += String.format("%s: %s\n", labels.getString("CUSTO"), acaoFacade.getCusto(ordem));
         }
+        if (!acaoFacade.getHabilidades(ordem).isEmpty()) {
+            for (Habilidade habilidade : acaoFacade.getHabilidades(ordem)) {
+                ret += String.format("%s: %s\n", labels.getString("ORDEM.FEATURE"), habilidade.getNome());
+            }
+        }
         ret += String.format("%s: %s\n", labels.getString("REQUISITO"), getAjudaRequisito(ordem));
         ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ordem.getAjuda());
+        return ret;
+    }
+
+    public static String getTipoOrdem(Ordem ordem) {
+        if (ordem.getTipo().equals("Misc")) {
+            return labels.getString("LIVRE");
+        } else if (ordem.getTipo().equals("Per")) {
+            return labels.getString("PRINCIPAL");
+        } else if (ordem.getTipo().equals("Mov")) {
+            return labels.getString("MOVIMENTACAO");
+        } else if (ordem.getTipo().equals("Cid")) {
+            return labels.getString("CIDADE");
+        } else if (ordem.getTipo().equals("Milestone")) {
+            return labels.getString("MILESTONE");
+        } else {
+            return "-";
+        }
+    }
+
+    public static String getTipoPersonagem(Ordem ordem) {
+        if (ordem.getTipoPersonagem().equals("X")) {
+            return tipoPersonagem[0];
+        } else if (ordem.getTipoPersonagem().equals("C")) {
+            return tipoPersonagem[1];
+        } else if (ordem.getTipoPersonagem().equals("A")) {
+            return tipoPersonagem[2];
+        } else if (ordem.getTipoPersonagem().equals("E")) {
+            return tipoPersonagem[3];
+        } else if (ordem.getTipoPersonagem().equals("M")) {
+            return tipoPersonagem[4];
+        } else if (ordem.getTipoPersonagem().equals("Z")) {
+            return tipoPersonagem[5];
+        } else if (ordem.getTipoPersonagem().equals("F")) {
+            return tipoPersonagem[6];
+        } else {
+            return "-";
+        }
+    }
+
+    public static String[][] listTipoPersonagem() {
+        String[][] ret = new String[tipoPersonagem.length + 1][2];
+        int ii = 0;
+        ret[ii][0] = labels.getString("TODOS"); //Display
+        ret[ii++][1] = "Todos"; //Id
+        for (String elem : tipoPersonagem) {
+            ret[ii][0] = elem;
+            ret[ii++][1] = elem;
+        }
         return ret;
     }
 
@@ -93,6 +154,22 @@ public class TitleFactory implements Serializable {
             ret = "";
         }
         return ret;
+    }
+
+    public static String getDificuldade(Ordem ordem) {
+        if (ordem.getDificuldade().equals("Aut")) {
+            return labels.getString("AUTOMATICA");
+        } else if (ordem.getDificuldade().equals("Dif")) {
+            return labels.getString("DIFICIL");
+        } else if (ordem.getDificuldade().equals("Fac")) {
+            return labels.getString("FACIL");
+        } else if (ordem.getDificuldade().equals("Med")) {
+            return labels.getString("MEDIA");
+        } else if (ordem.getDificuldade().equals("Var")) {
+            return labels.getString("VARIADA");
+        } else {
+            return "-";
+        }
     }
 
     private static String getAjudaRequisito(Ordem ordem) {

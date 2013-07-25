@@ -323,7 +323,7 @@ public class SysApoio implements Serializable {
                 ret += palavra[ii].substring(0, 1).toUpperCase() + palavra[ii].substring(1);
             } catch (java.lang.StringIndexOutOfBoundsException e) {
                 //double spaces were sent, resulting in a null word. safe to ignore
-           }
+            }
         }
         return ret;
     }
@@ -380,9 +380,6 @@ public class SysApoio implements Serializable {
         return stringToArrayMulti(vetor, "#|#", "#@#");
     }
 
-
-
-
     //A convenience method for creating a MaskFormatter.
     /*
      # any valid number
@@ -435,12 +432,10 @@ public class SysApoio implements Serializable {
      * <code>-1</code>) for a
      * <code>null</code> input array.</p>
      *
-     * @param array the array to search through for the object, may
-     * be <code>null</code>
+     * @param array the array to search through for the object, may      * be <code>null</code>
      * @param objectToFind the object to find, may be <code>null</code>
      * @return the index of the object within the array,
-     * {@link #INDEX_NOT_FOUND} (<code>-1</code>) if not found
-     * or <code>null</code> array input
+     * {@link #INDEX_NOT_FOUND} (<code>-1</code>) if not found      * or <code>null</code> array input
      */
     public static int indexOf(Object[] array, Object objectToFind) {
         return indexOf(array, objectToFind, 0);
@@ -458,13 +453,11 @@ public class SysApoio implements Serializable {
      * array length will return {@link #INDEX_NOT_FOUND} (
      * <code>-1</code>).</p>
      *
-     * @param array the array to search through for the object, may
-     * be <code>null</code>
+     * @param array the array to search through for the object, may      * be <code>null</code>
      * @param objectToFind the object to find, may be <code>null</code>
      * @param startIndex the index to start searching at
      * @return the index of the object within the array starting at the index,
-     * {@link #INDEX_NOT_FOUND} (<code>-1</code>) if not found
-     * or <code>null</code> array input
+     * {@link #INDEX_NOT_FOUND} (<code>-1</code>) if not found      * or <code>null</code> array input
      */
     public static int indexOf(Object[] array, Object objectToFind, int startIndex) {
         int INDEX_NOT_FOUND = -1;
