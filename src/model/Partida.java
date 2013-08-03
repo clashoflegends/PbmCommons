@@ -119,4 +119,8 @@ public class Partida extends BaseModel {
     public void setTurnoMax(int turnoMax) {
         this.turnoMax = turnoMax;
     }
+
+    public boolean isMoveMontanha() {
+        return !this.hasHabilidade(";TTM;");
+    }
 }
