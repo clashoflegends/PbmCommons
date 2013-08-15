@@ -20,6 +20,7 @@ public class Comando implements Serializable {
     private String partidaCod;
     private int partidaId;
     private int turno;
+    private String timeStamp;
     private List<ComandoDetail> comandos = new ArrayList();
     //nacao,personagem, ordem, parametros
 
@@ -69,5 +70,19 @@ public class Comando implements Serializable {
 
     public boolean isSerial() {
         return this.serial == 1234 + this.getJogadorId() + this.getPartidaId();
+    }
+
+    /**
+     * @return the timeStamp
+     */
+    public String getTimeStamp() {
+        return timeStamp;
+    }
+
+    /**
+     * @param timeStamp the timeStamp to set
+     */
+    public void setTimeStamp(String timeStamp) {
+        this.timeStamp = timeStamp;
     }
 }

@@ -121,6 +121,6 @@ public class Partida extends BaseModel {
     }
 
     public boolean isMoveMontanha() {
-        return !this.hasHabilidade(";TTM;");
+        return !this.hasHabilidade(";GMM;");
     }
 }

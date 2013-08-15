@@ -14,7 +14,7 @@ import java.util.TreeMap;
  */
 public class Raca extends BaseModel {
 
-    private String display;
+    private String display, titletLord = "";
     private int numero;
     private SortedMap<String, String> tropasDescricao = new TreeMap(); //codigo, descricao
     private SortedMap<TipoTropa, Integer> tropas = new TreeMap();    //0=tropas da raca, 1=tropas especiais da raca, 2=tropas default
@@ -51,5 +51,19 @@ public class Raca extends BaseModel {
 
     public void setNumero(int numero) {
         this.numero = numero;
+    }
+
+    /**
+     * @return the rulerTitle
+     */
+    public String getTitleLord() {
+        return titletLord;
+    }
+
+    /**
+     * @param rulerTitle the rulerTitle to set
+     */
+    public void setTitleLord(String rulerTitle) {
+        this.titletLord = rulerTitle;
     }
 }
