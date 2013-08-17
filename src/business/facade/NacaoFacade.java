@@ -99,23 +99,37 @@ public class NacaoFacade implements Serializable {
         return ret;
     }
 
-    public int getCustoExercito(Nacao nacao) {
-        int ret = 0;
-        for (Personagem personagem : nacao.getPersonagens()) {
-            if (nacao == personagem.getNacao() && personagem.isComandaExercito()) {
-                for (Pelotao pelotao : personagem.getExercito().getPelotoes().values()) {
-                    ret += pelotao.getQtd() * pelotao.getTipoTropa().getUpkeepMoney();
+    public int getCustoBloodriders(Nacao nacao, Collection<Exercito> exercitos) {
+            //accumulate $
+            int discount = 0;
+        //free bloodriders?
+        if (nacao.hasHabilidade("0053")) {
+            //control qtd
+            int qtdFree = nacao.getHabilidadeValor("0053");
+            for (Exercito exercito : exercitos) {
+                if (nacao != exercito.getNacao()) {
+                    break;
+                }
+                for (Pelotao pelotao : exercito.getPelotoes().values()) {
+                    if (qtdFree <= 0) {
+                        break;
+                    }
+                    if (pelotao.getTipoTropa().getCodigo().contains("cpblood")) {
+                        final int qtd = Math.min(qtdFree, pelotao.getQtd());
+                        discount += qtd * pelotao.getTipoTropa().getUpkeepMoney();
+                        qtdFree -= qtd;
+                    }
                 }
             }
         }
-        return ret;
+        return discount;
     }
 
-    public int getCustoExercitoGuarnicao(Nacao nacao, Collection<Exercito> exercitos) {
+    public int getCustoExercitoNacao(Nacao nacao, Collection<Exercito> exercitos) {
         int ret = 0;
         ExercitoFacade ef = new ExercitoFacade();
         for (Exercito exercito : exercitos) {
-            if (nacao == ef.getNacao(exercito) && ef.isGuarnicao(exercito)) {
+            if (nacao == ef.getNacao(exercito)) {
                 for (Pelotao pelotao : exercito.getPelotoes().values()) {
                     ret += pelotao.getQtd() * pelotao.getTipoTropa().getUpkeepMoney();
                 }

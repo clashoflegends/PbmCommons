@@ -181,7 +181,7 @@ public class SmtpManager implements Serializable {
                 throw new PersistenceException(ex.getMessage());
             }
         } catch (Exception ex) {
-            log.info(ex);
+            log.info("Erro no envio SmtpManager. Verifique espacos no email.", ex);
         }
         return ret;
     }
@@ -431,7 +431,7 @@ public class SmtpManager implements Serializable {
     }
 
     private void doLoadSmtpProperties() {
-        if(SysProperties.isSet("mail.smtp.server")){
+        if (SysProperties.isSet("mail.smtp.server")) {
             setHostSmtp(SysProperties.getProps("mail.smtp.server"));
             setLoginNameSmtp(SysProperties.getProps("mail.smtp.user"));
             setPwdSmtp(SysProperties.getProps("mail.smtp.passwd"));

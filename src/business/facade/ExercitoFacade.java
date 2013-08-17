@@ -318,7 +318,11 @@ public class ExercitoFacade implements Serializable {
                         //half cost on mountain roads
                         base = Math.ceil(base / 2);
                     }
+                } else if (tpTropa.hasHabilidade(";T2M;") && destino.isMontanha()) {
+                    //half cost on mountain 
+                    base = Math.ceil(base / 2);
                 }
+
                 ret = Math.max(ret, base);
             }
         } catch (NullPointerException e) {
