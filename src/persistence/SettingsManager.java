@@ -50,7 +50,9 @@ public class SettingsManager implements Serializable {
     }
 
     public void setDebug(boolean debug) {
-        log.info("Alterando modo de debug: " + debug);
+        if (debug) {
+            log.info("Entrando no modo de debug: " + debug);
+        }
         SettingsManager.instance.debug = debug;
     }
 

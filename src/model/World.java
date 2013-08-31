@@ -4,12 +4,10 @@
  */
 package model;
 
+import baseLib.SysApoio;
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import persistence.BundleManager;
-import persistence.SettingsManager;
 
 /**
  *
@@ -17,7 +15,6 @@ import persistence.SettingsManager;
  */
 public class World implements Serializable {
 
-    private static final BundleManager label = SettingsManager.getInstance().getBundleManager();
     private Partida partida;
     private SortedMap<String, Jogador> jogadores = new TreeMap();
     private SortedMap<String, Nacao> nacoes = new TreeMap();
@@ -54,9 +51,7 @@ public class World implements Serializable {
 
     public void setNacoes(SortedMap<String, Nacao> nacoes) {
         this.nacoes = nacoes;
-        Iterator lista = nacoes.values().iterator();
-        while (lista.hasNext()) {
-            Nacao nacao = (Nacao) lista.next();
+        for (Nacao nacao : nacoes.values()) {
             addJogador(nacao.getOwner());
         }
     }

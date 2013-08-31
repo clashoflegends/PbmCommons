@@ -5,8 +5,12 @@
 package model;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  *
@@ -20,9 +24,14 @@ public class Comando implements Serializable {
     private String partidaCod;
     private int partidaId;
     private int turno;
-    private String timeStamp;
+//    private String timeStamp; //deprecated
+    private Date creationTime;
     private List<ComandoDetail> comandos = new ArrayList();
     //nacao,personagem, ordem, parametros
+
+    public Comando() {
+        setCreationTime();
+    }
 
     public void addComando(Personagem personagem, Ordem ordem, List<String> parametrosId, List<String> parametrosDisplay) {
         if (ordem != null) {
@@ -65,24 +74,24 @@ public class Comando implements Serializable {
         this.turno = partida.getTurno();
         this.jogadorId = partida.getJogadorAtivo().getId();
         this.jogadorNome = partida.getJogadorAtivo().getNome();
-        this.serial = 1234 + this.getPartidaId() + this.getJogadorId();
+        this.serial = 1234 + partidaId + jogadorId;
     }
 
     public boolean isSerial() {
         return this.serial == 1234 + this.getJogadorId() + this.getPartidaId();
     }
 
-    /**
-     * @return the timeStamp
-     */
-    public String getTimeStamp() {
-        return timeStamp;
+    public Date getCreationTime() {
+        return creationTime;
     }
 
-    /**
-     * @param timeStamp the timeStamp to set
-     */
-    public void setTimeStamp(String timeStamp) {
-        this.timeStamp = timeStamp;
+    public String getCreationTimeStamp() {
+        DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss Z");
+        formatter.setTimeZone(TimeZone.getTimeZone("Europe/London"));//GMT+13
+        return formatter.format(getCreationTime());
+    }
+
+    private void setCreationTime() {
+        this.creationTime = new Date();
     }
 }

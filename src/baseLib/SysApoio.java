@@ -432,10 +432,12 @@ public class SysApoio implements Serializable {
      * <code>-1</code>) for a
      * <code>null</code> input array.</p>
      *
-     * @param array the array to search through for the object, may      * be <code>null</code>
+     * @param array the array to search through for the object, may * *
+     * be <code>null</code>
      * @param objectToFind the object to find, may be <code>null</code>
      * @return the index of the object within the array,
-     * {@link #INDEX_NOT_FOUND} (<code>-1</code>) if not found      * or <code>null</code> array input
+     * {@link #INDEX_NOT_FOUND} (<code>-1</code>) if not found * *
+     * or <code>null</code> array input
      */
     public static int indexOf(Object[] array, Object objectToFind) {
         return indexOf(array, objectToFind, 0);
@@ -453,11 +455,13 @@ public class SysApoio implements Serializable {
      * array length will return {@link #INDEX_NOT_FOUND} (
      * <code>-1</code>).</p>
      *
-     * @param array the array to search through for the object, may      * be <code>null</code>
+     * @param array the array to search through for the object, may * *
+     * be <code>null</code>
      * @param objectToFind the object to find, may be <code>null</code>
      * @param startIndex the index to start searching at
      * @return the index of the object within the array starting at the index,
-     * {@link #INDEX_NOT_FOUND} (<code>-1</code>) if not found      * or <code>null</code> array input
+     * {@link #INDEX_NOT_FOUND} (<code>-1</code>) if not found * *
+     * or <code>null</code> array input
      */
     public static int indexOf(Object[] array, Object objectToFind, int startIndex) {
         int INDEX_NOT_FOUND = -1;
@@ -636,5 +640,20 @@ public class SysApoio implements Serializable {
             throw new UnsupportedOperationException("Saindo, faltou substituir um %s.");
         }
         return ret;
+    }
+
+    public static String md5(String md5) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+            byte[] array = md.digest(md5.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < array.length; ++i) {
+                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1, 3));
+            }
+            return sb.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            log.fatal("nao deu certo criar o MD5 de " + md5);
+        }
+        return "MISSING";
     }
 }
