@@ -98,6 +98,11 @@ public class CenarioFacade implements Serializable {
         return cenario.getTipoTropas().values();
     }
 
+    public boolean isTropaRecruitable(Cenario cenario, Raca racaCidade, Raca racaPersonagem, TipoTropa tipoTropa) {
+        final Collection<TipoTropa> tipoTropas = getTipoTropas(cenario, racaCidade, racaPersonagem);
+        return tipoTropas.contains(tipoTropa);
+    }
+
     public Collection<TipoTropa> getTipoTropas(Cenario cenario, Raca racaCidade, Raca racaPersonagem) {
         Set<TipoTropa> tropas = new TreeSet<TipoTropa>();
         if (racaCidade == racaPersonagem) {
