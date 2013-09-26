@@ -6,7 +6,6 @@ package business.converter;
 
 import baseLib.SysApoio;
 import java.io.Serializable;
-import java.util.List;
 import java.util.SortedMap;
 import model.Local;
 import model.Produto;
