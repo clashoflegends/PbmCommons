@@ -111,7 +111,7 @@ public class MapaManager implements Serializable {
                 ret[1] = col;
             }
         }
-        return new Point(ret[1] * 60, ret[0] * 45 + 60);
+        return new Point(ret[1] * 60 + 30, ret[0] * 45 + 60);
     }
 
     public ImageIcon getTagImage() {
