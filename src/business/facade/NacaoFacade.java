@@ -100,8 +100,8 @@ public class NacaoFacade implements Serializable {
     }
 
     public int getCustoBloodriders(Nacao nacao, Collection<Exercito> exercitos) {
-            //accumulate $
-            int discount = 0;
+        //accumulate $
+        int discount = 0;
         //free bloodriders?
         if (nacao.hasHabilidade("0053")) {
             //control qtd
@@ -278,8 +278,12 @@ public class NacaoFacade implements Serializable {
         return nacao.getCodigo();
     }
 
-    public Iterable<HabilidadeNacao> getHabilidades(Nacao nacao) {
+    public Iterable<HabilidadeNacao> getHabilidadesNacao(Nacao nacao) {
         return nacao.getHabilidadesNacao().values();
+    }
+
+    public Collection<Habilidade> getHabilidades(Nacao nacao) {
+        return nacao.getHabilidades().values();
     }
 
     public int getMoney(Nacao nacao) {
