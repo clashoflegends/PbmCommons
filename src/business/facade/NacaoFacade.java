@@ -138,6 +138,30 @@ public class NacaoFacade implements Serializable {
         return ret;
     }
 
+    public int getDescontoExercitoNacao(Nacao nacao, Collection<Exercito> exercitos) {
+        if (!nacao.hasHabilidadeNacao("0053")) {
+            return 0;
+        }
+        int discount = 0;
+        int qtdFree = nacao.getHabilidadeNacaoValor("0053");
+        ExercitoFacade ef = new ExercitoFacade();
+        for (Exercito exercito : exercitos) {
+            if (nacao == ef.getNacao(exercito)) {
+                for (Pelotao pelotao : exercito.getPelotoes().values()) {
+                    if (qtdFree <= 0) {
+                        break;
+                    }
+                    if (pelotao.getTipoTropa().getCodigo().contains("cpblood")) {
+                        final int qtd = Math.min(qtdFree, pelotao.getQtd());
+                        discount += qtd * pelotao.getTipoTropa().getUpkeepMoney();
+                        qtdFree -= qtd;
+                    }
+                }
+            }
+        }
+        return discount;
+    }
+
     public int getCustoPersonagens(Nacao nacao) {
         int ret = 0;
         for (Personagem pers : nacao.getPersonagens()) {

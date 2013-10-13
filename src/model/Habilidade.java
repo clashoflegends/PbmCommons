@@ -12,7 +12,7 @@ import baseLib.BaseModel;
  */
 public class Habilidade extends BaseModel {
 
-    private int valor;
+    private int valor, cost = 0;
     private String tipo; //ENUM('SCENARIO','TROOP','CITY','NATION')
 
     /**
@@ -43,4 +43,15 @@ public class Habilidade extends BaseModel {
         this.tipo = tipo;
     }
 
+    public int getCost() {
+        return cost;
+    }
+
+    public void setCost(int cost) {
+        this.cost = cost;
+    }
+
+    public boolean isPackage() {
+        return tipo.equalsIgnoreCase("package");
+    }
 }

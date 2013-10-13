@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package model;
 
 import baseLib.BaseModel;
@@ -11,7 +10,8 @@ import baseLib.BaseModel;
  *
  * @author jmoura
  */
-public class HabilidadeNacao extends BaseModel{
+public class HabilidadeNacao extends BaseModel {
+
     private int vlHabilidadeNacao = 0;
     private int custoHabilidadeNacao = 0;
 
@@ -42,5 +42,4 @@ public class HabilidadeNacao extends BaseModel{
     public void setCustoHabilidadeNacao(int custoHabilidadeNacao) {
         this.custoHabilidadeNacao = custoHabilidadeNacao;
     }
-
 }

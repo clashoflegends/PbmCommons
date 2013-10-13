@@ -47,6 +47,14 @@ public class Nacao extends BaseModel {
         return this.habilidadesNacao.containsKey(codigo);
     }
 
+    public int getHabilidadeNacaoValor(String codigo) {
+        try {
+            return this.habilidadesNacao.get(codigo).getVlHabilidadeNacao();
+        } catch (Exception ex) {
+            return 0;
+        }
+    }
+
     public void setAlianca(Alianca alianca) {
         this.alianca = alianca;
     }

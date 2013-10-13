@@ -83,6 +83,14 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
         this.habilidades = habilidades;
     }
 
+    public void addHabilidades(SortedMap<String, Habilidade> habilidades) {
+        this.habilidades.putAll(habilidades);
+    }
+
+    public void addHabilidade(Habilidade habilidade) {
+        this.habilidades.put(habilidade.getCodigo(), habilidade);
+    }
+
     public boolean hasHabilidade(String cdHabilidade) {
         return this.habilidades.get(cdHabilidade) != null;
     }

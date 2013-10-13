@@ -14,5 +14,7 @@ import persistence.PersistenceException;
  */
 public interface IPelotaoDao {
 
+    public void clear();
+
     public SortedMap<String, Pelotao> list(int idExercito) throws PersistenceException;
 }
