@@ -167,9 +167,12 @@ public class NacaoFacade implements Serializable {
         for (Personagem pers : nacao.getPersonagens()) {
             if (nacao == pers.getNacao()) {
                 int mod = 20;
-                if (this.hasHabilidade(nacao, "0043")) {
+                if (this.hasHabilidade(nacao, ";PUC;")) {
                     //Free People: Character's upkeep cost %s%% less
-                    mod = 20 * (100 - nacao.getHabilidadesNacao().get("0043").getVlHabilidadeNacao()) / 100;
+                    mod = 20 * (100 - nacao.getHabilidadeValor(";PUC;")) / 100;
+                } else if (this.hasHabilidade(nacao, "0043")) {
+                    //Free People: Character's upkeep cost %s%% less
+                    mod = 20 * (100 - nacao.getHabilidadeNacaoValor("0043")) / 100;
                 }
                 ret += pers.getPericiaNaturalTotal() * mod;
             }
@@ -279,8 +282,20 @@ public class NacaoFacade implements Serializable {
         return nacao.getRelacionamentos();
     }
 
-    public boolean hasHabilidade(Nacao nacao, String cdNsp) {
-        return (nacao.getHabilidadesNacao().containsKey(cdNsp));
+    public boolean hasHabilidade(Nacao nacao, String cdHabilidade) {
+        if (cdHabilidade.contains(";")) {
+            return (nacao.hasHabilidade(cdHabilidade));
+        } else {
+            return (nacao.getHabilidadesNacao().containsKey(cdHabilidade));
+        }
+    }
+
+    public int getHabilidadeValor(Nacao nacao, String cdHabilidade) {
+        if (cdHabilidade.contains(";")) {
+            return (nacao.getHabilidadeValor(cdHabilidade));
+        } else {
+            return (nacao.getHabilidadeNacaoValor(cdHabilidade));
+        }
     }
 
     public int getPontos(Nacao nacao) {

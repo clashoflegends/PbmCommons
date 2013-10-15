@@ -215,9 +215,15 @@ public class CidadeFacade implements Serializable {
     public int getProducao(Cidade cidade, Produto produto) {
         final int producao = cidade.getProducao(produto);
         try {
-            if (!produto.isMoney() || producao >= 250) {
+            if (!produto.isMoney()) {
                 return producao;
-            } else if (cidade.getNacao().getHabilidadesNacao().containsKey("0039") && cidade.getNacao().getRaca() == cidade.getRaca()) {
+            } else if (cidade.getNacao().hasHabilidade(";PGM;")
+                    && cidade.getNacao().getRaca() == cidade.getRaca()) {
+                //se mesma cultura e com habilidade, entao garante minimo de 250
+                return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGM;"));
+            } else if (producao >= 250
+                    && cidade.getNacao().getHabilidadesNacao().containsKey("0039")
+                    && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
                 return 250;
             } else {
