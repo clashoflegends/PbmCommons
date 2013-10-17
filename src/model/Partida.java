@@ -123,4 +123,8 @@ public class Partida extends BaseModel {
     public boolean isMoveMontanha() {
         return !this.hasHabilidade(";GMM;");
     }
+
+    public boolean hasStartupPackages() {
+        return this.hasHabilidade(";GCS;");
+    }
 }

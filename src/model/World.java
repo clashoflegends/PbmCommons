@@ -4,7 +4,6 @@
  */
 package model;
 
-import baseLib.SysApoio;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -24,6 +23,7 @@ public class World implements Serializable {
     //PENDING: mover atributos de cenario que estao em World.
     private SortedMap<String, Local> locais = new TreeMap();
     private SortedMap<String, Artefato> artefatos = new TreeMap();
+    private SortedMap<String, Habilidade> packages = new TreeMap();
 
     public SortedMap<String, Exercito> getExercitos() {
         return this.exercitos;
@@ -113,5 +113,13 @@ public class World implements Serializable {
 
     public SortedMap<String, Personagem> getPersonagens() {
         return personagens;
+    }
+
+    public SortedMap<String, Habilidade> getPackages() {
+        return packages;
+    }
+
+    public void setPackages(SortedMap<String, Habilidade> packages) {
+        this.packages = packages;
     }
 }

@@ -71,6 +71,10 @@ public abstract class WorldManagerBase implements Serializable {
         return world.getPartida().getTurno();
     }
 
+    public SortedMap<String, Habilidade> getPackages() {
+        return world.getPackages();
+    }
+
     public boolean isJogadorAtivo(Nacao nacao) {
         return world.getPartida().getJogadorAtivo().isNacao(nacao);
     }
