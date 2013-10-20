@@ -221,7 +221,7 @@ public class CidadeFacade implements Serializable {
                     && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
                 return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGM;"));
-            } else if (producao >= 250
+            } else if (producao <= 250
                     && cidade.getNacao().getHabilidadesNacao().containsKey("0039")
                     && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250

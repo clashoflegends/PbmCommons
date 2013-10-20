@@ -93,7 +93,7 @@ public class BattleSimFacade implements Serializable {
             float tropasValor = tpTropa.getAtaqueTerreno().get(exercito.getTerreno());
             LocalFacade lf = new LocalFacade();
             if (tpTropa.hasHabilidade(";TTD;") && lf.isCidade(exercito.getLocal())) {
-                //D = ataque dobrado se defendendo cidade
+                //D = ataque dobrado se defendendo cidade aliada
                 try {
                     Nacao nacaoCidade = exercito.getLocal().getCidade().getNacao();
                     NacaoFacade nf = new NacaoFacade();

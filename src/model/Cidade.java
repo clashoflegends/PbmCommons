@@ -11,7 +11,7 @@ import persistence.BundleManager;
 import persistence.SettingsManager;
 
 /**
- * 
+ *
  * @author gurgel
  */
 public class Cidade extends BaseModel {
