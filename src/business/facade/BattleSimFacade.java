@@ -92,7 +92,7 @@ public class BattleSimFacade implements Serializable {
         try {
             float tropasValor = tpTropa.getAtaqueTerreno().get(exercito.getTerreno());
             LocalFacade lf = new LocalFacade();
-            if (tpTropa.hasHabilidade(";TTD;") && lf.isCidade(exercito.getLocal())) {
+            if (tpTropa.isDoubleAttackOnAlliedCities() && lf.isCidade(exercito.getLocal())) {
                 //D = ataque dobrado se defendendo cidade aliada
                 try {
                     Nacao nacaoCidade = exercito.getLocal().getCidade().getNacao();
@@ -110,12 +110,17 @@ public class BattleSimFacade implements Serializable {
         }
     }
 
-    private float getDefesa(TipoTropa tpTropa, Terreno terreno) {
+    private float getDefesa(TipoTropa tpTropa, Terreno terreno, IExercito exercito) {
         try {
             float defesa = tpTropa.getDefesaTerreno().get(terreno);
-            if (tpTropa.hasHabilidade(";TTD;")) {
+            LocalFacade lf = new LocalFacade();
+            if (tpTropa.isHalfDefenseOutAlliedCities() && lf.isCidade(exercito.getLocal())) {
                 //D = defesa eh metade do ataque
-                defesa = defesa / 2f;
+                Nacao nacaoCidade = exercito.getLocal().getCidade().getNacao();
+                NacaoFacade nf = new NacaoFacade();
+                if (!exercito.getNacao().equals(nacaoCidade) && !nf.isAliado(exercito.getNacao(), nacaoCidade)) {
+                    defesa = defesa / 2f;
+                }
             }
             return defesa;
         } catch (NullPointerException ex) {
@@ -123,8 +128,8 @@ public class BattleSimFacade implements Serializable {
         }
     }
 
-    public float getDefesaPelotao(Pelotao pelotao, Terreno terreno) {
-        float vlConstituicao = getDefesa(pelotao.getTipoTropa(), terreno);
+    public float getDefesaPelotao(Pelotao pelotao, Terreno terreno, IExercito exercito) {
+        float vlConstituicao = getDefesa(pelotao.getTipoTropa(), terreno, exercito);
         float vlArmadura = (float) pelotao.getModDefesa();
         return pelotao.getQtd() * vlConstituicao * (1F + vlArmadura / 100F);
     }
@@ -134,7 +139,7 @@ public class BattleSimFacade implements Serializable {
         int ret = 0;
         for (Pelotao pelotao : exercito.getPelotoes().values()) {
             if (naval == pelotao.getTipoTropa().isBarcos()) {
-                ret += getDefesaPelotao(pelotao, exercito.getTerreno());
+                ret += getDefesaPelotao(pelotao, exercito.getTerreno(), exercito);
             }
         }
         return ret;

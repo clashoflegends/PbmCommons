@@ -362,7 +362,7 @@ public class ExercitoFacade implements Serializable {
     }
 
     public int getDefesaPelotao(Pelotao pelotao, Exercito exercito) {
-        return (int) battleSimFacade.getDefesaPelotao(pelotao, exercito.getLocal().getTerreno());
+        return (int) battleSimFacade.getDefesaPelotao(pelotao, exercito.getLocal().getTerreno(), exercito);
     }
 
     public int getAtaqueExercito(IExercito exercito, boolean naval) {

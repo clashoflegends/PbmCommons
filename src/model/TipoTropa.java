@@ -159,4 +159,12 @@ public class TipoTropa extends BaseModel {
     public boolean isMoveMountain() {
         return this.hasHabilidade(";TTM;");
     }
+
+    public boolean isDoubleAttackOnAlliedCities() {
+        return this.hasHabilidade(";TTD;") || this.hasHabilidade(";TAD;");
+    }
+
+    public boolean isHalfDefenseOutAlliedCities() {
+        return this.hasHabilidade(";TTD;");
+    }
 }
