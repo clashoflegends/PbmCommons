@@ -81,7 +81,7 @@ public class Comando implements Serializable {
         return this.serial == 1234 + this.getJogadorId() + this.getPartidaId();
     }
 
-    public Date getCreationTime() {
+    private Date getCreationTime() {
         return creationTime;
     }
 

@@ -54,4 +54,9 @@ public class Habilidade extends BaseModel {
     public boolean isPackage() {
         return tipo.equalsIgnoreCase("package");
     }
+    
+    @Override
+    public String toString(){
+        return this.getComboDisplay();
+    }
 }
