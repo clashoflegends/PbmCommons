@@ -4,6 +4,7 @@
  */
 package business.services;
 
+import baseLib.BaseModel;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -96,6 +97,10 @@ public class ComparatorFactory implements Serializable {
 
     public static void getComparatorProdutoDescSorter(List<Produto> lista) {
         Collections.sort(lista, new ComparatorBaseModelSorter(true));
+    }
+
+    public static void getComparatorComboDisplaySorter(List<? extends BaseModel> lista) {
+        Collections.sort(lista, new ComparatorBaseDisplayModelSorter(false));
     }
 
     public static void getComparatorFileTimeSorter(File[] files) {

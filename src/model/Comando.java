@@ -10,7 +10,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.SortedMap;
 import java.util.TimeZone;
+import java.util.TreeMap;
 
 /**
  *
@@ -27,6 +29,7 @@ public class Comando implements Serializable {
 //    private String timeStamp; //deprecated
     private Date creationTime;
     private List<ComandoDetail> comandos = new ArrayList();
+    private SortedMap<Integer, String> packages = new TreeMap<Integer, String>();
     //nacao,personagem, ordem, parametros
 
     public Comando() {
@@ -38,6 +41,31 @@ public class Comando implements Serializable {
             ComandoDetail comDet = new ComandoDetail(personagem, ordem, parametrosId, parametrosDisplay);
             this.comandos.add(comDet);
         }
+    }
+
+    public void addPackage(Nacao nacao, List<Habilidade> packagesList) {
+        try {
+            packages.put(nacao.getId(), getPackagesToDb(packagesList));
+        } catch (NullPointerException e) {
+            //sem nacao???
+        }
+    }
+
+    private String getPackagesToDb(List<Habilidade> packagesList) {
+        String ret = ";";
+        for (Habilidade habilidade : packagesList) {
+            if (habilidade.isPackage()) {
+                ret += habilidade.getCodigo().substring(1);
+            }
+        }
+        if (ret.equals(";")) {
+            return ";-;";
+        }
+        return ret;
+    }
+
+    public SortedMap<Integer, String> getPackages() {
+        return this.packages;
     }
 
     public int size() {

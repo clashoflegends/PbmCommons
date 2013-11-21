@@ -5,6 +5,8 @@
 package persistence;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.SortedMap;
 import model.*;
 
@@ -90,5 +92,15 @@ public abstract class WorldManagerBase implements Serializable {
     public World createWorld() {
         world = new World();
         return world;
+    }
+
+    public List<Nacao> getNacoesJogadorAtivo() {
+        List<Nacao> ret = new ArrayList<Nacao>();
+        for (Nacao nacao : world.getNacoes().values()) {
+            if (world.getPartida().getJogadorAtivo() == nacao.getOwner()) {
+                ret.add(nacao);
+            }
+        }
+        return ret;
     }
 }

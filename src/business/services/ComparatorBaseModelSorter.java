@@ -28,11 +28,11 @@ public class ComparatorBaseModelSorter implements Comparator {
         }
     }
 
-    public int compareToById(BaseModel este, BaseModel outro) {
+    private int compareToById(BaseModel este, BaseModel outro) {
         return (este.getId() - outro.getId());
     }
 
-    public int compareToByIdReversed(BaseModel este, BaseModel outro) {
+    private int compareToByIdReversed(BaseModel este, BaseModel outro) {
         return (outro.getId() - este.getId());
     }
 }
