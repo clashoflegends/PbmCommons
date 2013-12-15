@@ -115,4 +115,8 @@ public class Jogador extends BaseModel {
     public void setReportAll(boolean reportAll) {
         this.reportAll = reportAll;
     }
+
+    public boolean isNpc() {
+        return getId() == 1;
+    }
 }
