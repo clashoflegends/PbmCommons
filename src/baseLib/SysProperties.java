@@ -36,6 +36,7 @@ public class SysProperties implements Serializable {
             //            + "database = server side use, no effect on the Counselor\n"
             + "language = en/pt/it, to define the GUI language\n"
             + "splitSize = 300, define the size of the left side screen split.\n"
+            + "TableColumnAdjust = 0|1 -> Yes|No, adjust columns during \"Load Action\".\n"
             + "CopyActionsPopUp = 0|1 -> Yes|No, displays a popup when copying Actions to clipboard.\n"
             + "CopyActionsOrder = 0|1 -> execution|alphabeticaly, selects the order the commands will appear.\n"
             + "HexTagStyle = 0-3, changes the Hex Tag Style.\n"
@@ -59,6 +60,7 @@ public class SysProperties implements Serializable {
 
     private void setPropDefault() {
         getProps().setProperty("filtro.default", "0");
+        getProps().setProperty("TableColumnAdjust", "0");
         getProps().setProperty("maximizeWindowOnStart", "1");
         getProps().setProperty("minimizeMapOnStart", "0");
         getProps().setProperty("saveDir", "/tmpbm/xml/");

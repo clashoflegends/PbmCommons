@@ -24,6 +24,7 @@ public class SettingsManager implements Serializable {
     private static final Log log = LogFactory.getLog(SettingsManager.class);
     private boolean worldBuilder = false;
     private boolean portrait = false;
+    private boolean tableColumnAdjust = true;
     private boolean radialMenu = false;
 
     private SettingsManager() {
@@ -128,5 +129,13 @@ public class SettingsManager implements Serializable {
      */
     public void setPortrait(boolean portrait) {
         this.portrait = portrait;
+    }
+
+    public boolean isTableColumnAdjust() {
+        return tableColumnAdjust;
+    }
+
+    public void setTableColumnAdjust(boolean tableColumnAdjust) {
+        this.tableColumnAdjust = tableColumnAdjust;
     }
 }
