@@ -20,6 +20,7 @@ import java.util.TreeMap;
  */
 public class Comando implements Serializable {
 
+    public static final String DATEFORMAT = "dd-MM-yyyy hh:mm:ss Z";
     private String jogadorNome;
     private int jogadorId;
     private int serial;
@@ -114,7 +115,7 @@ public class Comando implements Serializable {
     }
 
     public String getCreationTimeStamp() {
-        DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss Z");
+        DateFormat formatter = new SimpleDateFormat(DATEFORMAT);
         formatter.setTimeZone(TimeZone.getTimeZone("Europe/London"));//GMT+13
         return formatter.format(getCreationTime());
     }

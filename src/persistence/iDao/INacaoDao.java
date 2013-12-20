@@ -25,5 +25,5 @@ public interface INacaoDao {
 
     public SortedMap<String, Nacao> list(Partida partida) throws PersistenceException;
 
-    public boolean salvaOrdens(int idPartida, int turno, int idJogador, int idNacao, String ordensCsv, String packages, List<ComandoDetail> comDet) throws PersistenceException;
+    public boolean salvaOrdens(int idPartida, int turno, int idJogador, String creationTimeStamp, int idNacao, String ordensCsv, String packages, List<ComandoDetail> comDet) throws PersistenceException;
 }
