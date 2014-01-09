@@ -7,13 +7,14 @@ package persistence;
 import baseLib.SysApoio;
 import baseLib.SysProperties;
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
+//import com.thoughtworks.xstream.io.xml.DomDriver;
 import java.io.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * Singleton para gerenciar o xml que deve ser único.
+ *
  * @author gurgel
  */
 public class XmlManager implements Serializable {
@@ -81,8 +82,9 @@ public class XmlManager implements Serializable {
     }
 
     /**
-     * Cria o arquivo temporario para gerar o XML
-     * Chama o Zip para gerar o arquivo final
+     * Cria o arquivo temporario para gerar o XML Chama o Zip para gerar o
+     * arquivo final
+     *
      * @param world
      * @param finalFile
      * @throws PersistenceException
@@ -130,57 +132,58 @@ public class XmlManager implements Serializable {
             throw new PersistenceException(ex);
         }
     }
-
-    private Object getOld(File file) throws PersistenceException {
-        log.info("Carregando " + file.getName());
-        Reader fileReader = null;
-        try {
-            // XStream 'e o nosso leitor de XML to Bean
-            XStream xstream = new XStream(new DomDriver("UTF-8"));
-            fileReader = new FileReader(file);
-            return xstream.fromXML(fileReader);
-        } catch (FileNotFoundException ex) {
-            throw new PersistenceException(label.getString("ARQUIVO.NAO.ENCONTRADO"), ex);
-        } catch (Exception ex) {
-            throw new PersistenceException(label.getString("ARQUIVO.CORROMPIDO"), ex);
-        } finally {
-            try {
-                if (fileReader != null) {
-                    fileReader.close();
-                }
-            } catch (IOException ex) {
-                log.error(ex);
-            }
-        }
-    }
-
-    private void saveOld(Object world, File appFile) throws PersistenceException {
-        log.info("Gravando XML. File: " + appFile.getPath());
-        FileWriter fw = null;
-        try {
-            XStream xstream = new XStream(new DomDriver("UTF-8"));
-            fw = new FileWriter(appFile);
-            fw.write(xstream.toXML(world));
-            log.info("Arquivo gravado:" + appFile.getAbsolutePath());
-        } catch (IOException ex) {
-            log.error("Problemas com o arquivo...", ex);
-            throw new PersistenceException(ex);
-        } finally {
-            try {
-                if (fw != null) {
-                    fw.close();
-                }
-            } catch (IOException ex) {
-                log.error("texto...", ex);
-            }
-        }
-    }
+//
+//    private Object getOld(File file) throws PersistenceException {
+//        log.info("Carregando " + file.getName());
+//        Reader fileReader = null;
+//        try {
+//            // XStream 'e o nosso leitor de XML to Bean
+//            XStream xstream = new XStream(new DomDriver("UTF-8"));
+//            fileReader = new FileReader(file);
+//            return xstream.fromXML(fileReader);
+//        } catch (FileNotFoundException ex) {
+//            throw new PersistenceException(label.getString("ARQUIVO.NAO.ENCONTRADO"), ex);
+//        } catch (Exception ex) {
+//            throw new PersistenceException(label.getString("ARQUIVO.CORROMPIDO"), ex);
+//        } finally {
+//            try {
+//                if (fileReader != null) {
+//                    fileReader.close();
+//                }
+//            } catch (IOException ex) {
+//                log.error(ex);
+//            }
+//        }
+//    }
+//
+//    private void saveOld(Object world, File appFile) throws PersistenceException {
+//        log.info("Gravando XML. File: " + appFile.getPath());
+//        FileWriter fw = null;
+//        try {
+//            XStream xstream = new XStream(new DomDriver("UTF-8"));
+//            fw = new FileWriter(appFile);
+//            fw.write(xstream.toXML(world));
+//            log.info("Arquivo gravado:" + appFile.getAbsolutePath());
+//        } catch (IOException ex) {
+//            log.error("Problemas com o arquivo...", ex);
+//            throw new PersistenceException(ex);
+//        } finally {
+//            try {
+//                if (fw != null) {
+//                    fw.close();
+//                }
+//            } catch (IOException ex) {
+//                log.error("texto...", ex);
+//            }
+//        }
+//    }
 
     /**
      * Used to extract and return the extension of a given file.
+     *
      * @param f Incoming file to get the extension of
      * @return <code>String</code> representing the extension of the incoming
-     *         file.
+     * file.
      */
     private static String getExtension(String f) {
         String ext = "";
@@ -194,9 +197,10 @@ public class XmlManager implements Serializable {
 
     /**
      * Used to extract the filename without its extension.
+     *
      * @param f Incoming file to get the filename
      * @return <code>String</code> representing the filename without its
-     *         extension.
+     * extension.
      */
     private static String getFileName(String f) {
         String fname = "";

@@ -7,6 +7,7 @@ package persistence;
 import baseLib.ExtensionFileFilter;
 import baseLib.SysApoio;
 import baseLib.SysProperties;
+import business.services.ComparatorFactory;
 import java.io.File;
 import java.io.Serializable;
 import model.Partida;
@@ -23,6 +24,13 @@ public class PathFactory implements Serializable {
     private static final Log log = LogFactory.getLog(PathFactory.class);
     private static final BundleManager label = SettingsManager.getInstance().getBundleManager();
     private static PathFactory instance;
+
+    public synchronized static PathFactory getInstance() {
+        if (PathFactory.instance == null) {
+            PathFactory.instance = new PathFactory();
+        }
+        return PathFactory.instance;
+    }
 
     public static String getWorldFileName(World world) {
         return String.format(label.getString("FILENAME.WORLD"),
@@ -82,6 +90,25 @@ public class PathFactory implements Serializable {
         }
     }
 
+    public File getLoadDir() {
+        // Destination directory
+        File loadDir = new File(SysProperties.getProps("loadDir"));
+        if (!loadDir.exists()) {
+            throw new UnsupportedOperationException("Folder not found: " + loadDir.getAbsolutePath());
+        }
+        return loadDir;
+    }
+
+    public File[] getLoadDirFiles() {
+        File[] files = getLoadDir().listFiles(getFilterAcoesImport());
+        ComparatorFactory.getComparatorFileTimeSorter(files);
+        return files;
+    }
+
+    public File getLoadDirTargetFile(String filename) {
+        return new File(getLoadDir(), filename);
+    }
+
     private boolean deleteFile(File file) {
         String fileName = file.getName();
         // Make sure the file or directory exists and isn't write protected
@@ -109,16 +136,5 @@ public class PathFactory implements Serializable {
 //            throw new IllegalArgumentException("Delete: deletion failed");
 //        }
         return success;
-    }
-
-    /**
-     *
-     * @return the instance
-     */
-    public synchronized static PathFactory getInstance() {
-        if (PathFactory.instance == null) {
-            PathFactory.instance = new PathFactory();
-        }
-        return PathFactory.instance;
     }
 }

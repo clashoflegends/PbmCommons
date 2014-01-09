@@ -15,13 +15,12 @@ import org.apache.commons.logging.LogFactory;
 public class PersistenceException extends Exception implements Serializable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -7627358693367987945L;
     private static Log log = LogFactory.getLog(PersistenceException.class);
 
     public PersistenceException() {
-
     }
 
     public PersistenceException(Throwable cause) {
