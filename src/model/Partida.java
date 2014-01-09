@@ -5,6 +5,7 @@
 package model;
 
 import baseLib.BaseModel;
+import java.util.Date;
 
 /**
  *
@@ -17,6 +18,7 @@ public class Partida extends BaseModel {
     private Jogador jogadorAtivo; //jogador ativo
     private Mercado mercado;
     private String language;
+    private Date deadline = new Date();
     private boolean gameOver = false;
 
     public int getNumero() {
