@@ -97,6 +97,9 @@ public class ExercitoFacade implements Serializable {
     public int getComida(Exercito exercito) {
         return exercito.getComida();
     }
+    public int getMoral(Exercito exercito) {
+        return exercito.getMoral();
+    }
 
     public Jogador getJogador(Exercito exercito) {
         try {
