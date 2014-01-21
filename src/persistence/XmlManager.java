@@ -65,6 +65,7 @@ public class XmlManager implements Serializable {
         } catch (PersistenceException e) {
             throw new PersistenceException(e.getMessage());
         } catch (com.thoughtworks.xstream.converters.ConversionException ex) {
+            log.error(ex);
             throw new PersistenceException(
                     String.format(label.getString("ARQUIVO.INCOMPATIVEL"),
                     inFile.getAbsolutePath()));

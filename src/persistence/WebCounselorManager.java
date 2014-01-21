@@ -5,6 +5,7 @@
 package persistence;
 
 import baseLib.SysApoio;
+import baseLib.SysProperties;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -55,7 +56,7 @@ public class WebCounselorManager {
         return instance;
     }
 
-    public int doSendViaPost(File attachment, Partida partida) throws PersistenceException {
+    public int doSendViaPost(File attachment, Partida partida, String textBody) throws PersistenceException {
         Jogador jogador = partida.getJogadorAtivo();
         try {
             HttpClient client = new DefaultHttpClient();
@@ -69,6 +70,11 @@ public class WebCounselorManager {
             entity.addPart("pTurno", new StringBody(partida.getTurno() + ""));
             entity.addPart("pJogador", new StringBody(jogador.getId() + ""));
             entity.addPart("pJogadorLogin", new StringBody(jogador.getLogin()));
+            if (SysProperties.getProps("SendOrderReceiptRequest", "1").equals("1")) {
+                entity.addPart("pTextBody", new StringBody(textBody));
+                entity.addPart("pPartidaName", new StringBody(partida.getNome()));
+                entity.addPart("pJogadorEmail", new StringBody(jogador.getEmail()));
+            }
 
             // aqui define a URL
             HttpPost post = new HttpPost(getUrl("CounselorUploadTurn"));

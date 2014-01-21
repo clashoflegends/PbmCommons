@@ -6,6 +6,7 @@ package model;
 
 import baseLib.BaseModel;
 import java.util.Date;
+import utils.LongDate;
 
 /**
  *
@@ -18,6 +19,7 @@ public class Partida extends BaseModel {
     private Jogador jogadorAtivo; //jogador ativo
     private Mercado mercado;
     private String language;
+    private LongDate dtDeadline;
     private Date deadline = new Date();
     private boolean gameOver = false;
 
@@ -106,6 +108,14 @@ public class Partida extends BaseModel {
      */
     public void setGameOver(boolean gameOver) {
         this.gameOver = gameOver;
+    }
+
+    public LongDate getDeadline() {
+        return dtDeadline;
+    }
+
+    public void setDeadline(LongDate deadline) {
+        this.dtDeadline = deadline;
     }
 
     /**
