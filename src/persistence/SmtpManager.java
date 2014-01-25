@@ -65,7 +65,7 @@ public class SmtpManager implements Serializable {
     public SmtpManager() {
     }
 
-    private void clear() {
+    public void clear() {
         toMain = "NA";
         toCc = "NA";
         attachmentList.clear();
@@ -164,7 +164,6 @@ public class SmtpManager implements Serializable {
             transport = session.getTransport(getProtocol());
             transport.connect(getLoginNameSmtp(), getPwdSmtp());
             transport.sendMessage(msg, msg.getAllRecipients());
-            clear();
             ret = true;
 
         } catch (SendFailedException ex) {
@@ -182,6 +181,8 @@ public class SmtpManager implements Serializable {
             }
         } catch (Exception ex) {
             log.info("Erro no envio SmtpManager. Verifique espacos no email.", ex);
+        } finally {
+            clear();
         }
         return ret;
     }
