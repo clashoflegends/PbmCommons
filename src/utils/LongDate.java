@@ -99,7 +99,7 @@ public class LongDate {
         }
     }
 
-    public long getDaysDiffToNow() {
+    public int getDaysDiffToNow() {
         return getDaysDiff(getDateLongAsDate(), Calendar.getInstance().getTime());
     }
 
