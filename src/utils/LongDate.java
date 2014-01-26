@@ -4,7 +4,11 @@
  */
 package utils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -22,6 +26,18 @@ public class LongDate {
 
     public LongDate(long date) {
         this.dateLong = date;
+    }
+
+    public long getDateLong() {
+        return dateLong;
+    }
+
+    public Date getDateLongAsDate() {
+        return longToCalendar(dateLong).getTime();
+    }
+
+    public void setDateLong(long dateLong) {
+        this.dateLong = dateLong;
     }
 
     public long toLong() {
@@ -64,40 +80,48 @@ public class LongDate {
         return String.format("%s-%s-%s %s:%s:00", year, month, day, hour, minute);
     }
 
-    public long plusWeek(int weeks) {
-        return getDateLong() + (70000 * weeks);
+    private static long calendarToLong(Calendar date) throws NumberFormatException {
+//        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH);
+//        long baseDate = Long.valueOf(sdf.format(cal.getTime()));
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
+        final String format = sdf.format(date.getTime());
+        return Long.valueOf(format) * 10000 + 2300;
     }
 
-    public long getDaysDiff(long baseDate) {
-        return (getDateLong() - baseDate) / 10000;
+    private Calendar longToCalendar(long dateLong) throws NumberFormatException {
+        try {
+            final Calendar ret = Calendar.getInstance();
+            final Date date = new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH).parse(dateLong + "");
+            ret.setTime(date);
+            return ret;
+        } catch (ParseException ex) {
+            throw new UnsupportedOperationException(ex);
+        }
     }
 
     public long getDaysDiffToNow() {
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMddHHmm");
-        long baseDate = Long.valueOf(sdf.format(cal.getTime()));
-        return getDaysDiff(baseDate);
+        return getDaysDiff(getDateLongAsDate(), Calendar.getInstance().getTime());
     }
 
     public static long nowToNextWednesday(int weeks) {
-        long ret = 0;
         Calendar date = Calendar.getInstance();
+
         int diff = Calendar.WEDNESDAY - date.get(Calendar.DAY_OF_WEEK);
         if (!(diff > 0)) {
             diff += 7 * weeks;
         }
         date.add(Calendar.DAY_OF_MONTH, diff);
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd");
-        String format = sdf.format(date.getTime());
-        ret = Long.valueOf(format) * 10000;
-        return ret;
+        return calendarToLong(date);
     }
 
-    public long getDateLong() {
-        return dateLong;
+    public long plusWeek(int weeks) {
+        Calendar base = longToCalendar(getDateLong());
+        base.add(Calendar.DATE, 7 * weeks);
+        return calendarToLong(base);
     }
 
-    public void setDateLong(long dateLong) {
-        this.dateLong = dateLong;
+    private int getDaysDiff(Date newerDate, Date olderDate) {
+        return (int) ((newerDate.getTime() - olderDate.getTime())
+                / (1000 * 60 * 60 * 24));
     }
 }
