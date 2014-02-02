@@ -1,7 +1,7 @@
 /*
  * SysProperties.java
  *
- * Created on 28 de Mar�o de 2007, 13:02
+ * Created on 28 de Marco de 2007, 13:02
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -19,10 +19,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SysProperties implements Serializable {
 
+    private static final Log log = LogFactory.getLog(SysProperties.class);
     private static Properties props;
     private static SysProperties instance;
     private static String propArqName = "properties.config";
-    private static final Log log = LogFactory.getLog(SysProperties.class);
     private static final String comentario = "Counselor config file\n"
             + "filtro.default=0|1 -> All|Own\n"
             + "maximizeWindowOnStart = 0|1 -> normal|maximize\n"
@@ -168,5 +168,16 @@ public class SysProperties implements Serializable {
             log.fatal(ex);
             System.exit(-1);
         }
+    }
+
+    public Properties loadPropertiesFile(String fileName) {
+        Properties properties = new Properties();
+        try {
+            InputStream propIn = new FileInputStream(new File(fileName));
+            properties.load(propIn);
+        } catch (IOException e) {
+            //Arquivo nao encontrado
+        }
+        return properties;
     }
 }
