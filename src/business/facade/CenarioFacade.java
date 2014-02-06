@@ -167,7 +167,11 @@ public class CenarioFacade implements Serializable {
     }
 
     public boolean hasOrdensCidade(Cenario cenario) {
-        return !cenario.isSW();
+        return cenario.hasHabilidade(";SOC;");
+    }
+
+    public boolean hasResourceManagement(Cenario cenario) {
+        return !cenario.hasHabilidade(";SNR;");
     }
 
     public boolean hasShips(Cenario cenario) {

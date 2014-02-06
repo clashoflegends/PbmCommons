@@ -25,7 +25,7 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     private int direcaoAnterior = 0; //direcao anterior
     private int direcao;
     private boolean comida;
-    private boolean moveMountain;
+    private boolean moveMountain = true;
     private boolean cavalarias;
     private boolean porAgua;
     private boolean evasivo;
