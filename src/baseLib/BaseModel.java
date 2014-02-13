@@ -19,6 +19,7 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     private String nome;
     private String codigo;
     private boolean changed = false;
+    private String resultados = "";
     private SortedMap<String, Habilidade> habilidades = new TreeMap<String, Habilidade>();
 
     @Override
@@ -130,5 +131,17 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
      */
     public void setChanged(boolean changed) {
         this.changed = changed;
+    }
+
+    public String getResultados() {
+        return resultados;
+    }
+
+    public void setResultados(String resultados) {
+        this.resultados = resultados;
+    }
+
+    public boolean isPersonagem() {
+        return false;
     }
 }

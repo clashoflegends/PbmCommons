@@ -246,4 +246,8 @@ public class CidadeFacade implements Serializable {
     public int getDefesa(int tamanho, int fortificacao, int lealdade) {
         return combatSimFacade.getDefesa(tamanho, fortificacao, lealdade);
     }
+
+    public String getResultado(Cidade cidade) {
+        return cidade.getResultados();
+    }
 }

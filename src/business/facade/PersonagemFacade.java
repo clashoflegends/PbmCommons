@@ -112,29 +112,7 @@ public class PersonagemFacade implements Serializable {
         }
     }
 
-    public String[] getOrdemDisplay(Personagem personagem, int index, int qtOrdensCenario, Jogador owner) {
-        if (!this.isAtivo(personagem)) {
-            return (new String[]{"-", ""});
-        }
-        if (!owner.isNacao(this.getNacao(personagem))) {
-            return (new String[]{"-", ""});
-        }
-        try {
-            Ordem ordem = personagem.getOrdem(index).getOrdem();
-            List parametros = personagem.getOrdem(index).getParametrosDisplay();
-            String[] ret = new String[2];
-            ret[0] = ordem.getDescricao();
-            ret[1] = parametros.toString();
-            return ret;
-        } catch (NullPointerException ex) {
-            if (index >= personagem.getOrdensExtraQt() + qtOrdensCenario) {
-                return (new String[]{"-", ""});
-            } else {
-                return (new String[]{" ", ""});
-            }
-        }
-    }
-
+    
     public String getParametroDisplay(Personagem personagem, int indexOrdem, int indexParametro) {
         try {
             return personagem.getOrdem(indexOrdem).getParametrosDisplay().get(indexParametro);
@@ -261,7 +239,8 @@ public class PersonagemFacade implements Serializable {
      * @param tipo 0 = todos - self
      * @param tipo 1 = mesma nacao - self
      * @param tipo 2 = outras nacoes - self
-     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao - self + Null (optional)
+     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao -
+     * self + Null (optional)
      * @param tipo 4 = todos + self
      * @return
      */
@@ -541,8 +520,9 @@ public class PersonagemFacade implements Serializable {
      */
     private int doCalculaDueloNatural(Personagem personagem) {
         /**
-         * calcular o duelo: definir maior duelo por pericia, com artefatos ai somar 25% dos duelos das demais pericias.
-         * ai somar bonus de duelo e bonus de artefato de combate
+         * calcular o duelo: definir maior duelo por pericia, com artefatos ai
+         * somar 25% dos duelos das demais pericias. ai somar bonus de duelo e
+         * bonus de artefato de combate
          */
         float duelo;
         duelo = getMaiorDueloNatural(personagem);
@@ -739,12 +719,6 @@ public class PersonagemFacade implements Serializable {
         }
     }
 
-    public int getOrdemMax(Personagem personagem, Cenario cenario) {
-        int maxCenario = cenario.getNumOrdens();
-        int bonusPers = personagem.getOrdensExtraQt();
-        return maxCenario + bonusPers;
-    }
-
     public boolean hasExtraOrdem(Personagem personagem) {
         return (personagem.getOrdensExtraQt() > 0);
     }
@@ -795,5 +769,9 @@ public class PersonagemFacade implements Serializable {
             }
         }
         return false;
+    }
+
+    public boolean hasArtefatos(Personagem personagem) {
+        return !personagem.getArtefatos().isEmpty();
     }
 }

@@ -5,6 +5,7 @@
 package model;
 
 import baseLib.BaseModel;
+import business.interfaces.IOrder;
 import java.util.Arrays;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -13,7 +14,7 @@ import java.util.TreeMap;
  *
  * @author gurgel
  */
-public class Personagem extends BaseModel {
+public class Personagem extends BaseModel implements IOrder {
     // PENDING: alguns metodos deveriam sr transferidos ao Facade. Como soma de pericias. Talvez adicionar artefato.
 
     private int vida = 100, dueloBonus = 0, duelo = 0, ordensExtraQt = 0;
@@ -22,7 +23,6 @@ public class Personagem extends BaseModel {
     private int periciaEmissarioNatural = 0, periciaMagoNatural = 0;
     private int periciaFurtividade = 0, periciaFurtividadeNatural = 0;
     private boolean refem = false, npc = false;
-    private String resultados = "";
     private String portraiFilename = "";
     private Local local;
     private Local localOrigem;
@@ -35,16 +35,7 @@ public class Personagem extends BaseModel {
     private SortedMap<String, Personagem> liderados = new TreeMap();
     private SortedMap<Integer, PersonagemOrdem> ordens = new TreeMap();
     private SortedMap<Integer, PersonagemOrdem> ordensExecutadas = new TreeMap();
-    /*
-     * If this < o, return a negative value
-     * If this = o, return 0
-     * If this > o, return a positive value
-     */
 
-//    public int compareTo(Object o) {
-//        Personagem outro = (Personagem) o;
-//        return this.getCodigo().compareToIgnoreCase(outro.getCodigo());
-//    }
     public int getPericiaNaturalTotal() {
         return (periciaComandanteNatural + periciaAgenteNatural
                 + periciaEmissarioNatural + periciaMagoNatural);
@@ -52,6 +43,7 @@ public class Personagem extends BaseModel {
 
     /**
      * Se o personagem possui o artefato
+     *
      * @param artefato
      * @return
      */
@@ -73,6 +65,7 @@ public class Personagem extends BaseModel {
 
     /**
      * Se o personagem conhece o feitico
+     *
      * @param feitico
      * @return
      */
@@ -84,6 +77,7 @@ public class Personagem extends BaseModel {
         return (this.getPericiaMagoNatural() > 0);
     }
 
+    @Override
     public Nacao getNacao() {
         return nacao;
     }
@@ -260,6 +254,7 @@ public class Personagem extends BaseModel {
 
     /**
      * Soma a pericia alterada pelo artefato, mas nao altera pericia natural
+     *
      * @param valor
      */
     private void sumPericiaAgente(int valor) {
@@ -268,6 +263,7 @@ public class Personagem extends BaseModel {
 
     /**
      * Soma a pericia alterada pelo artefato, mas nao altera pericia natural
+     *
      * @param valor
      */
     private void sumPericiaComandante(int valor) {
@@ -276,6 +272,7 @@ public class Personagem extends BaseModel {
 
     /**
      * Soma a pericia alterada pelo artefato, mas nao altera pericia natural
+     *
      * @param valor
      */
     private void sumPericiaEmissario(int valor) {
@@ -284,6 +281,7 @@ public class Personagem extends BaseModel {
 
     /**
      * Soma a pericia alterada pelo artefato, mas nao altera pericia natural
+     *
      * @param valor
      */
     private void sumPericiaMago(int valor) {
@@ -292,18 +290,21 @@ public class Personagem extends BaseModel {
 
     /**
      * Soma a pericia alterada pelo artefato, mas nao altera pericia natural
+     *
      * @param valor
      */
     private void sumPericiaFurtividade(int valor) {
         this.setPericiaFurtividade(this.getPericiaFurtividade() + valor);
     }
 
-    /** recalcula o duelo do personagem */
+    /**
+     * recalcula o duelo do personagem
+     */
     public void doCalculaDuelo() {
-        /** calcular o duelo:
-         *  definir maior duelo por pericia, com artefatos
-         *  ai somar 25% dos duelos das demais pericias.
-         *  ai somar bonus de duelo e bonus de artefato de combate
+        /**
+         * calcular o duelo: definir maior duelo por pericia, com artefatos ai
+         * somar 25% dos duelos das demais pericias. ai somar bonus de duelo e
+         * bonus de artefato de combate
          */
         float dueloNew;
         dueloNew = this.getMaiorDuelo();
@@ -377,14 +378,6 @@ public class Personagem extends BaseModel {
 
     public void setRefem(boolean refem) {
         this.refem = refem;
-    }
-
-    public String getResultados() {
-        return resultados;
-    }
-
-    public void setResultados(String resultados) {
-        this.resultados = resultados;
     }
 
     public Local getLocalOrigem() {
@@ -487,6 +480,7 @@ public class Personagem extends BaseModel {
     /**
      * @return the extraOrdens
      */
+    @Override
     public int getOrdensExtraQt() {
         return ordensExtraQt;
     }
@@ -510,5 +504,15 @@ public class Personagem extends BaseModel {
      */
     public void setPortraiFilename(String portraiFilename) {
         this.portraiFilename = portraiFilename;
+    }
+
+    @Override
+    public boolean isAtivo() {
+        throw new UnsupportedOperationException("Not supported yet. Use PersonagemFacade");
+    }
+
+    @Override
+    public boolean isPersonagem() {
+        return true;
     }
 }

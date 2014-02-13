@@ -4,11 +4,14 @@
  */
 package business.facade;
 
+import business.interfaces.IOrder;
 import business.services.ComparatorFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
+import model.Cenario;
+import model.Jogador;
 import model.Ordem;
 import model.Personagem;
 import org.apache.commons.logging.Log;
@@ -214,5 +217,43 @@ public class OrdemFacade implements Serializable {
             return false;
         }
         return true;
+    }
+
+    public int getOrdemMax(IOrder actor, Cenario cenario) {
+        return cenario.getNumOrdens() + actor.getOrdensExtraQt();
+    }
+
+    public String[] getOrdemDisplay(Personagem actor, int index, Cenario cenario, Jogador owner) {
+        if (!isAtivo(actor)) {
+            return (new String[]{"-", ""});
+        }
+        if (!owner.isNacao(actor.getNacao())) {
+            return (new String[]{"-", ""});
+        }
+        try {
+            Ordem ordem = actor.getOrdem(index).getOrdem();
+
+//            resolve PersonagemORdem para ActorOrdem; mantem compatibilidade com turnos antigos;
+
+            List parametros = actor.getOrdem(index).getParametrosDisplay();
+            String[] ret = new String[2];
+            ret[0] = ordem.getDescricao();
+            ret[1] = parametros.toString();
+            return ret;
+        } catch (NullPointerException ex) {
+            if (index >= getOrdemMax(actor, cenario)) {
+                return (new String[]{"-", ""});
+            } else {
+                return (new String[]{" ", ""});
+            }
+        }
+    }
+
+    private boolean isAtivo(IOrder actor) {
+        if (actor.isPersonagem()) {
+            return personagemFacade.isAtivo((Personagem) actor);
+        } else {
+            return actor.isAtivo();
+        }
     }
 }
