@@ -71,6 +71,10 @@ public class Cenario extends BaseModel {
         return this.tituloPericia[classe][indice];
     }
 
+    public String[][] getTituloPericiaAll() {
+        return this.tituloPericia;
+    }
+
     public int getMoneyIndex() {
         // PENDING: criar um flag de controle independente da PK (id).
         int moneyIndex = 7;

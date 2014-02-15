@@ -112,7 +112,6 @@ public class PersonagemFacade implements Serializable {
         }
     }
 
-    
     public String getParametroDisplay(Personagem personagem, int indexOrdem, int indexParametro) {
         try {
             return personagem.getOrdem(indexOrdem).getParametrosDisplay().get(indexParametro);
@@ -416,9 +415,9 @@ public class PersonagemFacade implements Serializable {
          * general mariola
          */
         try {
-            int nn = (int) (exercito.getComandante().getPericiaComandanteNatural() / 10);
+            int nn = (int) (exercito.getComandante().getPericiaComandanteNatural() / 10) + 1;
             return (String.format("%s %s",
-                    BaseMsgs.tituloPericiaComandante[Math.max(1, nn)],
+                    BaseMsgs.tituloPericiaComandante[nn],
                     exercito.getComandante().getNome()));
         } catch (NullPointerException e) {
             return labels.getString("UM.DESCONHECIDO");
@@ -444,9 +443,9 @@ public class PersonagemFacade implements Serializable {
         }
         if (personagem.isMago()) {
             String[] temp = new String[4];
-            temp[aTipo] = labels.getString(cenarioFacade.getTituloClasse(cenario, CenarioFacade.MAGO));
+            temp[aTipo] = labels.getString(cenarioFacade.getTituloClasse(cenario, CenarioFacade.WIZARD));
             temp[aTitulo] = cenarioFacade.getTituloPericia(cenario,
-                    CenarioFacade.MAGO,
+                    CenarioFacade.WIZARD,
                     personagem.getPericiaMagoNatural());
             temp[aNatural] = personagem.getPericiaMagoNatural() + "";
             temp[aFinal] = personagem.getPericiaMago() + "";
@@ -454,9 +453,9 @@ public class PersonagemFacade implements Serializable {
         }
         if (personagem.isEmissario()) {
             String[] temp = new String[4];
-            temp[aTipo] = labels.getString(cenarioFacade.getTituloClasse(cenario, CenarioFacade.EMISSARIO));
+            temp[aTipo] = labels.getString(cenarioFacade.getTituloClasse(cenario, CenarioFacade.DIPLOMAT));
             temp[aTitulo] = cenarioFacade.getTituloPericia(cenario,
-                    CenarioFacade.EMISSARIO,
+                    CenarioFacade.DIPLOMAT,
                     personagem.getPericiaEmissarioNatural());
             temp[aNatural] = personagem.getPericiaEmissarioNatural() + "";
             temp[aFinal] = personagem.getPericiaEmissario() + "";
@@ -464,9 +463,9 @@ public class PersonagemFacade implements Serializable {
         }
         if (personagem.isAgente()) {
             String[] temp = new String[4];
-            temp[aTipo] = labels.getString(cenarioFacade.getTituloClasse(cenario, CenarioFacade.AGENTE));
+            temp[aTipo] = labels.getString(cenarioFacade.getTituloClasse(cenario, CenarioFacade.ROGUE));
             temp[aTitulo] = cenarioFacade.getTituloPericia(cenario,
-                    CenarioFacade.AGENTE,
+                    CenarioFacade.ROGUE,
                     personagem.getPericiaAgenteNatural());
             temp[aNatural] = personagem.getPericiaAgenteNatural() + "";
             temp[aFinal] = personagem.getPericiaAgente() + "";

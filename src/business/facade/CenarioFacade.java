@@ -4,6 +4,7 @@
  */
 package business.facade;
 
+import business.converter.ConverterFactory;
 import java.io.Serializable;
 import java.util.*;
 import model.*;
@@ -19,11 +20,12 @@ import persistence.SettingsManager;
 public class CenarioFacade implements Serializable {
 
     public static final int COMANDANTE = 0;
-    public static final int AGENTE = 1;
-    public static final int EMISSARIO = 2;
-    public static final int MAGO = 3;
+    public static final int ROGUE = 1;
+    public static final int DIPLOMAT = 2;
+    public static final int WIZARD = 3;
     private static final Log log = LogFactory.getLog(CenarioFacade.class);
     private static final BundleManager label = SettingsManager.getInstance().getBundleManager();
+    private int[][] bonusTatica = new int[6][6];
 
     public static boolean isGrecia(Cenario cenario) {
         return cenario.isGrecia();
@@ -46,13 +48,27 @@ public class CenarioFacade implements Serializable {
     }
 
     public String getTituloPericia(Cenario cenario, int classe, int vlPericia) {
-        int indice = (int) Math.floor(vlPericia / 10);
-        if (indice > 10) {
-            indice = 10;
-        } else if (indice < 0) {
+        int indice = (int) Math.floor(vlPericia / 10) + 1;
+        if (vlPericia <= 0) {
             indice = 0;
+        } else if (indice > 11) {
+            indice = 11;
         }
         return (cenario.getTituloPericia(classe, indice));
+    }
+
+    public SortedMap<Integer, String[]> getTituloPericiaAll(Cenario cenario) {
+        SortedMap<Integer, String[]> ret = new TreeMap<Integer, String[]>();
+        final String[][] tituloPericia = cenario.getTituloPericiaAll();
+        ret.put(COMANDANTE, tituloPericia[COMANDANTE]);
+        ret.put(ROGUE, tituloPericia[ROGUE]);
+        if (hasDiplomat(cenario)) {
+            ret.put(DIPLOMAT, tituloPericia[DIPLOMAT]);
+        }
+        if (hasWizard(cenario)) {
+            ret.put(WIZARD, tituloPericia[WIZARD]);
+        }
+        return ret;
     }
 
     /**
@@ -92,6 +108,56 @@ public class CenarioFacade implements Serializable {
 
     public String[][] listTaticas(Cenario cenario) {
         return cenario.getTaticas();
+    }
+
+    public int getTaticaBonus(Cenario cenario, String taticaA, String taticaB) {
+        return getTaticaBonus(cenario, ConverterFactory.taticaToInt(taticaA), ConverterFactory.taticaToInt(taticaB));
+    }
+
+    public int getTaticaBonus(Cenario cenario, int taticaA, int taticaB) {
+        if (this.bonusTatica[0][0] == 0) {
+            setBonusTatica();
+        }
+        return this.bonusTatica[taticaA][taticaB];
+    }
+
+    private void setBonusTatica() {
+        this.bonusTatica[0][0] = 100;
+        this.bonusTatica[0][1] = 100;
+        this.bonusTatica[0][2] = 110;
+        this.bonusTatica[0][3] = 100;
+        this.bonusTatica[0][4] = 120;
+        this.bonusTatica[0][5] = 80;
+        this.bonusTatica[1][0] = 100;
+        this.bonusTatica[1][1] = 100;
+        this.bonusTatica[1][2] = 90;
+        this.bonusTatica[1][3] = 80;
+        this.bonusTatica[1][4] = 110;
+        this.bonusTatica[1][5] = 120;
+        this.bonusTatica[2][0] = 80;
+        this.bonusTatica[2][1] = 120;
+        this.bonusTatica[2][2] = 100;
+        this.bonusTatica[2][3] = 100;
+        this.bonusTatica[2][4] = 100;
+        this.bonusTatica[2][5] = 100;
+        this.bonusTatica[3][0] = 100;
+        this.bonusTatica[3][1] = 120;
+        this.bonusTatica[3][2] = 100;
+        this.bonusTatica[3][3] = 100;
+        this.bonusTatica[3][4] = 80;
+        this.bonusTatica[3][5] = 100;
+        this.bonusTatica[4][0] = 90;
+        this.bonusTatica[4][1] = 80;
+        this.bonusTatica[4][2] = 100;
+        this.bonusTatica[4][3] = 120;
+        this.bonusTatica[4][4] = 100;
+        this.bonusTatica[4][5] = 100;
+        this.bonusTatica[5][0] = 120;
+        this.bonusTatica[5][1] = 80;
+        this.bonusTatica[5][2] = 100;
+        this.bonusTatica[5][3] = 100;
+        this.bonusTatica[5][4] = 100;
+        this.bonusTatica[5][5] = 100;
     }
 
     public Collection<TipoTropa> getTipoTropas(Cenario cenario) {
@@ -184,5 +250,13 @@ public class CenarioFacade implements Serializable {
 
     public boolean hasLordVasalAlliances(Cenario cenario) {
         return cenario.hasHabilidade(";SVS;");
+    }
+
+    public boolean hasDiplomat(Cenario cenario) {
+        return cenario.hasHabilidade(";PE;");
+    }
+
+    public boolean hasWizard(Cenario cenario) {
+        return !cenario.hasHabilidade(";PW;");
     }
 }

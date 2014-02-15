@@ -5,6 +5,7 @@
 package msgs;
 
 import business.facade.AcaoFacade;
+import business.facade.CenarioFacade;
 import business.facade.ExercitoFacade;
 import business.facade.FeiticoFacade;
 import business.facade.PersonagemFacade;
@@ -123,6 +124,22 @@ public class TitleFactory implements Serializable {
             return tipoPersonagem[6];
         } else {
             return "-";
+        }
+    }
+
+    public static String getTipoPersonagem(Integer skillClass) {
+
+        switch (skillClass) {
+            case CenarioFacade.COMANDANTE:
+                return tipoPersonagem[1];
+            case CenarioFacade.ROGUE:
+                return tipoPersonagem[2];
+            case CenarioFacade.DIPLOMAT:
+                return tipoPersonagem[3];
+            case CenarioFacade.WIZARD:
+                return tipoPersonagem[4];
+            default:
+                return labels.getString("DESCONHECIDA");
         }
     }
 

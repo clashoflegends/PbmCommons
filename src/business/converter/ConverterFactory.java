@@ -40,6 +40,25 @@ public final class ConverterFactory implements Serializable {
         return ret;
     }
 
+    public static String taticaToCodigo(int tatica) {
+        switch (tatica) {
+            case 0:
+                return "ca";
+            case 1:
+                return "fl";
+            case 2:
+                return "pa";
+            case 3:
+                return "ce";
+            case 4:
+                return "gu";
+            case 5:
+                return "em";
+            default:
+                return "pa";
+        }
+    }
+
     public static String direcaoToStr(String direcao) {
         String ret = "0";
         if (direcao.equalsIgnoreCase("C")) {
@@ -252,7 +271,7 @@ public final class ConverterFactory implements Serializable {
         return ret;
     }
 
-    public static Produto intToProduto(int tipoProduto, SortedMap<String, Produto>  produtos) {
+    public static Produto intToProduto(int tipoProduto, SortedMap<String, Produto> produtos) {
         for (Produto produto : produtos.values()) {
             if (produto.getId() == tipoProduto) {
                 return produto;
