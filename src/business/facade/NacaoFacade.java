@@ -15,7 +15,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
 import persistence.SettingsManager;
-import persistence.WorldManagerBase;
 
 /**
  *
@@ -396,5 +395,19 @@ public class NacaoFacade implements Serializable {
 
     public boolean isAtiva(Nacao nacao) {
         return nacao.isAtiva();
+    }
+
+    public Personagem[] listPersonagemNaoNacao(Nacao nacao, Collection<Personagem> listPersonagens) {
+        List lista = new ArrayList();
+        lista.addAll(listPersonagens);
+        lista.removeAll(nacao.getPersonagens());
+        return (Personagem[]) lista.toArray(new Personagem[0]);
+    }
+
+    public Personagem[] listPersonagemNacao(Nacao nacao, Personagem personagem) {
+        List lista = new ArrayList();
+        lista.addAll(nacao.getPersonagens());
+        lista.remove(personagem);
+        return (Personagem[]) lista.toArray(new Personagem[0]);
     }
 }

@@ -5,7 +5,6 @@
 package model;
 
 import baseLib.BaseModel;
-import business.interfaces.IOrder;
 import java.util.Arrays;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -14,7 +13,7 @@ import java.util.TreeMap;
  *
  * @author gurgel
  */
-public class Personagem extends BaseModel implements IOrder {
+public class Personagem extends BaseModel {
     // PENDING: alguns metodos deveriam sr transferidos ao Facade. Como soma de pericias. Talvez adicionar artefato.
 
     private int vida = 100, dueloBonus = 0, duelo = 0, ordensExtraQt = 0;
@@ -77,7 +76,6 @@ public class Personagem extends BaseModel implements IOrder {
         return (this.getPericiaMagoNatural() > 0);
     }
 
-    @Override
     public Nacao getNacao() {
         return nacao;
     }
@@ -480,7 +478,6 @@ public class Personagem extends BaseModel implements IOrder {
     /**
      * @return the extraOrdens
      */
-    @Override
     public int getOrdensExtraQt() {
         return ordensExtraQt;
     }
@@ -506,7 +503,6 @@ public class Personagem extends BaseModel implements IOrder {
         this.portraiFilename = portraiFilename;
     }
 
-    @Override
     public boolean isAtivo() {
         throw new UnsupportedOperationException("Not supported yet. Use PersonagemFacade");
     }

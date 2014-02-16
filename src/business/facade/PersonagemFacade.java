@@ -232,55 +232,6 @@ public class PersonagemFacade implements Serializable {
         return ret;
     }
 
-    /**
-     * @param personagem
-     * @param tipo
-     * @param tipo 0 = todos - self
-     * @param tipo 1 = mesma nacao - self
-     * @param tipo 2 = outras nacoes - self
-     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao -
-     * self + Null (optional)
-     * @param tipo 4 = todos + self
-     * @return
-     */
-    public Personagem[] listPersonagemLocal(Personagem personagem, int tipo) {
-        List ret = new ArrayList();
-        if (tipo == 0) {
-            ret.addAll(personagem.getLocal().getPersonagens().values());
-            ret.remove(personagem);
-        } else if (tipo == 1) {
-            for (Personagem pers : personagem.getLocal().getPersonagens().values()) {
-                if (personagem != pers && personagem.getNacao() == pers.getNacao()) {
-                    ret.add(pers);
-                }
-            }
-            ret.remove(personagem);
-        } else if (tipo == 2) {
-            ret.addAll(personagem.getLocal().getPersonagens().values());
-            ret.removeAll(personagem.getNacao().getPersonagens());
-            ret.remove(personagem);
-        } else if (tipo == 3) {
-            for (Personagem pers : personagem.getLocal().getPersonagens().values()) {
-                if (pers.isComandante()) {
-                    ret.add(pers);
-                }
-            }
-            if (personagem.isComandaExercito()) {
-                ret.remove(personagem);
-            }
-        } else if (tipo == 4) {
-            ret.addAll(personagem.getLocal().getPersonagens().values());
-        }
-        return (Personagem[]) ret.toArray(new Personagem[0]);
-    }
-
-    public Personagem[] listPersonagemNacao(Personagem personagem) {
-        List lista = new ArrayList();
-        lista.addAll(personagem.getNacao().getPersonagens());
-        lista.remove(personagem);
-        return (Personagem[]) lista.toArray(new Personagem[0]);
-    }
-
     public void setOrdem(Personagem personagem, int index, PersonagemOrdem personagemOrdem) {
         personagem.setOrdem(index, personagemOrdem);
     }

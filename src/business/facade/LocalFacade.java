@@ -7,7 +7,9 @@ package business.facade;
 import baseLib.SysApoio;
 import business.converter.ConverterFactory;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import model.*;
@@ -280,7 +282,7 @@ public class LocalFacade implements Serializable {
             if (borderOnly && distancia == range) {
                 //no filling, border only
                 list.put(target, distancia);
-            } else if ( distancia <= range) {
+            } else if (distancia <= range) {
                 //with filling
                 list.put(target, distancia);
             }
@@ -306,5 +308,47 @@ public class LocalFacade implements Serializable {
             }
         }
         return false;
+    }
+
+    /**
+     * @param personagem
+     * @param tipo
+     * @param tipo 0 = todos - self
+     * @param tipo 1 = mesma nacao - self
+     * @param tipo 2 = outras nacoes - self
+     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao -
+     * self + Null (optional)
+     * @param tipo 4 = todos + self
+     * @return
+     */
+    public Personagem[] listPersonagemLocal(Local local, Personagem personagem, int tipo) {
+        List ret = new ArrayList();
+        if (tipo == 0) {
+            ret.addAll(local.getPersonagens().values());
+            ret.remove(personagem);
+        } else if (tipo == 1) {
+            for (Personagem pers : local.getPersonagens().values()) {
+                if (personagem != pers && personagem.getNacao() == pers.getNacao()) {
+                    ret.add(pers);
+                }
+            }
+            ret.remove(personagem);
+        } else if (tipo == 2) {
+            ret.addAll(local.getPersonagens().values());
+            ret.removeAll(personagem.getNacao().getPersonagens());
+            ret.remove(personagem);
+        } else if (tipo == 3) {
+            for (Personagem pers : local.getPersonagens().values()) {
+                if (pers.isComandante()) {
+                    ret.add(pers);
+                }
+            }
+            if (personagem.isComandaExercito()) {
+                ret.remove(personagem);
+            }
+        } else if (tipo == 4) {
+            ret.addAll(local.getPersonagens().values());
+        }
+        return (Personagem[]) ret.toArray(new Personagem[0]);
     }
 }

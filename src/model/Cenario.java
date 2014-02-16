@@ -21,7 +21,7 @@ public class Cenario extends BaseModel {
     private SortedMap<String, Terreno> terrenos = new TreeMap();
     private SortedMap<String, Ordem> ordens = new TreeMap(); //ordem.getCodigo(), ordem
     private SortedMap<String, TipoTropa> tipoTropa = new TreeMap(); //cd, tipoTropa
-    private String[][] tituloPericia = new String[4][11];
+    private String[][] tituloPericia = new String[4][12];
     private int numMaxArtefatos;
     private int numMaxPersonagem;
     private int numMaxMovimento;
@@ -68,6 +68,10 @@ public class Cenario extends BaseModel {
      * @return tituloPericia
      */
     public String getTituloPericia(int classe, int indice) {
+        if (this.tituloPericia[0].length < 12) {
+            //xxx: temporary for migration
+            return this.tituloPericia[classe][indice - 1];
+        }
         return this.tituloPericia[classe][indice];
     }
 

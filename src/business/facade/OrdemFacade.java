@@ -4,7 +4,6 @@
  */
 package business.facade;
 
-import business.interfaces.IOrder;
 import business.services.ComparatorFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -219,7 +218,7 @@ public class OrdemFacade implements Serializable {
         return true;
     }
 
-    public int getOrdemMax(IOrder actor, Cenario cenario) {
+    public int getOrdemMax(Personagem actor, Cenario cenario) {
         return cenario.getNumOrdens() + actor.getOrdensExtraQt();
     }
 
@@ -249,7 +248,7 @@ public class OrdemFacade implements Serializable {
         }
     }
 
-    private boolean isAtivo(IOrder actor) {
+    private boolean isAtivo(Personagem actor) {
         if (actor.isPersonagem()) {
             return personagemFacade.isAtivo((Personagem) actor);
         } else {

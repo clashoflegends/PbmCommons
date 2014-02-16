@@ -18,7 +18,7 @@ public class PersonagemFeitico extends BaseModel {
         return feitico;
     }
 
-    public void setFeitico(Feitico feitico) {
+    private void setFeitico(Feitico feitico) {
         this.feitico = feitico;
     }
 
@@ -26,7 +26,7 @@ public class PersonagemFeitico extends BaseModel {
         return habilidade;
     }
 
-    public void setHabilidade(int habilidade) {
+    public final void setHabilidade(int habilidade) {
         this.habilidade = habilidade;
     }
 
