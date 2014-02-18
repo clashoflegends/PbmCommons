@@ -32,8 +32,8 @@ public class Personagem extends BaseModel {
     private SortedMap<String, Artefato> artefatos = new TreeMap();
     private SortedMap<Integer, PersonagemFeitico> feiticos = new TreeMap();
     private SortedMap<String, Personagem> liderados = new TreeMap();
-    private SortedMap<Integer, PersonagemOrdem> ordens = new TreeMap();
-    private SortedMap<Integer, PersonagemOrdem> ordensExecutadas = new TreeMap();
+    private SortedMap<Integer, PersonagemOrdem> ordens = new TreeMap();  //kept for backwards compatibility
+    private SortedMap<Integer, PersonagemOrdem> ordensExecutadas = new TreeMap(); //kept for backwards compatibility
 
     public int getPericiaNaturalTotal() {
         return (periciaComandanteNatural + periciaAgenteNatural
@@ -425,40 +425,6 @@ public class Personagem extends BaseModel {
 
     public boolean isComandaExercito() {
         return (this.getExercito() != null);
-    }
-
-    //client
-    public PersonagemOrdem getOrdem(int index) {
-        try {
-            return this.ordens.get(index);
-        } catch (IndexOutOfBoundsException ex) {
-            return null;
-        }
-    }
-
-    public void setOrdem(int index, PersonagemOrdem pOrdem) {
-        this.ordens.put(index, pOrdem);
-    }
-
-    public int getOrdensSize() {
-        return this.ordens.size();
-    }
-
-    public SortedMap<Integer, PersonagemOrdem> getOrdens() {
-        return this.ordens;
-    }
-
-    public void remOrdens() {
-        this.ordens.clear();
-    }
-
-    //server
-    public void addOrdemExecutada(PersonagemOrdem po) {
-        this.ordensExecutadas.put(this.ordensExecutadas.size(), po);
-    }
-
-    public SortedMap<Integer, PersonagemOrdem> getOrdensExecutadas() {
-        return this.ordensExecutadas;
     }
 
     /**

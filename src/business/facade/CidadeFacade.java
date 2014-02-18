@@ -250,4 +250,12 @@ public class CidadeFacade implements Serializable {
     public String getResultado(Cidade cidade) {
         return cidade.getResultados();
     }
+
+    public boolean isAtivo(Cidade cidade) {
+        return cidade.getTamanho() > 0;
+    }
+
+    public Raca getNacaoRaca(Cidade cidade) {
+        return getNacao(cidade).getRaca();
+    }
 }

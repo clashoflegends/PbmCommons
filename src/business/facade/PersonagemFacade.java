@@ -72,54 +72,6 @@ public class PersonagemFacade implements Serializable {
         }
     }
 
-    public Ordem getOrdem(Personagem personagem, int index) {
-        try {
-            return personagem.getOrdem(index).getOrdem();
-        } catch (NullPointerException ex) {
-            return null;
-        }
-    }
-
-    public PersonagemOrdem getPersonagemOrdem(Personagem personagem, int index) {
-        try {
-            return personagem.getOrdem(index);
-        } catch (NullPointerException ex) {
-            return null;
-        }
-    }
-
-    public SortedMap<Integer, PersonagemOrdem> getOrdensExecutadas(Personagem personagem) {
-        try {
-            return personagem.getOrdensExecutadas();
-        } catch (NullPointerException ex) {
-            return null;
-        }
-    }
-
-    public List<String> getParametrosId(Personagem personagem, int index) {
-        try {
-            return personagem.getOrdem(index).getParametrosId();
-        } catch (NullPointerException ex) {
-            return null;
-        }
-    }
-
-    public List<String> getParametrosDisplay(Personagem personagem, int index) {
-        try {
-            return personagem.getOrdem(index).getParametrosDisplay();
-        } catch (NullPointerException ex) {
-            return null;
-        }
-    }
-
-    public String getParametroDisplay(Personagem personagem, int indexOrdem, int indexParametro) {
-        try {
-            return personagem.getOrdem(indexOrdem).getParametrosDisplay().get(indexParametro);
-        } catch (Exception ex) {
-            return "";
-        }
-    }
-
     public String getCoordenadas(Personagem personagem) {
         return localFacade.getCoordenadas(personagem.getLocal());
     }
@@ -230,10 +182,6 @@ public class PersonagemFacade implements Serializable {
             ret = feiticoFacade.hasRequisito(feiticoAlvo, listFeiticos);
         }
         return ret;
-    }
-
-    public void setOrdem(Personagem personagem, int index, PersonagemOrdem personagemOrdem) {
-        personagem.setOrdem(index, personagemOrdem);
     }
 
     public boolean isInCapital(Personagem personagem) {

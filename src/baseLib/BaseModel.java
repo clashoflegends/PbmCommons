@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import model.Habilidade;
+import model.PersonagemOrdem;
 
 /**
  *
@@ -21,6 +22,8 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     private boolean changed = false;
     private String resultados = "";
     private SortedMap<String, Habilidade> habilidades = new TreeMap<String, Habilidade>();
+    private SortedMap<Integer, PersonagemOrdem> acao = new TreeMap();
+    private SortedMap<Integer, PersonagemOrdem> acaoExecutadas = new TreeMap();
 
     @Override
     public int getId() {
@@ -143,5 +146,39 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
 
     public boolean isPersonagem() {
         return false;
+    }
+
+    //client
+    public PersonagemOrdem getAcao(int index) {
+        try {
+            return this.acao.get(index);
+        } catch (IndexOutOfBoundsException ex) {
+            return null;
+        }
+    }
+
+    public void setAcao(int index, PersonagemOrdem pOrdem) {
+        this.acao.put(index, pOrdem);
+    }
+
+    public int getAcaoSize() {
+        return this.acao.size();
+    }
+
+    public SortedMap<Integer, PersonagemOrdem> getAcoes() {
+        return this.acao;
+    }
+
+    public void remAcoes() {
+        this.acao.clear();
+    }
+
+    //server
+    public void addAcaoExecutada(PersonagemOrdem po) {
+        this.acaoExecutadas.put(this.acaoExecutadas.size(), po);
+    }
+
+    public SortedMap<Integer, PersonagemOrdem> getAcaoExecutadas() {
+        return this.acaoExecutadas;
     }
 }

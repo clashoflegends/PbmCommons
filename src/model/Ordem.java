@@ -104,6 +104,10 @@ public class Ordem extends BaseModel {
         return comandante;
     }
 
+    public boolean isCidade() {
+        return tipoPersonagem.equalsIgnoreCase("F");
+    }
+
     public void setComandante(boolean comandante) {
         this.comandante = comandante;
     }

@@ -169,11 +169,11 @@ public class CenarioFacade implements Serializable {
         return tipoTropas.contains(tipoTropa);
     }
 
-    public Collection<TipoTropa> getTipoTropas(Cenario cenario, Raca racaCidade, Raca racaPersonagem) {
+    public Collection<TipoTropa> getTipoTropas(Cenario cenario, Raca racaCidade, Raca racaNacao) {
         Set<TipoTropa> tropas = new TreeSet<TipoTropa>();
-        if (racaCidade == racaPersonagem) {
+        if (racaCidade == racaNacao) {
             //se racaCidade == racaPersonagem, entao lista especial da raca (=todos)
-            tropas.addAll(racaPersonagem.getTropas().keySet());
+            tropas.addAll(racaNacao.getTropas().keySet());
         } else {
             //senao, lista a combinacao/intersecao das tropas regulares das duas racas
             final SortedMap<TipoTropa, Integer> tropasCidade = racaCidade.getTropas();
@@ -183,7 +183,7 @@ public class CenarioFacade implements Serializable {
                     tropas.add(tpTropa);
                 }
             }
-            final SortedMap<TipoTropa, Integer> tropasPersonagem = racaPersonagem.getTropas();
+            final SortedMap<TipoTropa, Integer> tropasPersonagem = racaNacao.getTropas();
             for (TipoTropa tpTropa : tropasPersonagem.keySet()) {
                 if (tropasPersonagem.get(tpTropa) == 0) {
                     //regular
