@@ -8,6 +8,7 @@ import java.io.Serializable;
 import javax.swing.table.DefaultTableModel;
 
 /**
+ * authorizes columns to be editable/enabled
  *
  * @author gurgel
  */
@@ -39,8 +40,7 @@ public class GenericoTableModel extends DefaultTableModel implements Serializabl
     }
 
     /**
-     * Don't need to implement this method unless your table's
-     * editable.
+     * Don't need to implement this method unless your table's editable.
      */
     @Override
     public boolean isCellEditable(int row, int col) {

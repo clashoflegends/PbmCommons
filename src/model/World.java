@@ -119,7 +119,15 @@ public class World implements Serializable {
         return packages;
     }
 
-    public void setPackages(SortedMap<String, Habilidade> packages) {
-        this.packages = packages;
+    public void setPackages(SortedMap<String, Habilidade> list, Cenario cenario) {
+        this.packages.clear();
+        for (Habilidade habilidade : list.values()) {
+            for (String cdHab : habilidade.getHabilidades().keySet()) {
+                if (cenario.hasHabilidade(cdHab)) {
+                    this.packages.put(habilidade.getCodigo(), habilidade);
+                    break;
+                }
+            }
+        }
     }
 }
