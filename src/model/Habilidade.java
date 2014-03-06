@@ -59,6 +59,10 @@ public class Habilidade extends BaseModel {
         return tipo.equalsIgnoreCase("FILTER");
     }
 
+    public boolean isAtribute() {
+        return tipo.equalsIgnoreCase("SCENARIO");
+    }
+
     public boolean isHidden() {
         return isPackage() || isFilter();
     }
