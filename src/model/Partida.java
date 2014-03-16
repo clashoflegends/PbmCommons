@@ -20,7 +20,7 @@ public class Partida extends BaseModel {
     private Mercado mercado;
     private String language;
     private LongDate dtDeadline;
-    private Date deadline = new Date();
+    private Date deadline = new Date(); //kept for backwards compatibility
     private boolean gameOver = false;
 
     public int getNumero() {

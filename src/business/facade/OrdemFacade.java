@@ -339,17 +339,17 @@ public class OrdemFacade implements Serializable {
         }
     }
 
-    public List<String> getParametrosId(Personagem personagem, int index) {
+    public List<String> getParametrosId(BaseModel actor, int index) {
         try {
-            return personagem.getAcao(index).getParametrosId();
+            return actor.getAcao(index).getParametrosId();
         } catch (NullPointerException ex) {
             return null;
         }
     }
 
-    public List<String> getParametrosDisplay(Personagem personagem, int index) {
+    public List<String> getParametrosDisplay(BaseModel actor, int index) {
         try {
-            return personagem.getAcao(index).getParametrosDisplay();
+            return actor.getAcao(index).getParametrosDisplay();
         } catch (NullPointerException ex) {
             return null;
         }
@@ -379,5 +379,17 @@ public class OrdemFacade implements Serializable {
             }
         }
         return add;
+    }
+
+    public boolean isAtivo(Jogador jogadorAtivo, BaseModel actor) {
+        if (actor instanceof Personagem) {
+            Personagem personagem = (Personagem) actor;
+            return (jogadorAtivo.isNacao(personagem.getNacao()) && personagemFacade.isAtivo(personagem));
+        } else if (actor instanceof Cidade) {
+            Cidade cidade = (Cidade) actor;
+            return (jogadorAtivo.isNacao(cidade.getNacao()) && cidadeFacade.isAtivo(cidade));
+        } else {
+            return false;
+        }
     }
 }

@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import model.Habilidade;
+import model.Nacao;
 import model.PersonagemOrdem;
 
 /**
@@ -180,5 +181,17 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
 
     public SortedMap<Integer, PersonagemOrdem> getAcaoExecutadas() {
         return this.acaoExecutadas;
+    }
+
+    public int getOrdensQt() {
+        return 0;
+    }
+
+    public Nacao getNacao() {
+        return null;
+    }
+
+    public String getTpActor() {
+        return "-";
     }
 }

@@ -76,6 +76,7 @@ public class Personagem extends BaseModel {
         return (this.getPericiaMagoNatural() > 0);
     }
 
+    @Override
     public Nacao getNacao() {
         return nacao;
     }
@@ -476,5 +477,15 @@ public class Personagem extends BaseModel {
     @Override
     public boolean isPersonagem() {
         return true;
+    }
+
+    @Override
+    public int getOrdensQt() {
+        return 2 + getOrdensExtraQt();
+    }
+
+    @Override
+    public String getTpActor() {
+        return "P";
     }
 }

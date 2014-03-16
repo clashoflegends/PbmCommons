@@ -523,11 +523,11 @@ public class PersonagemFacade implements Serializable {
         if (personagem.getResultados() != null && !personagem.getResultados().equals("")) {
             ret += SysApoio.doParseString(personagem.getResultados(), labels) + "\n";
         }
-        ret += getResultadoLocal(personagem, cenario);
+        ret += getResultadoLocal(personagem);
         return ret;
     }
 
-    public String getResultadoLocal(Personagem personagem, Cenario cenario) {
+    public String getResultadoLocal(Personagem personagem) {
         if (personagem == null) {
             return labels.getString("NENHUM");
         }

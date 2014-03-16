@@ -53,6 +53,7 @@ public class Cidade extends BaseModel {
         local.setCidade(this);
     }
 
+    @Override
     public Nacao getNacao() {
         return nacao;
     }
@@ -243,5 +244,15 @@ public class Cidade extends BaseModel {
      */
     public void setRaca(Raca raca) {
         this.raca = raca;
+    }
+
+    @Override
+    public int getOrdensQt() {
+        return getTamanho();
+    }
+
+    @Override
+    public String getTpActor() {
+        return "C";
     }
 }

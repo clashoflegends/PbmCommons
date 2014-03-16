@@ -4,6 +4,7 @@
  */
 package model;
 
+import baseLib.BaseModel;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -37,9 +38,9 @@ public class Comando implements Serializable {
         setCreationTime();
     }
 
-    public void addComando(Personagem personagem, Ordem ordem, List<String> parametrosId, List<String> parametrosDisplay) {
+    public void addComando(BaseModel actor, Ordem ordem, List<String> parametrosId, List<String> parametrosDisplay) {
         if (ordem != null) {
-            ComandoDetail comDet = new ComandoDetail(personagem, ordem, parametrosId, parametrosDisplay);
+            ComandoDetail comDet = new ComandoDetail(actor, ordem, parametrosId, parametrosDisplay);
             this.comandos.add(comDet);
         }
     }

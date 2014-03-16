@@ -150,4 +150,14 @@ public class Exercito extends BaseModel implements IExercito {
     public Terreno getTerreno() {
         return getLocal().getTerreno();
     }
+
+    @Override
+    public int getOrdensQt() {
+        return 0;
+    }
+
+    @Override
+    public String getTpActor() {
+        return "E";
+    }
 }

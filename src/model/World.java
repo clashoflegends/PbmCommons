@@ -72,7 +72,7 @@ public class World implements Serializable {
     }
 
     public void addCidade(Cidade cidade) {
-        this.cidades.put(cidade.getCoordenadas(), cidade);
+        this.cidades.put(cidade.getCodigo(), cidade);
     }
 
     public void addLocal(Local local) {

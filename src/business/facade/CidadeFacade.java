@@ -16,6 +16,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
 import persistence.SettingsManager;
+import utils.StringRet;
 
 /**
  *
@@ -257,5 +258,44 @@ public class CidadeFacade implements Serializable {
 
     public Raca getNacaoRaca(Cidade cidade) {
         return getNacao(cidade).getRaca();
+    }
+
+    public List<String> getInfo(Cidade cidade) {
+        StringRet ret = new StringRet();
+        if (cidade == null) {
+            return ret.getList();
+        }
+        ret.add(String.format(labels.getString("CIDADE.CAPITAL.DA.NACAO"),
+                cidade.getComboDisplay(),
+                SysApoio.iif(cidade.isCapital(), labels.getString("(CAPITAL)"), ""),
+                nacaoFacade.getNome(cidade.getNacao())));
+        ret.addTab(String.format("%s: %s", labels.getString("TAMANHO"), BaseMsgs.cidadeTamanho[cidade.getTamanho()]));
+        ret.addTab(String.format("%s: %s", labels.getString("FORTIFICACOES"), BaseMsgs.cidadeFortificacao[cidade.getFortificacao()]));
+        if (cidade.getLealdade() > 0) {
+            ret.addTab(String.format("%s: %s (%s)",
+                    labels.getString("LEALDADE"),
+                    cidade.getLealdade(),
+                    cidade.getLealdade() - cidade.getLealdadeAnterior()));
+        } else {
+            ret.addTab(String.format("%s: %s", labels.getString("LEALDADE"), "?"));
+        }
+        ret.addTab(String.format("%s: %s", labels.getString("CIDADE.DOCAS"), BaseMsgs.cidadeDocas[cidade.getDocas()]));
+        ret.addTab(String.format("%s: %s", labels.getString("OCULTO"), getOculto(cidade)));
+        ret.addTab(String.format("%s: %s", labels.getString("SITIADO"), getSitiado(cidade)));
+
+        return ret.getList();
+    }
+
+    public List<String> getInfoTitle(Cidade cidade) {
+        StringRet ret = new StringRet();
+        if (cidade == null) {
+            return ret.getList();
+        }
+        ret.add(String.format(labels.getString("CIDADE.CAPITAL.DA.NACAO"),
+                cidade.getComboDisplay(),
+                SysApoio.iif(cidade.isCapital(), labels.getString("(CAPITAL)"), ""),
+                nacaoFacade.getNome(cidade.getNacao())));
+        ret.addTab(String.format("%s: %s", labels.getString("TAMANHO"), BaseMsgs.cidadeTamanho[cidade.getTamanho()]));
+        return ret.getList();
     }
 }
