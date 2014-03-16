@@ -223,7 +223,12 @@ public class Cidade extends BaseModel {
 
     @Override
     public String getCodigo() {
-        return this.getNome() + "-" + this.getCoordenadas();
+        return this.getNome();
+    }
+
+    @Override
+    public String toString() {
+        return this.getNome() + "-" + this.getCoordenadas() + "-" + getClass().getName() + "@" + Integer.toHexString(hashCode());
     }
 
     /**
