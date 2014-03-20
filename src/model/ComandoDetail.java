@@ -51,7 +51,7 @@ public class ComandoDetail implements Serializable {
         return nacaoCodigo;
     }
 
-    public String getPersonagemCodigo() {
+    public String getActorCodigo() {
         return personagemCodigo;
     }
 
@@ -74,5 +74,9 @@ public class ComandoDetail implements Serializable {
     @Override
     public String toString() {
         return this.personagemCodigo + "-" + this.getOrdemNome() + "-" + getClass().getName() + "@" + Integer.toHexString(hashCode());
+    }
+
+    public boolean isActorPersonagem() {
+        return tpActor == null || tpActor.equalsIgnoreCase("P");
     }
 }

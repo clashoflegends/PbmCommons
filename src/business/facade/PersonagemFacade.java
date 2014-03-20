@@ -484,7 +484,7 @@ public class PersonagemFacade implements Serializable {
      * (Litoral). A nação não recebeu nenhuma ordem. A Musa está em 1919
      * (Litoral), Aldeia de Rhodes da nação Persia.
      */
-    public String getResultado(Personagem personagem, Cenario cenario) {
+    public String getResultado(Personagem personagem) {
         if (personagem == null) {
             return labels.getString("NENHUM");
         }
