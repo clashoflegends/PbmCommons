@@ -253,9 +253,8 @@ public class CidadeFacade implements Serializable {
             return labels.getString("NENHUM");
         }
         //ordens:
-        String ret = "";
         if (cidade.getResultados() != null && !cidade.getResultados().equals("")) {
-            return SysApoio.doParseString(cidade.getResultados(), labels) + "\n";
+            return SysApoio.doParseString(cidade.getResultados(), labels);
         }
         return labels.getString("NENHUM");
     }
