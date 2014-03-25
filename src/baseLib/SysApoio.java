@@ -22,6 +22,7 @@ import java.util.ResourceBundle;
 import java.util.TimeZone;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.MaskFormatter;
 import javax.swing.text.NumberFormatter;
 import org.apache.commons.logging.Log;
@@ -441,6 +442,10 @@ public class SysApoio implements Serializable {
             System.exit(-1);
         }
         return formatter;
+    }
+
+    public static DefaultFormatterFactory createFormatterFactory(String s) {
+        return new DefaultFormatterFactory(createFormatterName(s));
     }
 
     public static NumberFormatter createFormatterInteger(int min, int max) {

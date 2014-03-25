@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class PersonagemOrdem extends BaseModel {
 
-    private BaseModel personagem; //mantem por compatibilidade com turnos velhos que jogadores podem ter salvo.
+    private BaseModel personagem; //mantem o nome por compatibilidade com turnos velhos que jogadores podem ter salvo.
     private Ordem ordem;
     private int index;
     private List<String> parametrosId = new ArrayList();

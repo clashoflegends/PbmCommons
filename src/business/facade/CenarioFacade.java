@@ -236,6 +236,14 @@ public class CenarioFacade implements Serializable {
         return cenario.hasHabilidade(";SOC;");
     }
 
+    public boolean hasRenamePersonagens(Cenario cenario) {
+        return cenario.hasHabilidade(";SRP;");
+    }
+
+    public boolean hasRenameCities(Cenario cenario) {
+        return cenario.hasHabilidade(";SRC;");
+    }
+
     public boolean hasResourceManagement(Cenario cenario) {
         return !cenario.hasHabilidade(";SNR;");
     }

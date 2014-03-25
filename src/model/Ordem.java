@@ -23,7 +23,7 @@ public class Ordem extends BaseModel {
     private String tipo;
     private String tipoPersonagem;
     private String requisito;
-    private String parametros;
+    private String parametros; //kept for backwards compatibility
     private String ajuda;
     private String[] parametrosIde;
     private String[] parametrosIdeDisplay;
@@ -84,22 +84,6 @@ public class Ordem extends BaseModel {
         this.requisito = observacao;
     }
 
-    public String getParametros() {
-        return parametros;
-    }
-
-    public void setParametros(String parametros) {
-        this.parametros = parametros;
-    }
-
-    public String getAjuda() {
-        return ajuda;
-    }
-
-    public void setAjuda(String ajuda) {
-        this.ajuda = ajuda;
-    }
-
     public boolean isComandante() {
         return comandante;
     }
@@ -142,43 +126,6 @@ public class Ordem extends BaseModel {
 
     public void setGeral(boolean geral) {
         this.geral = geral;
-    }
-
-    public String getParametroIde(int index) {
-        try {
-            return parametrosIde[index].trim();
-        } catch (ArrayIndexOutOfBoundsException exception) {
-            return "-";
-        } catch (NullPointerException ex) {
-            return "-";
-        }
-    }
-
-    public int getParametrosIdeQtd() {
-        try {
-            return parametrosIde.length;
-        } catch (Exception ex) {
-            //do nothing
-            return 0;
-        }
-    }
-
-    public void setParametrosIde(String[] parametrosIde) {
-        this.parametrosIde = parametrosIde;
-    }
-
-    public String getParametroIdeDisplay(int index) {
-        try {
-            return parametrosIdeDisplay[index].trim();
-        } catch (ArrayIndexOutOfBoundsException exception) {
-            return "-";
-        } catch (NullPointerException ex) {
-            return "-";
-        }
-    }
-
-    public void setParametrosIdeDisplay(String[] parDisplay) {
-        this.parametrosIdeDisplay = parDisplay;
     }
 
     public int getCusto() {
@@ -239,5 +186,58 @@ public class Ordem extends BaseModel {
     public int compareToByNumber(Object o) {
         Ordem outro = (Ordem) o;
         return (this.getNumero() - outro.getNumero());
+    }
+
+    public String getParametros() {
+        String ret = "";
+        for (String title : parametrosIdeDisplay) {
+            ret += title + "; ";
+        }
+        return ret;
+    }
+
+    public String getAjuda() {
+        return ajuda;
+    }
+
+    public void setAjuda(String ajuda) {
+        this.ajuda = ajuda;
+    }
+
+    public String getParametroIde(int index) {
+        try {
+            return parametrosIde[index].trim();
+        } catch (ArrayIndexOutOfBoundsException exception) {
+            return "-";
+        } catch (NullPointerException ex) {
+            return "-";
+        }
+    }
+
+    public int getParametrosIdeQtd() {
+        try {
+            return parametrosIde.length;
+        } catch (Exception ex) {
+            //do nothing
+            return 0;
+        }
+    }
+
+    public void setParametrosIde(String[] parametrosIde) {
+        this.parametrosIde = parametrosIde;
+    }
+
+    public String getParametroIdeDisplay(int index) {
+        try {
+            return parametrosIdeDisplay[index].trim();
+        } catch (ArrayIndexOutOfBoundsException exception) {
+            return "-";
+        } catch (NullPointerException ex) {
+            return "-";
+        }
+    }
+
+    public void setParametrosIdeDisplay(String[] parDisplay) {
+        this.parametrosIdeDisplay = parDisplay;
     }
 }
