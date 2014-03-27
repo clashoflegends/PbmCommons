@@ -51,4 +51,20 @@ public class AcaoFacade implements Serializable {
     public Collection<Habilidade> getHabilidades(Ordem ordem) {
         return ordem.getHabilidades().values();
     }
+
+    public boolean isSetup(Ordem ordem) {
+        return ordem.isSetup();
+    }
+
+    public String getSetupDescription(Ordem ordem) {
+        String ret = "";
+        for (Habilidade hab : ordem.getHabilidades().values()) {
+            if (hab.isPackage()) {
+                for (Habilidade habilidade : hab.getHabilidades().values()) {
+                    ret += habilidade.getNome() + "\n";
+                }
+            }
+        }
+        return ret;
+    }
 }

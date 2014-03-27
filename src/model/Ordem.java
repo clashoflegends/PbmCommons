@@ -92,6 +92,10 @@ public class Ordem extends BaseModel {
         return tipoPersonagem.equalsIgnoreCase("F");
     }
 
+    public boolean isSetup() {
+        return tipoPersonagem.equalsIgnoreCase("N");
+    }
+
     public void setComandante(boolean comandante) {
         this.comandante = comandante;
     }

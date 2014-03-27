@@ -29,7 +29,7 @@ public class TitleFactory implements Serializable {
     private static final AcaoFacade acaoFacade = new AcaoFacade();
     private static final String[] tipoPersonagem = {labels.getString("QUALQUER"), labels.getString("COMANDANTE"),
         labels.getString("AGENTE"), labels.getString("EMISSARIO"), labels.getString("MAGO"),
-        labels.getString("MILESTONE"), labels.getString("CIDADE")};
+        labels.getString("MILESTONE"), labels.getString("CIDADE"), labels.getString("STARTUP")};
 
     public static String[] getTipoPersonagem() {
         return tipoPersonagem;
@@ -75,7 +75,11 @@ public class TitleFactory implements Serializable {
         String ret = ordem.getDescricao() + "\n";
         ret += String.format("%s: %s\n", labels.getString("PARAMETROS"), ordem.getParametros());
         ret += String.format("%s: %s\n", labels.getString("WHO.CAN"), getTipoPersonagem(ordem));
-        ret += String.format("%s: %s%s\n", labels.getString("TIPO"), getTipoOrdem(ordem), getAjudaTipoOrdem(ordem));
+        if (acaoFacade.isSetup(ordem)) {
+            ret += String.format("%s: %s\n", labels.getString("TIPO"), labels.getString("STARTUP"));
+        } else {
+            ret += String.format("%s: %s%s\n", labels.getString("TIPO"), getTipoOrdem(ordem), getAjudaTipoOrdem(ordem));
+        }
         ret += String.format("%s: %s\n", labels.getString("DIFICULDADE"), getDificuldade(ordem));
         ret += String.format("%s: %s\n", labels.getString("IMPROVE"), acaoFacade.getImproveRank(ordem));
         if (acaoFacade.getCusto(ordem) > 0) {
@@ -87,7 +91,11 @@ public class TitleFactory implements Serializable {
             }
         }
         ret += String.format("%s: %s\n", labels.getString("REQUISITO"), getAjudaRequisito(ordem));
-        ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ordem.getAjuda());
+        if (acaoFacade.isSetup(ordem)) {
+            ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), acaoFacade.getSetupDescription(ordem));
+        } else {
+            ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ordem.getAjuda());
+        }
         return ret;
     }
 
@@ -122,6 +130,8 @@ public class TitleFactory implements Serializable {
             return tipoPersonagem[5];
         } else if (ordem.getTipoPersonagem().equals("F")) {
             return tipoPersonagem[6];
+        } else if (ordem.getTipoPersonagem().equals("N")) {
+            return tipoPersonagem[7];
         } else {
             return "-";
         }
