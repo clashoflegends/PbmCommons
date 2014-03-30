@@ -139,4 +139,8 @@ public class Partida extends BaseModel {
     public boolean isStartupPackages() {
         return this.hasHabilidade(";GCS;");
     }
+
+    public boolean isNationPackages() {
+        return this.hasHabilidade(";GSP;");
+    }
 }

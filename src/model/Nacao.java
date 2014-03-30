@@ -31,6 +31,11 @@ public class Nacao extends BaseModel {
     private SortedMap<Nacao, Integer> relacionamentos = new TreeMap();
     private SortedMap<String, List<String>> mensagensNacao = new TreeMap<String, List<String>>();
 
+    @Override
+    public Nacao getNacao() {
+        return this;
+    }
+
     public void addHabilidadeNacao(HabilidadeNacao habilidadeNacao) {
         this.habilidadesNacao.put(habilidadeNacao.getCodigo(), habilidadeNacao);
     }
@@ -205,5 +210,15 @@ public class Nacao extends BaseModel {
 
     public void setBorderColor(Color border) {
         this.borderColor = border;
+    }
+
+    @Override
+    public int getOrdensQt() {
+        return 3;
+    }
+
+    @Override
+    public String getTpActor() {
+        return "N";
     }
 }

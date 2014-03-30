@@ -5,6 +5,7 @@
 package business.facade;
 
 import baseLib.BaseModel;
+import baseLib.SysApoio;
 import business.services.ComparatorFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.SortedMap;
 import model.Cenario;
 import model.Cidade;
 import model.Jogador;
+import model.Nacao;
 import model.Ordem;
 import model.Personagem;
 import model.PersonagemOrdem;
@@ -31,9 +33,34 @@ public class OrdemFacade implements Serializable {
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final PersonagemFacade personagemFacade = new PersonagemFacade();
     private static final CidadeFacade cidadeFacade = new CidadeFacade();
+    private static final NacaoFacade nacaoFacade = new NacaoFacade();
     private static final LocalFacade localFacade = new LocalFacade();
     private static final String[] ACTIONDISABLED = new String[]{"-", ""};
     private static final String[] ACTIONBLANK = new String[]{" ", ""};
+
+    public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, Nacao nacao, int indexOrdemAtiva, boolean isAllOrders, boolean isStartupPackages) {
+        //cria vetor e garante tamanho minimo
+        List<Ordem> ordensActor = new ArrayList<Ordem>(ordens.size() + 1);
+        //lista as ordens que o personagem pode executar
+        for (Ordem ordem : ordens.values()) {
+            //se o personagem tem a pericia para dar a ordem
+            if (isOrdemActor(nacao, ordem)) {
+                //ou sao todas as ordens, ou sao as ordens que ele pode no momento
+                if (isAllOrders) {
+                    ordensActor.add(ordem);
+                } else if (isOrdemRequisitos(nacao, ordem, isStartupPackages)) {
+                    if (isOrdemAllowed(nacao, indexOrdemAtiva, ordem)) {
+                        ordensActor.add(ordem);
+                    }
+                } else {
+                    //else nao pode fazer a ordem.
+                }
+            }
+        }
+        ComparatorFactory.getComparatorOrdemSorter(ordensActor);
+        //Collections.sort(ordensPersonagem, ComparatorFactory.getComparatorOrdemSorter());
+        return (Ordem[]) ordensActor.toArray(new Ordem[0]);
+    }
 
     public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, Cidade cidade, int indexOrdemAtiva, boolean isAllOrders) {
         //cria vetor e garante tamanho minimo
@@ -41,7 +68,7 @@ public class OrdemFacade implements Serializable {
         //lista as ordens que o personagem pode executar
         for (Ordem ordem : ordens.values()) {
             //se o personagem tem a pericia para dar a ordem
-            if (isOrdemPersonagem(cidade, ordem)) {
+            if (isOrdemActor(cidade, ordem)) {
                 //ou sao todas as ordens, ou sao as ordens que ele pode no momento
                 if (isAllOrders) {
                     ordensActor.add(ordem);
@@ -67,7 +94,7 @@ public class OrdemFacade implements Serializable {
             //se o personagem tem a pericia para dar a ordem
             //TODO: artefatos que permitem ordens mesmo sem pericia (descobrir segredos)
             //TODO: nacoes com habilidades especiais para dar ordens.(descobrir segredos)
-            if (isOrdemPersonagem(personagem, ordem)) {
+            if (isOrdemActor(personagem, ordem)) {
                 //ou sao todas as ordens, ou sao as ordens que ele pode no momento
                 if (isAllOrders) {
                     ordensActor.add(ordem);
@@ -115,7 +142,7 @@ public class OrdemFacade implements Serializable {
      * @param ordem
      * @return
      */
-    private boolean isOrdemPersonagem(Personagem personagem, Ordem ordem) {
+    private boolean isOrdemActor(Personagem personagem, Ordem ordem) {
         if (ordem.isGeral()) {
             return true;
         } else if (ordem.isComandante() && personagem.isComandante()) {
@@ -130,8 +157,12 @@ public class OrdemFacade implements Serializable {
         return false;
     }
 
-    private boolean isOrdemPersonagem(Cidade cidade, Ordem ordem) {
+    private boolean isOrdemActor(Cidade cidade, Ordem ordem) {
         return ordem.isCidade();
+    }
+
+    private boolean isOrdemActor(Nacao nacao, Ordem ordem) {
+        return ordem.isNacao();
     }
 
     private boolean isOrdemRequisitos(Cidade cidade, Ordem ordem) {
@@ -142,6 +173,19 @@ public class OrdemFacade implements Serializable {
             return true;
         }
         if (requisitos.contains("capital") && !cidadeFacade.isCapital(cidade)) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isOrdemRequisitos(Nacao nacao, Ordem ordem, boolean isStartupPackages) {
+        final String requisitos = ordem.getRequisito().toLowerCase();
+        //criticas por tipo de chave
+        if (requisitos.contains("none")) {
+            //none nao devia estar com mais nenhum parametro.
+            return true;
+        }
+        if (requisitos.contains("setup") && !isStartupPackages) {
             return false;
         }
         return true;
@@ -258,6 +302,10 @@ public class OrdemFacade implements Serializable {
         return actor.getTamanho();
     }
 
+    public int getOrdemMax(Nacao actor, Cenario cenario) {
+        return actor.getOrdensQt();
+    }
+
     public String[] getOrdemDisplay(Personagem actor, int index, Cenario cenario, Jogador owner) {
         if (!isAtivo(actor)) {
             return (ACTIONDISABLED);
@@ -273,6 +321,16 @@ public class OrdemFacade implements Serializable {
             return (ACTIONDISABLED);
         }
         if (!owner.isNacao(actor.getNacao())) {
+            return (ACTIONDISABLED);
+        }
+        return getOrdemDisplay(actor, index, getOrdemMax(actor, cenario));
+    }
+
+    public String[] getOrdemDisplay(Nacao actor, int index, Cenario cenario, Jogador owner) {
+        if (!actor.isAtiva()) {
+            return (ACTIONDISABLED);
+        }
+        if (!owner.isNacao(actor)) {
             return (ACTIONDISABLED);
         }
         return getOrdemDisplay(actor, index, getOrdemMax(actor, cenario));
@@ -315,17 +373,9 @@ public class OrdemFacade implements Serializable {
         }
     }
 
-    public PersonagemOrdem getPersonagemOrdem(Cidade cidade, int index) {
+    public PersonagemOrdem getPersonagemOrdem(BaseModel actor, int index) {
         try {
-            return cidade.getAcao(index);
-        } catch (NullPointerException ex) {
-            return null;
-        }
-    }
-
-    public PersonagemOrdem getPersonagemOrdem(Personagem personagem, int index) {
-        try {
-            return personagem.getAcao(index);
+            return actor.getAcao(index);
         } catch (NullPointerException ex) {
             return null;
         }
@@ -388,8 +438,22 @@ public class OrdemFacade implements Serializable {
         } else if (actor instanceof Cidade) {
             Cidade cidade = (Cidade) actor;
             return (jogadorAtivo.isNacao(cidade.getNacao()) && cidadeFacade.isAtivo(cidade));
+        } else if (actor instanceof Nacao) {
+            Nacao nacao = (Nacao) actor;
+            return (jogadorAtivo.isNacao(nacao) && nacaoFacade.isAtivo(nacao));
         } else {
             return false;
         }
+    }
+
+    public String getResultado(BaseModel actor) {
+        if (actor == null) {
+            return "";
+        }
+        //ordens:
+        if (actor.getResultados() != null && !actor.getResultados().equals("")) {
+            return SysApoio.doParseString(actor.getResultados(), labels);
+        }
+        return "";
     }
 }

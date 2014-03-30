@@ -15,6 +15,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
 import persistence.SettingsManager;
+import utils.StringRet;
 
 /**
  *
@@ -72,11 +73,19 @@ public class NacaoFacade implements Serializable {
         return ret;
     }
 
-    public String getCapital(Nacao nacao) {
+    public String getCoordenadasCapital(Nacao nacao) {
         try {
             return nacao.getCapital().getCoordenadas();
         } catch (NullPointerException ex) {
             return "-";
+        }
+    }
+
+    public Local getLocal(Nacao nacao) {
+        try {
+            return nacao.getCapital().getLocal();
+        } catch (NullPointerException ex) {
+            return null;
         }
     }
 
@@ -409,5 +418,26 @@ public class NacaoFacade implements Serializable {
         lista.addAll(nacao.getPersonagens());
         lista.remove(personagem);
         return (Personagem[]) lista.toArray(new Personagem[0]);
+    }
+
+    public boolean isAtivo(Nacao nacao) {
+        return nacao.isAtiva();
+    }
+
+    public Raca getRaca(Nacao nacao) {
+        return nacao.getRaca();
+    }
+
+    public Cidade getCapital(Nacao nacao) {
+        return nacao.getCapital();
+    }
+
+    public List<String> getInfoTitle(Nacao nacao) {
+        StringRet ret = new StringRet();
+        if (nacao == null) {
+            return ret.getList();
+        }
+        ret.add(String.format(labels.getString("STARTUP.NATION.TITLE"), getNome(nacao.getNacao())));
+        return ret.getList();
     }
 }

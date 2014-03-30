@@ -267,4 +267,8 @@ public class CenarioFacade implements Serializable {
     public boolean hasWizard(Cenario cenario) {
         return !cenario.hasHabilidade(";PW;");
     }
+
+    public boolean hasOrdensNacao(Partida partida) {
+        return partida.getTurno()==0 && partida.isNationPackages();
+    }
 }

@@ -29,7 +29,8 @@ public class TitleFactory implements Serializable {
     private static final AcaoFacade acaoFacade = new AcaoFacade();
     private static final String[] tipoPersonagem = {labels.getString("QUALQUER"), labels.getString("COMANDANTE"),
         labels.getString("AGENTE"), labels.getString("EMISSARIO"), labels.getString("MAGO"),
-        labels.getString("MILESTONE"), labels.getString("CIDADE"), labels.getString("STARTUP")};
+        labels.getString("MILESTONE"), labels.getString("CIDADE"),
+        labels.getString("STARTUP"), labels.getString("PERSONAGEM.NPC")};
 
     public static String[] getTipoPersonagem() {
         return tipoPersonagem;
@@ -132,6 +133,8 @@ public class TitleFactory implements Serializable {
             return tipoPersonagem[6];
         } else if (ordem.getTipoPersonagem().equals("N")) {
             return tipoPersonagem[7];
+        } else if (ordem.getTipoPersonagem().equals("G")) {
+            return tipoPersonagem[8];
         } else {
             return "-";
         }

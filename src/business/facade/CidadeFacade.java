@@ -248,17 +248,6 @@ public class CidadeFacade implements Serializable {
         return combatSimFacade.getDefesa(tamanho, fortificacao, lealdade);
     }
 
-    public String getResultado(Cidade cidade) {
-        if (cidade == null) {
-            return labels.getString("NENHUM");
-        }
-        //ordens:
-        if (cidade.getResultados() != null && !cidade.getResultados().equals("")) {
-            return SysApoio.doParseString(cidade.getResultados(), labels);
-        }
-        return labels.getString("NENHUM");
-    }
-
     public boolean isAtivo(Cidade cidade) {
         return cidade.getTamanho() > 0;
     }

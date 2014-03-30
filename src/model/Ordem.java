@@ -92,8 +92,28 @@ public class Ordem extends BaseModel {
         return tipoPersonagem.equalsIgnoreCase("F");
     }
 
-    public boolean isSetup() {
+    public boolean isNacao() {
         return tipoPersonagem.equalsIgnoreCase("N");
+    }
+
+    public boolean isNpc() {
+        return tipoPersonagem.equalsIgnoreCase("G");
+    }
+
+    public boolean isMilestone() {
+        return tipoPersonagem.equalsIgnoreCase("Z");
+    }
+
+    public boolean isMista() {
+        return tipoPersonagem.equalsIgnoreCase("X");
+    }
+
+    public boolean isMovimento() {
+        return getTipo().equalsIgnoreCase("Mov");
+    }
+
+    public boolean isMain() {
+        return getTipo().equalsIgnoreCase("Per");
     }
 
     public void setComandante(boolean comandante) {

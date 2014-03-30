@@ -79,4 +79,20 @@ public class ComandoDetail implements Serializable {
     public boolean isActorPersonagem() {
         return tpActor == null || tpActor.equalsIgnoreCase("P");
     }
+
+    public boolean isActorNacao() {
+        return tpActor.equalsIgnoreCase("N");
+    }
+
+    public boolean isActorNpc() {
+        return tpActor.equalsIgnoreCase("G");
+    }
+
+    public boolean isActorCidade() {
+        return tpActor.equalsIgnoreCase("C");
+    }
+
+    public boolean isActorExercito() {
+        return tpActor.equalsIgnoreCase("E");
+    }
 }
