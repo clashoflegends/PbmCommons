@@ -15,7 +15,7 @@ import java.util.List;
 public class ComandoDetail implements Serializable {
 
     //nacao,personagem, ordem, parametros
-    private String nacaoCodigo, personagemCodigo, ordemCodigo, ordemNome, tpActor;
+    private String nacaoCodigo, personagemCodigo, ordemCodigo, ordemNome, tpActor = "P";
     private List<String> parametroId;
     private List<String> parametroDisplay;
 
@@ -77,22 +77,42 @@ public class ComandoDetail implements Serializable {
     }
 
     public boolean isActorPersonagem() {
-        return tpActor == null || tpActor.equalsIgnoreCase("P");
+        try {
+            return tpActor == null || tpActor.equalsIgnoreCase("P");
+        } catch (NullPointerException ex) {
+            return true;
+        }
     }
 
     public boolean isActorNacao() {
-        return tpActor.equalsIgnoreCase("N");
+        try {
+            return tpActor.equalsIgnoreCase("N");
+        } catch (NullPointerException ex) {
+            return false;
+        }
     }
 
     public boolean isActorNpc() {
-        return tpActor.equalsIgnoreCase("G");
+        try {
+            return tpActor.equalsIgnoreCase("G");
+        } catch (NullPointerException ex) {
+            return false;
+        }
     }
 
     public boolean isActorCidade() {
-        return tpActor.equalsIgnoreCase("C");
+        try {
+            return tpActor.equalsIgnoreCase("C");
+        } catch (NullPointerException ex) {
+            return false;
+        }
     }
 
     public boolean isActorExercito() {
-        return tpActor.equalsIgnoreCase("E");
+        try {
+            return tpActor.equalsIgnoreCase("E");
+        } catch (NullPointerException ex) {
+            return false;
+        }
     }
 }

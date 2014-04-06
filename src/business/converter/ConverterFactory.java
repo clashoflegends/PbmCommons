@@ -271,6 +271,33 @@ public final class ConverterFactory implements Serializable {
         return ret;
     }
 
+    public static float initialProductValue(Produto produto) {
+        int ret = -1;
+        final String tpEstoque = produto.getCodigo();
+        if (tpEstoque.equalsIgnoreCase("CR")) {
+            ret = 16;
+        } else if (tpEstoque.equalsIgnoreCase("BR")) {
+            ret = 13;
+        } else if (tpEstoque.equalsIgnoreCase("FE")) {
+            ret = 19;
+        } else if (tpEstoque.equalsIgnoreCase("AC")) {
+            ret = 159;
+        } else if (tpEstoque.equalsIgnoreCase("MI")) {
+            ret = 159;
+        } else if (tpEstoque.equalsIgnoreCase("CM")) {
+            ret = 5;
+        } else if (tpEstoque.equalsIgnoreCase("LE")) {
+            ret = 18;
+        } else if (tpEstoque.equalsIgnoreCase("MA")) {
+            ret = 18;
+        } else if (tpEstoque.equalsIgnoreCase("MO")) {
+            ret = 35;
+        } else if (tpEstoque.equalsIgnoreCase("OU")) {
+            ret = 1;
+        }
+        return ret;
+    }
+
     public static Produto intToProduto(int tipoProduto, SortedMap<String, Produto> produtos) {
         for (Produto produto : produtos.values()) {
             if (produto.getId() == tipoProduto) {

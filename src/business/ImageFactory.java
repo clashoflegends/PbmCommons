@@ -130,7 +130,19 @@ public class ImageFactory implements Serializable {
                 "Jofrey.png"
             };
         } else {
-            return new String[]{"Neutro.gif"};
+            return new String[]{"neutral.png", "KingsCourt.gif", "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
+                "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
+                "NightsWatch.png", "FreeCities.png", "Wildlings.png", "neutral2.png", "neutral3.png",
+                "Bolton.png",
+                "Yronwood.png",
+                "Stannis.gif",
+                "Frey.png",
+                "Hightower.gif",
+                "Volantis.png",
+                "Pentos.png",
+                "Jofrey.png"
+            };
+//            return new String[]{"neutral.png"};
         }
     }
 
