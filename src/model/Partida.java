@@ -143,4 +143,8 @@ public class Partida extends BaseModel {
     public boolean isNationPackages() {
         return this.hasHabilidade(";GSP;");
     }
+
+    public int getNationPackagesLimit() {
+        return this.getHabilidadeValor(";GSP;");
+    }
 }

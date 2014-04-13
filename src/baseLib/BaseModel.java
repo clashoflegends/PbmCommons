@@ -74,6 +74,14 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
         return ret;
     }
 
+    public int getHabilidadesPoints() {
+        int ret = 0;
+        for (Habilidade habilidade : getHabilidades().values()) {
+            ret += habilidade.getCost();
+        }
+        return ret;
+    }
+
     /**
      * @return the habilidades
      */
@@ -105,7 +113,11 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     }
 
     public int getHabilidadeValor(String cdHabilidade) {
-        return this.habilidades.get(cdHabilidade).getValor();
+        try {
+            return this.habilidades.get(cdHabilidade).getValor();
+        } catch (NullPointerException ex) {
+            return 0;
+        }
     }
 
     public boolean hasHabilidades() {

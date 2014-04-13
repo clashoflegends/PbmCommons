@@ -307,8 +307,8 @@ public class NacaoFacade implements Serializable {
         }
     }
 
-    public int getPontos(Nacao nacao) {
-        return nacao.getPontos();
+    public int getPontosVitoria(Nacao nacao) {
+        return nacao.getPontosVitoria();
     }
 
     public Iterable<String> getMensagens(Nacao nacao) {

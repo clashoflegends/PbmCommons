@@ -8,6 +8,7 @@ import baseLib.SysApoio;
 import java.io.Serializable;
 import java.util.Collection;
 import model.Habilidade;
+import model.Nacao;
 import model.Ordem;
 import model.PersonagemOrdem;
 import org.apache.commons.logging.Log;
@@ -38,6 +39,25 @@ public class AcaoFacade implements Serializable {
         } catch (NullPointerException ex) {
             return 0;
         }
+    }
+
+    public int getPointsSetup(Ordem ordem) {
+        try {
+            return ordem.getHabilidadesPoints();
+        } catch (NullPointerException ex) {
+            return 0;
+        }
+    }
+
+    public int getPointsSetup(Nacao nacao) {
+        int points = 0;
+        for (PersonagemOrdem po : nacao.getAcoes().values()) {
+            try {
+                points += getPointsSetup(po.getOrdem());
+            } catch (NullPointerException ex) {
+            }
+        }
+        return points;
     }
 
     public int getCusto(PersonagemOrdem ordem) {

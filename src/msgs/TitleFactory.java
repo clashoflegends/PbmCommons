@@ -86,6 +86,9 @@ public class TitleFactory implements Serializable {
         if (acaoFacade.getCusto(ordem) > 0) {
             ret += String.format("%s: %s\n", labels.getString("CUSTO"), acaoFacade.getCusto(ordem));
         }
+        if (acaoFacade.getPointsSetup(ordem) > 0) {
+            ret += String.format("%s: %s\n", labels.getString("STARTUP.POINTS"), acaoFacade.getPointsSetup(ordem));
+        }
         if (!acaoFacade.getHabilidades(ordem).isEmpty()) {
             for (Habilidade habilidade : acaoFacade.getHabilidades(ordem)) {
                 ret += String.format("%s: %s\n", labels.getString("ORDEM.FEATURE"), habilidade.getNome());

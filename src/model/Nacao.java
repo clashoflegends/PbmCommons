@@ -160,14 +160,14 @@ public class Nacao extends BaseModel {
     /**
      * @return the pontos
      */
-    public int getPontos() {
+    public int getPontosVitoria() {
         return pontos;
     }
 
     /**
      * @param pontos the pontos to set
      */
-    public void setPontos(int pontos) {
+    public void setPontosVitoria(int pontos) {
         this.pontos = pontos;
     }
 
