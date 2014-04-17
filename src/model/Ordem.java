@@ -108,14 +108,12 @@ public class Ordem extends BaseModel {
         return tipoPersonagem.equalsIgnoreCase("X");
     }
 
-    public boolean isMovimento() {
-        return getTipo().equalsIgnoreCase("Mov");
-    }
-
-    public boolean isMain() {
-        return getTipo().equalsIgnoreCase("Per");
-    }
-
+//    public boolean isMovimento() {
+//        return getTipo().equalsIgnoreCase("Mov");
+//    }
+//    public boolean isMain() {
+//        return getTipo().equalsIgnoreCase("Per");
+//    }
     public void setComandante(boolean comandante) {
         this.comandante = comandante;
     }
