@@ -4,6 +4,7 @@
  */
 package business.facade;
 
+import baseLib.BaseModel;
 import business.converter.ConverterFactory;
 import java.io.Serializable;
 import java.util.*;
@@ -269,6 +270,17 @@ public class CenarioFacade implements Serializable {
     }
 
     public boolean hasOrdensNacao(Partida partida) {
-        return partida.getTurno()==0 && partida.isNationPackages();
+        return partida.getTurno() == 0 && partida.isNationPackages();
+    }
+
+    public boolean hasOrdens(Partida partida, BaseModel actor) {
+        if (actor.isPersonagem()) {
+            return true;
+        } else if (actor.isCidade() && hasOrdensCidade(partida.getCenario())) {
+            return true;
+        } else if (actor.isNacao() && hasOrdensNacao(partida)) {
+            return true;
+        }
+        return false;
     }
 }

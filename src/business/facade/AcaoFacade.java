@@ -73,7 +73,7 @@ public class AcaoFacade implements Serializable {
     }
 
     public boolean isSetup(Ordem ordem) {
-        return ordem.isNacao();
+        return ordem.isNacaoOrdem();
     }
 
     public String getSetupDescription(Ordem ordem) {

@@ -161,6 +161,18 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
         return false;
     }
 
+    public boolean isNacao() {
+        return getTpActor().equals("N");
+    }
+
+    public boolean isCidade() {
+        return getTpActor().equals("C");
+    }
+
+    public boolean isExercito() {
+        return getTpActor().equals("E");
+    }
+
     //client
     public PersonagemOrdem getAcao(int index) {
         try {

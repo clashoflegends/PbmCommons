@@ -158,11 +158,11 @@ public class OrdemFacade implements Serializable {
     }
 
     private boolean isOrdemActor(Cidade cidade, Ordem ordem) {
-        return ordem.isCidade();
+        return ordem.isCidadeOrdem();
     }
 
     private boolean isOrdemActor(Nacao nacao, Ordem ordem) {
-        return ordem.isNacao();
+        return ordem.isNacaoOrdem();
     }
 
     private boolean isOrdemRequisitos(Cidade cidade, Ordem ordem) {

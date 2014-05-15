@@ -84,6 +84,8 @@ public class SettingsManager implements Serializable {
             SettingsManager.getInstance().locale = new Locale("pt");
         } else if (lng.equalsIgnoreCase("it")) {
             SettingsManager.getInstance().locale = new Locale("it");
+        } else if (lng.equalsIgnoreCase("es")) {
+            SettingsManager.getInstance().locale = new Locale("es");
         } else {
             SettingsManager.getInstance().locale = new Locale("en");
         }

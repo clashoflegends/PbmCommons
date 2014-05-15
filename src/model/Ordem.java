@@ -88,11 +88,11 @@ public class Ordem extends BaseModel {
         return comandante;
     }
 
-    public boolean isCidade() {
+    public boolean isCidadeOrdem() {
         return tipoPersonagem.equalsIgnoreCase("F");
     }
 
-    public boolean isNacao() {
+    public boolean isNacaoOrdem() {
         return tipoPersonagem.equalsIgnoreCase("N");
     }
 
