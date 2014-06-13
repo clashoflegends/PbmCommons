@@ -91,6 +91,15 @@ public class ComparatorFactory implements Serializable {
         Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
     }
 
+    /**
+     * ordena pelotao de acordo com o custo das unidades
+     *
+     * @param lista
+     */
+    public static void getComparatorPelotaoUpkeepSorter(List<Pelotao> lista) {
+        Collections.sort(lista, new ComparatorTipoTropaUpkeepSorter());
+    }
+
     public static void getComparatorProdutoSorter(List<Produto> lista) {
         Collections.sort(lista, new ComparatorBaseModelSorter(false));
     }

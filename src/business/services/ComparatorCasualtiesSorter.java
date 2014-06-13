@@ -211,4 +211,14 @@ public class ComparatorCasualtiesSorter implements Comparator {
         //Id
         return (este.getId() - outro.getId());
     }
+    private int compareToByCost(TipoTropa este, TipoTropa outro, Terreno terreno) {
+        //Gold
+        final Integer custoThis = este.getRecruitCostMoney() + este.getUpkeepMoney() * 5;
+        final Integer custoOutro = outro.getRecruitCostMoney() + outro.getUpkeepMoney() * 5;
+        if (custoThis != custoOutro) {
+            return (custoThis - custoOutro);
+        }
+        //Id
+        return (este.getId() - outro.getId());
+    }
 }
