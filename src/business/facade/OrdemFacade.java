@@ -295,7 +295,7 @@ public class OrdemFacade implements Serializable {
     }
 
     public int getOrdemMax(Personagem actor, Cenario cenario) {
-        return cenario.getNumOrdens() + actor.getOrdensExtraQt();
+        return cenario.getNumOrdensPers() + actor.getOrdensExtraQt();
     }
 
     public int getOrdemMax(Cidade actor, Cenario cenario) {

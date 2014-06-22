@@ -195,7 +195,7 @@ public class Cenario extends BaseModel {
     /**
      * @return the numOrdens
      */
-    public int getNumOrdens() {
+    public int getNumOrdensPers() {
         return numOrdens;
     }
 
