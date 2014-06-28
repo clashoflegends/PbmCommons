@@ -243,6 +243,14 @@ public class TitleFactory implements Serializable {
             //nao pode estar sitiado
             ret += separator + labels.getString("REQUISITO.AJUDA.CPV");
         }
+        if (requisitos.contains("Multi")) {
+            //nao pode estar sitiado
+            ret += separator + labels.getString("REQUISITO.AJUDA.MULTI");
+        }
+        if (requisitos.contains("Bigcity")) {
+            //nao pode estar sitiado
+            ret += separator + labels.getString("REQUISITO.AJUDA.BIGCITY");
+        }
         if (requisitos.contains("cppr")) {
             ret += separator + labels.getString("REQUISITO.AJUDA.CPPR");
         }

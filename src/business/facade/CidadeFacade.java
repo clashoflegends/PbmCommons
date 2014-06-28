@@ -294,4 +294,8 @@ public class CidadeFacade implements Serializable {
         ret.addTab(String.format("%s: %s", labels.getString("TAMANHO"), BaseMsgs.cidadeTamanho[cidade.getTamanho()]));
         return ret.getList();
     }
+
+    boolean isBigCity(Cidade cidade) {
+        return cidade.getTamanho() >= 4;
+    }
 }

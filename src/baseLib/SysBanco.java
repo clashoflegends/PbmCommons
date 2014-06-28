@@ -77,6 +77,10 @@ public class SysBanco {
         }
     }
 
+    public static String buscaDs(String sql, String param) {
+        return SysBanco.buscaDs(sql.replace("?", "'" + param + "'"));
+    }
+
     public static String buscaDs(String sql) {
         //imp(sql);
         String ret = "";

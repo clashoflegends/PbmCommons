@@ -38,68 +38,18 @@ public class OrdemFacade implements Serializable {
     private static final String[] ACTIONDISABLED = new String[]{"-", ""};
     private static final String[] ACTIONBLANK = new String[]{" ", ""};
 
-    public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, Nacao nacao, int indexOrdemAtiva, boolean isAllOrders, boolean isStartupPackages) {
+    public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, BaseModel actor, int indexOrdemAtiva, boolean isAllOrders, boolean isStartupPackages) {
         //cria vetor e garante tamanho minimo
         List<Ordem> ordensActor = new ArrayList<Ordem>(ordens.size() + 1);
         //lista as ordens que o personagem pode executar
         for (Ordem ordem : ordens.values()) {
-            //se o personagem tem a pericia para dar a ordem
-            if (isOrdemActor(nacao, ordem)) {
+            //se o actor tem a pericia para dar a ordem
+            if (isOrdemActor(actor, ordem)) {
                 //ou sao todas as ordens, ou sao as ordens que ele pode no momento
                 if (isAllOrders) {
                     ordensActor.add(ordem);
-                } else if (isOrdemRequisitos(nacao, ordem, isStartupPackages)) {
-                    if (isOrdemAllowed(nacao, indexOrdemAtiva, ordem)) {
-                        ordensActor.add(ordem);
-                    }
-                } else {
-                    //else nao pode fazer a ordem.
-                }
-            }
-        }
-        ComparatorFactory.getComparatorOrdemSorter(ordensActor);
-        //Collections.sort(ordensPersonagem, ComparatorFactory.getComparatorOrdemSorter());
-        return (Ordem[]) ordensActor.toArray(new Ordem[0]);
-    }
-
-    public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, Cidade cidade, int indexOrdemAtiva, boolean isAllOrders) {
-        //cria vetor e garante tamanho minimo
-        List<Ordem> ordensActor = new ArrayList<Ordem>(ordens.size() + 1);
-        //lista as ordens que o personagem pode executar
-        for (Ordem ordem : ordens.values()) {
-            //se o personagem tem a pericia para dar a ordem
-            if (isOrdemActor(cidade, ordem)) {
-                //ou sao todas as ordens, ou sao as ordens que ele pode no momento
-                if (isAllOrders) {
-                    ordensActor.add(ordem);
-                } else if (isOrdemRequisitos(cidade, ordem)) {
-                    if (isOrdemAllowed(cidade, indexOrdemAtiva, ordem)) {
-                        ordensActor.add(ordem);
-                    }
-                } else {
-                    //else nao pode fazer a ordem.
-                }
-            }
-        }
-        ComparatorFactory.getComparatorOrdemSorter(ordensActor);
-        //Collections.sort(ordensPersonagem, ComparatorFactory.getComparatorOrdemSorter());
-        return (Ordem[]) ordensActor.toArray(new Ordem[0]);
-    }
-
-    public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, Personagem personagem, int indexOrdemAtiva, boolean isAllOrders) {
-        //cria vetor e garante tamanho minimo
-        List<Ordem> ordensActor = new ArrayList<Ordem>(ordens.size() + 1);
-        //lista as ordens que o personagem pode executar
-        for (Ordem ordem : ordens.values()) {
-            //se o personagem tem a pericia para dar a ordem
-            //TODO: artefatos que permitem ordens mesmo sem pericia (descobrir segredos)
-            //TODO: nacoes com habilidades especiais para dar ordens.(descobrir segredos)
-            if (isOrdemActor(personagem, ordem)) {
-                //ou sao todas as ordens, ou sao as ordens que ele pode no momento
-                if (isAllOrders) {
-                    ordensActor.add(ordem);
-                } else if (isOrdemRequisitos(personagem, ordem)) {
-                    if (isOrdemAllowed(personagem, indexOrdemAtiva, ordem)) {
+                } else if (isOrdemRequisitos(actor, ordem, isStartupPackages)) {
+                    if (isOrdemAllowed(actor, indexOrdemAtiva, ordem)) {
                         ordensActor.add(ordem);
                     }
                 } else {
@@ -136,13 +86,25 @@ public class OrdemFacade implements Serializable {
 
     /**
      * Verifica se o personagem pode realizar a ordem, de acordo com o tipo do
-     * personagem.
+     * actor.
      *
      * @param personagem
      * @param ordem
      * @return
      */
-    private boolean isOrdemActor(Personagem personagem, Ordem ordem) {
+    private boolean isOrdemActor(BaseModel actor, Ordem ordem) {
+        if (actor instanceof Personagem) {
+            return isOrdemActorPersonagem((Personagem) actor, ordem);
+        } else if (actor instanceof Cidade) {
+            return isOrdemActorCidade((Cidade) actor, ordem);
+        } else if (actor instanceof Nacao) {
+            return isOrdemActorNacao((Nacao) actor, ordem);
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isOrdemActorPersonagem(Personagem personagem, Ordem ordem) {
         if (ordem.isGeral()) {
             return true;
         } else if (ordem.isComandante() && personagem.isComandante()) {
@@ -157,56 +119,66 @@ public class OrdemFacade implements Serializable {
         return false;
     }
 
-    private boolean isOrdemActor(Cidade cidade, Ordem ordem) {
+    private boolean isOrdemActorCidade(Cidade cidade, Ordem ordem) {
         return ordem.isCidadeOrdem();
     }
 
-    private boolean isOrdemActor(Nacao nacao, Ordem ordem) {
+    private boolean isOrdemActorNacao(Nacao nacao, Ordem ordem) {
         return ordem.isNacaoOrdem();
     }
 
-    private boolean isOrdemRequisitos(Cidade cidade, Ordem ordem) {
+    /**
+     * Verifica se o actor pode realizar a ordem, de acordo com os requisitos
+     *
+     * @param actor
+     * @param ordem
+     * @return
+     */
+    private boolean isOrdemRequisitos(BaseModel actor, Ordem ordem, boolean isStartupPackages) {
         final String requisitos = ordem.getRequisito().toLowerCase();
         //criticas por tipo de chave
         if (requisitos.contains("none")) {
             //none nao devia estar com mais nenhum parametro.
             return true;
         }
+        if (actor instanceof Personagem) {
+            return isOrdemRequisitosPersonagem((Personagem) actor, ordem);
+        } else if (actor instanceof Cidade) {
+            return isOrdemRequisitosCidade((Cidade) actor, ordem);
+        } else if (actor instanceof Nacao) {
+            return isOrdemRequisitosNacao((Nacao) actor, ordem, isStartupPackages);
+        }
+        return true;
+    }
+
+    private boolean isOrdemRequisitosCidade(Cidade cidade, Ordem ordem) {
+        final String requisitos = ordem.getRequisito().toLowerCase();
+        //criticas por tipo de chave
         if (requisitos.contains("capital") && !cidadeFacade.isCapital(cidade)) {
+            return false;
+        }
+        if (requisitos.contains("Bigcity") && !cidadeFacade.isBigCity(cidade)) {
             return false;
         }
         return true;
     }
 
-    private boolean isOrdemRequisitos(Nacao nacao, Ordem ordem, boolean isStartupPackages) {
+    private boolean isOrdemRequisitosNacao(Nacao nacao, Ordem ordem, boolean isStartupPackages) {
         final String requisitos = ordem.getRequisito().toLowerCase();
         //criticas por tipo de chave
-        if (requisitos.contains("none")) {
-            //none nao devia estar com mais nenhum parametro.
-            return true;
-        }
         if (requisitos.contains("setup") && !isStartupPackages) {
             return false;
         }
         return true;
     }
 
-    /**
-     * Verifica se o personagem pode realizar a ordem, de acordo com os
-     * requisitos
-     *
-     * @param personagem
-     * @param ordem
-     * @return
-     */
-    private boolean isOrdemRequisitos(Personagem personagem, Ordem ordem) {
+    private boolean isOrdemRequisitosPersonagem(Personagem personagem, Ordem ordem) {
         final String requisitos = ordem.getRequisito().toLowerCase();
         //criticas por tipo de chave
-        if (requisitos.contains("none")) {
-            //none nao devia estar com mais nenhum parametro.
-            return true;
-        }
         if (requisitos.contains("capital") && !personagemFacade.isInCapital(personagem)) {
+            return false;
+        }
+        if (requisitos.contains("Bigcity") && !cidadeFacade.isBigCity(personagemFacade.getCidade(personagem))) {
             return false;
         }
         if (requisitos.contains("terra") && !personagemFacade.isInTerra(personagem)) {
