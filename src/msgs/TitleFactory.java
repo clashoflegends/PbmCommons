@@ -243,11 +243,11 @@ public class TitleFactory implements Serializable {
             //nao pode estar sitiado
             ret += separator + labels.getString("REQUISITO.AJUDA.CPV");
         }
-        if (requisitos.contains("Multi")) {
+        if (requisitos.contains("multi")) {
             //nao pode estar sitiado
             ret += separator + labels.getString("REQUISITO.AJUDA.MULTI");
         }
-        if (requisitos.contains("Bigcity")) {
+        if (requisitos.contains("bigcity")) {
             //nao pode estar sitiado
             ret += separator + labels.getString("REQUISITO.AJUDA.BIGCITY");
         }
@@ -279,16 +279,16 @@ public class TitleFactory implements Serializable {
             //ALVO considera PERSONAGEM amigo !this.criticaCpInimiga(false)
             ret += separator + labels.getString("REQUISITO.AJUDA.CPI");
         }
-        if (requisitos.contains("Artefato")) {
+        if (requisitos.contains("artefato")) {
             ret += separator + labels.getString("REQUISITO.AJUDA.ARTEFATO");
         }
-        if (requisitos.contains("ArtScry")) {
+        if (requisitos.contains("artscry")) {
             ret += separator + labels.getString("REQUISITO.AJUDA.ARTSCRY");
         }
-        if (requisitos.contains("ArtSumm")) {
+        if (requisitos.contains("artsumm")) {
             ret += separator + labels.getString("REQUISITO.AJUDA.ARTSUMM");
         }
-        if (requisitos.contains("ArtDragonEgg")) {
+        if (requisitos.contains("artdragonegg")) {
             ret += separator + labels.getString("REQUISITO.AJUDA.ARTDRAGONEGG");
         }
         return ret;

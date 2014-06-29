@@ -322,7 +322,7 @@ public class LocalFacade implements Serializable {
      * @return
      */
     public Personagem[] listPersonagemLocal(Local local, Personagem personagem, int tipo) {
-        List ret = new ArrayList();
+        List<Personagem> ret = new ArrayList();
         if (tipo == 0) {
             ret.addAll(local.getPersonagens().values());
             ret.remove(personagem);
@@ -348,6 +348,17 @@ public class LocalFacade implements Serializable {
             }
         } else if (tipo == 4) {
             ret.addAll(local.getPersonagens().values());
+        }
+        return (Personagem[]) ret.toArray(new Personagem[0]);
+    }
+
+    public Personagem[] listPersonagemLocal(Local local, Nacao nacao) {
+        List<Personagem> ret = new ArrayList();
+        for (Personagem pers : local.getPersonagens().values()) {
+            if (nacao == pers.getNacao() && !pers.isHero()) {
+                //check if hero
+                ret.add(pers);
+            }
         }
         return (Personagem[]) ret.toArray(new Personagem[0]);
     }

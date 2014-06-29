@@ -474,6 +474,10 @@ public class Personagem extends BaseModel {
         throw new UnsupportedOperationException("Not supported yet. Use PersonagemFacade");
     }
 
+    public boolean isHero() {
+        return getOrdensExtraQt() > 0;
+    }
+
     @Override
     public boolean isPersonagem() {
         return true;
