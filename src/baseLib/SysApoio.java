@@ -62,6 +62,8 @@ public class SysApoio implements Serializable {
     public static void showDialogError(String message, String title) {
         JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE);
         JDialog dialog = optionPane.createDialog(null, title);
+        dialog.setAlwaysOnTop(true);
+        dialog.toFront();
         dialog.setVisible(true);
     }
 
@@ -73,12 +75,16 @@ public class SysApoio implements Serializable {
     public static void showDialogAlert(String message) {
         JOptionPane optionPane = new JOptionPane(message, JOptionPane.WARNING_MESSAGE);
         JDialog dialog = optionPane.createDialog(null, "Watch out!");
+        dialog.setAlwaysOnTop(true);
+        dialog.toFront();
         dialog.setVisible(true);
     }
 
     public static void showDialogInfo(String message, String title) {
         JOptionPane optionPane = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE);
         JDialog dialog = optionPane.createDialog(null, title);
+        dialog.setAlwaysOnTop(true);
+        dialog.toFront();
         dialog.setVisible(true);
     }
 

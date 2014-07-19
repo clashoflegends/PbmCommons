@@ -544,11 +544,15 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
      * @return dialog to show when an uncaught exception is encountered
      */
     protected JDialog getUncaughtExceptionDialog() {
-        // PENDING: this needs to be localized.
+        //PENDING: this needs to be localized.
         JOptionPane optionPane = new JOptionPane(
                 "An unrecoverable error has occured. " + getName()
                 + " will now exit", JOptionPane.ERROR_MESSAGE);
-        return optionPane.createDialog(null, "Error");
+        final JDialog dialog = optionPane.createDialog(null, "Error");
+        dialog.setAlwaysOnTop(true);
+        dialog.toFront();
+        dialog.setVisible(true);
+        return dialog;
     }
 
     private void uncaughtException0() {

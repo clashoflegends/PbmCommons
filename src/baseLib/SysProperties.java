@@ -38,7 +38,7 @@ public class SysProperties implements Serializable {
             + "splitSize = 300, define the size of the left side screen split.\n"
             + "TableColumnAdjust = 0|1 -> Yes|No, adjust columns during \"Load Action\".\n"
             + "CopyActionsPopUp = 0|1 -> Yes|No, displays a popup when copying Actions to clipboard.\n"
-            + "CopyActionsOrder = 0|1 -> execution|alphabeticaly, selects the order the commands will appear.\n"
+            + "CopyActionsOrder = 0|1 -> Displays the list of actions per character.\n"
             + "HexTagStyle = 0-3, changes the Hex Tag Style.\n"
             + "HexTagFrame = 0|1, changes the Hex Tag Border Style (0 or 1).\n"
             + "KeepPopupOpen = 0|1 -> Yes|No, open multiple hex's info popups.\n"
