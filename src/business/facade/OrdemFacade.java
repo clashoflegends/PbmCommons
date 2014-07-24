@@ -214,7 +214,7 @@ public class OrdemFacade implements Serializable {
             //nao pode estar sitiado, mas nao fazendo a critica pq o flag de sitiado sobrevive ao turno.
             return false;
         }
-        if (requisitos.contains("cppr") && (!personagemFacade.isPodeMoverCidade(personagem) || !personagemFacade.isInCidadePropriaRaca(personagem))) {
+        if (requisitos.contains("cppr") && (!personagemFacade.isPodeMoverCidade(personagem) || !personagemFacade.isInCidadePropria(personagem))) {
             //nao pode estar sitiado, mas nao fazendo a critica pq o flag de sitiado sobrevive ao turno.
             return false;
         }
