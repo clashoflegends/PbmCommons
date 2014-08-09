@@ -9,6 +9,7 @@
 package baseLib;
 
 import com.ibm.icu.text.Normalizer;
+import com.sun.xml.internal.ws.util.StringUtils;
 import gui.components.DialogTextArea;
 import java.awt.Component;
 import java.io.Serializable;
@@ -320,6 +321,11 @@ public class SysApoio implements Serializable {
      */
     public static boolean isStrInStr(String main, String sub) {
         return (main.toLowerCase().indexOf(sub.toLowerCase()) != -1);
+    }
+
+    public static String getStrRight(String main, String mark) {
+        String[] split = main.split(mark);
+        return split[split.length - 1];
     }
 
     public static DecimalFormat getMyFormatter() {

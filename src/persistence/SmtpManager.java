@@ -74,6 +74,9 @@ public class SmtpManager implements Serializable {
     }
 
     public boolean open() {
+        if (session != null) {
+            return true;
+        }
         // create some properties and get the default Session
         Authenticator authenticator = null;
         Properties props = System.getProperties();
@@ -188,11 +191,8 @@ public class SmtpManager implements Serializable {
     }
 
     public boolean close() throws PersistenceException {
-        boolean ret = false;
         try {
-
             transport.close();
-
         } catch (NullPointerException ex) {
             //transport not initialized, just ignore.
         } catch (MessagingException mex) {
@@ -202,7 +202,7 @@ public class SmtpManager implements Serializable {
                 throw new PersistenceException(ex.getMessage());
             }
         }
-        return ret;
+        return true;
     }
 
     public boolean sendCounselor() throws PersistenceException {
