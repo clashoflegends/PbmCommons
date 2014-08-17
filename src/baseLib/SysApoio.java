@@ -9,7 +9,6 @@
 package baseLib;
 
 import com.ibm.icu.text.Normalizer;
-import com.sun.xml.internal.ws.util.StringUtils;
 import gui.components.DialogTextArea;
 import java.awt.Component;
 import java.io.Serializable;
