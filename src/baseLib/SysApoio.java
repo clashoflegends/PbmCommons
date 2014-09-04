@@ -11,7 +11,9 @@ package baseLib;
 import com.ibm.icu.text.Normalizer;
 import gui.components.DialogTextArea;
 import java.awt.Component;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -313,6 +315,12 @@ public class SysApoio implements Serializable {
             ret = -9999;
         }
         return ret;
+    }
+
+    public static String exceptionToString(Exception ex) {
+        StringWriter errors = new StringWriter();
+        ex.printStackTrace(new PrintWriter(errors));
+        return errors.toString();
     }
 
     /**

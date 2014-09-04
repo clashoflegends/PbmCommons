@@ -241,7 +241,6 @@ public class SmtpManager implements Serializable {
             mbp1.setText(getBody());
             mp.addBodyPart(mbp1);
 
-
             // create the second message part
             if (!getAttachmentList().isEmpty()) {
                 for (File file : getAttachmentList()) {
