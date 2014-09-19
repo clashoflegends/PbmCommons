@@ -67,11 +67,13 @@ public class PersonagemOrdem extends BaseModel {
             return (this.getOrdem().getNumero() - outro.getOrdem().getNumero());
         } catch (NullPointerException ex) {
             //zzz: 497/498
-            if (this.getOrdem() == null) {
-                return (497 - outro.getOrdem().getNumero());
-            } else {
-                return (this.getOrdem().getNumero() - 497);
-            }
+                if (outro.getOrdem() == null) {
+                    return 0;
+                } else if (this.getOrdem() == null) {
+                    return (497 - outro.getOrdem().getNumero());
+                } else {
+                    return (this.getOrdem().getNumero() - 497);
+                }
         }
     }
 }

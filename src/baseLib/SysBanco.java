@@ -45,7 +45,7 @@ public class SysBanco {
         try {
             log.info("Conectando ao banco de dados:" + SysProperties.getProps("bdDatabase"));
 //            Class.forName("com.mysql.jdbc.Driver");
-            final String conexao = String.format("jdbc:mysql://%s/%s", SysProperties.getProps("bdServer","localhost"), SysProperties.getProps("bdDatabase"));
+            final String conexao = String.format("jdbc:mysql://%s/%s", SysProperties.getProps("bdServer", "localhost"), SysProperties.getProps("bdDatabase"));
             setConn(DriverManager.getConnection(conexao, SysProperties.getProps("bdLogin"), SysProperties.getProps("bdSenha")));
         } catch (SQLException e) {
             log.error("Banco fora do ar.", e);
@@ -104,6 +104,20 @@ public class SysBanco {
             pstm = getConn().prepareStatement(sql);
             pstm.setInt(1, idPartida);
             pstm.setInt(2, turno);
+            ret = pstm.executeUpdate();
+            SysBanco.cleanUp(pstm);
+        } catch (SQLException e) {
+            log.error("texto: SQLException...", e);
+        }
+        return ret;
+    }
+
+    public static int rodaUpdate(String sql, int idPartida) {
+        int ret = -1;
+        try {
+            PreparedStatement pstm;
+            pstm = getConn().prepareStatement(sql);
+            pstm.setInt(1, idPartida);
             ret = pstm.executeUpdate();
             SysBanco.cleanUp(pstm);
         } catch (SQLException e) {
