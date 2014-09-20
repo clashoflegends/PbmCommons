@@ -43,9 +43,9 @@ public class SysBanco {
 
     private static void criaConn() {
         try {
-            log.info("Conectando ao banco de dados:" + SysProperties.getProps("bdDatabase"));
 //            Class.forName("com.mysql.jdbc.Driver");
             final String conexao = String.format("jdbc:mysql://%s/%s", SysProperties.getProps("bdServer", "localhost"), SysProperties.getProps("bdDatabase"));
+            log.info("Conectando ao banco de dados:" + conexao);
             setConn(DriverManager.getConnection(conexao, SysProperties.getProps("bdLogin"), SysProperties.getProps("bdSenha")));
         } catch (SQLException e) {
             log.error("Banco fora do ar.", e);
