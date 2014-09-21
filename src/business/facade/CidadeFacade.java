@@ -295,7 +295,19 @@ public class CidadeFacade implements Serializable {
         return ret.getList();
     }
 
-    boolean isBigCity(Cidade cidade) {
+    public boolean isBigCity(Cidade cidade) {
         return cidade.getTamanho() >= 4;
+    }
+
+    public int getUpkeepMoney(Cidade cidade) {
+////        if (cidade.getNacao().hasHabilidadeNacaoOld("0042") && cidade.getFortificacao() == 5) {
+////            //The Wall: Fortress' upkeep is free
+////            return (cidade.getDocas() * 250);
+////        } else if (cidade.getNacao().hasHabilidadeNacaoOld("0037")) {
+////            //Pays half upkeep cost on fortifications
+////            return (cidade.getDocas() * 250 + cidade.getFortificacao() * 500 / 2);
+////        } else {
+            return (cidade.getDocas() * 250 + cidade.getFortificacao() * 500);
+//        }
     }
 }

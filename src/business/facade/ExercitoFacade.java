@@ -97,6 +97,15 @@ public class ExercitoFacade implements Serializable {
     public int getComida(Exercito exercito) {
         return exercito.getComida();
     }
+
+    public int getUpkeepCost(Exercito exercito) {
+        int ret = 0;
+        for (Pelotao pelotao : exercito.getPelotoes().values()) {
+            ret += pelotao.getQtd() * pelotao.getTipoTropa().getUpkeepMoney();
+        }
+        return ret;
+    }
+
     public int getMoral(Exercito exercito) {
         return exercito.getMoral();
     }
@@ -259,10 +268,10 @@ public class ExercitoFacade implements Serializable {
         if (tropa.hasHabilidade(";TTT;")) {
             //conta capacidade de carga
             //capacidade += pelotao.getQtd() * SHIP_CAPACITY;
-        return 0;
+            return 0;
         } else if (tropa.isBarcos()) {
             //nao conta outros navios...
-        return 0;
+            return 0;
         } else if (tropa.hasHabilidade(";TT2;")) {
             //se cavalaria, conta dobrado
             return qtd * 2f;
