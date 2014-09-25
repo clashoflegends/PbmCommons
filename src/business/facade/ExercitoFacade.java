@@ -106,6 +106,14 @@ public class ExercitoFacade implements Serializable {
         return ret;
     }
 
+    public int getUpkeepFood(Exercito exercito) {
+        int ret = 0;
+        for (Pelotao pelotao : exercito.getPelotoes().values()) {
+            ret += pelotao.getQtd() * pelotao.getTipoTropa().getUpkeepFood();
+        }
+        return ret;
+    }
+
     public int getMoral(Exercito exercito) {
         return exercito.getMoral();
     }

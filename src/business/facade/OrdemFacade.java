@@ -18,6 +18,7 @@ import model.Nacao;
 import model.Ordem;
 import model.Personagem;
 import model.PersonagemOrdem;
+import msgs.TitleFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
@@ -312,9 +313,10 @@ public class OrdemFacade implements Serializable {
         try {
             Ordem ordem = actor.getAcao(index).getOrdem();
             List parametros = actor.getAcao(index).getParametrosDisplay();
-            String[] ret = new String[2];
+            String[] ret = new String[3];
             ret[0] = ordem.getDescricao();
             ret[1] = parametros.toString();
+            ret[2] = TitleFactory.getTipoOrdem(ordem);
             return ret;
         } catch (NullPointerException ex) {
             if (index >= acoesMax) {

@@ -29,6 +29,7 @@ public class CidadeFacade implements Serializable {
     private static final NacaoFacade nacaoFacade = new NacaoFacade();
     private static final LocalFacade localFacade = new LocalFacade();
     private static final BattleSimFacade combatSimFacade = new BattleSimFacade();
+    public static final int[] ForneceComida = {0, 100, 200, 1000, 2500, 5000};
 
     public int getArrecadacaoImpostos(Cidade cidade) {
         return cidade.getArrecadacaoImpostos();
@@ -307,7 +308,11 @@ public class CidadeFacade implements Serializable {
 ////            //Pays half upkeep cost on fortifications
 ////            return (cidade.getDocas() * 250 + cidade.getFortificacao() * 500 / 2);
 ////        } else {
-            return (cidade.getDocas() * 250 + cidade.getFortificacao() * 500);
+        return (cidade.getDocas() * 250 + cidade.getFortificacao() * 500);
 //        }
+    }
+
+    public int getFoodGiven(Cidade cidade) {
+        return CidadeFacade.ForneceComida[cidade.getTamanho()];
     }
 }
