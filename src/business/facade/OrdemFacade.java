@@ -36,8 +36,8 @@ public class OrdemFacade implements Serializable {
     private static final CidadeFacade cidadeFacade = new CidadeFacade();
     private static final NacaoFacade nacaoFacade = new NacaoFacade();
     private static final LocalFacade localFacade = new LocalFacade();
-    private static final String[] ACTIONDISABLED = new String[]{"-", ""};
-    private static final String[] ACTIONBLANK = new String[]{" ", ""};
+    private static final String[] ACTIONDISABLED = new String[]{"-", "", ""};
+    private static final String[] ACTIONBLANK = new String[]{" ", "", ""};
 
     public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, BaseModel actor, int indexOrdemAtiva, boolean isAllOrders, boolean isStartupPackages) {
         //cria vetor e garante tamanho minimo
