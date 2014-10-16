@@ -355,13 +355,20 @@ public class OrdemFacade implements Serializable {
         }
     }
 
-    public SortedMap<Integer, PersonagemOrdem> getOrdensExecutadas(Personagem personagem) {
+    public SortedMap<Integer, PersonagemOrdem> getOrdensExecutadas(BaseModel actor) {
         try {
-            return personagem.getAcaoExecutadas();
+            return actor.getAcaoExecutadas();
         } catch (NullPointerException ex) {
             return null;
         }
     }
+//    public SortedMap<Integer, PersonagemOrdem> getOrdensExecutadas(Personagem personagem) {
+//        try {
+//            return personagem.getAcaoExecutadas();
+//        } catch (NullPointerException ex) {
+//            return null;
+//        }
+//    }
 
     public List<String> getParametrosId(BaseModel actor, int index) {
         try {
