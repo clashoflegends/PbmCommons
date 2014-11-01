@@ -69,6 +69,10 @@ public class LongDate {
         return String.format("%s-%s-%s %s:%s", year, month, day, hour, minute);
     }
 
+    public String toDateTimeWeekNameString() {
+        return new SimpleDateFormat("EEEE d MMM yyyy HH:mm:ss z").format(getDateLongAsDate());
+    }
+
     public String toDateMysql() {
         final String date = toString();
         final String year = date.substring(0, 4);
