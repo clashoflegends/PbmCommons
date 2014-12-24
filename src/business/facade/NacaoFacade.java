@@ -440,4 +440,34 @@ public class NacaoFacade implements Serializable {
         ret.add(String.format(labels.getString("STARTUP.NATION.TITLE"), getNome(nacao.getNacao())));
         return ret.getList();
     }
+
+    public int getLealdade(Nacao nacao) {
+        if (nacao.getCidades().isEmpty()) {
+            return 0;
+        }
+        int ret = 0, size = 0;
+        for (Cidade cidade : nacao.getCidades()) {
+            ret += cidade.getLealdade() * cidade.getTamanho();
+            size += cidade.getTamanho();
+        }
+        if (size == 0) {
+            return 0;
+        }
+        return ret / size;
+    }
+
+    public int getLealdadeAnterior(Nacao nacao) {
+        if (nacao.getCidades().isEmpty()) {
+            return 0;
+        }
+        int ret = 0, size = 0;
+        for (Cidade cidade : nacao.getCidades()) {
+            ret += cidade.getLealdadeAnterior() * cidade.getTamanho();
+            size += cidade.getTamanho();
+        }
+        if (size == 0) {
+            return 0;
+        }
+        return ret / size;
+    }
 }

@@ -88,6 +88,10 @@ public class Nacao extends BaseModel {
         this.personagens.add(personagem);
     }
 
+    public void remPersonagen(Personagem personagem) {
+        this.personagens.remove(personagem);
+    }
+
     public Raca getRaca() {
         return raca;
     }
