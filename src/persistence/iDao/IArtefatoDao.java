@@ -19,5 +19,7 @@ public interface IArtefatoDao {
 
     public Artefato get(int id) throws PersistenceException;
 
+    public Artefato get(int id, Partida partida) throws PersistenceException;
+
     public SortedMap<String, Artefato> list(Partida partida) throws PersistenceException;
 }
