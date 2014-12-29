@@ -11,7 +11,7 @@ import baseLib.BaseModel;
  * @author jmoura
  */
 public class Habilidade extends BaseModel {
-
+    
     private int valor, cost = 0;
     private String tipo; //ENUM('SCENARIO','TROOP','CITY','NATION')
 
@@ -42,31 +42,35 @@ public class Habilidade extends BaseModel {
     public void setTipo(String tipo) {
         this.tipo = tipo;
     }
-
+    
     public int getCost() {
         return cost;
     }
-
+    
     public void setCost(int cost) {
         this.cost = cost;
     }
-
+    
     public boolean isPackage() {
         return tipo.equalsIgnoreCase("PACKAGE");
     }
-
+    
     public boolean isFilter() {
         return tipo.equalsIgnoreCase("FILTER");
     }
 
+    public boolean isChance() {
+        return tipo.equalsIgnoreCase("GAME") && getCodigo().contains(";C");
+    }
+    
     public boolean isAtribute() {
         return tipo.equalsIgnoreCase("SCENARIO");
     }
-
+    
     public boolean isHidden() {
         return isPackage() || isFilter();
     }
-
+    
     @Override
     public String toString() {
         return this.getComboDisplay();
