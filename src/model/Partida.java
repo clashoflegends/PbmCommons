@@ -140,6 +140,10 @@ public class Partida extends BaseModel {
         return this.hasHabilidade(";GCS;");
     }
 
+    public boolean isDeathMatch() {
+        return this.hasHabilidade(";GDM;");
+    }
+
     public boolean isNationPackages() {
         return this.hasHabilidade(";GSP;");
     }
