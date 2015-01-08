@@ -446,7 +446,7 @@ public class SysApoio implements Serializable {
             formatter = new MaskFormatter(s);
         } catch (java.text.ParseException exc) {
             System.err.println("formatter is bad: " + exc.getMessage());
-            System.exit(-1);
+            throw new UnsupportedOperationException(exc);
         }
         return formatter;
     }
@@ -458,7 +458,7 @@ public class SysApoio implements Serializable {
             formatter.setValidCharacters("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ");
         } catch (java.text.ParseException exc) {
             System.err.println("formatter is bad: " + exc.getMessage());
-            System.exit(-1);
+            throw new UnsupportedOperationException(exc);
         }
         return formatter;
     }
@@ -638,21 +638,21 @@ public class SysApoio implements Serializable {
 //                    linha = String.format(labels.getString(elemLabel), temp);
                     } catch (java.util.MissingResourceException e) {
                         log.fatal("Missing Label: {" + elemLabel + "}", e);
-                        System.exit(-1);
+                        throw new UnsupportedOperationException(e);
                     } catch (java.util.MissingFormatArgumentException e) {
                         log.fatal("linha: " + linha);
                         log.fatal("temp: " + temp);
                         log.fatal("elemLabel: " + elemLabel);
                         log.fatal("Labels: " + labels.getString(elemLabel));
                         log.fatal(e);
-                        System.exit(-1);
+                        throw new UnsupportedOperationException(e);
                     } catch (java.util.IllegalFormatConversionException e) {
                         log.fatal("linha: " + linha);
                         log.fatal("temp: " + temp);
                         log.fatal("elemLabel: " + elemLabel);
                         log.fatal("Labels: " + labels.getString(elemLabel));
                         log.fatal(e);
-                        System.exit(-1);
+                        throw new UnsupportedOperationException(e);
                     }
                     //parametros podem ser labels, entao decodifica de novo a linha
                 }
@@ -677,10 +677,10 @@ public class SysApoio implements Serializable {
             //just ignore null strings
         } catch (java.util.MissingResourceException e) {
             log.fatal(input, e);
-            System.exit(-1);
+            throw new UnsupportedOperationException(e);
         } catch (java.lang.StringIndexOutOfBoundsException e) {
             log.fatal(input, e);
-            System.exit(-1);
+            throw new UnsupportedOperationException(e);
         }
         //para debug: imprime o conteudo do banco de dados nos resultados.
         //ret += "\n\n=====================\n\n\n" + new String(input);
