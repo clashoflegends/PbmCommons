@@ -165,8 +165,7 @@ public class SysProperties implements Serializable {
             OutputStream propFile = new FileOutputStream(new File(getPropArq()));
             getProps().store(propFile, comentario);
         } catch (IOException ex) {
-            log.fatal(ex);
-            System.exit(-1);
+            throw new UnsupportedOperationException(ex);
         }
     }
 

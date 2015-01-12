@@ -709,4 +709,8 @@ public class SysApoio implements Serializable {
         }
         return "MISSING";
     }
+
+    public static void exit(int status) {
+        System.exit(status);
+    }
 }
