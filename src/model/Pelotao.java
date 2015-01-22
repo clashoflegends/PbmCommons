@@ -34,12 +34,20 @@ public class Pelotao extends BaseModel {
         this.modAtaque = arma;
     }
 
+    public void sumModAtaque(int arma) {
+        this.modAtaque = Math.min(100, arma + this.modAtaque);
+    }
+
     public int getModDefesa() {
         return modDefesa;
     }
 
     public void setModDefesa(int armadura) {
         this.modDefesa = armadura;
+    }
+
+    public void sumModDefesa(int armadura) {
+        this.modDefesa = Math.min(100, armadura + this.modDefesa);
     }
 
     public int getQtd() {
