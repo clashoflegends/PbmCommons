@@ -6,6 +6,7 @@ package business.converter;
 
 import baseLib.SysApoio;
 import java.io.Serializable;
+import java.util.List;
 import java.util.SortedMap;
 import model.Local;
 import model.Produto;
@@ -300,6 +301,15 @@ public final class ConverterFactory implements Serializable {
 
     public static Produto intToProduto(int tipoProduto, SortedMap<String, Produto> produtos) {
         for (Produto produto : produtos.values()) {
+            if (produto.getId() == tipoProduto) {
+                return produto;
+            }
+        }
+        return null;
+    }
+
+    public static Produto intToProduto(int tipoProduto, List<Produto> produtos) {
+        for (Produto produto : produtos) {
             if (produto.getId() == tipoProduto) {
                 return produto;
             }
