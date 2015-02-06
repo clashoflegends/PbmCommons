@@ -63,6 +63,9 @@ public class PathFactory implements Serializable {
     public static ExtensionFileFilter getFilterAcoes() {
         return new ExtensionFileFilter(label.getString("FILTRO.ACOES"), "rc.egf", "");
     }
+    public static ExtensionFileFilter getFilterImages() {
+        return new ExtensionFileFilter(label.getString("FILTRO.IMAGE"), "png", "");
+    }
 
     public static ExtensionFileFilter getFilterAcoesImport() {
         return new ExtensionFileFilter(label.getString("FILTRO.ACOES"), "egf", "o");
