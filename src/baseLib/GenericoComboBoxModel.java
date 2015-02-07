@@ -6,6 +6,7 @@ package baseLib;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -35,15 +36,16 @@ public class GenericoComboBoxModel extends DefaultComboBoxModel implements Combo
     }
 
     public GenericoComboBoxModel(final IBaseModel[] items) {
+        this(items, false);
+    }
+
+    public GenericoComboBoxModel(final IBaseModel[] items, boolean noSort) {
         super();
         try {
-//            for (int i = 0, c = items.length; i < c; i++) {
-//                GenericoComboObject comboObj = new GenericoComboObject((IBaseModel) items[i]);
-//                this.addElement(comboObj);
-//            }
-            for (IBaseModel elem : items) {
-                GenericoComboObject comboObj = new GenericoComboObject((IBaseModel) elem);
-                this.addElement(comboObj);
+            if (noSort || !SysProperties.getProps("SortAllCombos", "1").equals("1")) {
+                sortByNone(items);
+            } else {
+                sortByDisplay(items);
             }
         } catch (NullPointerException ex) {
             log.fatal("Ops 2", ex);
@@ -84,5 +86,23 @@ public class GenericoComboBoxModel extends DefaultComboBoxModel implements Combo
             ret.add((GenericoComboObject) getElementAt(ii));
         }
         return ret;
+    }
+
+    private void sortByDisplay(final IBaseModel[] items) {
+        List<GenericoComboObject> list = new ArrayList();
+        for (IBaseModel elem : items) {
+            GenericoComboObject comboObj = new GenericoComboObject((IBaseModel) elem);
+            list.add(comboObj);
+        }
+        Collections.sort(list);
+        for (GenericoComboObject gco : list) {
+            addElement(gco);
+        }
+    }
+
+    private void sortByNone(final IBaseModel[] items) {
+        for (IBaseModel elem : items) {
+            addElement(new GenericoComboObject((IBaseModel) elem));
+        }
     }
 }

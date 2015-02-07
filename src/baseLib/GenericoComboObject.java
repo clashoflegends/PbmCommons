@@ -4,7 +4,7 @@ import java.io.Serializable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class GenericoComboObject implements Serializable, IBaseModel {
+public class GenericoComboObject implements Serializable, IBaseModel, Comparable {
 
     private String display;
     private String id;
@@ -63,5 +63,10 @@ public class GenericoComboObject implements Serializable, IBaseModel {
     @Override
     public String getNome() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return this.getComboDisplay().compareTo(((GenericoComboObject) o).getComboDisplay());
     }
 }
