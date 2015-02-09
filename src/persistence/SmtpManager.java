@@ -181,6 +181,8 @@ public class SmtpManager implements Serializable {
             Exception ex = null;
             if ((ex = mex.getNextException()) != null) {
                 throw new PersistenceException(ex.getMessage());
+            }else{
+                throw new PersistenceException(mex.getMessage());
             }
         } catch (Exception ex) {
             log.info("Erro no envio SmtpManager. Verifique espacos no email.", ex);
