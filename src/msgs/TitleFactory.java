@@ -95,11 +95,12 @@ public class TitleFactory implements Serializable {
             }
         }
         ret += String.format("%s: %s\n", labels.getString("REQUISITO"), getAjudaRequisito(ordem));
-        if (acaoFacade.isSetup(ordem)) {
-            ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), acaoFacade.getSetupDescription(ordem));
-        } else {
-            ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ordem.getAjuda());
-        }
+        ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ordem.getAjuda());
+//        if (acaoFacade.isSetup(ordem)) {
+//            ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), acaoFacade.getSetupDescription(ordem));
+//        } else {
+//            ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ordem.getAjuda());
+//        }
         return ret;
     }
 
@@ -243,9 +244,21 @@ public class TitleFactory implements Serializable {
             //nao pode estar sitiado
             ret += separator + labels.getString("REQUISITO.AJUDA.CPV");
         }
-        if (requisitos.contains("multi")) {
-            //nao pode estar sitiado
-            ret += separator + labels.getString("REQUISITO.AJUDA.MULTI");
+        if (requisitos.contains("multi2")) {
+            //requires multiple
+            ret += separator + labels.getString("REQUISITO.AJUDA.MULTI2");
+        }
+        if (requisitos.contains("multi3")) {
+            //requires multiple
+            ret += separator + labels.getString("REQUISITO.AJUDA.MULTI3");
+        }
+        if (requisitos.contains("multi4")) {
+            //requires multiple
+            ret += separator + labels.getString("REQUISITO.AJUDA.MULTI4");
+        }
+        if (requisitos.contains("multi5")) {
+            //requires multiple
+            ret += separator + labels.getString("REQUISITO.AJUDA.MULTI5");
         }
         if (requisitos.contains("bigcity")) {
             //nao pode estar sitiado
