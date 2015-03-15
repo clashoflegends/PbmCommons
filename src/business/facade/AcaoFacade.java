@@ -4,6 +4,7 @@
  */
 package business.facade;
 
+import baseLib.BaseModel;
 import baseLib.SysApoio;
 import java.io.Serializable;
 import java.util.Collection;
@@ -39,6 +40,15 @@ public class AcaoFacade implements Serializable {
         } catch (NullPointerException ex) {
             return 0;
         }
+    }
+
+    public boolean isPointsSetupUnderLimit(BaseModel actor, int nationPackagesLimit) {
+        if (actor.isNacao()) {
+            Nacao nacao = (Nacao) actor;
+            final int current = getPointsSetup(nacao);
+            return current < nationPackagesLimit;
+        }
+        return false;
     }
 
     public int getPointsSetup(Ordem ordem) {
