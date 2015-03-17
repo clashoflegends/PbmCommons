@@ -79,21 +79,21 @@ public class ComparatorCasualtiesSorter implements Comparator {
      */
     private int compareToByTacticCharge(TipoTropa este, TipoTropa outro, Terreno terreno) {
         //agressive 10>1
-        if (este.getAtaqueTerreno().get(terreno) != outro.getAtaqueTerreno().get(terreno)) {
+        if (este.getAtaqueTerreno().get(terreno) - outro.getAtaqueTerreno().get(terreno) != 0) {
             return (outro.getAtaqueTerreno().get(terreno) - este.getAtaqueTerreno().get(terreno));
         }
         //fast
-        if (este.getMovimentoTerreno().get(terreno) != outro.getMovimentoTerreno().get(terreno)) {
+        if (este.getMovimentoTerreno().get(terreno) - outro.getMovimentoTerreno().get(terreno) != 0) {
             return (outro.getMovimentoTerreno().get(terreno) - este.getMovimentoTerreno().get(terreno));
         }
         //defensive/tank 10>1
-        if (este.getDefesaTerreno().get(terreno) != outro.getDefesaTerreno().get(terreno)) {
+        if (este.getDefesaTerreno().get(terreno) - outro.getDefesaTerreno().get(terreno) != 0) {
             return (outro.getDefesaTerreno().get(terreno) - este.getDefesaTerreno().get(terreno));
         }
         //Gold
         final Integer custoThis = este.getRecruitCostMoney() + este.getUpkeepMoney() * 5;
         final Integer custoOutro = outro.getRecruitCostMoney() + outro.getUpkeepMoney() * 5;
-        if (custoThis != custoOutro) {
+        if (custoThis - custoOutro != 0) {
             return (custoThis - custoOutro);
         }
         //Id
@@ -105,21 +105,21 @@ public class ComparatorCasualtiesSorter implements Comparator {
      */
     private int compareToByTacticFlank(TipoTropa este, TipoTropa outro, Terreno terreno) {
         //defensive/tank 10>1
-        if (este.getDefesaTerreno().get(terreno) != outro.getDefesaTerreno().get(terreno)) {
+        if (este.getDefesaTerreno().get(terreno) - outro.getDefesaTerreno().get(terreno) != 0) {
             return (outro.getDefesaTerreno().get(terreno) - este.getDefesaTerreno().get(terreno));
         }
         //agressive 10>1
-        if (este.getAtaqueTerreno().get(terreno) != outro.getAtaqueTerreno().get(terreno)) {
+        if (este.getAtaqueTerreno().get(terreno) - outro.getAtaqueTerreno().get(terreno) != 0) {
             return (outro.getAtaqueTerreno().get(terreno) - este.getAtaqueTerreno().get(terreno));
         }
         //Gold
         final Integer custoThis = este.getRecruitCostMoney() + este.getUpkeepMoney() * 5;
         final Integer custoOutro = outro.getRecruitCostMoney() + outro.getUpkeepMoney() * 5;
-        if (custoThis != custoOutro) {
+        if (custoThis - custoOutro != 0) {
             return (custoThis - custoOutro);
         }
         //fast
-        if (este.getMovimentoTerreno().get(terreno) != outro.getMovimentoTerreno().get(terreno)) {
+        if (este.getMovimentoTerreno().get(terreno) - outro.getMovimentoTerreno().get(terreno) != 0) {
             return (outro.getMovimentoTerreno().get(terreno) - este.getMovimentoTerreno().get(terreno));
         }
         //Id
@@ -133,19 +133,19 @@ public class ComparatorCasualtiesSorter implements Comparator {
         //Gold
         final Integer custoThis = este.getRecruitCostMoney() + este.getUpkeepMoney() * 5;
         final Integer custoOutro = outro.getRecruitCostMoney() + outro.getUpkeepMoney() * 5;
-        if (custoThis != custoOutro) {
+        if (custoThis - custoOutro != 0) {
             return (custoThis - custoOutro);
         }
         //agressive 10>1
-        if (este.getAtaqueTerreno().get(terreno) != outro.getAtaqueTerreno().get(terreno)) {
+        if (este.getAtaqueTerreno().get(terreno) - outro.getAtaqueTerreno().get(terreno) != 0) {
             return (outro.getAtaqueTerreno().get(terreno) - este.getAtaqueTerreno().get(terreno));
         }
         //fast
-        if (este.getMovimentoTerreno().get(terreno) != outro.getMovimentoTerreno().get(terreno)) {
+        if (este.getMovimentoTerreno().get(terreno) - outro.getMovimentoTerreno().get(terreno) != 0) {
             return (outro.getMovimentoTerreno().get(terreno) - este.getMovimentoTerreno().get(terreno));
         }
         //defensive/tank 10>1
-        if (este.getDefesaTerreno().get(terreno) != outro.getDefesaTerreno().get(terreno)) {
+        if (este.getDefesaTerreno().get(terreno) - outro.getDefesaTerreno().get(terreno) != 0) {
             return (outro.getDefesaTerreno().get(terreno) - este.getDefesaTerreno().get(terreno));
         }
         //Id
@@ -157,21 +157,21 @@ public class ComparatorCasualtiesSorter implements Comparator {
      */
     private int compareToByTacticSurround(TipoTropa este, TipoTropa outro, Terreno terreno) {
         //fast
-        if (este.getMovimentoTerreno().get(terreno) != outro.getMovimentoTerreno().get(terreno)) {
+        if (este.getMovimentoTerreno().get(terreno) - outro.getMovimentoTerreno().get(terreno) != 0) {
             return (outro.getMovimentoTerreno().get(terreno) - este.getMovimentoTerreno().get(terreno));
         }
         //Gold
         final Integer custoThis = este.getRecruitCostMoney() + este.getUpkeepMoney() * 5;
         final Integer custoOutro = outro.getRecruitCostMoney() + outro.getUpkeepMoney() * 5;
-        if (custoThis != custoOutro) {
+        if (custoThis - custoOutro != 0) {
             return (custoThis - custoOutro);
         }
         //defensive/tank 10>1
-        if (este.getDefesaTerreno().get(terreno) != outro.getDefesaTerreno().get(terreno)) {
+        if (este.getDefesaTerreno().get(terreno) - outro.getDefesaTerreno().get(terreno) != 0) {
             return (outro.getDefesaTerreno().get(terreno) - este.getDefesaTerreno().get(terreno));
         }
         //agressive 10>1
-        if (este.getAtaqueTerreno().get(terreno) != outro.getAtaqueTerreno().get(terreno)) {
+        if (este.getAtaqueTerreno().get(terreno) - outro.getAtaqueTerreno().get(terreno) != 0) {
             return (outro.getAtaqueTerreno().get(terreno) - este.getAtaqueTerreno().get(terreno));
         }
         //Id
@@ -191,31 +191,32 @@ public class ComparatorCasualtiesSorter implements Comparator {
      */
     private int compareToByTacticGuerrilla(TipoTropa este, TipoTropa outro, Terreno terreno) {
         //Slow   Slow  Slow
-        if (este.getMovimentoTerreno().get(terreno) != outro.getMovimentoTerreno().get(terreno)) {
+        if (este.getMovimentoTerreno().get(terreno) - outro.getMovimentoTerreno().get(terreno) != 0) {
             return (este.getMovimentoTerreno().get(terreno) - outro.getMovimentoTerreno().get(terreno));
         }
         //defensive/tank 10>1
-        if (este.getDefesaTerreno().get(terreno) != outro.getDefesaTerreno().get(terreno)) {
+        if (este.getDefesaTerreno().get(terreno) - outro.getDefesaTerreno().get(terreno) != 0) {
             return (outro.getDefesaTerreno().get(terreno) - este.getDefesaTerreno().get(terreno));
         }
         //agressive 10>1
-        if (este.getAtaqueTerreno().get(terreno) != outro.getAtaqueTerreno().get(terreno)) {
+        if (este.getAtaqueTerreno().get(terreno) - outro.getAtaqueTerreno().get(terreno) != 0) {
             return (outro.getAtaqueTerreno().get(terreno) - este.getAtaqueTerreno().get(terreno));
         }
         //Gold
         final Integer custoThis = este.getRecruitCostMoney() + este.getUpkeepMoney() * 5;
         final Integer custoOutro = outro.getRecruitCostMoney() + outro.getUpkeepMoney() * 5;
-        if (custoThis != custoOutro) {
+        if (custoThis - custoOutro != 0) {
             return (custoThis - custoOutro);
         }
         //Id
         return (este.getId() - outro.getId());
     }
+
     private int compareToByCost(TipoTropa este, TipoTropa outro, Terreno terreno) {
         //Gold
         final Integer custoThis = este.getRecruitCostMoney() + este.getUpkeepMoney() * 5;
         final Integer custoOutro = outro.getRecruitCostMoney() + outro.getUpkeepMoney() * 5;
-        if (custoThis != custoOutro) {
+        if (custoThis - custoOutro != 0) {
             return (custoThis - custoOutro);
         }
         //Id

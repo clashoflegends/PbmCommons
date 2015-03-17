@@ -17,12 +17,16 @@ import model.PersonagemOrdem;
 import model.Produto;
 import model.Terreno;
 import model.TipoTropa;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  *
  * @author jmoura
  */
 public class ComparatorFactory implements Serializable {
+
+    private static final Log log = LogFactory.getLog(ComparatorFactory.class);
 
     /**
      * Sorting by model.Ordem.Number
