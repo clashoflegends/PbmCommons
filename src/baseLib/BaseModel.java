@@ -60,7 +60,7 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     }
 
     public void setCodigo(String codigo) {
-        this.codigo = codigo;
+        this.codigo = SysApoio.removeAcentos(codigo);
     }
 
     public String getHabilidadesToDb() {

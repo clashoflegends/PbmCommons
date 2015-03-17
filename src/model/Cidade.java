@@ -222,11 +222,10 @@ public class Cidade extends BaseModel {
         this.lealdadeAnterior = lealdadeAnterior;
     }
 
-    @Override
-    public String getCodigo() {
-        return this.getNome();
-    }
-
+//    @Override
+//    public String getCodigo() {
+//        return this.getNome();
+//    }
     @Override
     public String toString() {
         return this.getNome() + "-" + this.getCoordenadas() + "-" + getClass().getName() + "@" + Integer.toHexString(hashCode());

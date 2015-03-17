@@ -64,7 +64,7 @@ public class ComandoDetail implements Serializable {
     }
 
     public String getOrdemDisplay() {
-        return this.personagemCodigo + "-" + this.getOrdemNome();
+        return this.personagemCodigo + "-" + this.getOrdemNome() + "[" + parametroDisplay + "]";
     }
 
     public List<String> getParametroId() {
