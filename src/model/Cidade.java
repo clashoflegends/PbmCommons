@@ -32,6 +32,16 @@ public class Cidade extends BaseModel {
     private SortedMap<String, TipoTropa> tpTropa = new TreeMap();
     private Raca raca;
 
+    @Override
+    public String getCodigo() {
+        if (super.getCodigo() != null) {
+            return super.getCodigo();
+        } else {
+            //transition from nome to cod on cities. eventualy, we may clen up
+            return getNome();
+        }
+    }
+
     public String getCoordenadas() {
         try {
             return this.local.getCoordenadas();
