@@ -151,19 +151,10 @@ public class Cenario extends BaseModel {
         this.tipoTropa.put(tpTropa.getCodigo(), tpTropa);
     }
 
-//    public void setTipoTropa(SortedMap<String, TipoTropa> tipoTropa) {
-//        this.tipoTropa = tipoTropa;
-//    }
-    /**
-     * @return the numMaxArtefatos
-     */
     public int getNumMaxArtefatos() {
         return numMaxArtefatos;
     }
 
-    /**
-     * @param numMaxArtefatos the numMaxArtefatos to set
-     */
     public void setNumMaxArtefatos(int numMaxArtefatos) {
         this.numMaxArtefatos = numMaxArtefatos;
     }

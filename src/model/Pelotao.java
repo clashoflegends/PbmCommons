@@ -10,7 +10,7 @@ import baseLib.BaseModel;
  *
  * @author gurgel
  */
-public class Pelotao extends BaseModel {
+public class Pelotao extends BaseModel implements Cloneable {
 //Tropas 	Treino 	Arma 	Armadura 	Qtd 	Tipo de Tropa
 //Hoplitas 	100 	60 	60 	600 	Infantaria Pesada
 
@@ -62,6 +62,10 @@ public class Pelotao extends BaseModel {
         this.qtd += qtd;
     }
 
+    public void subQtd(int qtd) {
+        this.qtd -= qtd;
+    }
+
     public TipoTropa getTipoTropa() {
         return tipoTropa;
     }
@@ -83,5 +87,15 @@ public class Pelotao extends BaseModel {
     @Override
     public String toString() {
         return String.format("%s (%s)", this.getTipoTropa().getNome(), this.getQtd());
+    }
+
+    @Override
+    public Pelotao clone() {
+        //attention: no deep copy implemented
+        try {
+            return (Pelotao) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new UnsupportedOperationException(ex);
+        }
     }
 }
