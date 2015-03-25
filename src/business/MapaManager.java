@@ -684,6 +684,7 @@ public class MapaManager implements Serializable {
             } else if (terrenos[ii].equals("deserto") && !SysProperties.getProps("ImagemDeserto", "-").equals("-")) {
                 desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemDeserto", "-"));
             } else if (SysProperties.getProps("MapTiles", "2d").equalsIgnoreCase("2a")) {
+                //feralonso
                 desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2a_" + terrenos[ii] + ".png"));
             } else if (SysProperties.getProps("MapTiles", "2d").equalsIgnoreCase("3d")) {
                 desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".png"));

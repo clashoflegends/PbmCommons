@@ -41,6 +41,23 @@ public final class ConverterFactory implements Serializable {
         return ret;
     }
 
+    public static String taticaToLabel(String tatica) {
+        if (tatica.equalsIgnoreCase("CA")) {
+            return "@CARGA#";
+        } else if (tatica.equalsIgnoreCase("FL")) {
+            return "@FLANCO#";
+        } else if (tatica.equalsIgnoreCase("PA")) {
+            return "@PADRAO#";
+        } else if (tatica.equalsIgnoreCase("CE")) {
+            return "@CERCO#";
+        } else if (tatica.equalsIgnoreCase("GU")) {
+            return "@GUERRILHA#";
+        } else if (tatica.equalsIgnoreCase("EM")) {
+            return "@EMBOSCADA#";
+        }
+        return "@PADRAO#";
+    }
+
     public static String taticaToCodigo(int tatica) {
         switch (tatica) {
             case 0:
