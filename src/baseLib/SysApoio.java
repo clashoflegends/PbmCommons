@@ -317,6 +317,14 @@ public class SysApoio implements Serializable {
         return ret;
     }
 
+    public static String padRight(String s, int n) {
+        return String.format("%1$-" + n + "s", s);
+    }
+
+    public static String padLeft(String s, int n) {
+        return String.format("%1$" + n + "s", s);
+    }
+
     public static String exceptionToString(Exception ex) {
         StringWriter errors = new StringWriter();
         ex.printStackTrace(new PrintWriter(errors));
