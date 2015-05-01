@@ -81,6 +81,10 @@ public class SysBanco {
         return SysBanco.buscaDs(sql.replace("?", "'" + param + "'"));
     }
 
+    public static String buscaDs(String sql, int param) {
+        return SysBanco.buscaDs(sql.replace("?", param + ""));
+    }
+
     public static String buscaDs(String sql) {
         //imp(sql);
         String ret = "";
@@ -107,7 +111,7 @@ public class SysBanco {
             ret = pstm.executeUpdate();
             SysBanco.cleanUp(pstm);
         } catch (SQLException e) {
-            log.error("texto: SQLException...", e);
+            log.error("texto: SQLException..." + sql, e);
         }
         return ret;
     }
@@ -121,7 +125,20 @@ public class SysBanco {
             ret = pstm.executeUpdate();
             SysBanco.cleanUp(pstm);
         } catch (SQLException e) {
-            log.error("texto: SQLException...", e);
+            log.error("texto: SQLException..." + sql, e);
+        }
+        return ret;
+    }
+
+    public static int rodaUpdate(String sql) {
+        int ret = -1;
+        try {
+            PreparedStatement pstm;
+            pstm = getConn().prepareStatement(sql);
+            ret = pstm.executeUpdate();
+            SysBanco.cleanUp(pstm);
+        } catch (SQLException e) {
+            log.error("texto: SQLException..." + sql, e);
         }
         return ret;
     }
