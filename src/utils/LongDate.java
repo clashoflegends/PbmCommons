@@ -129,7 +129,8 @@ public class LongDate {
     public long addDays(int days) {
         Calendar base = longToCalendar(getDateLong());
         base.add(Calendar.DATE, days);
-        return calendarToLong(base);
+        setDateLong(calendarToLong(base));
+        return getDateLong();
     }
 
     private int getDaysDiff(Date newerDate, Date olderDate) {
