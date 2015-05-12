@@ -194,7 +194,7 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     /**
      * @return the tropas
      */
-    public List<TipoTropa> getTropas() {
+    private List<TipoTropa> getTropas() {
         return tropas;
     }
 
@@ -293,6 +293,9 @@ public final class MovimentoExercito implements Serializable, Cloneable {
         if (this.getDestino() == null) {
             return 9999;
         }
+        if (getTropas().isEmpty()) {
+            return 1;
+        }
         int ret = 999;
         if (this.getDirecao() == 0) {
             //Halt order, not affected by lack of food.
@@ -380,7 +383,7 @@ public final class MovimentoExercito implements Serializable, Cloneable {
      */
     private int getCustoMovimentoTerreno() {
         if (getTropas().isEmpty()) {
-            return 9999;
+            return 1;
         }
         ExercitoFacade ef = new ExercitoFacade();
         int ret = ef.getCustoMovimentoBase(getTropas(),

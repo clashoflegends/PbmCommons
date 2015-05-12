@@ -209,7 +209,7 @@ public class TitleFactory implements Serializable {
     private static String getAjudaRequisito(Ordem ordem) {
         final String separator = "\n\t-";
         String ret = "";
-        String requisitos = ordem.getRequisito().toLowerCase();
+        final String requisitos = ordem.getRequisito().toLowerCase();
         //ajuda por tipo de chave
         if (requisitos.contains("none")) {
             //none nao devia estar com mais nenhum parametro.

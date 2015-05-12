@@ -158,7 +158,7 @@ public class OrdemFacade implements Serializable {
         if (requisitos.contains("capital") && !cidadeFacade.isCapital(cidade)) {
             return false;
         }
-        if (requisitos.contains("Bigcity") && !cidadeFacade.isBigCity(cidade)) {
+        if (requisitos.contains("bigcity") && !cidadeFacade.isBigCity(cidade)) {
             return false;
         }
         return true;
