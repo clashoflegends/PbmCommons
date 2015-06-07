@@ -10,7 +10,12 @@ package baseLib;
 
 import com.ibm.icu.text.Normalizer;
 import gui.components.DialogTextArea;
+import java.awt.AWTException;
 import java.awt.Component;
+import java.awt.Image;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -720,5 +725,17 @@ public class SysApoio implements Serializable {
 
     public static void exit(int status) {
         System.exit(status);
+    }
+
+    public static void trayNote() {
+        try {
+            SystemTray tray = SystemTray.getSystemTray();
+            Image image = Toolkit.getDefaultToolkit().getImage("tray.gif");
+            TrayIcon trayIcon = new TrayIcon(image, "Tray Demo");
+            tray.add(trayIcon);
+            trayIcon.displayMessage("Hello, World", "notification demo", TrayIcon.MessageType.INFO);
+        } catch (AWTException ex) {
+            log.error(ex);
+        }
     }
 }
