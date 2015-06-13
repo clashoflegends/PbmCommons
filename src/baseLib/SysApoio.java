@@ -25,6 +25,7 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -163,12 +164,12 @@ public class SysApoio implements Serializable {
         String ret = "";
 //        Integer entraInt = (Integer) entra;
         ret = base.replaceFirst("%s", new Integer(entra).toString());
-        ret = ret.replaceFirst("%s", new Integer(entra2).toString());
+        ret = ret.replaceFirst("%s", Integer.toString(entra2));
         return ret;
     }
 
     public static String sprintf(String base, String entra, String entra2) {
-        String ret = "";
+        String ret;
 //        Integer entraInt = (Integer) entra;
         ret = base.replaceFirst("%s", entra);
         ret = ret.replaceFirst("%s", entra2);
@@ -176,24 +177,24 @@ public class SysApoio implements Serializable {
     }
 
     public static String sprintf(String base, int entra, String entra2) {
-        String ret = "";
+        String ret;
 //        Integer entraInt = (Integer) entra;
-        ret = base.replaceFirst("%s", new Integer(entra).toString());
+        ret = base.replaceFirst("%s", Integer.toString(entra));
         ret = ret.replaceFirst("%s", entra2);
         return ret;
     }
 
     public static String sprintf(String base, int entra, String entra2, String entra3) {
-        String ret = "";
+        String ret;
 //        Integer entraInt = (Integer) entra;
-        ret = base.replaceFirst("%s", new Integer(entra).toString());
+        ret = base.replaceFirst("%s", Integer.toString(entra));
         ret = ret.replaceFirst("%s", entra2);
         ret = ret.replaceFirst("%s", entra3);
         return ret;
     }
 
     public static String sprintf(String base, String entra, String entra2, String entra3) {
-        String ret = "";
+        String ret;
         ret = base.replaceFirst("%s", entra);
         ret = ret.replaceFirst("%s", entra2);
         ret = ret.replaceFirst("%s", entra3);
@@ -306,7 +307,7 @@ public class SysApoio implements Serializable {
      * Converte String em int retorna -9999 se nao for conversivel
      */
     public static int parseInt(String numero) {
-        int ret = 0;
+        int ret;
         try {
             numero = numero.trim();
             numero = numero.replace('.', ',');
@@ -343,7 +344,7 @@ public class SysApoio implements Serializable {
      * Testa se SUB esta em Main case insensitive
      */
     public static boolean isStrInStr(String main, String sub) {
-        return (main.toLowerCase().indexOf(sub.toLowerCase()) != -1);
+        return (main.toLowerCase().contains(sub.toLowerCase()));
     }
 
     public static String getStrRight(String main, String mark) {
@@ -376,12 +377,12 @@ public class SysApoio implements Serializable {
     public static String toPrimeiraMaiuscula(String s) {
         String ret = "";
         String palavra[] = s.split(" ");
-        for (int ii = 0; ii < palavra.length; ii++) {
+        for (String palavra1 : palavra) {
             if (!ret.equalsIgnoreCase("")) {
                 ret += " ";
             }
             try {
-                ret += palavra[ii].substring(0, 1).toUpperCase() + palavra[ii].substring(1);
+                ret += palavra1.substring(0, 1).toUpperCase() + palavra1.substring(1);
             } catch (java.lang.StringIndexOutOfBoundsException e) {
                 //double spaces were sent, resulting in a null word. safe to ignore
             }
@@ -619,7 +620,7 @@ public class SysApoio implements Serializable {
     }
 
     public static int getDistancia(int colOrigem, int colDestino, int rowOrigem, int rowDestino) {
-        int ret = 0;
+        int ret;
         int difCol = Math.abs(colOrigem - colDestino);
         int difRow = Math.abs(rowOrigem - rowDestino);
         int difRowArrendondar;
@@ -629,7 +630,7 @@ public class SysApoio implements Serializable {
             difRowArrendondar = difRow / 2;
         }
         int somaDifs = difRow + difCol - Math.min(difCol, difRowArrendondar);
-        int difResidual = 99;
+        int difResidual;
         if (rowOrigem % 2 == 0) {
             if ((rowDestino % 2 == 1) && (colOrigem > colDestino)) {
                 if (colDestino < (colOrigem - (Math.abs(rowDestino - rowOrigem + Math.signum(rowOrigem - rowDestino)) / 2))) {
@@ -681,14 +682,14 @@ public class SysApoio implements Serializable {
                         throw new UnsupportedOperationException(e);
                     } catch (java.util.MissingFormatArgumentException e) {
                         log.fatal("linha: " + linha);
-                        log.fatal("temp: " + temp);
+                        log.fatal("temp: " + Arrays.toString(temp));
                         log.fatal("elemLabel: " + elemLabel);
                         log.fatal("Labels: " + labels.getString(elemLabel));
                         log.fatal(e);
                         throw new UnsupportedOperationException(e);
                     } catch (java.util.IllegalFormatConversionException e) {
                         log.fatal("linha: " + linha);
-                        log.fatal("temp: " + temp);
+                        log.fatal("temp: " + Arrays.toString(temp));
                         log.fatal("elemLabel: " + elemLabel);
                         log.fatal("Labels: " + labels.getString(elemLabel));
                         log.fatal(e);
