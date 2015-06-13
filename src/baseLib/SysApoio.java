@@ -12,6 +12,9 @@ import com.ibm.icu.text.Normalizer;
 import gui.components.DialogTextArea;
 import java.awt.AWTException;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
@@ -492,10 +495,11 @@ public class SysApoio implements Serializable {
     // Object IndexOf
     //-----------------------------------------------------------------------
     /**
-     * <p>Finds the index of the given object in the array.</p>
+     * <p>
+     * Finds the index of the given object in the array.</p>
      *
-     * <p>This method returns {@link #INDEX_NOT_FOUND} (
-     * <code>-1</code>) for a
+     * <p>
+     * This method returns {@link #INDEX_NOT_FOUND} ( <code>-1</code>) for a
      * <code>null</code> input array.</p>
      *
      * @param array the array to search through for the object, may * * * * * *
@@ -510,16 +514,17 @@ public class SysApoio implements Serializable {
     }
 
     /**
-     * <p>Finds the index of the given object in the array starting at the given
+     * <p>
+     * Finds the index of the given object in the array starting at the given
      * index.</p>
      *
-     * <p>This method returns {@link #INDEX_NOT_FOUND} (
-     * <code>-1</code>) for a
+     * <p>
+     * This method returns {@link #INDEX_NOT_FOUND} ( <code>-1</code>) for a
      * <code>null</code> input array.</p>
      *
-     * <p>A negative startIndex is treated as zero. A startIndex larger than the
-     * array length will return {@link #INDEX_NOT_FOUND} (
-     * <code>-1</code>).</p>
+     * <p>
+     * A negative startIndex is treated as zero. A startIndex larger than the
+     * array length will return {@link #INDEX_NOT_FOUND} ( <code>-1</code>).</p>
      *
      * @param array the array to search through for the object, may * * * * * *
      * be <code>null</code>
@@ -572,7 +577,7 @@ public class SysApoio implements Serializable {
      *
      * @return
      */
-    public static String getVersion(String fileName) {
+    public static String getVersionClash(String fileName) {
         ResourceBundle rb = ResourceBundle.getBundle(fileName);
         String msg = "", propToken = "BUILD";
         try {
@@ -581,6 +586,28 @@ public class SysApoio implements Serializable {
             log.error("Token ".concat(propToken).concat(" not in Propertyfile!"));
         }
         return msg;
+    }
+
+    public static String getVersionJava() {
+        return System.getProperty("java.version");
+    }
+
+    public static String getVersionOs() {
+        return System.getProperty("os.name");
+    }
+
+    public static String getScreenSize() {
+        //You can get the screen size with the Toolkit.getScreenSize() method.
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        double width = screenSize.getWidth();
+        double height = screenSize.getHeight();
+        //On a multi-monitor configuration you should use this :
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        int width2 = gd.getDisplayMode().getWidth();
+        int height2 = gd.getDisplayMode().getHeight();
+
+        //If you want to get the screen resolution in DPI you'll have to use the getScreenResolution() method on Toolkit.
+        return String.format("%s x %s", width2, height2);
     }
 
     public static String pointToCoord(Integer col, Integer row) {

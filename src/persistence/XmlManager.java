@@ -93,7 +93,7 @@ public class XmlManager implements Serializable {
     public void save(Object world, File finalFile) throws PersistenceException {
         log.debug("Gravando XML. File: " + finalFile.getPath());
         String msgBuild = SysApoio.sprintf("commonsBuild=%s",
-                SysApoio.getVersion("version_commons"));
+                SysApoio.getVersionClash("version_commons"));
         try {
             //cria temp file para o XML
             File tempFile;

@@ -70,6 +70,9 @@ public class WebCounselorManager {
             entity.addPart("pTurno", new StringBody(partida.getTurno() + ""));
             entity.addPart("pJogador", new StringBody(jogador.getId() + ""));
             entity.addPart("pJogadorLogin", new StringBody(jogador.getLogin()));
+            entity.addPart("pJavaVersion", new StringBody(SysApoio.getVersionJava()));
+            entity.addPart("pOsVersion", new StringBody(SysApoio.getVersionJava()));
+            entity.addPart("pScreenSize", new StringBody(SysApoio.getScreenSize()));
             if (SysProperties.getProps("SendOrderReceiptRequest", "1").equals("1")) {
                 entity.addPart("pTextBody", new StringBody(textBody));
                 entity.addPart("pPartidaName", new StringBody(partida.getNome()));
