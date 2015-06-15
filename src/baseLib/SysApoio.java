@@ -156,14 +156,14 @@ public class SysApoio implements Serializable {
     public static String sprintf(String base, int entra) {
         String ret = "";
 //        Integer entraInt = (Integer) entra;
-        ret += base.replaceFirst("%s", new Integer(entra).toString());
+        ret += base.replaceFirst("%s", Integer.toString(entra));
         return ret;
     }
 
     public static String sprintf(String base, int entra, int entra2) {
-        String ret = "";
+        String ret;
 //        Integer entraInt = (Integer) entra;
-        ret = base.replaceFirst("%s", new Integer(entra).toString());
+        ret = base.replaceFirst("%s", Integer.toString(entra));
         ret = ret.replaceFirst("%s", Integer.toString(entra2));
         return ret;
     }
