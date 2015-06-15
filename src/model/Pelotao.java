@@ -90,7 +90,7 @@ public class Pelotao extends BaseModel implements Cloneable {
     }
 
     @Override
-    public Pelotao clone() {
+    public Pelotao clone() throws CloneNotSupportedException {
         //attention: no deep copy implemented
         try {
             return (Pelotao) super.clone();
