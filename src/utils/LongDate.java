@@ -114,9 +114,9 @@ public class LongDate {
     public static long nowToNextWeekday(int baseWeekday, int weeks) {
         Calendar date = Calendar.getInstance();
 
-        int diff = baseWeekday - date.get(Calendar.DAY_OF_WEEK);
-        if (!(diff > 0)) {
-            diff += 7 * weeks;
+        int diff = baseWeekday - date.get(Calendar.DAY_OF_WEEK) + 7 * weeks;
+        if (diff <= 0) {
+            diff += 7;
         }
         date.add(Calendar.DAY_OF_MONTH, diff);
         return calendarToLong(date);
