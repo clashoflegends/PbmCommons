@@ -72,6 +72,8 @@ public class WebCounselorManager {
             entity.addPart("pJogadorLogin", new StringBody(jogador.getLogin()));
             entity.addPart("pJavaVersion", new StringBody(SysApoio.getVersionJava()));
             entity.addPart("pOsVersion", new StringBody(SysApoio.getVersionOs()));
+            entity.addPart("pCounselorVersion", new StringBody(SysApoio.getVersionClash("version_counselor")));
+            entity.addPart("pCommonsVersion", new StringBody(SysApoio.getVersionClash("version_commons")));
             entity.addPart("pScreenSize", new StringBody(SysApoio.getScreenSize()));
             if (SysProperties.getProps("SendOrderReceiptRequest", "1").equals("1")) {
                 entity.addPart("pTextBody", new StringBody(textBody));
