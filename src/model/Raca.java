@@ -16,8 +16,8 @@ public class Raca extends BaseModel {
 
     private String display, titletLord = "";
     private int numero;
-    private SortedMap<String, String> tropasDescricao = new TreeMap(); //codigo, descricao
-    private SortedMap<TipoTropa, Integer> tropas = new TreeMap();    //0=tropas da raca, 1=tropas especiais da raca, 2=tropas default
+    private final SortedMap<String, String> tropasDescricao = new TreeMap(); //codigo, descricao
+    private final SortedMap<TipoTropa, Integer> tropas = new TreeMap();    //0=tropas da raca, 1=tropas especiais da raca, 2=tropas default
 
     public void addTropa(TipoTropa tpTropa, String descricao, boolean especial) {
         if (especial) {

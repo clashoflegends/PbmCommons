@@ -15,7 +15,7 @@ import java.util.TreeMap;
 public class Jogador extends BaseModel {
 
     private String login, senha, email;
-    private SortedMap<String, Nacao> nacoesOwned = new TreeMap<String, Nacao>();
+    private final SortedMap<String, Nacao> nacoesOwned = new TreeMap<String, Nacao>();
     private boolean reportAll;
 
     public void addNacao(Nacao nacao) {

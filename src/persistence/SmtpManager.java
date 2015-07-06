@@ -48,13 +48,13 @@ public class SmtpManager implements Serializable {
     private String toMain = "clashoflegends@pobox.com";
     private String toCc = "NA";
     //prepared by the application
-    private List<File> attachmentList = new ArrayList<File>();
+    private final List<File> attachmentList = new ArrayList<File>();
     private String body = "Sending a file.\n";
     private String subject = "Sending a file 5 + timestamp!";
     //fixed/hidden
     private String protocol = "smtp";
     //former local
-    private boolean mailDebug = false;
+    private final boolean mailDebug = false;
     private Session session;
     private Transport transport;
     private MimeMessage msg;

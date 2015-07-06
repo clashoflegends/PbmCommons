@@ -21,7 +21,7 @@ import persistence.SettingsManager;
 public class PersonagemFacade implements Serializable {
 
     private static final Log log = LogFactory.getLog(PersonagemFacade.class);
-    private static BundleManager labels = SettingsManager.getInstance().getBundleManager();
+    private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final LocalFacade localFacade = new LocalFacade();
 
     public Collection<Artefato> getArtefatos(Personagem personagem) {

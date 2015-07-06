@@ -15,7 +15,7 @@ import java.util.TreeMap;
 public class World implements Serializable {
 
     private Partida partida;
-    private SortedMap<String, Jogador> jogadores = new TreeMap();
+    private final SortedMap<String, Jogador> jogadores = new TreeMap();
     private SortedMap<String, Nacao> nacoes = new TreeMap();
     private SortedMap<String, Personagem> personagens = new TreeMap();
     private SortedMap<String, Cidade> cidades = new TreeMap();
@@ -23,7 +23,7 @@ public class World implements Serializable {
     //PENDING: mover atributos de cenario que estao em World.
     private SortedMap<String, Local> locais = new TreeMap();
     private SortedMap<String, Artefato> artefatos = new TreeMap();
-    private SortedMap<String, Habilidade> packages = new TreeMap();
+    private final SortedMap<String, Habilidade> packages = new TreeMap();
 
     public SortedMap<String, Exercito> getExercitos() {
         return this.exercitos;

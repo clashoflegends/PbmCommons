@@ -39,8 +39,8 @@ public class MapaManager implements Serializable {
     private Image[] desenhoTerrenoDetalhes;
     private Image[] desenhoDetalhes;
     private Image[] desenhoCidades;
-    private Cenario cenario;
-    private JPanel form;
+    private final Cenario cenario;
+    private final JPanel form;
     private ImageIcon tagImage;
     private static final int dtPersonagem = 0, dtNpc = 1, dtArtefato = 2, dtGoldmine = 3, dtNavio = 4, dtTag = 5, dtFogofwar = 6, dtPersonagemOutra = 7;
     private static final LocalFacade localFacade = new LocalFacade();
@@ -50,7 +50,7 @@ public class MapaManager implements Serializable {
     private static final JogadorFacade jogadorFacade = new JogadorFacade();
     private static final ArtefatoFacade artefatoFacade = new ArtefatoFacade();
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
-    private ImageFactory imageFactory;
+    private final ImageFactory imageFactory;
 
     public MapaManager(Cenario aCenario, JPanel form) {
         this.cenario = aCenario;

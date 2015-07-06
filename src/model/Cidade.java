@@ -28,8 +28,8 @@ public class Cidade extends BaseModel {
     private int lealdadeAnterior;
     private int fonteInfo;
     private boolean oculto, sitiado;
-    private SortedMap<Produto, Integer> estoques = new TreeMap();
-    private SortedMap<String, TipoTropa> tpTropa = new TreeMap();
+    private final SortedMap<Produto, Integer> estoques = new TreeMap();
+    private final SortedMap<String, TipoTropa> tpTropa = new TreeMap();
     private Raca raca;
 
     @Override

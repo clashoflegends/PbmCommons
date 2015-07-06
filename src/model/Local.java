@@ -20,10 +20,10 @@ public class Local extends BaseModel implements Cloneable {
     private String estrada, rio, riacho, vau, ponte, rastro, landing = "";
     private Terreno terreno;
     private Cidade cidade;
-    private SortedMap<Produto, Integer> producao = new TreeMap<Produto, Integer>();
-    private SortedMap<String, Personagem> indicePersonagem = new TreeMap<String, Personagem>();
-    private SortedMap<String, Exercito> indiceExercito = new TreeMap<String, Exercito>();
-    private SortedMap<String, Artefato> indiceArtefato = new TreeMap<String, Artefato>();
+    private final SortedMap<Produto, Integer> producao = new TreeMap<Produto, Integer>();
+    private final SortedMap<String, Personagem> indicePersonagem = new TreeMap<String, Personagem>();
+    private final SortedMap<String, Exercito> indiceExercito = new TreeMap<String, Exercito>();
+    private final SortedMap<String, Artefato> indiceArtefato = new TreeMap<String, Artefato>();
     private String visibilidadeNacao;  //manter em string por causa da forma de carga, aonde cada jogador tem uma visibilidade diferente da nacao. Usar sortedMap vai quebrar...
 
     @Override
@@ -40,7 +40,7 @@ public class Local extends BaseModel implements Cloneable {
     }
 
     public boolean isEstrada(Integer direcao) {
-        return this.estrada.indexOf(direcao.toString()) != -1;
+        return this.estrada.contains(direcao.toString());
     }
 
     /**
@@ -89,27 +89,27 @@ public class Local extends BaseModel implements Cloneable {
     }
 
     public boolean isPonte(Integer direcao) {
-        return this.ponte.indexOf(direcao.toString()) != -1;
+        return this.ponte.contains(direcao.toString());
     }
 
     public boolean isRiacho(Integer direcao) {
-        return this.riacho.indexOf(direcao.toString()) != -1;
+        return this.riacho.contains(direcao.toString());
     }
 
     public boolean isRio(Integer direcao) {
-        return this.rio.indexOf(direcao.toString()) != -1;
+        return this.rio.contains(direcao.toString());
     }
 
     public boolean isVau(Integer direcao) {
-        return this.vau.indexOf(direcao.toString()) != -1;
+        return this.vau.contains(direcao.toString());
     }
 
     public boolean isRastro(Integer direcao) {
-        return this.rastro.indexOf(direcao.toString()) != -1;
+        return this.rastro.contains(direcao.toString());
     }
 
     public boolean isLanding(Integer direcao) {
-        return this.landing.indexOf(direcao.toString()) != -1;
+        return this.landing.contains(direcao.toString());
     }
 
     public Terreno getTerreno() {
@@ -186,6 +186,12 @@ public class Local extends BaseModel implements Cloneable {
 
     public void setEstrada(String estrada) {
         this.estrada = estrada;
+    }
+
+    public void addEstrada(int dir) {
+        if (!isEstrada(dir)) {
+            setEstrada(getEstrada().concat(dir + ""));
+        }
     }
 
     public void setRastro(String rastro) {

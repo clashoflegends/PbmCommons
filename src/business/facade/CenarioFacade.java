@@ -26,7 +26,7 @@ public class CenarioFacade implements Serializable {
     public static final int WIZARD = 3;
     private static final Log log = LogFactory.getLog(CenarioFacade.class);
     private static final BundleManager label = SettingsManager.getInstance().getBundleManager();
-    private int[][] bonusTatica = new int[6][6];
+    private final int[][] bonusTatica = new int[6][6];
 
     public static boolean isGrecia(Cenario cenario) {
         return cenario.isGrecia();

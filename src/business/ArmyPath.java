@@ -18,7 +18,7 @@ import org.apache.commons.logging.LogFactory;
 public class ArmyPath implements Serializable, Cloneable {
 
     private static final Log log = LogFactory.getLog(ArmyPath.class);
-    private Local start;
+    private final Local start;
     private List<MovimentoExercito> step = new ArrayList<MovimentoExercito>();
     private int cost = 0;
 

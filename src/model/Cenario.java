@@ -20,8 +20,8 @@ public class Cenario extends BaseModel {
     private SortedMap<String, Produto> produtos = new TreeMap();
     private SortedMap<String, Terreno> terrenos = new TreeMap();
     private SortedMap<String, Ordem> ordens = new TreeMap(); //ordem.getCodigo(), ordem
-    private SortedMap<String, TipoTropa> tipoTropa = new TreeMap(); //cd, tipoTropa
-    private String[][] tituloPericia = new String[4][12];
+    private final SortedMap<String, TipoTropa> tipoTropa = new TreeMap(); //cd, tipoTropa
+    private final String[][] tituloPericia = new String[4][12];
     private int numMaxArtefatos;
     private int numMaxPersonagem;
     private int numMaxMovimento;

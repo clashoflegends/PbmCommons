@@ -14,9 +14,9 @@ import java.util.List;
  */
 public class StringRet implements Serializable {
 
-    private String separator = "\n";
-    private String tab = "\t";
-    private List<String> textRet = new ArrayList();
+    private final String separator = "\n";
+    private final String tab = "\t";
+    private final List<String> textRet = new ArrayList();
 
     /**
      * @return the list of messages

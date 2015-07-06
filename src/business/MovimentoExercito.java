@@ -30,7 +30,7 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     private boolean porAgua;
     private boolean evasivo;
     private int limiteMovimento;
-    private List<TipoTropa> tropas = new ArrayList<TipoTropa>();
+    private final List<TipoTropa> tropas = new ArrayList<TipoTropa>();
     private boolean docas;
 
     @Override

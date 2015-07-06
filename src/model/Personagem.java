@@ -29,11 +29,11 @@ public class Personagem extends BaseModel {
     private Nacao nacao, nacaoSubordinada;
     private Personagem lider;
     private Artefato artefatoCombateAtivo;
-    private SortedMap<String, Artefato> artefatos = new TreeMap();
-    private SortedMap<Integer, PersonagemFeitico> feiticos = new TreeMap();
-    private SortedMap<String, Personagem> liderados = new TreeMap();
-    private SortedMap<Integer, PersonagemOrdem> ordens = new TreeMap();  //kept for backwards compatibility
-    private SortedMap<Integer, PersonagemOrdem> ordensExecutadas = new TreeMap(); //kept for backwards compatibility
+    private final SortedMap<String, Artefato> artefatos = new TreeMap();
+    private final SortedMap<Integer, PersonagemFeitico> feiticos = new TreeMap();
+    private final SortedMap<String, Personagem> liderados = new TreeMap();
+    private final SortedMap<Integer, PersonagemOrdem> ordens = new TreeMap();  //kept for backwards compatibility
+    private final SortedMap<Integer, PersonagemOrdem> ordensExecutadas = new TreeMap(); //kept for backwards compatibility
 
     public int getPericiaNaturalTotal() {
         return (periciaComandanteNatural + periciaAgenteNatural

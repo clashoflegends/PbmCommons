@@ -15,7 +15,7 @@ import model.TipoTropa;
  */
 public class ComparatorTipoTropaAttackSorter implements Comparator {
 
-    private Terreno local;
+    private final Terreno local;
 
     public ComparatorTipoTropaAttackSorter(Terreno aTerreno) {
         this.local = aTerreno;

@@ -24,10 +24,10 @@ public class Nacao extends BaseModel {
     private Jogador jogador;
     private Raca raca;
     private Color fillColor, borderColor;
-    private Extrato extrato = new Extrato();
-    private List<Cidade> cidades = new ArrayList();
-    private List<Personagem> personagens = new ArrayList();
-    private SortedMap<String, HabilidadeNacao> habilidadesNacao = new TreeMap();
+    private final Extrato extrato = new Extrato();
+    private final List<Cidade> cidades = new ArrayList();
+    private final List<Personagem> personagens = new ArrayList();
+    private final SortedMap<String, HabilidadeNacao> habilidadesNacao = new TreeMap();
     private SortedMap<Nacao, Integer> relacionamentos = new TreeMap();
     private SortedMap<String, List<String>> mensagensNacao = new TreeMap<String, List<String>>();
 

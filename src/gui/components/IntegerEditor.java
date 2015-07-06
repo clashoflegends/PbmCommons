@@ -59,8 +59,8 @@ import javax.swing.text.NumberFormatter;
 public class IntegerEditor extends DefaultCellEditor {
     JFormattedTextField ftf;
     NumberFormat integerFormat;
-    private Integer minimum, maximum;
-    private boolean DEBUG = false;
+    private final Integer minimum, maximum;
+    private final boolean DEBUG = false;
 
     public IntegerEditor(int min, int max) {
         super(new JFormattedTextField());

@@ -30,8 +30,8 @@ public class Comando implements Serializable {
     private int turno;
 //    private String timeStamp; //deprecated
     private Date creationTime;
-    private List<ComandoDetail> comandos = new ArrayList();
-    private SortedMap<Integer, String> packages = new TreeMap<Integer, String>();
+    private final List<ComandoDetail> comandos = new ArrayList();
+    private final SortedMap<Integer, String> packages = new TreeMap<Integer, String>();
     //nacao,personagem, ordem, parametros
 
     public Comando() {

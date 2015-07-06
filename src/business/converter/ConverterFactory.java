@@ -19,7 +19,7 @@ import persistence.SettingsManager;
  */
 public final class ConverterFactory implements Serializable {
 
-    private static BundleManager labels = SettingsManager.getInstance().getBundleManager();
+    private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
 
     public static int taticaToInt(String tatica) {
         int ret = 2;

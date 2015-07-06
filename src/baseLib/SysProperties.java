@@ -22,7 +22,7 @@ public class SysProperties implements Serializable {
     private static final Log log = LogFactory.getLog(SysProperties.class);
     private static Properties props;
     private static SysProperties instance;
-    private static String propArqName = "properties.config";
+    private static final String propArqName = "properties.config";
     private static final String comentario = "Counselor config file\n"
             + "filtro.default=0|1 -> All|Own\n"
             + "SortAllCombos=0|1 -> Off|On\n"

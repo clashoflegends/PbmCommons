@@ -6,7 +6,7 @@ public class PersonagemFeitico extends BaseModel {
 
     private Feitico feitico;
     private int habilidade;
-    private Personagem personagem;
+    private final Personagem personagem;
 
     public PersonagemFeitico(Feitico feitico, int habilidade, Personagem pers) {
         this.personagem = pers;
