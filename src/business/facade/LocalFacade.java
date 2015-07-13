@@ -301,8 +301,8 @@ public class LocalFacade implements Serializable {
             return false;
         }
         String[] elem = flags.split(";");
-        for (int ii = 0; ii < elem.length; ii++) {
-            String[] nat = elem[ii].split("=");
+        for (String elem1 : elem) {
+            String[] nat = elem1.split("=");
             if (SysApoio.parseInt(nat[1]) > 0 && observer.isNacao(SysApoio.parseInt(nat[0]))) {
                 return true;
             }

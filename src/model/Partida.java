@@ -144,6 +144,14 @@ public class Partida extends BaseModel {
         return this.hasHabilidade(";GDM;");
     }
 
+    public boolean isTeamLocked() {
+        return this.hasHabilidade(";GLA;");
+    }
+
+    public boolean isFreeForAll() {
+        return this.hasHabilidade(";FFA;");
+    }
+
     public boolean isNationPackages() {
         return this.hasHabilidade(";GSP;");
     }

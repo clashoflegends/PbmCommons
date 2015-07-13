@@ -12,7 +12,7 @@ import java.util.List;
  * servers to concatenate strings
  * @author jmoura
  */
-public class StringRet implements Serializable {
+public final class StringRet implements Serializable {
 
     private final String separator = "\n";
     private final String tab = "\t";
