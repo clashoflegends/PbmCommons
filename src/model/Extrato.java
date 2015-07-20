@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author gurgel
  */
-public class Extrato implements Serializable {
+public final class Extrato implements Serializable {
 
     private int qtDetail = 0;
     private final List<ExtratoDetail> detalhe = new ArrayList();
