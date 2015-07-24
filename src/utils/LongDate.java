@@ -127,14 +127,21 @@ public class LongDate {
     }
 
     public long addDays(int days) {
+        return addToCalendar(Calendar.DATE, days);
+    }
+
+    public long addHours(int hours) {
+        return addToCalendar(Calendar.HOUR_OF_DAY, hours);
+    }
+
+    private long addToCalendar(int type, int howMuch) {
         Calendar base = longToCalendar(getDateLong());
-        base.add(Calendar.DATE, days);
+        base.add(type, howMuch);
         setDateLong(calendarToLong(base));
         return getDateLong();
     }
 
     private int getDaysDiff(Date newerDate, Date olderDate) {
-        return (int) ((newerDate.getTime() - olderDate.getTime())
-                / (1000 * 60 * 60 * 24));
+        return (int) ((newerDate.getTime() - olderDate.getTime()) / (1000 * 60 * 60 * 24));
     }
 }
