@@ -307,23 +307,20 @@ public class SysApoio implements Serializable {
      * Converte String em int retorna -9999 se nao for conversivel
      */
     public static int parseInt(String numero) {
-        int ret;
         try {
             numero = numero.trim();
             numero = numero.replace('.', ',');
             numero = numero.replaceAll(",", "");
             numero = numero.replaceAll("%", "");
             if (numero.equalsIgnoreCase("")) {
-                numero = "0";
+                return 0;
             }
-//            ret = Integer.parseInt(numero);
-            ret = Integer.valueOf(numero);
+            return Integer.valueOf(numero);
         } catch (NumberFormatException nfe) {
-            ret = -9999;
+            return -9999;
         } catch (NullPointerException nfe) {
-            ret = -9999;
+            return -9999;
         }
-        return ret;
     }
 
     public static String padRight(String s, int n) {
@@ -408,7 +405,7 @@ public class SysApoio implements Serializable {
             if (ii == 0) {
                 ret += arrayToString(vetor[ii]);
             } else {
-                ret += "#|#" + arrayToString(vetor[ii]);
+                ret += "#!#" + arrayToString(vetor[ii]);
             }
         }
         return (ret);
@@ -443,7 +440,7 @@ public class SysApoio implements Serializable {
     }
 
     public static String[][] stringToArray2(String vetor) {
-        return stringToArrayMulti(vetor, "#|#", "#@#");
+        return stringToArrayMulti(vetor, "#!#", "#@#");
     }
 
     //A convenience method for creating a MaskFormatter.

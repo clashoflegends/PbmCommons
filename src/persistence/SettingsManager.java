@@ -16,12 +16,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SettingsManager implements Serializable {
 
+    private static final Log log = LogFactory.getLog(SettingsManager.class);
     private static SettingsManager instance;
     private String configurationMode = "Client";
     private Locale locale;
     private boolean debug = false;
     private BundleManager bundleManager;
-    private static final Log log = LogFactory.getLog(SettingsManager.class);
     private boolean worldBuilder = false;
     private boolean portrait = false;
     private boolean tableColumnAdjust = true;
