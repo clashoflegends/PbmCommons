@@ -87,9 +87,9 @@ public class LongDate {
     private static long calendarToLong(Calendar date) throws NumberFormatException {
 //        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH);
 //        long baseDate = Long.valueOf(sdf.format(cal.getTime()));
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
-        final String format = sdf.format(date.getTime());
-        return Long.valueOf(format) * 10000 + 2300;
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH);
+        final String data = sdf.format(date.getTime());
+        return Long.valueOf(data);
     }
 
     private Calendar longToCalendar(long dateLong) throws NumberFormatException {
