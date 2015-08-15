@@ -8,9 +8,15 @@
  */
 package baseLib;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import persistence.PersistenceException;
 
 /**
  *
@@ -101,13 +107,29 @@ public class SysBanco {
         return ret;
     }
 
-    public static int rodaUpdate(String sql, int idPartida, int turno) {
+    public static int rodaUpdate(String sql, String par1, String par2, String par3, String par4) throws PersistenceException {
         int ret = -1;
         try {
             PreparedStatement pstm;
             pstm = getConn().prepareStatement(sql);
-            pstm.setInt(1, idPartida);
-            pstm.setInt(2, turno);
+            pstm.setString(1, par1);
+            pstm.setString(2, par2);
+            pstm.setString(3, par3);
+            pstm.setString(4, par4);
+            ret = pstm.executeUpdate();
+            SysBanco.cleanUp(pstm);
+        } catch (SQLException ex) {
+            throw new PersistenceException(ex);
+        }
+        return ret;
+    }
+    public static int rodaUpdate(String sql, int par1, int par2) {
+        int ret = -1;
+        try {
+            PreparedStatement pstm;
+            pstm = getConn().prepareStatement(sql);
+            pstm.setInt(1, par1);
+            pstm.setInt(2, par2);
             ret = pstm.executeUpdate();
             SysBanco.cleanUp(pstm);
         } catch (SQLException e) {
@@ -116,12 +138,12 @@ public class SysBanco {
         return ret;
     }
 
-    public static int rodaUpdate(String sql, int idPartida) {
+    public static int rodaUpdate(String sql, int par1) {
         int ret = -1;
         try {
             PreparedStatement pstm;
             pstm = getConn().prepareStatement(sql);
-            pstm.setInt(1, idPartida);
+            pstm.setInt(1, par1);
             ret = pstm.executeUpdate();
             SysBanco.cleanUp(pstm);
         } catch (SQLException e) {

@@ -25,8 +25,10 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -419,15 +421,29 @@ public class SysApoio implements Serializable {
         return (vetor.split(separator));
     }
 
-    public static String[][] stringToArrayMulti(String vetor, String spliter, String subSpliter) {
-        String[] ret = vetor.split(spliter);
+    private static String[] stringToArray(String vetor, String separator, int limit) {
+        return (vetor.split(separator, limit));
+    }
+
+    public static String[][] stringToArrayMulti(String vetor, String rowSpliter, String fieldSpliter) {
+        String[] ret = vetor.split(rowSpliter);
         int xx = ret.length;
-        int yy = ret[0].split(spliter).length;
+        int yy = ret[0].split(rowSpliter).length;
         String[][] temp = new String[xx][yy];
         for (int ii = 0; ii < ret.length; ii++) {
-            temp[ii] = stringToArray(ret[ii], subSpliter);
+            temp[ii] = stringToArray(ret[ii], fieldSpliter);
         }
         return (temp);
+    }
+
+    public static List<String[]> stringToArray(String vetorString, String rowSpliter, String fieldSpliter, int limit) {
+        String[] vet = vetorString.split(rowSpliter);
+        List<String[]> ret = new ArrayList<String[]>(vet.length);
+        for (String elem : vet) {
+            final String[] temp = stringToArray(elem, fieldSpliter, limit);
+            ret.add(temp);
+        }
+        return ret;
     }
 
     public static int[] stringToArrayInt(String vetor) {
