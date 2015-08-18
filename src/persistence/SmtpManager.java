@@ -13,7 +13,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import javax.mail.*;
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.SendFailedException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -27,8 +35,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * This demonstrates how to use the FileDataSource to send a file via mail.<p>
  *
- * usage:
- * <code>java sendfile <i>to from smtp file true|false</i></code> where
+ * usage: <code>java sendfile <i>to from smtp file true|false</i></code> where
  * <i>to</i> and <i>from</i> are the destination and origin email addresses,
  * respectively, and <i>smtp</i> is the hostname of the machine that has smtp
  * server running. <i>file</i> is the file to send. The next parameter either
@@ -46,7 +53,7 @@ public class SmtpManager implements Serializable {
     private String pwdSmtp = "raistlin";
     //ask the user
     private String toMain = "clashoflegends@pobox.com";
-    private String toCc = "NA";
+    private final List<InternetAddress> toCcList = new ArrayList<InternetAddress>();
     //prepared by the application
     private final List<File> attachmentList = new ArrayList<File>();
     private String body = "Sending a file.\n";
@@ -67,7 +74,7 @@ public class SmtpManager implements Serializable {
 
     public void clear() {
         toMain = "NA";
-        toCc = "NA";
+        toCcList.clear();
         attachmentList.clear();
         body = "NA";
         subject = "NA";
@@ -107,8 +114,8 @@ public class SmtpManager implements Serializable {
             //InternetAddress[] address = {new InternetAddress(toMain), new InternetAddress(getToCc())};
             List<InternetAddress> addressList = new ArrayList();
             addressList.add(new InternetAddress(toMain));
-            if (!getToCc().equals("NA")) {
-                addressList.add(new InternetAddress(getToCc()));
+            if (!getToCcList().isEmpty()) {
+                addressList.addAll(getToCcList());
             }
             msg.setRecipients(Message.RecipientType.TO, addressList.toArray(new InternetAddress[0]));
             msg.setSubject(getSubject());
@@ -120,7 +127,6 @@ public class SmtpManager implements Serializable {
             MimeBodyPart mbp1 = new MimeBodyPart();
             mbp1.setText(getBody());
             mp.addBodyPart(mbp1);
-
 
             // create the second message part
             if (!getAttachmentList().isEmpty()) {
@@ -181,7 +187,7 @@ public class SmtpManager implements Serializable {
             Exception ex = null;
             if ((ex = mex.getNextException()) != null) {
                 throw new PersistenceException(ex.getMessage());
-            }else{
+            } else {
                 throw new PersistenceException(mex.getMessage());
             }
         } catch (Exception ex) {
@@ -229,8 +235,8 @@ public class SmtpManager implements Serializable {
             //InternetAddress[] address = {new InternetAddress(toMain), new InternetAddress(getToCc())};
             List<InternetAddress> addressList = new ArrayList();
             addressList.add(new InternetAddress(toMain));
-            if (!getToCc().equals("NA")) {
-                addressList.add(new InternetAddress(getToCc()));
+            if (!getToCcList().isEmpty()) {
+                addressList.addAll(getToCcList());
             }
             msg.setRecipients(Message.RecipientType.TO, addressList.toArray(new InternetAddress[0]));
             msg.setSubject(getSubject());
@@ -297,23 +303,22 @@ public class SmtpManager implements Serializable {
         return ret;
     }
 
-    /**
-     * @return the toCc
-     */
-    public String getToCc() {
-        return toCc;
+    private List<InternetAddress> getToCcList() {
+        return toCcList;
     }
 
-    /**
-     * @param toCc the toCc to set
-     */
-    public void setToCc(String toCc) {
-        this.toCc = toCc;
+    public void addToCc(String toCc) throws AddressException {
+        this.toCcList.add(new InternetAddress(toCc));
     }
 
-    /**
-     * @param toMain
-     */
+    public void addToCcOptional(String toCc) {
+        try {
+            this.toCcList.add(new InternetAddress(toCc));
+        } catch (AddressException ex) {
+            log.fatal(ex);
+        }
+    }
+
     public void setToMain(String toMain) {
         this.toMain = toMain;
     }
