@@ -42,7 +42,7 @@ public class SettingsManager implements Serializable {
     }
 
     public void setConfigurationMode(String modoAcesso) {
-        log.info("Alterando modo de acesso: " + modoAcesso);
+        log.debug("Alterando modo de acesso: " + modoAcesso);
         SettingsManager.instance.configurationMode = modoAcesso;
     }
 
