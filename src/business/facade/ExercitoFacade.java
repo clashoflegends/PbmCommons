@@ -13,7 +13,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedMap;
-import model.*;
+import model.Cenario;
+import model.Exercito;
+import model.ExercitoSim;
+import model.Jogador;
+import model.Local;
+import model.Nacao;
+import model.Pelotao;
+import model.Personagem;
+import model.Terreno;
+import model.TipoTropa;
 import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,8 +79,8 @@ public class ExercitoFacade implements Serializable {
             try {
                 return String.format("%s %s",
                         cenarioFacade.getTituloPericia(cenario,
-                        CenarioFacade.COMANDANTE,
-                        exercito.getComandante().getPericiaComandanteNatural()),
+                                CenarioFacade.COMANDANTE,
+                                exercito.getComandante().getPericiaComandanteNatural()),
                         exercito.getComandante().getNome());
             } catch (NullPointerException ex) {
                 return labels.getString("COMANDANTE.DESCONHECIDO");
@@ -83,8 +92,8 @@ public class ExercitoFacade implements Serializable {
         try {
             return String.format("%s %s",
                     cenarioFacade.getTituloPericia(cenario,
-                    CenarioFacade.COMANDANTE,
-                    exercito.getPericiaComandante()),
+                            CenarioFacade.COMANDANTE,
+                            exercito.getPericiaComandante()),
                     exercito.getComandanteNome());
         } catch (NullPointerException ex) {
             return String.format(labels.getString("GUARNICAO.NOME"),
@@ -253,26 +262,72 @@ public class ExercitoFacade implements Serializable {
     }
 
     public int getTransportesMinimo(Exercito exercito) {
-        return (int) Math.ceil(this.getPesoExercito(exercito.getPelotoes()) / ExercitoFacade.SHIP_CAPACITY);
+        return (int) Math.ceil(this.getTransportesCargoUsed(exercito.getPelotoes()) / ExercitoFacade.SHIP_CAPACITY);
     }
 
     public int getTransportesMinimo(SortedMap<String, Pelotao> pelotoes) {
-        return (int) Math.ceil(this.getPesoExercito(pelotoes) / ExercitoFacade.SHIP_CAPACITY);
+        return (int) Math.ceil(this.getTransportesCargoUsed(pelotoes) / ExercitoFacade.SHIP_CAPACITY);
     }
 
-    public float getPesoExercito(SortedMap<String, Pelotao> pelotoes) {
+    public int getTransportesMinimo(Pelotao pelotao) {
+        return (int) Math.ceil(this.getTransportesCargoUsed(pelotao) / ExercitoFacade.SHIP_CAPACITY);
+    }
+
+    public int getTransportesAvailable(SortedMap<String, Pelotao> pelotoes) {
+        float capacidade = 0 - ExercitoFacade.this.getTransportesCargoUsed(pelotoes);
+        for (Pelotao pelotao : pelotoes.values()) {
+            capacidade += getTransportesAvailable(pelotao);
+        }
+        return (int) capacidade;
+    }
+
+    public int getTransportesAvailable(Exercito exercito) {
+        return getTransportesAvailable(exercito.getPelotoes());
+    }
+
+    public int getTransportesAvailable(Pelotao pelotao) {
+        if (pelotao.getTipoTropa().hasHabilidade(";TTT;")) {
+            //conta capacidade de carga
+            return pelotao.getQtd() * ExercitoFacade.SHIP_CAPACITY;
+        } else {
+            return 0;
+        }
+    }
+
+    public int getTransportesCapacity(SortedMap<String, Pelotao> pelotoes) {
+        float capacidade = 0F;
+        for (Pelotao pelotao : pelotoes.values()) {
+            capacidade += getTransportesCapacity(pelotao);
+        }
+        return (int) capacidade;
+    }
+
+    public int getTransportesCapacity(Exercito exercito) {
+        return getTransportesCapacity(exercito.getPelotoes());
+    }
+
+    public int getTransportesCapacity(Pelotao pelotao) {
+        if (pelotao.getTipoTropa().hasHabilidade(";TTT;")) {
+            //conta capacidade de carga
+            return pelotao.getQtd() * ExercitoFacade.SHIP_CAPACITY;
+        } else {
+            return 0;
+        }
+    }
+
+    public float getTransportesCargoUsed(SortedMap<String, Pelotao> pelotoes) {
         float carga = 0F;
         for (Pelotao pelotao : pelotoes.values()) {
-            carga += getPesoPelotao(pelotao);
+            carga += ExercitoFacade.this.getTransportesCargoUsed(pelotao);
         }
         return carga;
     }
 
-    public float getPesoPelotao(Pelotao pelotao) {
-        return getPesoPelotao(pelotao.getTipoTropa(), pelotao.getQtd());
+    public float getTransportesCargoUsed(Pelotao pelotao) {
+        return getTransportesCargoUsed(pelotao.getTipoTropa(), pelotao.getQtd());
     }
 
-    public float getPesoPelotao(TipoTropa tropa, int qtd) {
+    public float getTransportesCargoUsed(TipoTropa tropa, int qtd) {
         if (tropa.hasHabilidade(";TTT;")) {
             //conta capacidade de carga
             //capacidade += pelotao.getQtd() * SHIP_CAPACITY;
