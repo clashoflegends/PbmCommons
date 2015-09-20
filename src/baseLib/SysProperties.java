@@ -8,7 +8,13 @@
  */
 package baseLib;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,6 +60,7 @@ public class SysProperties implements Serializable {
             + "mail.smpt.port=25, smtp port to be used. Only port 25 is supported right now.\n"
             + "mail.smtp.user=myuser, username for smtp authentication.\n"
             + "mail.smtp.passwd=my password, password for smtp authentication\n"
+            + "drawPcPath=1\n"
             + "\n";
 
     public static boolean isSet(String key) {

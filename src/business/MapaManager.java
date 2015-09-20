@@ -6,11 +6,25 @@ package business;
 
 import baseLib.SysApoio;
 import baseLib.SysProperties;
-import business.facade.*;
+import business.converter.ConverterFactory;
+import business.facade.ArtefatoFacade;
+import business.facade.CenarioFacade;
+import business.facade.CidadeFacade;
+import business.facade.ExercitoFacade;
+import business.facade.JogadorFacade;
+import business.facade.LocalFacade;
+import business.facade.PersonagemFacade;
 import business.services.TagManager;
-import java.awt.*;
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.geom.Path2D;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -21,7 +35,14 @@ import java.util.TreeMap;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import model.*;
+import model.Artefato;
+import model.Cenario;
+import model.Cidade;
+import model.Exercito;
+import model.Jogador;
+import model.Local;
+import model.Nacao;
+import model.Personagem;
 import msgs.ColorFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -122,17 +143,9 @@ public class MapaManager implements Serializable {
     }
 
     private void printHex(Graphics2D big, Local local, Jogador observer) {
-        int x = 0, y = 0, row = 0, col = 0;
         //calcula coordenadas e posicao no grafico.
-        col = localFacade.getCol(local) - 1;
-        row = localFacade.getRow(local) - 1;
-        if (row % 2 == 0) {
-            x = col * 60;
-            y = row * 45;
-        } else {
-            x = col * 60 + 30;
-            y = row * 45;
-        }
+        final Point point = ConverterFactory.LocalToPoint(local);
+        final int x = (int) point.getX(), y = (int) point.getY();
         //terreno basico
         big.drawImage(this.desenhoTerrenos[terrenoToIndice(localFacade.getTerrenoCodigo(local))], x, y, form);
         //detalhes do terreno
@@ -294,7 +307,31 @@ public class MapaManager implements Serializable {
         }
     }
 
-    public BufferedImage printMapaGeral(Collection<Local> listaLocal, Jogador observer) {
+    private void printMapaMovPath(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
+        if (!SysProperties.getProps("drawPcPath", "1").equals("1")) {
+            return;
+        }
+        for (Personagem pers : listaPers) {
+            if (pers.getLocal().equals(pers.getLocalOrigem())) {
+                continue;
+            }
+            if (pers.getLocal() == null || pers.getLocalOrigem() == null) {
+                continue;
+            }
+            //calculate points;
+            final Point ori = ConverterFactory.LocalToPoint(pers.getLocalOrigem());
+            final Point dest = ConverterFactory.LocalToPoint(pers.getLocal());
+            if (personagemFacade.isNpc(pers)) {
+                imageFactory.doDrawPathNpc(big, ori, dest);
+            } else if (!jogadorFacade.isMine(pers, observer)) {
+                imageFactory.doDrawPathPc(big, ori, dest);
+            } else {
+                imageFactory.doDrawPathPc(big, ori, dest);
+            }
+        }
+    }
+
+    public BufferedImage printMapaGeral(Collection<Local> listaLocal, Collection<Personagem> listaPers, Jogador observer) {
         //FIXME: imprimir em layers, permitindo visao do terreno, visao dos personagens, duplo clique para posicionar coisas, etc...
         log.debug("Escrevendo: MapaGeral...");
         Point farPoint = getMapMaxSize(listaLocal);
@@ -311,6 +348,7 @@ public class MapaManager implements Serializable {
         for (Local local : listaLocal) {
             printHex(big, local, observer);
         }
+        printMapaMovPath(big, listaPers, observer);
         big.dispose(); //libera memoria
         return megaMap;
     }
@@ -631,18 +669,8 @@ public class MapaManager implements Serializable {
     }
 
     public int[] doCoordToPosition(Local destino) {
-        int x = 0, y = 0, row = 0, col = 0;
-        //calcula posicao no grafico a partir da coordenada do local
-        col = localFacade.getCol(destino) - 1;
-        row = localFacade.getRow(destino) - 1;
-        if (row % 2 == 0) {
-            x = col * 60;
-            y = row * 45;
-        } else {
-            x = col * 60 + 30;
-            y = row * 45;
-        }
-        return new int[]{x, y};
+        final Point p = ConverterFactory.LocalToPoint(destino);
+        return new int[]{(int) p.getX(), (int) p.getY()};
     }
 
     public Local doPositionToCoord(Point click, SortedMap<String, Local> locais) {

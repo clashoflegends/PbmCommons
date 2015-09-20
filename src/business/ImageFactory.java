@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.MediaTracker;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -94,7 +95,7 @@ public class ImageFactory implements Serializable {
 
     private String[] getExercitoStrings(boolean all) {
         if (all) {
-            return new String[]{"neutral.png", "KingsCourt.gif", "Jofrey.png", 
+            return new String[]{"neutral.png", "KingsCourt.gif", "Jofrey.png",
                 "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
                 "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
                 "NightsWatch.png",
@@ -209,6 +210,53 @@ public class ImageFactory implements Serializable {
         Path2D.Double path = new Path2D.Double();
         path.moveTo(x + 38, y + 38);
         path.lineTo(x + coordRastros[direcao - 1][0], y + coordRastros[direcao - 1][1]);
+
+        //draw on graph
+        big.draw(path);
+    }
+
+    public void doDrawPathNpc(Graphics2D big, Point ori, Point dest) {
+        final int x = 04 + 7 / 2 + 8;
+        final int y = 22 + 13 / 2 - 3;
+        doDrawPath(big,
+                new Point((int) ori.getX() + x, (int) ori.getY() + y),
+                new Point((int) dest.getX() + x, (int) dest.getY() + y),
+                Color.green);
+    }
+
+    public void doDrawPathPc(Graphics2D big, Point ori, Point dest) {
+        final int x = 04 + 7 / 2;
+        final int y = 22 + 13 / 2;
+        doDrawPath(big,
+                new Point((int) ori.getX() + x, (int) ori.getY() + y),
+                new Point((int) dest.getX() + x, (int) dest.getY() + y),
+                Color.blue);
+    }
+
+    public void doDrawPathPcEnemy(Graphics2D big, Point ori, Point dest) {
+        final int x = 04 + 7 / 2 + 8;
+        final int y = 22 + 13 / 2 - 3 + 4;
+        doDrawPath(big,
+                new Point((int) ori.getX() + x, (int) ori.getY() + y),
+                new Point((int) dest.getX() + x, (int) dest.getY() + y),
+                Color.red);
+    }
+
+    private void doDrawPath(Graphics2D big, Point ori, Point dest, Color color) {
+        //setup para os rastros
+        big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        big.setStroke(new BasicStroke(
+                0.75f,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND,
+                1f,
+                new float[]{2f},
+                0f));
+        big.setColor(color);
+        //draw path
+        Path2D.Double path = new Path2D.Double();
+        path.moveTo(ori.getX(), ori.getY());
+        path.lineTo(dest.getX(), dest.getY());
 
         //draw on graph
         big.draw(path);

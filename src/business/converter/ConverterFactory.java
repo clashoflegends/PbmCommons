@@ -5,6 +5,8 @@
 package business.converter;
 
 import baseLib.SysApoio;
+import business.facade.LocalFacade;
+import java.awt.Point;
 import java.io.Serializable;
 import java.util.List;
 import java.util.SortedMap;
@@ -19,6 +21,7 @@ import persistence.SettingsManager;
  */
 public final class ConverterFactory implements Serializable {
 
+    private static final LocalFacade localFacade = new LocalFacade();
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
 
     public static int taticaToInt(String tatica) {
@@ -560,4 +563,17 @@ public final class ConverterFactory implements Serializable {
         }
         return ret;
     }
+
+    public static Point LocalToPoint(Local local) {
+        final Point ret;
+        //calcula coordenadas e posicao no grafico.
+        final int row = localFacade.getRow(local) - 1, col = localFacade.getCol(local) - 1;
+        if (row % 2 == 0) {
+            ret = new Point(col * 60, row * 45);
+        } else {
+            ret = new Point(col * 60 + 30, row * 45);
+        }
+        return ret;
+    }
+
 }
