@@ -17,6 +17,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -285,6 +288,17 @@ public class ImageFactory implements Serializable {
         path.moveTo(length / 2, 0);
         path.lineTo(x, y);
         return path;
+    }
+
+    public ImageIcon getTeaser() {
+        List<String> listTeaser = new ArrayList<String>();
+        listTeaser.add("/images/teaser/Walker_image.png");
+        listTeaser.add("/images/teaser/Esparta_image.png");
+//        listTeaser.add("/images/teaser/Hobbit_image.png");
+//        listTeaser.add("/images/teaser/Hobbit_watermark.png");
+        Collections.shuffle(listTeaser);
+        final ImageIcon ret = new ImageIcon(getClass().getResource(listTeaser.get(0)));
+        return (ret);
     }
 
     public ImageIcon getArrow(double angle) {
