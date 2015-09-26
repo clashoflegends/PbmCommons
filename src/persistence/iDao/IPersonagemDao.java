@@ -19,5 +19,7 @@ public interface IPersonagemDao {
 
     public Personagem get(int id, int turno) throws PersistenceException;
 
+    public Personagem get(int id, Partida partida) throws PersistenceException;
+
     public SortedMap<String, Personagem> list(Partida partida) throws PersistenceException;
 }

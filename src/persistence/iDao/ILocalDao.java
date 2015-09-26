@@ -27,7 +27,9 @@ public interface ILocalDao {
 //    public Local get(int id, int turno, Cenario cenario) throws PersistenceException;
     public Local get(String coord) throws PersistenceException;
 
-    public SortedMap<String, Local> list(Partida partida) throws PersistenceException;
+    public SortedMap<String, Local> listWithVisibility(Partida partida) throws PersistenceException;
+
+    public SortedMap<String, Local> listFull(Partida partida) throws PersistenceException;
 
     public void load(Partida partida) throws PersistenceException;
 

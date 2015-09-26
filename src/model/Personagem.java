@@ -22,7 +22,7 @@ public class Personagem extends BaseModel {
     private int periciaEmissarioNatural = 0, periciaMagoNatural = 0;
     private int periciaFurtividade = 0, periciaFurtividadeNatural = 0;
     private boolean refem = false, npc = false;
-    private String portraiFilename = "";
+    private String portraiFilename = "blank.jpg";
     private Local local;
     private Local localOrigem;
     private Exercito exercito = null;
@@ -459,7 +459,7 @@ public class Personagem extends BaseModel {
     /**
      * @return the portraiFilename
      */
-    public String getPortraiFilename() {
+    public String getPortraitFilename() {
         return portraiFilename;
     }
 
