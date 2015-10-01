@@ -140,6 +140,21 @@ public class SysBanco {
         return ret;
     }
 
+    public static int rodaUpdate(String sql, String par1, String par2) throws PersistenceException {
+        int ret = -1;
+        try {
+            PreparedStatement pstm;
+            pstm = getConn().prepareStatement(sql);
+            pstm.setString(1, par1);
+            pstm.setString(2, par2);
+            ret = pstm.executeUpdate();
+            SysBanco.cleanUp(pstm);
+        } catch (SQLException ex) {
+            throw new PersistenceException(ex);
+        }
+        return ret;
+    }
+
     public static int rodaUpdate(String sql, int par1, int par2) {
         int ret = -1;
         try {

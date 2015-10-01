@@ -52,7 +52,7 @@ public class SmtpManager implements Serializable {
     private String loginNameSmtp = "gurgel@pobox.com";
     private String pwdSmtp = "raistlin";
     //ask the user
-    private String toMain = "clashoflegends@pobox.com";
+    private String toMain = "clashoflegends.thegame@gmail.com";
     private final List<InternetAddress> toCcList = new ArrayList<InternetAddress>();
     //prepared by the application
     private final List<File> attachmentList = new ArrayList<File>();
