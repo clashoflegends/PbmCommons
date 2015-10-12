@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.SortedMap;
 import model.Local;
 import model.Produto;
+import msgs.BaseMsgs;
 import persistence.BundleManager;
 import persistence.SettingsManager;
 
@@ -25,43 +26,46 @@ public final class ConverterFactory implements Serializable {
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
 
     public static int taticaToInt(String tatica) {
-        int ret = 2;
         if (tatica.equalsIgnoreCase("CA")) {
-            ret = 0;
+            return 0;
         } else if (tatica.equalsIgnoreCase("FL")) {
-            ret = 1;
+            return 1;
         } else if (tatica.equalsIgnoreCase("PA")) {
-            ret = 2;
+            return 2;
         } else if (tatica.equalsIgnoreCase("CE")) {
-            ret = 3;
+            return 3;
         } else if (tatica.equalsIgnoreCase("GU")) {
-            ret = 4;
+            return 4;
         } else if (tatica.equalsIgnoreCase("EM")) {
-            ret = 5;
+            return 5;
+        } else if (tatica.equalsIgnoreCase("BA")) {
+            return 6;
+        } else if (tatica.equalsIgnoreCase("SH")) {
+            return 7;
+        } else if (tatica.equalsIgnoreCase("SF")) {
+            return 8;
+        } else if (tatica.equalsIgnoreCase("SM")) {
+            return 9;
         } else {
-            ret = 2;
+            return 2;
         }
-        return ret;
     }
 
-    public static String taticaToLabel(String tatica) {
-        if (tatica.equalsIgnoreCase("CA")) {
-            return "@CARGA#";
-        } else if (tatica.equalsIgnoreCase("FL")) {
-            return "@FLANCO#";
-        } else if (tatica.equalsIgnoreCase("PA")) {
-            return "@PADRAO#";
-        } else if (tatica.equalsIgnoreCase("CE")) {
-            return "@CERCO#";
-        } else if (tatica.equalsIgnoreCase("GU")) {
-            return "@GUERRILHA#";
-        } else if (tatica.equalsIgnoreCase("EM")) {
-            return "@EMBOSCADA#";
+    public static String taticaToLabel(String cdTatica) {
+        for (String[] tatica : BaseMsgs.taticasGb) {
+            if (tatica[1].equalsIgnoreCase(cdTatica)) {
+                return tatica[0];
+            }
+        }
+        for (String[] tatica : BaseMsgs.taticasTk) {
+            if (tatica[1].equalsIgnoreCase(cdTatica)) {
+                return tatica[0];
+            }
         }
         return "@PADRAO#";
     }
 
-    public static String taticaToCodigo(int tatica) {
+    private static String taticaToCodigo(int tatica) {
         switch (tatica) {
             case 0:
                 return "ca";
@@ -266,121 +270,14 @@ public final class ConverterFactory implements Serializable {
         return newIdentificacao;
     }
 
-    public static int estoqueToInt(String tpEstoque) {
-        int ret = -1;
-        if (tpEstoque.equalsIgnoreCase("CR")) {
-            ret = 0;
-        } else if (tpEstoque.equalsIgnoreCase("BR")) {
-            ret = 1;
-        } else if (tpEstoque.equalsIgnoreCase("FE")) {
-            ret = 2;
-        } else if (tpEstoque.equalsIgnoreCase("AC")) {
-            ret = 3;
-        } else if (tpEstoque.equalsIgnoreCase("MI")) {
-            ret = 3;
-        } else if (tpEstoque.equalsIgnoreCase("CM")) {
-            ret = 4;
-        } else if (tpEstoque.equalsIgnoreCase("LE")) {
-            ret = 5;
-        } else if (tpEstoque.equalsIgnoreCase("MA")) {
-            ret = 5;
-        } else if (tpEstoque.equalsIgnoreCase("MO")) {
-            ret = 6;
-        } else if (tpEstoque.equalsIgnoreCase("OU")) {
-            ret = 7;
-        }
-        return ret;
-    }
-
-    public static float initialProductValue(Produto produto) {
-        int ret = -1;
-        final String tpEstoque = produto.getCodigo();
-        if (tpEstoque.equalsIgnoreCase("CR")) {
-            ret = 16;
-        } else if (tpEstoque.equalsIgnoreCase("BR")) {
-            ret = 13;
-        } else if (tpEstoque.equalsIgnoreCase("FE")) {
-            ret = 19;
-        } else if (tpEstoque.equalsIgnoreCase("AC")) {
-            ret = 159;
-        } else if (tpEstoque.equalsIgnoreCase("MI")) {
-            ret = 159;
-        } else if (tpEstoque.equalsIgnoreCase("CM")) {
-            ret = 5;
-        } else if (tpEstoque.equalsIgnoreCase("LE")) {
-            ret = 18;
-        } else if (tpEstoque.equalsIgnoreCase("MA")) {
-            ret = 18;
-        } else if (tpEstoque.equalsIgnoreCase("MO")) {
-            ret = 35;
-        } else if (tpEstoque.equalsIgnoreCase("OU")) {
-            ret = 1;
-        }
-        return ret;
-    }
-
-    public static Produto intToProduto(int tipoProduto, SortedMap<String, Produto> produtos) {
-        for (Produto produto : produtos.values()) {
-            if (produto.getId() == tipoProduto) {
-                return produto;
-            }
-        }
-        return null;
-    }
-
-    public static Produto intToProduto(int tipoProduto, List<Produto> produtos) {
-        for (Produto produto : produtos) {
-            if (produto.getId() == tipoProduto) {
-                return produto;
-            }
-        }
-        return null;
-    }
-
-    public int estoqueToIntEnPt(String tpEstoque) {
-        int ret = -1;
-        if (tpEstoque.equalsIgnoreCase("LE")) {
-            ret = 0;
-        } else if (tpEstoque.equalsIgnoreCase("BR")) {
-            ret = 1;
-        } else if (tpEstoque.equalsIgnoreCase("IR")) {
-            ret = 2;
-        } else if (tpEstoque.equalsIgnoreCase("ST")) {
-            ret = 3;
-        } else if (tpEstoque.equalsIgnoreCase("FO")) {
-            ret = 4;
-        } else if (tpEstoque.equalsIgnoreCase("CM")) {
-            ret = 4;
-        } else if (tpEstoque.equalsIgnoreCase("WO")) {
-            ret = 5;
-        } else if (tpEstoque.equalsIgnoreCase("MA")) {
-            ret = 5;
-        } else if (tpEstoque.equalsIgnoreCase("MO")) {
-            ret = 6;
-        } else if (tpEstoque.equalsIgnoreCase("GO")) {
-            ret = 7;
-        } else if (tpEstoque.equalsIgnoreCase("MI")) {
-            ret = 3;
-        } else if (tpEstoque.equalsIgnoreCase("BR")) {
-            ret = 1;
-        } else if (tpEstoque.equalsIgnoreCase("FE")) {
-            ret = 2;
-        } else if (tpEstoque.equalsIgnoreCase("AC")) {
-            ret = 3;
-        } else if (tpEstoque.equalsIgnoreCase("CM")) {
-            ret = 4;
-        } else if (tpEstoque.equalsIgnoreCase("CR")) {
-            ret = 4;
-        } else if (tpEstoque.equalsIgnoreCase("LE")) {
-            ret = 5;
-        } else if (tpEstoque.equalsIgnoreCase("MA")) {
-            ret = 5;
-        } else if (tpEstoque.equalsIgnoreCase("MO")) {
-            ret = 6;
-        } else if (tpEstoque.equalsIgnoreCase("OU")) {
-            ret = 7;
-        } else if (tpEstoque.equalsIgnoreCase("MI")) {
-            ret = 3;
+    public static Point localToPoint(Local local) {
+        final Point ret;
+        //calcula coordenadas e posicao no grafico.
+        final int row = localFacade.getRow(local) - 1, col = localFacade.getCol(local) - 1;
+        if (row % 2 == 0) {
+            ret = new Point(col * 60, row * 45);
+        } else {
+            ret = new Point(col * 60 + 30, row * 45);
         }
         return ret;
     }
@@ -545,6 +442,125 @@ public final class ConverterFactory implements Serializable {
         return ret;
     }
 
+    public static int estoqueToInt(String tpEstoque) {
+        int ret = -1;
+        if (tpEstoque.equalsIgnoreCase("CR")) {
+            ret = 0;
+        } else if (tpEstoque.equalsIgnoreCase("BR")) {
+            ret = 1;
+        } else if (tpEstoque.equalsIgnoreCase("FE")) {
+            ret = 2;
+        } else if (tpEstoque.equalsIgnoreCase("AC")) {
+            ret = 3;
+        } else if (tpEstoque.equalsIgnoreCase("MI")) {
+            ret = 3;
+        } else if (tpEstoque.equalsIgnoreCase("CM")) {
+            ret = 4;
+        } else if (tpEstoque.equalsIgnoreCase("LE")) {
+            ret = 5;
+        } else if (tpEstoque.equalsIgnoreCase("MA")) {
+            ret = 5;
+        } else if (tpEstoque.equalsIgnoreCase("MO")) {
+            ret = 6;
+        } else if (tpEstoque.equalsIgnoreCase("OU")) {
+            ret = 7;
+        }
+        return ret;
+    }
+
+    public static float initialProductValue(Produto produto) {
+        int ret = -1;
+        final String tpEstoque = produto.getCodigo();
+        if (tpEstoque.equalsIgnoreCase("CR")) {
+            ret = 16;
+        } else if (tpEstoque.equalsIgnoreCase("BR")) {
+            ret = 13;
+        } else if (tpEstoque.equalsIgnoreCase("FE")) {
+            ret = 19;
+        } else if (tpEstoque.equalsIgnoreCase("AC")) {
+            ret = 159;
+        } else if (tpEstoque.equalsIgnoreCase("MI")) {
+            ret = 159;
+        } else if (tpEstoque.equalsIgnoreCase("CM")) {
+            ret = 5;
+        } else if (tpEstoque.equalsIgnoreCase("LE")) {
+            ret = 18;
+        } else if (tpEstoque.equalsIgnoreCase("MA")) {
+            ret = 18;
+        } else if (tpEstoque.equalsIgnoreCase("MO")) {
+            ret = 35;
+        } else if (tpEstoque.equalsIgnoreCase("OU")) {
+            ret = 1;
+        }
+        return ret;
+    }
+
+    public static Produto intToProduto(int tipoProduto, SortedMap<String, Produto> produtos) {
+        for (Produto produto : produtos.values()) {
+            if (produto.getId() == tipoProduto) {
+                return produto;
+            }
+        }
+        return null;
+    }
+
+    public static Produto intToProduto(int tipoProduto, List<Produto> produtos) {
+        for (Produto produto : produtos) {
+            if (produto.getId() == tipoProduto) {
+                return produto;
+            }
+        }
+        return null;
+    }
+
+    public int estoqueToIntEnPt(String tpEstoque) {
+        int ret = -1;
+        if (tpEstoque.equalsIgnoreCase("LE")) {
+            ret = 0;
+        } else if (tpEstoque.equalsIgnoreCase("BR")) {
+            ret = 1;
+        } else if (tpEstoque.equalsIgnoreCase("IR")) {
+            ret = 2;
+        } else if (tpEstoque.equalsIgnoreCase("ST")) {
+            ret = 3;
+        } else if (tpEstoque.equalsIgnoreCase("FO")) {
+            ret = 4;
+        } else if (tpEstoque.equalsIgnoreCase("CM")) {
+            ret = 4;
+        } else if (tpEstoque.equalsIgnoreCase("WO")) {
+            ret = 5;
+        } else if (tpEstoque.equalsIgnoreCase("MA")) {
+            ret = 5;
+        } else if (tpEstoque.equalsIgnoreCase("MO")) {
+            ret = 6;
+        } else if (tpEstoque.equalsIgnoreCase("GO")) {
+            ret = 7;
+        } else if (tpEstoque.equalsIgnoreCase("MI")) {
+            ret = 3;
+        } else if (tpEstoque.equalsIgnoreCase("BR")) {
+            ret = 1;
+        } else if (tpEstoque.equalsIgnoreCase("FE")) {
+            ret = 2;
+        } else if (tpEstoque.equalsIgnoreCase("AC")) {
+            ret = 3;
+        } else if (tpEstoque.equalsIgnoreCase("CM")) {
+            ret = 4;
+        } else if (tpEstoque.equalsIgnoreCase("CR")) {
+            ret = 4;
+        } else if (tpEstoque.equalsIgnoreCase("LE")) {
+            ret = 5;
+        } else if (tpEstoque.equalsIgnoreCase("MA")) {
+            ret = 5;
+        } else if (tpEstoque.equalsIgnoreCase("MO")) {
+            ret = 6;
+        } else if (tpEstoque.equalsIgnoreCase("OU")) {
+            ret = 7;
+        } else if (tpEstoque.equalsIgnoreCase("MI")) {
+            ret = 3;
+        }
+        return ret;
+    }
+
     /**
      * produto de armas e armaduras = estoqueToInt + 1 com criticas
      */
@@ -560,18 +576,6 @@ public final class ConverterFactory implements Serializable {
         String ret = "INATIVO";
         if (ativa) {
             ret = "ATIVO";
-        }
-        return ret;
-    }
-
-    public static Point LocalToPoint(Local local) {
-        final Point ret;
-        //calcula coordenadas e posicao no grafico.
-        final int row = localFacade.getRow(local) - 1, col = localFacade.getCol(local) - 1;
-        if (row % 2 == 0) {
-            ret = new Point(col * 60, row * 45);
-        } else {
-            ret = new Point(col * 60 + 30, row * 45);
         }
         return ret;
     }

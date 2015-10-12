@@ -68,15 +68,24 @@ public class ComparatorCasualtiesSorterNew implements Comparator {
         } else if (tatica == 5) {
             //ambush
             return compareToByTacticAmbush(este, outro);
+        } else if (tatica == 6) {
+            //Barrage
+            return compareToByTacticBarrage(este, outro);
+        } else if (tatica == 7) {
+            //Shield wall
+            return compareToByTacticShieldwall(este, outro);
+        } else if (tatica == 8) {
+            //Stand firm
+            return compareToByTacticStandfirm(este, outro);
+        } else if (tatica == 9) {
+            //Swarm
+            return compareToByTacticSwarm(este, outro);
         } else {
             //standard
-            return compareToByTacticStandard(este, outro);
+            return compareToByTacticCharge(este, outro);
         }
     }
 
-    /**
-     * Charge	Attack	Fast	Defense	Cost	Id
-     */
     private int compareToByTacticCharge(TipoTropa este, TipoTropa outro) {
         //agressive 10>1
         final int attack = getAtaqueTerrenoDesc(este, outro, terreno);
@@ -102,9 +111,6 @@ public class ComparatorCasualtiesSorterNew implements Comparator {
         return (este.getId() - outro.getId());
     }
 
-    /**
-     * Flank	Defense	Attack	Cost	Fast	Id
-     */
     private int compareToByTacticFlank(TipoTropa este, TipoTropa outro) {
         //defensive/tank 10>1
         final int defense = getDefesaTerrenoDesc(este, outro, terreno);
@@ -130,9 +136,6 @@ public class ComparatorCasualtiesSorterNew implements Comparator {
         return (este.getId() - outro.getId());
     }
 
-    /**
-     * Ambush	Cost	Attack	Fast	Defense	Id
-     */
     private int compareToByTacticAmbush(TipoTropa este, TipoTropa outro) {
         //Gold
         final int gold = getCostDesc(este, outro);
@@ -158,9 +161,6 @@ public class ComparatorCasualtiesSorterNew implements Comparator {
         return (este.getId() - outro.getId());
     }
 
-    /**
-     * Surround	Fast	Cost	Defense	Attack	Id
-     */
     private int compareToByTacticSurround(TipoTropa este, TipoTropa outro) {
         //fast
         final int movement = getMovimentoTerrenoDesc(este, outro, terreno);
@@ -187,18 +187,107 @@ public class ComparatorCasualtiesSorterNew implements Comparator {
         return (este.getId() - outro.getId());
     }
 
-    /**
-     * Standard	%	%	%	%	Id
-     */
-    private int compareToByTacticStandard(TipoTropa este, TipoTropa outro) {
+    private int compareToByTacticGuerrilla(TipoTropa este, TipoTropa outro) {
+        //agressive 10>1
+        final int attack = getAtaqueTerrenoAsc(este, outro, terreno);
+        if (attack != 0) {
+            return attack;
+        }
+        //slow
+        final int movement = getMovimentoTerrenoAsc(este, outro, terreno);
+        if (movement != 0) {
+            return movement;
+        }
+        //defensive/tank 10>1
+        final int defense = getDefesaTerrenoAsc(este, outro, terreno);
+        if (defense != 0) {
+            return defense;
+        }
+        //Gold
+        final int gold = getCostAsc(este, outro);
+        if (gold != 0) {
+            return gold;
+        }
         //Id
         return (este.getId() - outro.getId());
     }
 
-    /**
-     * Guerrilla	Slow	Defense	Attack	Cost	Id
-     */
-    private int compareToByTacticGuerrilla(TipoTropa este, TipoTropa outro) {
+    private int compareToByTacticBarrage(TipoTropa este, TipoTropa outro) {
+        //Gold
+        final int gold = getCostAsc(este, outro);
+        if (gold != 0) {
+            return gold;
+        }
+        //agressive 10>1
+        final int attack = getAtaqueTerrenoDesc(este, outro, terreno);
+        if (attack != 0) {
+            return attack;
+        }
+        //fast
+        final int movement = getMovimentoTerrenoDesc(este, outro, terreno);
+        if (movement != 0) {
+            return movement;
+        }
+        //defensive/tank 10>1
+        final int defense = getDefesaTerrenoAsc(este, outro, terreno);
+        if (defense != 0) {
+            return defense;
+        }
+        //Id
+        return (este.getId() - outro.getId());
+    }
+
+    private int compareToByTacticShieldwall(TipoTropa este, TipoTropa outro) {
+        //defensive/tank 10>1
+        final int defense = getDefesaTerrenoAsc(este, outro, terreno);
+        if (defense != 0) {
+            return defense;
+        }
+        //agressive 10>1
+        final int attack = getAtaqueTerrenoAsc(este, outro, terreno);
+        if (attack != 0) {
+            return attack;
+        }
+        //Gold
+        final int gold = getCostAsc(este, outro);
+        if (gold != 0) {
+            return gold;
+        }
+        //fast
+        final int movement = getMovimentoTerrenoAsc(este, outro, terreno);
+        if (movement != 0) {
+            return movement;
+        }
+        //Id
+        return (este.getId() - outro.getId());
+    }
+
+    private int compareToByTacticStandfirm(TipoTropa este, TipoTropa outro) {
+        //fast
+        final int movement = getMovimentoTerrenoAsc(este, outro, terreno);
+        if (movement != 0) {
+            return movement;
+        }
+        //Gold
+        final int gold = getCostAsc(este, outro);
+        if (gold != 0) {
+            return gold;
+        }
+        //defensive/tank 10>1
+        final int defense = getDefesaTerrenoAsc(este, outro, terreno);
+        if (defense != 0) {
+            return defense;
+        }
+        //agressive 10>1
+        final int attack = getAtaqueTerrenoAsc(este, outro, terreno);
+        if (attack != 0) {
+            return attack;
+        }
+        //Id
+        return (este.getId() - outro.getId());
+    }
+
+    private int compareToByTacticSwarm(TipoTropa este, TipoTropa outro) {
         //agressive 10>1
         final int attack = getAtaqueTerrenoAsc(este, outro, terreno);
         if (attack != 0) {
@@ -219,6 +308,14 @@ public class ComparatorCasualtiesSorterNew implements Comparator {
         if (gold != 0) {
             return gold;
         }
+        //Id
+        return (este.getId() - outro.getId());
+    }
+
+    /**
+     * Standard	%	%	%	%	Id
+     */
+    private int compareToByTacticStandard(TipoTropa este, TipoTropa outro) {
         //Id
         return (este.getId() - outro.getId());
     }

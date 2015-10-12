@@ -39,8 +39,8 @@ public class ExtensionFileFilter extends FileFilter implements FilenameFilter, S
     }
 
     private void toLower(String array[]) {
-        for (int i = 0, n = array.length; i < n; i++) {
-            array[i] = array[i].toLowerCase();
+        for (int ii = 0, n = array.length; ii < n; ii++) {
+            array[ii] = array[ii].toLowerCase();
         }
     }
 
@@ -64,8 +64,8 @@ public class ExtensionFileFilter extends FileFilter implements FilenameFilter, S
     }
 
     private boolean checkExtensions(String fileName) {
-        for (int i = 0, n = extensions.length; i < n; i++) {
-            if (fileName.endsWith("." + extensions[i]) && fileName.startsWith(startWith)) {
+        for (int ii = 0, n = extensions.length; ii < n; ii++) {
+            if (fileName.endsWith("." + extensions[ii]) && fileName.startsWith(startWith)) {
                 return true;
             }
         }

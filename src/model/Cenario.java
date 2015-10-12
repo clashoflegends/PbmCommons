@@ -5,7 +5,10 @@
 package model;
 
 import baseLib.BaseModel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import msgs.BaseMsgs;
 
 /**
@@ -111,7 +114,13 @@ public class Cenario extends BaseModel {
     }
 
     public String[][] getTaticas() {
-        return BaseMsgs.taticas;
+        if (this.hasHabilidade(";ST1;")) {
+            return BaseMsgs.taticasGb;
+        } else if (this.hasHabilidade(";ST2;")) {
+            return BaseMsgs.taticasTk;
+        } else {
+            return BaseMsgs.taticasGb;
+        }
     }
 
     public void setTerrenos(SortedMap<String, Terreno> list) {
@@ -214,4 +223,5 @@ public class Cenario extends BaseModel {
     public void setNumMaxOrdens(int numMaxOrdens) {
         this.numMaxOrdens = numMaxOrdens;
     }
+
 }

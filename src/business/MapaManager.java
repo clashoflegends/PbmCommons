@@ -144,7 +144,7 @@ public class MapaManager implements Serializable {
 
     private void printHex(Graphics2D big, Local local, Jogador observer) {
         //calcula coordenadas e posicao no grafico.
-        final Point point = ConverterFactory.LocalToPoint(local);
+        final Point point = ConverterFactory.localToPoint(local);
         final int x = (int) point.getX(), y = (int) point.getY();
         //terreno basico
         big.drawImage(this.desenhoTerrenos[terrenoToIndice(localFacade.getTerrenoCodigo(local))], x, y, form);
@@ -319,8 +319,8 @@ public class MapaManager implements Serializable {
                 continue;
             }
             //calculate points;
-            final Point ori = ConverterFactory.LocalToPoint(pers.getLocalOrigem());
-            final Point dest = ConverterFactory.LocalToPoint(pers.getLocal());
+            final Point ori = ConverterFactory.localToPoint(pers.getLocalOrigem());
+            final Point dest = ConverterFactory.localToPoint(pers.getLocal());
             if (personagemFacade.isNpc(pers)) {
                 imageFactory.doDrawPathNpc(big, ori, dest);
             } else if (!jogadorFacade.isMine(pers, observer)) {
@@ -669,7 +669,7 @@ public class MapaManager implements Serializable {
     }
 
     public int[] doCoordToPosition(Local destino) {
-        final Point p = ConverterFactory.LocalToPoint(destino);
+        final Point p = ConverterFactory.localToPoint(destino);
         return new int[]{(int) p.getX(), (int) p.getY()};
     }
 

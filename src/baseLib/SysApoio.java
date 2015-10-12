@@ -558,15 +558,15 @@ public class SysApoio implements Serializable {
                 startIndex = 0;
             }
             if (objectToFind == null) {
-                for (int i = startIndex; i < array.length; i++) {
-                    if (array[i] == null) {
-                        return i;
+                for (int ii = startIndex; ii < array.length; ii++) {
+                    if (array[ii] == null) {
+                        return ii;
                     }
                 }
             } else {
-                for (int i = startIndex; i < array.length; i++) {
-                    if (objectToFind.equals(array[i])) {
-                        return i;
+                for (int ii = startIndex; ii < array.length; ii++) {
+                    if (objectToFind.equals(array[ii])) {
+                        return ii;
                     }
                 }
             }
@@ -754,8 +754,8 @@ public class SysApoio implements Serializable {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
             byte[] array = md.digest(md5.getBytes());
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < array.length; ++i) {
-                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1, 3));
+            for (int ii = 0; ii < array.length; ++ii) {
+                sb.append(Integer.toHexString((array[ii] & 0xFF) | 0x100).substring(1, 3));
             }
             return sb.toString();
         } catch (java.security.NoSuchAlgorithmException e) {
