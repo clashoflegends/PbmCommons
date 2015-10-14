@@ -13,15 +13,15 @@ import java.util.TreeMap;
  * @author gurgel
  */
 public class Jogador extends BaseModel {
-
+    
     private String login, senha, email;
     private final SortedMap<String, Nacao> nacoesOwned = new TreeMap<String, Nacao>();
-    private boolean reportAll;
+    private boolean reportAll; //don't remove for backwards compatibility
 
     public void addNacao(Nacao nacao) {
         this.nacoesOwned.put(nacao.getCodigo(), nacao);
     }
-
+    
     public SortedMap<String, Nacao> getNacoes() {
         return this.nacoesOwned;
     }
@@ -77,27 +77,27 @@ public class Jogador extends BaseModel {
         }
         return ret;
     }
-
+    
     public String getEmail() {
         return email;
     }
-
+    
     public String getLogin() {
         return login;
     }
-
+    
     public String getSenha() {
         return senha;
     }
-
+    
     public void setEmail(String email) {
         this.email = email;
     }
-
+    
     public void setLogin(String login) {
         this.login = login;
     }
-
+    
     public void setSenha(String senha) {
         this.senha = senha;
     }
@@ -106,17 +106,10 @@ public class Jogador extends BaseModel {
      * @return the reportAll
      */
     public boolean isReportAll() {
-        return reportAll;
+        return hasHabilidade(";JRA;");
     }
-
-    /**
-     * @param reportAll the reportAll to set
-     */
-    public void setReportAll(boolean reportAll) {
-        this.reportAll = reportAll;
-    }
-
+    
     public boolean isNpc() {
-        return getId() == 1;
+        return hasHabilidade(";JAI;");
     }
 }
