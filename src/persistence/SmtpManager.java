@@ -165,6 +165,10 @@ public class SmtpManager implements Serializable {
     }
 
     public boolean sendMsg() throws PersistenceException {
+        if (SysProperties.getProps("local").equalsIgnoreCase("Desenv")) {
+            return false;
+        }
+
         boolean ret = createMsg();
 
         // send the message
