@@ -91,7 +91,13 @@ public class TitleFactory implements Serializable {
         }
         if (!acaoFacade.getHabilidades(ordem).isEmpty()) {
             for (Habilidade habilidade : acaoFacade.getHabilidades(ordem)) {
-                ret += String.format("%s: %s\n", labels.getString("ORDEM.FEATURE"), habilidade.getNome());
+                if (habilidade.isPackage()) {
+                    for (Habilidade power : habilidade.getHabilidades().values()) {
+                        ret += String.format("%s: %s\n", labels.getString("ORDEM.FEATURE"), power.getNome());
+                    }
+                } else {
+                    ret += String.format("%s: %s\n", labels.getString("ORDEM.FEATURE"), habilidade.getNome());
+                }
             }
         }
         ret += String.format("%s: %s\n", labels.getString("REQUISITO"), getAjudaRequisito(ordem));
