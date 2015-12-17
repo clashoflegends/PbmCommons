@@ -17,4 +17,6 @@ public interface IHabilidadeDao {
     public Habilidade get(String cd) throws PersistenceException;
 
     public SortedMap<String, Habilidade> list() throws PersistenceException;
+
+    public SortedMap<String, Habilidade> listArtefatoDormant() throws PersistenceException;
 }
