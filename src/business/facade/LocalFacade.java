@@ -349,7 +349,7 @@ public class LocalFacade implements Serializable {
                     ret.add(pers);
                 }
             }
-            if (personagem.isComandaExercito()) {
+            if (personagem != null && personagem.isComandaExercito()) {
                 ret.remove(personagem);
             }
         } else if (tipo == 4) {
