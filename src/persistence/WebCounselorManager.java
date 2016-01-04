@@ -82,7 +82,8 @@ public class WebCounselorManager {
             }
 
             // aqui define a URL
-            HttpPost post = new HttpPost(getUrl("CounselorUploadTurn"));
+            final String uploadPage = SysProperties.getProps("UploadPage", "CounselorUploadTurn");
+            HttpPost post = new HttpPost(getUrl(uploadPage));
             post.setEntity(entity);
 
             // faz a chamada......
