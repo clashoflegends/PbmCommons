@@ -19,7 +19,7 @@ public class Cidade extends BaseModel {
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private Local local;
     private Nacao nacao;
-    private Alianca alianca;
+    private Alianca alianca; //keep for backwards compatibility
     private int fortificacao;
     private int tamanho;
     private int docas;
@@ -74,14 +74,6 @@ public class Cidade extends BaseModel {
             nacao.addCidade(this);
         } catch (NullPointerException e) {
         }
-    }
-
-    public Alianca getAlianca() {
-        return alianca;
-    }
-
-    public void setAlianca(Alianca alianca) {
-        this.alianca = alianca;
     }
 
     public int getFortificacao() {
@@ -149,14 +141,14 @@ public class Cidade extends BaseModel {
 
     public int getEstoque(Produto produto) {
         try {
-            return (Integer) estoques.get(produto);
+            return estoques.get(produto);
         } catch (NullPointerException ex) {
             return 0;
         }
     }
 
-    public void addEstoque(Produto produto, int qtd) {
-        this.estoques.put(produto, qtd);
+    public void setEstoque(Produto produto, int qtd) {
+        this.estoques.put(produto, Math.max(0, qtd));
     }
 
     public SortedMap<String, TipoTropa> getTipoTropas() {

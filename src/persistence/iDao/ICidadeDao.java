@@ -4,6 +4,7 @@
  */
 package persistence.iDao;
 
+import java.sql.ResultSet;
 import java.util.SortedMap;
 import model.Cidade;
 import model.Partida;
@@ -22,4 +23,6 @@ public interface ICidadeDao {
     public SortedMap<String, Cidade> list(Partida partida) throws PersistenceException;
 
     public void update(Cidade cidade);
+
+    public Cidade get(ResultSet rs, Partida partida) throws PersistenceException;
 }

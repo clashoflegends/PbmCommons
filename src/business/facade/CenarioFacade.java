@@ -39,7 +39,7 @@ public class CenarioFacade implements Serializable {
     private static final Log log = LogFactory.getLog(CenarioFacade.class);
     private static final BundleManager label = SettingsManager.getInstance().getBundleManager();
     private final int[][] bonusTatica = new int[10][10];
-    private SortedMap<Integer, String> taticas = new TreeMap<Integer, String>();
+    private final SortedMap<Integer, String> taticas = new TreeMap<Integer, String>();
     private String typeTatica = "-";
     
     public static boolean isGrecia(Cenario cenario) {
