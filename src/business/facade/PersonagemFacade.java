@@ -6,8 +6,23 @@ package business.facade;
 
 import baseLib.SysApoio;
 import java.io.Serializable;
-import java.util.*;
-import model.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import model.Artefato;
+import model.Cenario;
+import model.Cidade;
+import model.Exercito;
+import model.Feitico;
+import model.Local;
+import model.Nacao;
+import model.Ordem;
+import model.Personagem;
+import model.PersonagemFeitico;
+import model.Raca;
 import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,6 +38,7 @@ public class PersonagemFacade implements Serializable {
     private static final Log log = LogFactory.getLog(PersonagemFacade.class);
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final LocalFacade localFacade = new LocalFacade();
+    private final NacaoFacade nacaoFacade = new NacaoFacade();
 
     public Collection<Artefato> getArtefatos(Personagem personagem) {
         return personagem.getArtefatos().values();
@@ -155,7 +171,6 @@ public class PersonagemFacade implements Serializable {
 
     public boolean hasFeiticoRequisito(Personagem personagem, Feitico feiticoAlvo, Feitico[] listFeiticos) {
         boolean ret = false;
-        NacaoFacade nacaoFacade = new NacaoFacade();
         FeiticoFacade feiticoFacade = new FeiticoFacade();
         if (feiticoFacade.isProibido(feiticoAlvo)) {
             //TODO: verifica artefatos
@@ -186,7 +201,7 @@ public class PersonagemFacade implements Serializable {
 
     public boolean isInCapital(Personagem personagem) {
         try {
-            return (personagem.getLocal() == personagem.getNacao().getCapital().getLocal());
+            return (personagem.getLocal() == nacaoFacade.getLocal(personagem.getNacao()));
         } catch (NullPointerException ex) {
             return false;
         }
@@ -515,7 +530,6 @@ public class PersonagemFacade implements Serializable {
             ret += "\n";
         }
         if (getNacaoSubordinada(personagem) != null) {
-            NacaoFacade nacaoFacade = new NacaoFacade();
             ret += String.format(labels.getString("DUPLO.DE"), nacaoFacade.getNome(getNacaoSubordinada(personagem)));
             ret += "\n";
         }
