@@ -7,9 +7,22 @@ package business.facade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
-import model.*;
+import model.Cidade;
+import model.Exercito;
+import model.ExtratoDetail;
+import model.Habilidade;
+import model.HabilidadeNacao;
+import model.Jogador;
+import model.Local;
+import model.Nacao;
+import model.Pelotao;
+import model.Personagem;
+import model.Produto;
+import model.Raca;
+import model.TipoTropa;
 import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -75,7 +88,7 @@ public class NacaoFacade implements Serializable {
 
     public String getCoordenadasCapital(Nacao nacao) {
         try {
-            return nacao.getCapital().getCoordenadas();
+            return this.getLocal(nacao).getCoordenadas();
         } catch (NullPointerException ex) {
             return "-";
         }
@@ -83,7 +96,7 @@ public class NacaoFacade implements Serializable {
 
     public Local getLocal(Nacao nacao) {
         try {
-            return nacao.getCapital().getLocal();
+            return this.getCapital(nacao).getLocal();
         } catch (NullPointerException ex) {
             return null;
         }
@@ -429,7 +442,34 @@ public class NacaoFacade implements Serializable {
     }
 
     public Cidade getCapital(Nacao nacao) {
-        return nacao.getCapital();
+        //keep in sync with NacaoControl.getCidadeMain();
+        if (nacao.getCapital() != null) {
+            //if has capital, then return capital
+            return nacao.getCapital();
+        }
+        //else, select main city
+        int max = 0;
+        int current = 0;
+        List<Cidade> potential = new ArrayList<Cidade>(nacao.getCidades().size());
+        for (Cidade cidade : nacao.getCidades()) {
+            current = cidade.getTamanho() * 1000000 + cidade.getFortificacao() * 1000 + cidade.getLealdade();
+            if (current > max) {
+                //clear list and add potential
+                max = current;
+                potential.clear();
+                potential.add(cidade);
+            } else if (max == current) {
+                //add to potential list
+                potential.add(cidade);
+            }
+        }
+        //select one of the potential
+        if (potential.isEmpty()) {
+            return null;
+        } else {
+            Collections.shuffle(potential);
+            return potential.get(0);
+        }
     }
 
     public List<String> getInfoTitle(Nacao nacao) {
