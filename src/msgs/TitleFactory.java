@@ -298,6 +298,50 @@ public class TitleFactory implements Serializable {
             //ALVO considera PERSONAGEM amigo !this.criticaCpInimiga(false)
             ret += separator + labels.getString("REQUISITO.AJUDA.CPI");
         }
+        if (requisitos.contains("cs1")) {
+            //Size (tamanho = 1)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CS1");
+        }
+        if (requisitos.contains("cs2")) {
+            //Size (tamanho = 2)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CS2");
+        }
+        if (requisitos.contains("cs3")) {
+            //Size (tamanho = 3)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CS3");
+        }
+        if (requisitos.contains("cs4")) {
+            //Size (tamanho = 4)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CS4");
+        }
+        if (requisitos.contains("cs5")) {
+            //Size (tamanho = 5)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CS5");
+        }
+        if (requisitos.contains("cf0")) {
+            //fortifications (fortificacao == 1)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CF0");
+        }
+        if (requisitos.contains("cf1")) {
+            //fortifications (fortificacao == 1)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CF1");
+        }
+        if (requisitos.contains("cf2")) {
+            //fortifications (fortificacao == 2)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CF2");
+        }
+        if (requisitos.contains("cf3")) {
+            //fortifications (fortificacao == 3)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CF3");
+        }
+        if (requisitos.contains("cf4")) {
+            //fortifications (fortificacao == 4)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CF4");
+        }
+        if (requisitos.contains("cf5")) {
+            //fortifications (fortificacao == 5)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CF5");
+        }
         if (requisitos.contains("artefato")) {
             ret += separator + labels.getString("REQUISITO.AJUDA.ARTEFATO");
         }

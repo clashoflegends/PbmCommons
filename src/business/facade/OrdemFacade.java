@@ -161,6 +161,39 @@ public class OrdemFacade implements Serializable {
         if (requisitos.contains("bigcity") && !cidadeFacade.isBigCity(cidade)) {
             return false;
         }
+        if (requisitos.contains("cs1") && cidadeFacade.getTamanho(cidade) != 1) {
+            return false;
+        }
+        if (requisitos.contains("cs2") && cidadeFacade.getTamanho(cidade) != 2) {
+            return false;
+        }
+        if (requisitos.contains("cs3") && cidadeFacade.getTamanho(cidade) != 3) {
+            return false;
+        }
+        if (requisitos.contains("cs4") && cidadeFacade.getTamanho(cidade) != 4) {
+            return false;
+        }
+        if (requisitos.contains("cs5") && cidadeFacade.getTamanho(cidade) != 5) {
+            return false;
+        }
+        if (requisitos.contains("cf0") && cidadeFacade.getFortificacao(cidade) != 0) {
+            return false;
+        }
+        if (requisitos.contains("cf1") && cidadeFacade.getFortificacao(cidade) != 1) {
+            return false;
+        }
+        if (requisitos.contains("cf2") && cidadeFacade.getFortificacao(cidade) != 2) {
+            return false;
+        }
+        if (requisitos.contains("cf3") && cidadeFacade.getFortificacao(cidade) != 3) {
+            return false;
+        }
+        if (requisitos.contains("cf4") && cidadeFacade.getFortificacao(cidade) != 4) {
+            return false;
+        }
+        if (requisitos.contains("cf5") && cidadeFacade.getFortificacao(cidade) != 5) {
+            return false;
+        }
         return true;
     }
 
@@ -254,6 +287,39 @@ public class OrdemFacade implements Serializable {
             return false;
         }
         if (requisitos.contains("artdragonegg") && !personagemFacade.isPersonagemHasItem(personagem, "DragonEgg")) {
+            return false;
+        }
+        if (requisitos.contains("cs1") && personagemFacade.getCidadeTamanho(personagem) != 1) {
+            return false;
+        }
+        if (requisitos.contains("cs2") && personagemFacade.getCidadeTamanho(personagem) != 2) {
+            return false;
+        }
+        if (requisitos.contains("cs3") && personagemFacade.getCidadeTamanho(personagem) != 3) {
+            return false;
+        }
+        if (requisitos.contains("cs4") && personagemFacade.getCidadeTamanho(personagem) != 4) {
+            return false;
+        }
+        if (requisitos.contains("cs5") && personagemFacade.getCidadeTamanho(personagem) != 5) {
+            return false;
+        }
+        if (requisitos.contains("cf0") && personagemFacade.getCidadeFortificacao(personagem) != 0) {
+            return false;
+        }
+        if (requisitos.contains("cf1") && personagemFacade.getCidadeFortificacao(personagem) != 1) {
+            return false;
+        }
+        if (requisitos.contains("cf2") && personagemFacade.getCidadeFortificacao(personagem) != 2) {
+            return false;
+        }
+        if (requisitos.contains("cf3") && personagemFacade.getCidadeFortificacao(personagem) != 3) {
+            return false;
+        }
+        if (requisitos.contains("cf4") && personagemFacade.getCidadeFortificacao(personagem) != 4) {
+            return false;
+        }
+        if (requisitos.contains("cf5") && personagemFacade.getCidadeFortificacao(personagem) != 5) {
             return false;
         }
         return true;

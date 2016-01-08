@@ -54,7 +54,7 @@ public class SysProperties implements Serializable {
             + "SendOrderConfirmationPopUp=0|1 - Show pop-up message with confirmation or not.\n"
             + "SendOrderReceiptRequest=0|1 - Request site to send a confirmation receipt or not.\n"
             + "ShowArmyMovPath=0|1|2 -> allows you to see all possible movement paths for an army(1) or navy(2). (0) disable it.\n"
-            + "MapTiles = 2d | 2a | 3d, changes the basic hex terrain tiles.\n"
+            + "MapTiles = 2b | 2d | 2a | 3d, changes the basic hex terrain tiles.\n"
             + "AutoMoveNextAction = 0|1, changes the behavior entering actions. If =1, then move to next available slot.\n"
             + "mail.smtp.server=smtp.myserver.com, smtp server name to be used.\n"
             + "mail.smpt.port=25, smtp port to be used. Only port 25 is supported right now.\n"

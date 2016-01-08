@@ -711,13 +711,20 @@ public class MapaManager implements Serializable {
                 desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemPantano", "-"));
             } else if (terrenos[ii].equals("deserto") && !SysProperties.getProps("ImagemDeserto", "-").equals("-")) {
                 desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemDeserto", "-"));
-            } else if (SysProperties.getProps("MapTiles", "2d").equalsIgnoreCase("2a")) {
+            } else if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("2a")) {
                 //feralonso
                 desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2a_" + terrenos[ii] + ".png"));
-            } else if (SysProperties.getProps("MapTiles", "2d").equalsIgnoreCase("3d")) {
+            } else if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("2b")) {
+                //bordless meppa
+                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + terrenos[ii] + ".gif"));
+            } else if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("2d")) {
+                //bord meppa
+                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".gif"));
+            } else if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("3d")) {
+                //3d from joao
                 desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".png"));
             } else {
-                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".gif"));
+                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + terrenos[ii] + ".gif"));
             }
             imageFactory.addImage(desenho);
             this.desenhoTerrenos[ii] = desenho;

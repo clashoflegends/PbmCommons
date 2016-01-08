@@ -39,6 +39,7 @@ public class PersonagemFacade implements Serializable {
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final LocalFacade localFacade = new LocalFacade();
     private final NacaoFacade nacaoFacade = new NacaoFacade();
+    private final CidadeFacade cidadeFacade = new CidadeFacade();
 
     public Collection<Artefato> getArtefatos(Personagem personagem) {
         return personagem.getArtefatos().values();
@@ -69,6 +70,24 @@ public class PersonagemFacade implements Serializable {
             }
         }
         return cidade;
+    }
+
+    public int getCidadeTamanho(Personagem personagem) {
+        final Cidade cidade = getCidade(personagem);
+        if (cidade == null) {
+            return 0;
+        } else {
+            return cidadeFacade.getTamanho(cidade);
+        }
+    }
+
+    public int getCidadeFortificacao(Personagem personagem) {
+        final Cidade cidade = getCidade(personagem);
+        if (cidade == null) {
+            return 0;
+        } else {
+            return cidadeFacade.getFortificacao(cidade);
+        }
     }
 
     public Local getLocalOrigem(Personagem personagem) {
