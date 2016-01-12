@@ -5,7 +5,9 @@
 package business.facade;
 
 import java.io.Serializable;
+import model.Cidade;
 import model.Jogador;
+import model.Nacao;
 import model.Personagem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,7 +25,23 @@ public class JogadorFacade implements Serializable {
 
     public boolean isMine(Personagem personagem, Jogador jogador) {
         try {
-            return (personagem.getNacao().getOwner() == jogador);
+            return (jogador.isNacao(personagem.getNacao()));
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    public boolean isMine(Cidade cidade, Jogador jogador) {
+        try {
+            return (jogador.isNacao(cidade.getNacao()));
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    public boolean isMine(Nacao nacao, Jogador jogador) {
+        try {
+            return (jogador.isNacao(nacao));
         } catch (Exception exception) {
             return false;
         }

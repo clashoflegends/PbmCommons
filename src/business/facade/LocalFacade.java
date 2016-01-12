@@ -368,4 +368,8 @@ public class LocalFacade implements Serializable {
         }
         return (Personagem[]) ret.toArray(new Personagem[0]);
     }
+
+    public boolean isCombatTookPlace(Local local) {
+        return local.hasHabilidade(";LHC;");
+    }
 }

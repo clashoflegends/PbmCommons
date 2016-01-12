@@ -243,6 +243,12 @@ public class MapaManager implements Serializable {
             int dy = 30;
             big.drawImage(this.desenhoDetalhes[dtNavio], x + dx, y + dy, form);
         }
+        //took combat?
+        if (localFacade.isCombatTookPlace(local)) {
+            int dx = 46;
+            int dy = 30;
+            big.drawImage(imageFactory.doDrawCombat(), x + dx, y + dy, form);
+        }
         //grava numero hex
         big.setColor(Color.BLACK);
         big.drawString(localFacade.getCoordenadas(local), x + 16, y + 18);
@@ -488,7 +494,7 @@ public class MapaManager implements Serializable {
         //detalhe de terrenos
         legendas = new String[]{
             "TERRENO.PONTE", "TERRENO.RIACHO", "TERRENO.RIO", "TERRENO.ESTRADA", "TERRENO.VAU", "TERRENO.LANDING",
-            "TAG", "LOCAL.VISIVEL", "LOCAL.FOGOFWAR"
+            "LOCAL.VISIVEL", "LOCAL.FOGOFWAR", "TAG"
         };
         x += 200;
         y = 50;
@@ -551,7 +557,7 @@ public class MapaManager implements Serializable {
         legendaCounter = 0;
         legendas = new String[]{
             "EXERCITO.RASTRO",
-            "PERSONAGEM", "PERSONAGEM.OUTRA.NACAO", "PERSONAGEM.NPC", "DB.ORDEM.PARAMETRO.ARTEFATO", "ZONA.ECONOMICA", "NAVIOS.PRESENTES"
+            "PERSONAGEM", "PERSONAGEM.OUTRA.NACAO", "PERSONAGEM.NPC", "DB.ORDEM.PARAMETRO.ARTEFATO", "ZONA.ECONOMICA", "NAVIOS.PRESENTES", "COMBAT.HERE"
         };
         //imprime rastro do exercito
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -600,6 +606,11 @@ public class MapaManager implements Serializable {
         y += image.getWidth(form) + gap;
 
         image = desenhoDetalhes[dtNavio];
+        big.drawImage(image, x, y, form);
+        big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
+        y += image.getWidth(form) + gap;
+
+        image = imageFactory.doDrawCombat();
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
