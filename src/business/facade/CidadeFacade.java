@@ -9,7 +9,14 @@ import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import model.*;
+import java.util.SortedMap;
+import model.Cidade;
+import model.Jogador;
+import model.Local;
+import model.Nacao;
+import model.Personagem;
+import model.Produto;
+import model.Raca;
 import msgs.BaseMsgs;
 import msgs.ColorFactory;
 import org.apache.commons.logging.Log;
@@ -235,6 +242,10 @@ public class CidadeFacade implements Serializable {
         } catch (NullPointerException ex) {
             return producao;
         }
+    }
+
+    public SortedMap<Produto, Integer> getEstoques(Cidade cidade) {
+        return cidade.getEstoques();
     }
 
     public int getEstoque(Cidade cidade, Produto produto) {
