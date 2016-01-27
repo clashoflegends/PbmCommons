@@ -318,6 +318,10 @@ public class TitleFactory implements Serializable {
             //Size (tamanho = 5)
             ret += separator + labels.getString("REQUISITO.AJUDA.CS5");
         }
+        if (requisitos.contains("csn5")) {
+            //Size (tamanho = 5)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CSN5");
+        }
         if (requisitos.contains("cf0")) {
             //fortifications (fortificacao == 1)
             ret += separator + labels.getString("REQUISITO.AJUDA.CF0");
@@ -341,6 +345,10 @@ public class TitleFactory implements Serializable {
         if (requisitos.contains("cf5")) {
             //fortifications (fortificacao == 5)
             ret += separator + labels.getString("REQUISITO.AJUDA.CF5");
+        }
+        if (requisitos.contains("cfn5")) {
+            //fortifications (fortificacao == 5)
+            ret += separator + labels.getString("REQUISITO.AJUDA.CFN5");
         }
         if (requisitos.contains("artefato")) {
             ret += separator + labels.getString("REQUISITO.AJUDA.ARTEFATO");

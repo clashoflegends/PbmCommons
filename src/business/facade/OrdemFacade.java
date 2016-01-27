@@ -176,6 +176,9 @@ public class OrdemFacade implements Serializable {
         if (requisitos.contains("cs5") && cidadeFacade.getTamanho(cidade) != 5) {
             return false;
         }
+        if (requisitos.contains("csn5") && cidadeFacade.getTamanho(cidade) == 5) {
+            return false;
+        }
         if (requisitos.contains("cf0") && cidadeFacade.getFortificacao(cidade) != 0) {
             return false;
         }
@@ -192,6 +195,9 @@ public class OrdemFacade implements Serializable {
             return false;
         }
         if (requisitos.contains("cf5") && cidadeFacade.getFortificacao(cidade) != 5) {
+            return false;
+        }
+        if (requisitos.contains("cfn5") && cidadeFacade.getFortificacao(cidade) == 5) {
             return false;
         }
         return true;
@@ -304,6 +310,9 @@ public class OrdemFacade implements Serializable {
         if (requisitos.contains("cs5") && personagemFacade.getCidadeTamanho(personagem) != 5) {
             return false;
         }
+        if (requisitos.contains("csn5") && personagemFacade.getCidadeTamanho(personagem) == 5) {
+            return false;
+        }
         if (requisitos.contains("cf0") && personagemFacade.getCidadeFortificacao(personagem) != 0) {
             return false;
         }
@@ -320,6 +329,9 @@ public class OrdemFacade implements Serializable {
             return false;
         }
         if (requisitos.contains("cf5") && personagemFacade.getCidadeFortificacao(personagem) != 5) {
+            return false;
+        }
+        if (requisitos.contains("cfn5") && personagemFacade.getCidadeFortificacao(personagem) == 5) {
             return false;
         }
         return true;
