@@ -102,7 +102,11 @@ public class MapaManager implements Serializable {
         String[] detalhes = {"personagem", "npc", "artefato", "goldmine", "navio", "tag", "fogofwar", "pers_other"};
         desenhoDetalhes = new Image[detalhes.length];
         for (int ii = 0; ii < detalhes.length; ii++) {
-            desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + detalhes[ii] + ".gif"));
+            if (ii == dtFogofwar) {
+                desenho = getDesenhoProperties(detalhes[ii]);
+            } else {
+                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + detalhes[ii] + ".gif"));
+            }
             imageFactory.addImage(desenho);
             this.desenhoDetalhes[ii] = desenho;
         }
@@ -722,23 +726,30 @@ public class MapaManager implements Serializable {
                 desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemPantano", "-"));
             } else if (terrenos[ii].equals("deserto") && !SysProperties.getProps("ImagemDeserto", "-").equals("-")) {
                 desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemDeserto", "-"));
-            } else if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("2a")) {
-                //feralonso
-                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2a_" + terrenos[ii] + ".png"));
-            } else if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("2b")) {
-                //bordless meppa
-                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + terrenos[ii] + ".gif"));
-            } else if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("2d")) {
-                //bord meppa
-                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".gif"));
-            } else if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("3d")) {
-                //3d from joao
-                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + terrenos[ii] + ".png"));
             } else {
-                desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + terrenos[ii] + ".gif"));
+                desenho = getDesenhoProperties(terrenos[ii]);
             }
             imageFactory.addImage(desenho);
             this.desenhoTerrenos[ii] = desenho;
+        }
+    }
+
+    private Image getDesenhoProperties(String filename) {
+        if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("2a")) {
+            //feralonso bordless
+            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2a_" + filename + ".png"));
+        } else if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("2b")) {
+            //bordless meppa
+            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
+        } else if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("2d")) {
+            //bord meppa
+            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".gif"));
+        } else if (SysProperties.getProps("MapTiles", "2b").equalsIgnoreCase("3d")) {
+            //3d from joao bordless
+            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".png"));
+        } else {
+            //bordless meppa
+            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
         }
     }
 }
