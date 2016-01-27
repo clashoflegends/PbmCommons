@@ -81,6 +81,9 @@ public class OrdemFacade implements Serializable {
                 return false;
             }
         }
+        if (!isOrdemRequisitosMulti(ordem, ordem,ordemOutra)) {
+            return false;
+        }
         //personagem em exercito ou grupo?
         return true;
     }
@@ -198,6 +201,31 @@ public class OrdemFacade implements Serializable {
             return false;
         }
         if (requisitos.contains("cfn5") && cidadeFacade.getFortificacao(cidade) == 5) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isOrdemRequisitosMulti(BaseModel actor, Ordem ordem, Ordem ordemOutra) {
+        final int nn;
+        if (ordem == ordemOutra) {
+            //can re=use this slot
+            nn = 1;
+        } else {
+            //
+            nn = 0;
+        }
+        final String requisitos = ordem.getRequisito().toLowerCase();
+        if (requisitos.contains("multi2") && getOrdensOpenSlots(actor) < 1+nn) {
+            return false;
+        }
+        if (requisitos.contains("multi3") && getOrdensOpenSlots(actor) < 2+nn) {
+            return false;
+        }
+        if (requisitos.contains("multi4") && getOrdensOpenSlots(actor) < 3+nn) {
+            return false;
+        }
+        if (requisitos.contains("multi5") && getOrdensOpenSlots(actor) < 4+nn) {
             return false;
         }
         return true;
@@ -514,5 +542,32 @@ public class OrdemFacade implements Serializable {
             return SysApoio.doParseString(actor.getResultados(), labels);
         }
         return "";
+    }
+
+    public int getRequirementsMultiLevel(Ordem ordem) {
+        final String requisitos = ordem.getRequisito().toLowerCase();
+        if (requisitos.contains("multi2")) {
+            return 1;
+        }
+        if (requisitos.contains("multi3")) {
+            return 2;
+        }
+        if (requisitos.contains("multi4")) {
+            return 3;
+        }
+        if (requisitos.contains("multi5")) {
+            return 4;
+        }
+        return 0;
+    }
+
+    public int getOrdensOpenSlots(BaseModel actor) {
+        int ret = 0;
+        for (int index = 0; index < actor.getOrdensQt(); index++) {
+            if (this.getOrdem(actor, index) == null) {
+                ret++;
+            }
+        }
+        return ret;
     }
 }

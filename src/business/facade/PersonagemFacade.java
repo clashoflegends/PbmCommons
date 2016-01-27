@@ -580,7 +580,6 @@ public class PersonagemFacade implements Serializable {
                         localFacade.getTerrenoNome(localAtual));
                 if (localFacade.isCidade(localAtual, this.getNacao(personagem))) {
                     Cidade cidade = localFacade.getCidade(localAtual);
-                    CidadeFacade cidadeFacade = new CidadeFacade();
                     //", Vila/Torre de Larissa da nação Macedonia.\n"
                     ret += String.format(labels.getString("TAMANHO.CIDADE.NACAO"),
                             cidadeFacade.getTamanhoFortificacao(cidade),
