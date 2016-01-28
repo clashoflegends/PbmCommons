@@ -417,7 +417,7 @@ public class Local extends BaseModel implements Cloneable {
         this.landing = landing;
     }
 
-    public void setCombatTookPlace() {
+    public void setCombatTookPlaceOff() {
         this.remHabilidade(";LHC;");
     }
 }

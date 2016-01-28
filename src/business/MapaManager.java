@@ -248,7 +248,7 @@ public class MapaManager implements Serializable {
             big.drawImage(this.desenhoDetalhes[dtNavio], x + dx, y + dy, form);
         }
         //took combat?
-        if (localFacade.isCombatTookPlace(local)) {
+        if (local.isVisible() && localFacade.isCombatTookPlace(local)) {
             int dx = 46;
             int dy = 30;
             big.drawImage(imageFactory.doDrawCombat(), x + dx, y + dy, form);
