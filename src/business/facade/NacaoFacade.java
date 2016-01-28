@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
+import model.Cenario;
 import model.Cidade;
 import model.Exercito;
 import model.ExtratoDetail;
@@ -102,7 +103,10 @@ public class NacaoFacade implements Serializable {
         }
     }
 
-    public int getCustoCidades(Nacao nacao) {
+    public int getCustoCidades(Nacao nacao, Cenario cenario) {
+        if (cenario.hasHabilidade(";SUC;")) {
+            return 0;
+        }
         int ret = 0;
         for (Cidade cidade : nacao.getCidades()) {
             if (nacao == cidade.getNacao() && cidade.getTamanho() > 0) {
@@ -184,7 +188,10 @@ public class NacaoFacade implements Serializable {
         return discount;
     }
 
-    public int getCustoPersonagens(Nacao nacao) {
+    public int getCustoPersonagens(Nacao nacao, Cenario cenario) {
+        if (cenario.hasHabilidade(";SUP;")) {
+            return 0;
+        }
         int ret = 0;
         for (Personagem pers : nacao.getPersonagens()) {
             if (nacao == pers.getNacao()) {
@@ -509,5 +516,21 @@ public class NacaoFacade implements Serializable {
             return 0;
         }
         return ret / size;
+    }
+
+    public int getGoldDecay(Nacao nacao, Cenario cenario) {
+        if (cenario.hasHabilidade(";SGD;")) {
+            return nacao.getMoney() * cenario.getHabilidadeValor(";SGD;") / 100;
+        } else {
+            return 0;
+        }
+    }
+
+    public int getGoldDecay(int treasuryForecast, Cenario cenario) {
+        if (cenario.hasHabilidade(";SGD;")) {
+            return treasuryForecast * cenario.getHabilidadeValor(";SGD;") / 100;
+        } else {
+            return 0;
+        }
     }
 }
