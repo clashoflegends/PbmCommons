@@ -11,6 +11,7 @@ import java.util.TreeMap;
 /**
  *
  * @author gurgel
+ * Remember to keep aligned with JogadorPontos
  */
 public class Jogador extends BaseModel {
     

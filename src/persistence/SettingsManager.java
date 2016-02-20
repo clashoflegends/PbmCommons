@@ -7,6 +7,7 @@ package persistence;
 import baseLib.SysProperties;
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -26,6 +27,7 @@ public class SettingsManager implements Serializable {
     private boolean portrait = false;
     private boolean tableColumnAdjust = true;
     private boolean radialMenu = false;
+    private Properties newGameProp;
 
     private SettingsManager() {
     }
@@ -139,5 +141,12 @@ public class SettingsManager implements Serializable {
 
     public void setTableColumnAdjust(boolean tableColumnAdjust) {
         this.tableColumnAdjust = tableColumnAdjust;
+    }
+
+    public Properties getNewGameProperties() {
+        if (newGameProp == null) {
+            newGameProp = SysProperties.getInstance().loadPropertiesFile("nations.config");
+        }
+        return newGameProp;
     }
 }
