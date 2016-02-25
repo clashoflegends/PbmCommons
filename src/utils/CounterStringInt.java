@@ -45,4 +45,16 @@ public final class CounterStringInt implements Serializable {
             counter.put(key, value);
         }
     }
+
+    @Override
+    public String toString() {
+        if (counter.isEmpty()) {
+            return "Counter is empty";
+        }
+        String ret = "";
+        for (String key : counter.keySet()) {
+            ret += String.format("%s: %s; ", key, counter.get(key));
+        }
+        return ret;
+    }
 }
