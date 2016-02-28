@@ -136,6 +136,28 @@ public class ImageFactory implements Serializable {
                 "Pentos.png",
                 "Jofrey.png"
             };
+        } else if (cenario.isWdo()) {
+            return new String[]{"neutral.png", "KingsCourt.gif", "Jofrey.png",
+                "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
+                "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
+                "army1.png",
+                "army2.png",
+                "army3.png",
+                "shield.jpg",
+                "NightsWatch.png",
+                "Bolton.png",
+                "Yronwood.png",
+                "Stannis.gif",
+                "Frey.png",
+                "Hightower.gif",
+                "Volantis.png",
+                "Pentos.png",
+                "Braavos.png",
+                "FreeCities.png", "Wildlings.png", "neutral2.png", "neutral3.png",
+                "Esparta.gif", "Atenas.gif", "Macedonia.gif", "Persia.gif",
+                "Tracia.gif", "Milletus.gif", "Illyria.gif", "Epirus.gif",
+                "Twainek.gif", "Frusodian.gif"
+            };
         } else {
             return new String[]{"neutral.png", "KingsCourt.gif", "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
                 "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
@@ -147,7 +169,14 @@ public class ImageFactory implements Serializable {
                 "Hightower.gif",
                 "Volantis.png",
                 "Pentos.png",
-                "Jofrey.png"
+                "Jofrey.png",
+                "army1.png",
+                "army2.png",
+                "army3.png",
+                "Esparta.gif", "Atenas.gif", "Macedonia.gif", "Persia.gif",
+                "Tracia.gif", "Milletus.gif", "Illyria.gif", "Epirus.gif",
+                "Twainek.gif", "Frusodian.gif",
+                "shield.jpg"
             };
 //            return new String[]{"neutral.png"};
         }

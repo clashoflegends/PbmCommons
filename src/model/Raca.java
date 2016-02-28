@@ -5,6 +5,9 @@
 package model;
 
 import baseLib.BaseModel;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -30,6 +33,28 @@ public class Raca extends BaseModel {
 
     public SortedMap<TipoTropa, Integer> getTropas() {
         return this.tropas;
+    }
+
+    public List<TipoTropa> getTropasElite() {
+        List<TipoTropa> list = new ArrayList<TipoTropa>();
+        for (TipoTropa key : tropas.keySet()) {
+            if (tropas.get(key).equals(1)) {
+                list.add(key);
+            }
+        }
+        Collections.shuffle(list);
+        return list;
+    }
+
+    public List<TipoTropa> getTropasRegular() {
+        List<TipoTropa> list = new ArrayList<TipoTropa>();
+        for (TipoTropa key : tropas.keySet()) {
+            if (tropas.get(key).equals(0)) {
+                list.add(key);
+            }
+        }
+        Collections.shuffle(list);
+        return list;
     }
 
     public String getTropaDescricao(String tipo) {

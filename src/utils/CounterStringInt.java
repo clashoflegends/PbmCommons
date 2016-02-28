@@ -5,6 +5,9 @@
 package utils;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -36,6 +39,27 @@ public final class CounterStringInt implements Serializable {
 
     public int getValue(String key) {
         return counter.get(key);
+    }
+
+    public String getKeyWithMinCount() {
+        if (counter.isEmpty()) {
+            return "";
+        }
+        int maxCount = 999999999;
+        String maxKey = "";
+        final List<String> keySet = new ArrayList<String>(counter.keySet());
+        Collections.shuffle(keySet);
+        for (String key : keySet) {
+            if (maxCount > counter.get(key)) {
+                maxCount = counter.get(key);
+                maxKey = key;
+            }
+        }
+        return maxKey;
+    }
+
+    public void add(String key) {
+        add(key, 1);
     }
 
     public void add(String key, int value) {

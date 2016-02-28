@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.TimeZone;
 import javax.swing.JDialog;
@@ -446,6 +447,20 @@ public class SysApoio implements Serializable {
         return ret;
     }
 
+    public static Properties stringToProperties(String vetorString, String rowSpliter, String fieldSpliter) {
+        Properties prop = new Properties();
+        String[] vet = vetorString.split(rowSpliter);
+        for (String elem : vet) {
+            final String[] temp = stringToArray(elem, fieldSpliter);
+            try {
+                prop.put(temp[0], temp[1]);
+            } catch (java.lang.ArrayIndexOutOfBoundsException ex) {
+                prop.put(temp[0], "");
+            }
+        }
+        return prop;
+    }
+
     public static int[] stringToArrayInt(String vetor) {
         String[] temp = vetor.split("#@#");
         int ret[] = new int[temp.length];
@@ -457,6 +472,10 @@ public class SysApoio implements Serializable {
 
     public static String[][] stringToArray2(String vetor) {
         return stringToArrayMulti(vetor, "#!#", "#@#");
+    }
+
+    public static String dbStringClean(String name) {
+        return name.replaceAll("@", "").replaceAll("#", "");
     }
 
     //A convenience method for creating a MaskFormatter.
