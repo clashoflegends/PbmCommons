@@ -248,7 +248,7 @@ public class CenarioFacade implements Serializable {
         this.bonusTatica[3][7] = 80;
         this.bonusTatica[3][8] = 110;
         this.bonusTatica[3][3] = 100;
-        this.bonusTatica[3][9] = 1200;
+        this.bonusTatica[3][9] = 120;
 
         this.bonusTatica[9][6] = 110;
         this.bonusTatica[9][0] = 90;

@@ -58,6 +58,10 @@ public class Terreno extends BaseModel {
         return getCodigo().equals("M");
     }
 
+    public boolean isColina() {
+        return getCodigo().equals("H");
+    }
+
     public boolean isFloresta() {
         return getCodigo().equals("F");
     }

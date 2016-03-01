@@ -19,6 +19,7 @@ import model.Jogador;
 import model.Local;
 import model.Nacao;
 import model.Personagem;
+import model.Terreno;
 import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -371,5 +372,9 @@ public class LocalFacade implements Serializable {
 
     public boolean isCombatTookPlace(Local local) {
         return local.hasHabilidade(";LHC;");
+    }
+
+    public boolean isTerrenoMontanhaColina(Terreno terreno) {
+        return terreno.isMontanha() || terreno.isColina();
     }
 }
