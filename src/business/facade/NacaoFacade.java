@@ -519,15 +519,15 @@ public class NacaoFacade implements Serializable {
     }
 
     public int getGoldDecay(Nacao nacao, Cenario cenario) {
-        if (cenario.hasHabilidade(";SGD;")) {
+        if (cenario.hasHabilidade(";SGD;") && !nacao.hasHabilidade(";NGD;")) {
             return nacao.getMoney() * cenario.getHabilidadeValor(";SGD;") / 100;
         } else {
             return 0;
         }
     }
 
-    public int getGoldDecay(int treasuryForecast, Cenario cenario) {
-        if (cenario.hasHabilidade(";SGD;")) {
+    public int getGoldDecay(Nacao nacao, int treasuryForecast, Cenario cenario) {
+        if (cenario.hasHabilidade(";SGD;") && !nacao.hasHabilidade(";NGD;")) {
             return treasuryForecast * cenario.getHabilidadeValor(";SGD;") / 100;
         } else {
             return 0;
