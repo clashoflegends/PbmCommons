@@ -165,7 +165,14 @@ public class Cidade extends BaseModel {
 
     public int getArrecadacaoImpostos() {
         try {
-            return (this.getNacao().getImpostos() * 2500 * (Math.max(this.getTamanho() - 1, 0))) / 100;
+            int base = 2500;
+            if (getNacao().hasHabilidade(";NSP;") && getLocal().getTerreno().isPlanicie()) {
+                base = base * (100 + getNacao().getHabilidadeValor(";NSP;")) / 100;
+            }
+            if (getNacao().hasHabilidade(";NST;")) {
+                base = base * (100 + getNacao().getHabilidadeValor(";NST;")) / 100;
+            }
+            return (this.getNacao().getImpostos() * base * (Math.max(this.getTamanho() - 1, 0))) / 100;
         } catch (Exception ex) {
             return 0;
         }
