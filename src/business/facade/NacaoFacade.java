@@ -125,32 +125,6 @@ public class NacaoFacade implements Serializable {
         return ret;
     }
 
-    public int getCustoBloodriders(Nacao nacao, Collection<Exercito> exercitos) {
-        //accumulate $
-        int discount = 0;
-        //free bloodriders?
-        if (nacao.hasHabilidade("0053")) {
-            //control qtd
-            int qtdFree = nacao.getHabilidadeValor("0053");
-            for (Exercito exercito : exercitos) {
-                if (nacao != exercito.getNacao()) {
-                    break;
-                }
-                for (Pelotao pelotao : exercito.getPelotoes().values()) {
-                    if (qtdFree <= 0) {
-                        break;
-                    }
-                    if (pelotao.getTipoTropa().getCodigo().contains("cpblood")) {
-                        final int qtd = Math.min(qtdFree, pelotao.getQtd());
-                        discount += qtd * pelotao.getTipoTropa().getUpkeepMoney();
-                        qtdFree -= qtd;
-                    }
-                }
-            }
-        }
-        return discount;
-    }
-
     public int getCustoExercitoNacao(Nacao nacao, Collection<Exercito> exercitos) {
         int ret = 0;
         ExercitoFacade ef = new ExercitoFacade();
@@ -164,24 +138,37 @@ public class NacaoFacade implements Serializable {
         return ret;
     }
 
+    /**
+     * *
+     * Keep in sync with NacaoControl
+     */
     public int getDescontoExercitoNacao(Nacao nacao, Collection<Exercito> exercitos) {
-        if (!nacao.hasHabilidadeNacao("0053")) {
+        if (!nacao.hasHabilidadeNacao("0053") && !nacao.hasHabilidade(";NMF;")) {
             return 0;
         }
-        int discount = 0;
-        int qtdFree = nacao.getHabilidadeNacaoValor("0053");
         ExercitoFacade ef = new ExercitoFacade();
+        int discount = 0;
+        int qtdFreeBlood = nacao.getHabilidadeNacaoValor("0053");
+        int qtdFreeFast = nacao.getHabilidadeValor(";NMF;");
         for (Exercito exercito : exercitos) {
-            if (nacao == ef.getNacao(exercito)) {
-                for (Pelotao pelotao : exercito.getPelotoes().values()) {
-                    if (qtdFree <= 0) {
-                        break;
-                    }
-                    if (pelotao.getTipoTropa().getCodigo().contains("cpblood")) {
-                        final int qtd = Math.min(qtdFree, pelotao.getQtd());
-                        discount += qtd * pelotao.getTipoTropa().getUpkeepMoney();
-                        qtdFree -= qtd;
-                    }
+            if (nacao != ef.getNacao(exercito)) {
+                continue;
+            }
+            for (Pelotao pelotao : ef.getPelotoes(exercito).values()) {
+                if (qtdFreeBlood + qtdFreeFast <= 0) {
+                    break;
+                }
+                if (qtdFreeBlood > 0 && pelotao.getTipoTropa().getCodigo().contains("cpblood") && nacao.hasHabilidadeNacao("0053")) {
+                    final int qtd = Math.min(qtdFreeBlood, pelotao.getQtd());
+                    discount += qtd * pelotao.getTipoTropa().getUpkeepMoney();
+                    qtdFreeBlood -= qtd;
+                    //only discount once
+                    continue;
+                }
+                if (qtdFreeFast > 0 && pelotao.getTipoTropa().isFastMovement() && nacao.hasHabilidade(";NMF;")) {
+                    final int qtd = Math.min(qtdFreeFast, pelotao.getQtd());
+                    discount += qtd * pelotao.getTipoTropa().getUpkeepMoney();
+                    qtdFreeFast -= qtd;
                 }
             }
         }
