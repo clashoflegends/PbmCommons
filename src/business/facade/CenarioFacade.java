@@ -5,6 +5,7 @@
 package business.facade;
 
 import baseLib.BaseModel;
+import baseLib.IBaseModel;
 import business.converter.ConverterFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -123,6 +124,11 @@ public class CenarioFacade implements Serializable {
 
     public String[][] listTaticas(Cenario cenario) {
         return cenario.getTaticas();
+    }
+
+    public IBaseModel[] listTerrains(Cenario cenario) {
+        final List<IBaseModel> values = new ArrayList<IBaseModel>(cenario.getTerrenos().values());
+        return values.toArray(new IBaseModel[0]);
     }
 
     public SortedMap<Integer, String> listTaticasAsList(Cenario cenario) {
