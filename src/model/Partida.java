@@ -144,6 +144,10 @@ public class Partida extends BaseModel {
         return this.hasHabilidade(";GDM;");
     }
 
+    public boolean isTurnRand() {
+        return this.hasHabilidade(";GRE;");
+    }
+
     public boolean isTeamLocked() {
         return this.hasHabilidade(";GLA;");
     }
