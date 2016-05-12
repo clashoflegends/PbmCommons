@@ -420,4 +420,8 @@ public class Local extends BaseModel implements Cloneable {
     public void setCombatTookPlaceOff() {
         this.remHabilidade(";LHC;");
     }
+
+    public void setOverrunTookPlaceOff() {
+        this.remHabilidade(";LHO;");
+    }
 }

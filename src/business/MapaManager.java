@@ -253,6 +253,12 @@ public class MapaManager implements Serializable {
             int dy = 30;
             big.drawImage(imageFactory.doDrawCombat(), x + dx, y + dy, form);
         }
+        //has overrun?
+        if (local.isVisible() && localFacade.isOverrunTookPlace(local)) {
+            int dx = 40;
+            int dy = 36;
+            big.drawImage(imageFactory.doDrawExplosion(), x + dx, y + dy, form);
+        }
         //grava numero hex
         big.setColor(Color.BLACK);
         big.drawString(localFacade.getCoordenadas(local), x + 16, y + 18);
@@ -561,7 +567,7 @@ public class MapaManager implements Serializable {
         legendaCounter = 0;
         legendas = new String[]{
             "EXERCITO.RASTRO",
-            "PERSONAGEM", "PERSONAGEM.OUTRA.NACAO", "PERSONAGEM.NPC", "DB.ORDEM.PARAMETRO.ARTEFATO", "ZONA.ECONOMICA", "NAVIOS.PRESENTES", "COMBAT.HERE"
+            "PERSONAGEM", "PERSONAGEM.OUTRA.NACAO", "PERSONAGEM.NPC", "DB.ORDEM.PARAMETRO.ARTEFATO", "ZONA.ECONOMICA", "NAVIOS.PRESENTES", "COMBAT.HERE", "EXPLOSION.HERE"
         };
         //imprime rastro do exercito
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -615,6 +621,11 @@ public class MapaManager implements Serializable {
         y += image.getWidth(form) + gap;
 
         image = imageFactory.doDrawCombat();
+        big.drawImage(image, x, y, form);
+        big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
+        y += image.getWidth(form) + gap;
+
+        image = imageFactory.doDrawExplosion();
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;

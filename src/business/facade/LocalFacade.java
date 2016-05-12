@@ -374,6 +374,10 @@ public class LocalFacade implements Serializable {
         return local.hasHabilidade(";LHC;");
     }
 
+    public boolean isOverrunTookPlace(Local local) {
+        return local.hasHabilidade(";LHO;");
+    }
+
     public boolean isTerrenoMontanhaColina(Terreno terreno) {
         return terreno.isMontanha() || terreno.isColina();
     }

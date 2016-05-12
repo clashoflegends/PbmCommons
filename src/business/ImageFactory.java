@@ -43,7 +43,7 @@ public class ImageFactory implements Serializable {
     private final MediaTracker mt;
     private int mti = 0;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
-    private final ImageIcon combat;
+    private final ImageIcon combat, explosion;
     private final ImageIcon blueBall;
     private final ImageIcon yellowBall;
 
@@ -54,6 +54,7 @@ public class ImageFactory implements Serializable {
         yellowBall = new ImageIcon(getClass().getResource("/images/piemenu/yellow_button.png"));
         blueBall = new ImageIcon(getClass().getResource("/images/piemenu/dark_blue_button.png"));
         combat = new ImageIcon(getClass().getResource("/images/combat.png"));
+        explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
         this.form = null;
         this.mt = null;
         this.cenario = null;
@@ -69,6 +70,7 @@ public class ImageFactory implements Serializable {
         yellowBall = new ImageIcon(getClass().getResource("/images/piemenu/yellow_button.png"));
         blueBall = new ImageIcon(getClass().getResource("/images/piemenu/dark_blue_button.png"));
         combat = new ImageIcon(getClass().getResource("/images/combat.png"));
+        explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
         this.form = form;
         this.mt = new MediaTracker(form);
         this.cenario = aCenario;
@@ -362,5 +364,9 @@ public class ImageFactory implements Serializable {
 
     public Image doDrawCombat() {
         return this.combat.getImage();
+    }
+
+    public Image doDrawExplosion() {
+        return this.explosion.getImage();
     }
 }
