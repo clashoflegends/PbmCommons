@@ -8,6 +8,7 @@ import baseLib.SysApoio;
 import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import model.Cidade;
@@ -272,10 +273,23 @@ public class CidadeFacade implements Serializable {
         return getNacao(cidade).getRaca();
     }
 
-    public List<String> getInfo(Cidade cidade) {
+    public List<String> getInfo(Cidade cidade, Collection<Nacao> nations) {
+        StringRet ret = getInfo(cidade);
+        for (Nacao nation : nations) {
+            final Nacao targetNation = getNacao(cidade);
+            if (targetNation == null || targetNation == nation) {
+                continue;
+            }
+            //print diplomacy
+            ret.addTab(String.format("%s: %s", nation.getNome(), nacaoFacade.getRelacionamento(nation, targetNation)));
+        }
+        return ret.getList();
+    }
+
+    public StringRet getInfo(Cidade cidade) {
         StringRet ret = new StringRet();
         if (cidade == null) {
-            return ret.getList();
+            return ret;
         }
         ret.add(String.format(labels.getString("CIDADE.CAPITAL.DA.NACAO"),
                 cidade.getComboDisplay(),
@@ -295,7 +309,7 @@ public class CidadeFacade implements Serializable {
         ret.addTab(String.format("%s: %s", labels.getString("OCULTO"), getOculto(cidade)));
         ret.addTab(String.format("%s: %s", labels.getString("SITIADO"), getSitiado(cidade)));
 
-        return ret.getList();
+        return ret;
     }
 
     public List<String> getInfoTitle(Cidade cidade) {
