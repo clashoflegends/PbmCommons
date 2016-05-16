@@ -274,7 +274,11 @@ public class CidadeFacade implements Serializable {
     }
 
     public List<String> getInfo(Cidade cidade, Collection<Nacao> nations) {
-        StringRet ret = getInfo(cidade);
+        StringRet ret = new StringRet();
+        if (cidade == null) {
+            return ret.getList();
+        }
+        ret = getInfo(cidade);
         for (Nacao nation : nations) {
             final Nacao targetNation = getNacao(cidade);
             if (targetNation == null || targetNation == nation) {
@@ -288,9 +292,6 @@ public class CidadeFacade implements Serializable {
 
     public StringRet getInfo(Cidade cidade) {
         StringRet ret = new StringRet();
-        if (cidade == null) {
-            return ret;
-        }
         ret.add(String.format(labels.getString("CIDADE.CAPITAL.DA.NACAO"),
                 cidade.getComboDisplay(),
                 SysApoio.iif(cidade.isCapital(), labels.getString("(CAPITAL)"), ""),

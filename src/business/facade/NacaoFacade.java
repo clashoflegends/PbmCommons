@@ -405,6 +405,21 @@ public class NacaoFacade implements Serializable {
         return false;
     }
 
+    /*
+    Nation considers all Nations allied (o self)
+    */
+    public boolean isAliado(Nacao nation, Collection<Nacao> nations) {
+        if (nations.isEmpty()) {
+            return false;
+        }
+        for (Nacao nationTarget : nations) {
+            if (!isAliado(nation, nationTarget)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public boolean isAliado(Nacao nacao, Nacao nacaoAlvo) {
         return (nacao == nacaoAlvo || nacao.getRelacionamento(nacaoAlvo) >= 2);
     }
