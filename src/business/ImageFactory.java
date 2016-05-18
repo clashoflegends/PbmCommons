@@ -328,8 +328,8 @@ public class ImageFactory implements Serializable {
         List<String> listTeaser = new ArrayList<String>();
         listTeaser.add("/images/teaser/Walker_image.png");
         listTeaser.add("/images/teaser/Esparta_image.png");
-//        listTeaser.add("/images/teaser/Hobbit_image.png");
-//        listTeaser.add("/images/teaser/Hobbit_watermark.png");
+        listTeaser.add("/images/teaser/Hobbit_image.png");
+        listTeaser.add("/images/teaser/All3_image.png");
         Collections.shuffle(listTeaser);
         final ImageIcon ret = new ImageIcon(getClass().getResource(listTeaser.get(0)));
         return (ret);
