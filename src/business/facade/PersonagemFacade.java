@@ -548,7 +548,7 @@ public class PersonagemFacade implements Serializable {
                     personagem.getNome());
             ret += "\n";
         }
-        if (getNacaoSubordinada(personagem) != null) {
+        if (personagem.isDoubleAgent()) {
             ret += String.format(labels.getString("DUPLO.DE"), nacaoFacade.getNome(getNacaoSubordinada(personagem)));
             ret += "\n";
         }
@@ -629,6 +629,10 @@ public class PersonagemFacade implements Serializable {
         } else {
             return ".";
         }
+    }
+
+    public boolean isDoubleAgent(Personagem personagem) {
+        return personagem.isDoubleAgent();
     }
 
     public Nacao getNacaoSubordinada(Personagem personagem) {

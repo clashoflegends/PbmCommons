@@ -442,6 +442,10 @@ public class Personagem extends BaseModel {
         this.nacaoSubordinada = nacaoSubordinada;
     }
 
+    public boolean isDoubleAgent() {
+        return nacaoSubordinada != null;
+    }
+
     /**
      * @return the extraOrdens
      */
