@@ -47,6 +47,14 @@ public class JogadorFacade implements Serializable {
         }
     }
 
+    public boolean isAlly(Personagem personagem, Jogador jogador) {
+        try {
+            return (jogador.isJogadorAliado(personagem.getNacao()));
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
     public boolean isReportCompact(Jogador jogador) {
         return jogador.hasHabilidade(";JRC;");
     }

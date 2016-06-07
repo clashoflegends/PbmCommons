@@ -63,7 +63,8 @@ public class MapaManager implements Serializable {
     private final Cenario cenario;
     private final JPanel form;
     private ImageIcon tagImage;
-    private static final int dtPersonagem = 0, dtNpc = 1, dtArtefato = 2, dtGoldmine = 3, dtNavio = 4, dtTag = 5, dtFogofwar = 6, dtPersonagemOutra = 7;
+    private static final int dtPersonagem = 0, dtNpc = 1, dtArtefato = 2, dtGoldmine = 3, dtNavio = 4, dtTag = 5,
+            dtFogofwar = 6, dtPersonagemOutra = 7, dtPersonagemAlly = 8;
     private static final LocalFacade localFacade = new LocalFacade();
     private static final CidadeFacade cidadeFacade = new CidadeFacade();
     private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
@@ -99,7 +100,7 @@ public class MapaManager implements Serializable {
             imageFactory.addImage(desenho);
             this.desenhoTerrenoDetalhes[ii] = desenho;
         }
-        String[] detalhes = {"personagem", "npc", "artefato", "goldmine", "navio", "tag", "fogofwar", "pers_other"};
+        String[] detalhes = {"personagem", "npc", "artefato", "goldmine", "navio", "tag", "fogofwar", "pers_other", "pers_ally"};
         desenhoDetalhes = new Image[detalhes.length];
         for (int ii = 0; ii < detalhes.length; ii++) {
             if (ii == dtFogofwar) {
@@ -311,14 +312,18 @@ public class MapaManager implements Serializable {
                 int dx = 04 + 8;
                 int dy = 22 - 3;
                 big.drawImage(this.desenhoDetalhes[dtNpc], x + dx, y + dy, form);
-            } else if (!jogadorFacade.isMine(pers, observer)) {
-                int dx = 04 + 8;
-                int dy = 22 - 3 + 4;
-                big.drawImage(this.desenhoDetalhes[dtPersonagemOutra], x + dx, y + dy, form);
-            } else {
+            } else if (jogadorFacade.isMine(pers, observer)) {
                 int dx = 04;
                 int dy = 22;
                 big.drawImage(this.desenhoDetalhes[dtPersonagem], x + dx, y + dy, form);
+            } else if (jogadorFacade.isAlly(pers, observer)) {
+                int dx = 04 + 3;
+                int dy = 22 - 3 + 7;
+                big.drawImage(this.desenhoDetalhes[dtPersonagemAlly], x + dx, y + dy, form);
+            } else {
+                int dx = 04 + 8;
+                int dy = 22 - 3 + 4;
+                big.drawImage(this.desenhoDetalhes[dtPersonagemOutra], x + dx, y + dy, form);
             }
         }
     }
@@ -567,7 +572,7 @@ public class MapaManager implements Serializable {
         legendaCounter = 0;
         legendas = new String[]{
             "EXERCITO.RASTRO",
-            "PERSONAGEM", "PERSONAGEM.OUTRA.NACAO", "PERSONAGEM.NPC", "DB.ORDEM.PARAMETRO.ARTEFATO", "ZONA.ECONOMICA", "NAVIOS.PRESENTES", "COMBAT.HERE", "EXPLOSION.HERE"
+            "PERSONAGEM", "PERSONAGEM.OUTRA.NACAO", "PERSONAGEM.OUTRA.ALLY", "PERSONAGEM.NPC", "DB.ORDEM.PARAMETRO.ARTEFATO", "ZONA.ECONOMICA", "NAVIOS.PRESENTES", "COMBAT.HERE", "EXPLOSION.HERE"
         };
         //imprime rastro do exercito
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -596,6 +601,11 @@ public class MapaManager implements Serializable {
         y += image.getWidth(form) + gap;
 
         image = desenhoDetalhes[dtPersonagemOutra];
+        big.drawImage(image, x, y, form);
+        big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
+        y += image.getWidth(form) + gap;
+
+        image = desenhoDetalhes[dtPersonagemAlly];
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
