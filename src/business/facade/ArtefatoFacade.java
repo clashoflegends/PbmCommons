@@ -38,7 +38,7 @@ public class ArtefatoFacade implements Serializable {
     public String getLocalCoordenadas(Artefato artefato) {
         if (artefato.getOwner() != null) {
             return personagemFacade.getCoordenadas(artefato.getOwner());
-        } else if (artefato.getSabeAonde() != null) {
+        } else if (artefato.getSabeAonde() != null && artefato.getLocal() != null) {
             return artefato.getLocal().getCoordenadas();
         } else {
             //FIXME: Artefato pode ter localizacao conhecida (por magia)
