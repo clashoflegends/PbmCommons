@@ -31,9 +31,16 @@ public class TitleFactory implements Serializable {
         labels.getString("AGENTE"), labels.getString("EMISSARIO"), labels.getString("MAGO"),
         labels.getString("MILESTONE"), labels.getString("CIDADE"),
         labels.getString("STARTUP"), labels.getString("PERSONAGEM.NPC")};
+    private static final String[] tipoSkill = {"COMANDANTE",
+        "AGENTE", "EMISSARIO", "MAGO"
+    };
 
     public static String[] getTipoPersonagem() {
         return tipoPersonagem;
+    }
+
+    public static String[] getTipoSkill() {
+        return tipoSkill;
     }
 
     public static String displayExercitotitulo(Exercito exercito) {
@@ -151,7 +158,6 @@ public class TitleFactory implements Serializable {
     }
 
     public static String getTipoPersonagem(Integer skillClass) {
-
         switch (skillClass) {
             case CenarioFacade.COMANDANTE:
                 return tipoPersonagem[1];
@@ -164,18 +170,6 @@ public class TitleFactory implements Serializable {
             default:
                 return labels.getString("DESCONHECIDA");
         }
-    }
-
-    public static String[][] listTipoPersonagem() {
-        String[][] ret = new String[tipoPersonagem.length + 1][2];
-        int ii = 0;
-        ret[ii][0] = labels.getString("TODOS"); //Display
-        ret[ii++][1] = "Todos"; //Id
-        for (String elem : tipoPersonagem) {
-            ret[ii][0] = elem;
-            ret[ii++][1] = elem;
-        }
-        return ret;
     }
 
     private static String getAjudaTipoOrdem(Ordem ordem) {
