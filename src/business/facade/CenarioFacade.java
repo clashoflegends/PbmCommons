@@ -22,6 +22,7 @@ import model.Partida;
 import model.Produto;
 import model.Raca;
 import model.TipoTropa;
+import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.BundleManager;
@@ -123,7 +124,13 @@ public class CenarioFacade implements Serializable {
     }
 
     public String[][] listTaticas(Cenario cenario) {
-        return cenario.getTaticas();
+        if (cenario.hasHabilidade(";ST1;")) {
+            return BaseMsgs.taticasGb;
+        } else if (cenario.hasHabilidade(";ST2;")) {
+            return BaseMsgs.taticasTk;
+        } else {
+            return BaseMsgs.taticasGb;
+        }
     }
 
     public IBaseModel[] listTerrains(Cenario cenario) {
@@ -156,7 +163,7 @@ public class CenarioFacade implements Serializable {
             setBonusTaticaCFSSGA();
             typeTatica = ";ST1;";
         }
-        for (String[] aTatica : cenario.getTaticas()) {
+        for (String[] aTatica : listTaticas(cenario)) {
             this.taticas.put(ConverterFactory.taticaToInt(aTatica[1]), aTatica[0]);
         }
     }

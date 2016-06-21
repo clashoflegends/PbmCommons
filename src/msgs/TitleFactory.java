@@ -34,6 +34,17 @@ public class TitleFactory implements Serializable {
     private static final String[] tipoSkill = {"COMANDANTE",
         "AGENTE", "EMISSARIO", "MAGO"
     };
+    private static final String[] combateTaticaGrito = {
+        "@COMBATE.TATICA.GRITO.CARGA#",
+        "@COMBATE.TATICA.GRITO.FLANCO#",
+        "@COMBATE.TATICA.GRITO.PADRAO#",
+        "@COMBATE.TATICA.GRITO.CERCO#",
+        "@COMBATE.TATICA.GRITO.GUERRILHA#",
+        "@COMBATE.TATICA.GRITO.EMBOSCADA#",
+        "@COMBATE.TATICA.GRITO.BARRAGEM#",
+        "@COMBATE.TATICA.GRITO.SHIELDWALL#",
+        "@COMBATE.TATICA.GRITO.STANDFIRM#",
+        "@COMBATE.TATICA.GRITO.SWARM#"};
 
     public static String[] getTipoPersonagem() {
         return tipoPersonagem;
@@ -357,5 +368,13 @@ public class TitleFactory implements Serializable {
             ret += separator + labels.getString("REQUISITO.AJUDA.ARTDRAGONEGG");
         }
         return ret;
+    }
+
+    public static String getTaticasGrito(int tatica) {
+        try {
+            return combateTaticaGrito[tatica];
+        } catch (IndexOutOfBoundsException e) {
+            return combateTaticaGrito[0];
+        }
     }
 }

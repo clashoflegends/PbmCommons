@@ -113,16 +113,6 @@ public class Cenario extends BaseModel {
         }
     }
 
-    public String[][] getTaticas() {
-        if (this.hasHabilidade(";ST1;")) {
-            return BaseMsgs.taticasGb;
-        } else if (this.hasHabilidade(";ST2;")) {
-            return BaseMsgs.taticasTk;
-        } else {
-            return BaseMsgs.taticasGb;
-        }
-    }
-
     public void setTerrenos(SortedMap<String, Terreno> list) {
         this.terrenos = list;
     }
