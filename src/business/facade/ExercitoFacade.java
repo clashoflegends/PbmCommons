@@ -40,6 +40,7 @@ public class ExercitoFacade implements Serializable {
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final CenarioFacade cenarioFacade = new CenarioFacade();
     private static final LocalFacade localFacade = new LocalFacade();
+    private static final CidadeFacade cidadeFacade = new CidadeFacade();
     private static final BattleSimFacade battleSimFacade = new BattleSimFacade();
 
     public String getClima(Exercito exercito) {
@@ -190,7 +191,15 @@ public class ExercitoFacade implements Serializable {
 
     public boolean isComida(Exercito exercito) {
         try {
-            return (exercito.getComida() >= getComidaConsumo(exercito));
+            int foodAvailable = exercito.getComida();
+            try {
+                if (localFacade.isCidade(exercito.getLocal()) && exercito.getLocal().getCidade().getNacao() == exercito.getNacao()) {
+                    foodAvailable += cidadeFacade.getFoodGiven(exercito.getLocal().getCidade());
+                }
+            } catch (NullPointerException ex) {
+                //just ignore.
+            }
+            return (foodAvailable >= getComidaConsumo(exercito));
         } catch (NullPointerException e) {
             return false;
         }

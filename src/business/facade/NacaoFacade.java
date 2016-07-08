@@ -318,12 +318,45 @@ public class NacaoFacade implements Serializable {
         return nacao.getPontosVitoria();
     }
 
-    public Iterable<String> getMensagens(Nacao nacao) {
+    public Iterable<String> getMensagensAll(Nacao nacao) {
         List<String> ret = new ArrayList<String>();
         for (String chave : nacao.getMensagensNacao().keySet()) {
-            List<String> listMsg = (List<String>) nacao.getMensagensNacao().get(chave);
-            for (String msg : listMsg) {
-                ret.add(msg);
+            try {
+                List<String> listMsg = (List<String>) nacao.getMensagensNacao().get(chave);
+                for (String msg : listMsg) {
+                    ret.add(msg);
+                }
+            } catch (Exception ex) {
+            }
+        }
+        return ret;
+    }
+
+    public Iterable<String> getMensagensCombatesDuelos(Nacao nacao) {
+        String[] keys = {"Duelos", "Combates"};
+        List<String> ret = new ArrayList<String>();
+        for (String chave : keys) {
+            try {
+                List<String> listMsg = (List<String>) nacao.getMensagensNacao().get(chave);
+                for (String msg : listMsg) {
+                    ret.add(msg);
+                }
+            } catch (NullPointerException ex) {
+            }
+        }
+        return ret;
+    }
+
+    public Iterable<String> getMensagensResultsRumoresEncontros(Nacao nacao) {
+        String[] keys = {"Results", "Rumores", "Encontros"};
+        List<String> ret = new ArrayList<String>();
+        for (String chave : keys) {
+            try {
+                List<String> listMsg = (List<String>) nacao.getMensagensNacao().get(chave);
+                for (String msg : listMsg) {
+                    ret.add(msg);
+                }
+            } catch (NullPointerException ex) {
             }
         }
         return ret;
@@ -406,8 +439,8 @@ public class NacaoFacade implements Serializable {
     }
 
     /*
-    Nation considers all Nations allied (o self)
-    */
+     Nation considers all Nations allied (o self)
+     */
     public boolean isAliado(Nacao nation, Collection<Nacao> nations) {
         if (nations.isEmpty()) {
             return false;
