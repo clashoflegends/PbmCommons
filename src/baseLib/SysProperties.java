@@ -93,6 +93,7 @@ public class SysProperties implements Serializable {
         getProps().setProperty("AutoMoveNextAction", "1");
         getProps().setProperty("SendOrderConfirmationPopUp", "1");
         getProps().setProperty("SendOrderReceiptRequest", "1");
+        getProps().setProperty("LookAndFeelTheme", "0");
     }
 
     /**
