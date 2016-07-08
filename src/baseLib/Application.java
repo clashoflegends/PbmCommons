@@ -46,7 +46,9 @@ import org.apache.commons.logging.LogFactory;
  * or provide similar functionality. <li>Provides a ThreadFactory that produces
  * background threads suitable for Swing applications. The application will
  * block until all background threads vended from the thread factory have
- * completed. <li>An arbitrary set of key/value pairs. </ul> <p><a
+ * completed. <li>An arbitrary set of key/value pairs. </ul>
+ * <p>
+ * <a
  * name="initSequence"></a> Application provides a handful of methods that are
  * invoked as part of starting the application. Subclasses need only override
  * those they are interested in. The following outlines the order the methods
@@ -62,17 +64,21 @@ import org.apache.commons.logging.LogFactory;
  * event queue has processed all pending events, such as paint events or
  * revalidate requests generated during the earlier stages of initialization.
  * Subclasses that need to do processing after the UI is completely showing
- * should override this method. </ol> <p> <a name="exitSequence"> Application
- * also provides a sequence of methods for exiting the application. When exit is
- * invoked the following methods are invoked: <ol> <li>canExit is invoked, if
- * this returns false the application will not exit. <li>ApplicationListeners
- * are asked if the application can exit. If any IApplicationListener returns
- * false from canApplicationExit the application will not exit.
+ * should override this method. </ol>
+ * <p>
+ * <a name="exitSequence"> Application also provides a sequence of methods for
+ * exiting the application. When exit is invoked the following methods are
+ * invoked: <ol> <li>canExit is invoked, if this returns false the application
+ * will not exit. <li>ApplicationListeners are asked if the application can
+ * exit. If any IApplicationListener returns false from canApplicationExit the
+ * application will not exit.
  * <li>waitForBackgroundThreads is invoked to block until any background threads
  * have completed. <li>All ApplicationListeners are notified that the
  * application is exiting. <li>exiting is invoked. <li>Lastly, System.exit is
- * invoked. </ol> <p> Concrete implementations need only override getName, but
- * will undoubtedly override one of the various init methods as well.
+ * invoked. </ol>
+ * <p>
+ * Concrete implementations need only override getName, but will undoubtedly
+ * override one of the various init methods as well.
  */
 public abstract class Application implements Thread.UncaughtExceptionHandler, Serializable {
 
@@ -229,8 +235,10 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
      * Returns a ThreadFactory suitable for threads used within Swing
      * applications. Threads created by the returned ThreadFactory are
      * automatically registered with the Application, are not daemon, and have a
-     * priority of Thread.MIN_PRIORITY. <p> When exit is invoked the Application
-     * will block until all background threads have exited.
+     * priority of Thread.MIN_PRIORITY.
+     * <p>
+     * When exit is invoked the Application will block until all background
+     * threads have exited.
      *
      * @return a ThreadFactory suitable for background threads
      * @see #registerThread
@@ -245,8 +253,9 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
 
     /**
      * Registers a background thread with the Application. When the application
-     * exits it will block until all background threads have completed. <p> This
-     * method is thread safe.
+     * exits it will block until all background threads have completed.
+     * <p>
+     * This method is thread safe.
      *
      * @param thread the Thread to wait for completion on
      * @throws IllegalArgumentException if thread is null
@@ -283,9 +292,50 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
      * @see <a href="#initSequence">init sequence</a>
      */
     protected void installLookAndFeel() {
+        if (SysProperties.getProps("LookAndFeelTheme", "0").equals("Cross")) {
+            setLookAndFeelCrossPlatform();
+        } else if (!SysProperties.getProps("LookAndFeelTheme", "0").equals("0")) {
+            try {
+                setLookAndFeelProperties();
+            } catch (Exception e) {
+                setLookAndFeelPlatform();
+            }
+        } else {
+            setLookAndFeelPlatform();
+        }
+    }
+
+    private void setLookAndFeelProperties() throws IllegalAccessException, InstantiationException, UnsupportedLookAndFeelException, ClassNotFoundException {
+        boolean setLooks = false;
+        for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+            if (SysProperties.getProps("LookAndFeelTheme", "0").equals(info.getName())) {
+                UIManager.setLookAndFeel(info.getClassName());
+                setLooks = true;
+                log.info("Loaded look and feel: " + info.getName());
+                break;
+            }
+        }
+        if (!setLooks) {
+            setLookAndFeelPlatform();
+        }
+    }
+
+    private void setLookAndFeelPlatform() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+//            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            //Make sure we have nice window decorations.
+//            JFrame.setDefaultLookAndFeelDecorated(false);
+        } catch (InstantiationException ex) {
+        } catch (IllegalAccessException ex) {
+        } catch (ClassNotFoundException ex) {
+        } catch (UnsupportedLookAndFeelException ex) {
+        }
+    }
+
+    private void setLookAndFeelCrossPlatform() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             //Make sure we have nice window decorations.
             //JFrame.setDefaultLookAndFeelDecorated(false);
         } catch (InstantiationException ex) {
@@ -578,14 +628,14 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
         // PENDING: localize this
         dialog.add(new JLabel("Waiting for processing to complete..."),
                 new GridBagConstraints(0, 0, 1, 1, 0, 0,
-                GridBagConstraints.LINE_START, GridBagConstraints.NONE,
-                new Insets(5, 5, 0, 50), 0, 0));
+                        GridBagConstraints.LINE_START, GridBagConstraints.NONE,
+                        new Insets(5, 5, 0, 50), 0, 0));
         JProgressBar pb = new JProgressBar();
         pb.setIndeterminate(true);
         dialog.add(pb,
                 new GridBagConstraints(0, 1, 1, 1, 1, 0,
-                GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL,
-                new Insets(5, 5, 5, 5), 0, 0));
+                        GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL,
+                        new Insets(5, 5, 5, 5), 0, 0));
         dialog.setResizable(false);
         dialog.pack();
         dialog.setLocationRelativeTo(null);
