@@ -81,7 +81,7 @@ public class OrdemFacade implements Serializable {
                 return false;
             }
         }
-        if (!isOrdemRequisitosMulti(ordem, ordem,ordemOutra)) {
+        if (!isOrdemRequisitosMulti(ordem, ordem, ordemOutra)) {
             return false;
         }
         //personagem em exercito ou grupo?
@@ -216,16 +216,16 @@ public class OrdemFacade implements Serializable {
             nn = 0;
         }
         final String requisitos = ordem.getRequisito().toLowerCase();
-        if (requisitos.contains("multi2") && getOrdensOpenSlots(actor) < 1+nn) {
+        if (requisitos.contains("multi2") && getOrdensOpenSlots(actor) < 1 + nn) {
             return false;
         }
-        if (requisitos.contains("multi3") && getOrdensOpenSlots(actor) < 2+nn) {
+        if (requisitos.contains("multi3") && getOrdensOpenSlots(actor) < 2 + nn) {
             return false;
         }
-        if (requisitos.contains("multi4") && getOrdensOpenSlots(actor) < 3+nn) {
+        if (requisitos.contains("multi4") && getOrdensOpenSlots(actor) < 3 + nn) {
             return false;
         }
-        if (requisitos.contains("multi5") && getOrdensOpenSlots(actor) < 4+nn) {
+        if (requisitos.contains("multi5") && getOrdensOpenSlots(actor) < 4 + nn) {
             return false;
         }
         return true;
@@ -527,7 +527,7 @@ public class OrdemFacade implements Serializable {
             return (jogadorAtivo.isNacao(cidade.getNacao()) && cidadeFacade.isAtivo(cidade));
         } else if (actor instanceof Nacao) {
             Nacao nacao = (Nacao) actor;
-            return (jogadorAtivo.isNacao(nacao) && nacaoFacade.isAtivo(nacao));
+            return (jogadorAtivo.isNacao(nacao) && nacaoFacade.isAtiva(nacao));
         } else {
             return false;
         }

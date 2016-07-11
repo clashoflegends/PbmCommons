@@ -475,10 +475,6 @@ public class NacaoFacade implements Serializable {
         return (Personagem[]) lista.toArray(new Personagem[0]);
     }
 
-    public boolean isAtivo(Nacao nacao) {
-        return nacao.isAtiva();
-    }
-
     public Raca getRaca(Nacao nacao) {
         return nacao.getRaca();
     }
