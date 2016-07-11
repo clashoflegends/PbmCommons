@@ -286,6 +286,10 @@ public class CidadeFacade implements Serializable {
             }
             //print diplomacy
             ret.addTab(String.format("%s: %s", nation.getNome(), nacaoFacade.getRelacionamento(nation, targetNation)));
+            //print if inactive
+            if (!nacaoFacade.isAtiva(targetNation)) {
+                ret.addTab(String.format("%s: %s", nation.getNome(),labels.getString("INATIVA")));
+            }
         }
         return ret.getList();
     }
