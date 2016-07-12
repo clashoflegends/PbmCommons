@@ -288,7 +288,7 @@ public class CidadeFacade implements Serializable {
             ret.addTab(String.format("%s: %s", nation.getNome(), nacaoFacade.getRelacionamento(nation, targetNation)));
             //print if inactive
             if (!nacaoFacade.isAtiva(targetNation)) {
-                ret.addTab(String.format("%s: %s", nation.getNome(),labels.getString("INATIVA")));
+                ret.addTab(String.format("%s: %s", nation.getNome(), labels.getString("INATIVA")));
             }
         }
         return ret.getList();
@@ -348,5 +348,13 @@ public class CidadeFacade implements Serializable {
 
     public int getFoodGiven(Cidade cidade) {
         return CidadeFacade.ForneceComida[cidade.getTamanho()];
+    }
+
+    public int getCustoAmpliacao(Cidade city, int baseCost) {
+        int custo = 2000;
+        if (city.getNacao().hasHabilidade(";PPB;")) {
+            custo = custo / city.getNacao().getHabilidadeValor(";PPB;");
+        }
+        return (city.getTamanho() * custo + baseCost);
     }
 }
