@@ -34,14 +34,6 @@ public class AcaoFacade implements Serializable {
         }
     }
 
-    public int getCusto(Ordem ordem) {
-        try {
-            return ordem.getCusto();
-        } catch (NullPointerException ex) {
-            return 0;
-        }
-    }
-
     public boolean isPointsSetupUnderLimit(BaseModel actor, int nationPackagesLimit) {
         if (actor.isNacao()) {
             Nacao nacao = (Nacao) actor;
@@ -68,6 +60,14 @@ public class AcaoFacade implements Serializable {
             }
         }
         return points;
+    }
+
+    public int getCusto(Ordem ordem) {
+        try {
+            return ordem.getCusto();
+        } catch (NullPointerException ex) {
+            return 0;
+        }
     }
 
     public int getCusto(PersonagemOrdem ordem) {
