@@ -8,7 +8,18 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
-import model.*;
+import model.Artefato;
+import model.Cenario;
+import model.Cidade;
+import model.Exercito;
+import model.Habilidade;
+import model.Local;
+import model.Mercado;
+import model.Nacao;
+import model.Ordem;
+import model.Partida;
+import model.Personagem;
+import model.World;
 
 /**
  *
@@ -71,6 +82,10 @@ public abstract class WorldManagerBase implements Serializable {
 
     public int getTurno() {
         return world.getPartida().getTurno();
+    }
+
+    public int getTurnoMax() {
+        return world.getPartida().getTurnoMax();
     }
 
     public SortedMap<String, Habilidade> getPackages() {
