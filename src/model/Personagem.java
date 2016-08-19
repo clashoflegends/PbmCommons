@@ -132,9 +132,6 @@ public class Personagem extends BaseModel {
         }
 
         //PENDING: verificar se 'e da mesma alianca e permitir o uso.
-        if (this.getCodigo().equalsIgnoreCase("Fimbu")) {
-            int a =1;
-        }
         if (!this.isPodeUsar(artefato)) {
             return true;
         }
