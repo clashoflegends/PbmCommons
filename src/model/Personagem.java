@@ -126,14 +126,18 @@ public class Personagem extends BaseModel {
      * Vestindo define se o artefato esta sendo colocado ou retirado, ajustando as pericias de acordo
      */
     private boolean doUsaArtefato(Artefato artefato, Boolean vestindo) {
-        boolean ret = true;
         int ajuste = 1;
         if (!vestindo) {
             ajuste = -1;
         }
 
         //PENDING: verificar se 'e da mesma alianca e permitir o uso.
-        //if (artefato.isNeutro() || artefato.isPodeUsar(this)) {
+        if (this.getCodigo().equalsIgnoreCase("Fimbu")) {
+            int a =1;
+        }
+        if (!this.isPodeUsar(artefato)) {
+            return true;
+        }
         if (artefato.isComandante() && this.isComandante()) {
             this.sumPericiaComandante(artefato.getValor() * ajuste);
         }
@@ -158,6 +162,18 @@ public class Personagem extends BaseModel {
             }
         }
         doCalculaDuelo();
+        return true;
+    }
+
+    private boolean isPodeUsar(Artefato artefato) {
+        //fixme: move this stack to Facade
+        //se artefato é neutro, liberado.
+        boolean ret = false;
+        if (artefato.isAlinhamentoNeutro()) {
+            ret = true;
+        } else if (artefato.getAlinhamento().equalsIgnoreCase(this.getNacao().getAlianca().getCodigo())) {
+            ret = true;
+        }
         return ret;
     }
 

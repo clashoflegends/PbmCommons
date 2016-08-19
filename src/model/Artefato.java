@@ -250,4 +250,8 @@ public class Artefato extends BaseModel {
     public boolean isSummon() {
         return tipo.equals("SUMMON");
     }
+
+    public boolean isAlinhamentoNeutro() {
+        return alinhamento.equals("NEUTRO");
+    }
 }
