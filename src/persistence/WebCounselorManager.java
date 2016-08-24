@@ -114,7 +114,7 @@ public class WebCounselorManager {
         } catch (URISyntaxException ex) {
             throw new PersistenceException("Can't connect to site (http://clashlegends.com/PbmSite/): " + ex.toString());
         } catch (IOException ex) {
-            throw new PersistenceException("Can't read file to send.");
+            throw new PersistenceException("Can't read remote file to write. Failed to send to website.");
         }
         return ERROR_UNKOWN;
     }
