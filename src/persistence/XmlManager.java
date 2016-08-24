@@ -7,8 +7,19 @@ package persistence;
 import baseLib.SysApoio;
 import baseLib.SysProperties;
 import com.thoughtworks.xstream.XStream;
-//import com.thoughtworks.xstream.io.xml.DomDriver;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -127,9 +138,9 @@ public class XmlManager implements Serializable {
             fw.write(xml);
             fw.close();
             ZipManager.getInstance().doCompressGzip(tempFile, finalFile);
-            log.info("Arquivo gravado:" + finalFile.getAbsolutePath());
+            log.info("Saved file:" + finalFile.getAbsolutePath());
         } catch (IOException ex) {
-            log.error("Problemas com o arquivo...", ex);
+            log.error("Issues with file...", ex);
             throw new PersistenceException(ex);
         }
     }
