@@ -457,6 +457,10 @@ public class NacaoFacade implements Serializable {
         return (nacao == nacaoAlvo || nacao.getRelacionamento(nacaoAlvo) >= 2);
     }
 
+    public boolean isEnemySworn(Nacao nacao, Nacao nacaoAlvo) {
+        return (nacao.getRelacionamento(nacaoAlvo) <= -2);
+    }
+
     public boolean isAtiva(Nacao nacao) {
         return nacao.isAtiva();
     }
