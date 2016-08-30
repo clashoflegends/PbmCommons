@@ -283,9 +283,10 @@ public final class MovimentoExercito implements Serializable, Cloneable {
 
     /**
      * retorna o custo de movimentacao entre dois hexes<br> 0 = cavalaria<br> 1
-     * = infantaria<br> 2 = esquadra embarcada<p> TERRAIN INFANTRY/MIXED	CAVALRY
-     * ONLY <br> NORMAL	ROAD	NORMAL	ROAD <br> SHORE/PLAINS	3	2	2	1 <br> ROUGH 5
-     * 3	3	1 <br> FOREST 5	3	5	2 <br> DESERT 4	2	2	1 <br> SWAMP 6	3	5	2 <br>
+     * = infantaria<br> 2 = esquadra embarcada<p>
+     * TERRAIN INFANTRY/MIXED	CAVALRY ONLY <br> NORMAL	ROAD	NORMAL	ROAD <br>
+     * SHORE/PLAINS	3	2	2	1 <br> ROUGH 5 3	3	1 <br> FOREST 5	3	5	2 <br> DESERT 4
+     * 2	2	1 <br> SWAMP 6	3	5	2 <br>
      * MOUNTAINS	12	6	12	3 <br> BRIDGE/FORD	+1	+1	+1	+1 <br> MINOR RIVER	+2	+2
      * +2	+2 <br>
      */
@@ -358,7 +359,14 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     private int getCustoMovimentacaoAgua() {
         int ret;
         //movimento de esquadra por agua.
-        if (isNavegavel()) {
+        if (this.getDirecao() == 0) {
+            //Halt order, not affected by lack of food.
+            ret = 1;
+            if (isEvasivo()) {
+                //dobra os pontos se for movimento evasivo
+                ret *= 2;
+            }
+        } else if (isNavegavel()) {
             //pega o custo base do terreno destino de acordo com tropa + Com/sem estrada
             ret = this.getCustoMovimentoTerreno();
 
