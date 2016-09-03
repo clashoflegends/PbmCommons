@@ -395,86 +395,42 @@ public class MapaManager implements Serializable {
     }
 
     private static int terrenoToIndice(String codigoTerreno) {
-        //FIXME: listar os tipos...
         /*
          * 1 'E', '0101' alto mar<br> 2 'C', '0102' costa<br> 3 'L', '0203'
          * litoral<br> 4 'F', '0206' floresta<br> 5 'P', '0308' planicie<br> 6
          * 'M', '0604' montanha<br> 7 'H', '0710' colinas<br> 8 'S', '1509'
          * pantano<br> 9 'D', '2538' deserto<br>
          */
-        int ret = 0;
         try {
             switch (codigoTerreno.charAt(0)) {
                 case 'E':
-                    //this.setEmTerra(false);
-                    ret = 1;
-                    break;
+                    return 1;
                 case 'C':
-                    //this.setEmTerra(false);
-                    ret = 2;
-                    break;
+                    return 2;
                 case 'L':
-                    //this.setEmTerra(true);
-                    ret = 3;
-                    //this.custoMovimento[0] = 3;
-                    //this.custoMovimento[1] = 2;
-                    //this.custoMovimento[2] = 2;
-                    //this.custoMovimento[3] = 1;
-                    break;
+                    return 3;
                 case 'F':
-                    //this.setEmTerra(true);
-                    ret = 4;
-                    //this.custoMovimento[0] = 5;
-                    //this.custoMovimento[1] = 3;
-                    //this.custoMovimento[2] = 5;
-                    //this.custoMovimento[3] = 2;
-                    break;
+                    return 4;
                 case 'P':
-                    //this.setEmTerra(true);
-                    ret = 5;
-                    //this.custoMovimento[0] = 3;
-                    //this.custoMovimento[1] = 2;
-                    //this.custoMovimento[2] = 2;
-                    //this.custoMovimento[3] = 1;
-                    break;
+                    return 5;
                 case 'M':
-                    //this.setEmTerra(true);
-                    ret = 6;
-                    //this.custoMovimento[0] = 12;
-                    //this.custoMovimento[1] = 6;
-                    //this.custoMovimento[2] = 12;
-                    //this.custoMovimento[3] = 3;
-                    break;
+                    return 6;
                 case 'H':
-                    //this.setEmTerra(true);
-                    ret = 7;
-                    //this.custoMovimento[0] = 5;
-                    //this.custoMovimento[1] = 3;
-                    //this.custoMovimento[2] = 3;
-                    //this.custoMovimento[3] = 1;
-                    break;
+                    return 7;
                 case 'S':
-                    //this.setEmTerra(true);
-                    ret = 8;
-                    //this.custoMovimento[0] = 6;
-                    //this.custoMovimento[1] = 3;
-                    //this.custoMovimento[2] = 5;
-                    //this.custoMovimento[3] = 2;
-                    break;
+                    return 8;
                 case 'D':
-                    //this.setEmTerra(true);
-                    ret = 9;
-                    //this.custoMovimento[0] = 4;
-                    //this.custoMovimento[1] = 2;
-                    //this.custoMovimento[2] = 2;
-                    //this.custoMovimento[3] = 1;
-                    break;
+                    return 9;
+                case 'W':
+                    return 10;
+                case 'K':
+                    return 11;
+                default:
+                    return 0;
             }
         } catch (NullPointerException npe) {
-            //this.setEmTerra(false);
-            ret = 0;
+            return 0;
         }
-        return ret;
     }
 
     public void printLegenda(String dirName) {
@@ -496,7 +452,7 @@ public class MapaManager implements Serializable {
         big.drawString(labels.getString("LEGENDA"), x, y);
         //terrenos
         legendas = new String[]{"TERRENO.DESCONHECIDO", "TERRENO.ALTO.MAR", "TERRENO.COSTA", "TERRENO.LITORAL", "TERRENO.FLORESTA", "TERRENO.PLANICIE",
-            "TERRENO.MONTANHA", "TERRENO.COLINA", "TERRENO.PANTANO", "TERRENO.DESERTO"
+            "TERRENO.MONTANHA", "TERRENO.COLINA", "TERRENO.PANTANO", "TERRENO.DESERTO", "TERRENO.WASTELAND", "TERRENO.LAGO"
         };
         legendaCounter = 0;
         x = 10 + gap;
@@ -762,7 +718,7 @@ public class MapaManager implements Serializable {
     private void carregaTerrenos() {
         Image desenho = null;
         String[] terrenos = {"vazio", "mar", "costa", "litoral", "floresta", "planicie",
-            "montanha", "colinas", "pantano", "deserto"
+            "montanha", "colinas", "pantano", "deserto", "wasteland", "lago"
         };
         desenhoTerrenos = new Image[terrenos.length];
         for (int ii = 0; ii < terrenos.length; ii++) {
@@ -785,6 +741,10 @@ public class MapaManager implements Serializable {
                 desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemPantano", "-"));
             } else if (terrenos[ii].equals("deserto") && !SysProperties.getProps("ImagemDeserto", "-").equals("-")) {
                 desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemDeserto", "-"));
+            } else if (terrenos[ii].equals("wasteland") && !SysProperties.getProps("ImagemWasteland", "-").equals("-")) {
+                desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemWasteland", "-"));
+            } else if (terrenos[ii].equals("lago") && !SysProperties.getProps("ImagemLago", "-").equals("-")) {
+                desenho = form.getToolkit().getImage(SysProperties.getProps("ImagemLago", "-"));
             } else {
                 desenho = getDesenhoProperties(terrenos[ii]);
             }
