@@ -35,5 +35,5 @@ public interface ILocalDao {
 
     public void unload(Partida partida);
 
-    public void update(Local local);
+    public void update(Local local) throws PersistenceException;
 }
