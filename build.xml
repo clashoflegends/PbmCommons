@@ -16,11 +16,9 @@
             <entry key="BUILD" value="1" type="int" operation="+"/>
         </propertyfile>
     </target>
-    <!--
     <target name="-post-jar">
         <copy file="${dist.jar}" todir="/tmpbm/PbmCounselor/lib"/>
     </target>
-    -->
     <!--
 
     There exist several targets which are by default empty and which can be
