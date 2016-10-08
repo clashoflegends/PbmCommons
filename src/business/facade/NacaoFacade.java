@@ -212,6 +212,14 @@ public class NacaoFacade implements Serializable {
         }
     }
 
+    public Object getTeamFlag(Nacao nacao) {
+        try {
+            return nacao.getTeamFlag();
+        } catch (NullPointerException ex) {
+            return labels.getString("DESCONHECIDA");
+        }
+    }
+
     public String getJogadorDisplay(Nacao nacao) {
         try {
             return nacao.getOwner().getNome();

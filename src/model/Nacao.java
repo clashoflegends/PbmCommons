@@ -24,6 +24,7 @@ public class Nacao extends BaseModel {
     private Jogador jogador;
     private Raca raca;
     private Color fillColor, borderColor;
+    private String flAlianca = "-";
     private final Extrato extrato = new Extrato();
     private final List<Cidade> cidades = new ArrayList();
     private final List<Personagem> personagens = new ArrayList();
@@ -225,4 +226,13 @@ public class Nacao extends BaseModel {
     public String getTpActor() {
         return "N";
     }
+
+    public String getTeamFlag() {
+        return flAlianca;
+    }
+
+    public void setTeamFlag(String flAlianca) {
+        this.flAlianca = flAlianca;
+    }
+
 }
