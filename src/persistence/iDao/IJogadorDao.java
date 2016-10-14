@@ -4,7 +4,7 @@
  */
 package persistence.iDao;
 
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 import java.util.List;
 import model.Jogador;
 import model.Partida;

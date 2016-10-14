@@ -7,8 +7,8 @@ package model;
 import baseLib.BaseModel;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import persistence.BundleManager;
-import persistence.SettingsManager;
+import persistenceCommons.BundleManager;
+import persistenceCommons.SettingsManager;
 
 /**
  *

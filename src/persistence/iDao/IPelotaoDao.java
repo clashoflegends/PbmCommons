@@ -6,7 +6,7 @@ package persistence.iDao;
 
 import java.util.SortedMap;
 import model.Pelotao;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 /**
  *

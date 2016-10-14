@@ -5,7 +5,7 @@
 package persistence.iDao;
 
 import model.Cenario;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 /**
  *

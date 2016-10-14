@@ -1,5 +1,6 @@
 package baseLib;
 
+import persistenceCommons.SysProperties;
 import java.awt.ActiveEvent;
 import java.awt.Component;
 import java.awt.Dimension;

@@ -4,6 +4,7 @@
  */
 package baseLib;
 
+import persistenceCommons.SysApoio;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;

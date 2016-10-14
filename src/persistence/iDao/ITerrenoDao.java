@@ -5,7 +5,7 @@
 package persistence.iDao;
 
 import java.util.SortedMap;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 import model.Cenario;
 import model.Terreno;
 

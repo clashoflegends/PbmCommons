@@ -5,7 +5,7 @@
 package model;
 
 import baseLib.BaseModel;
-import baseLib.SysProperties;
+import persistenceCommons.SysProperties;
 
 /**
  *

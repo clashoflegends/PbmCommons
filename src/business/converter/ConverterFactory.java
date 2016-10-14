@@ -4,7 +4,7 @@
  */
 package business.converter;
 
-import baseLib.SysApoio;
+import persistenceCommons.SysApoio;
 import business.facade.LocalFacade;
 import java.awt.Point;
 import java.io.Serializable;
@@ -13,8 +13,8 @@ import java.util.SortedMap;
 import model.Local;
 import model.Produto;
 import msgs.BaseMsgs;
-import persistence.BundleManager;
-import persistence.SettingsManager;
+import persistenceCommons.BundleManager;
+import persistenceCommons.SettingsManager;
 
 /**
  *

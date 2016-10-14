@@ -4,6 +4,7 @@
  */
 package baseLib;
 
+import persistenceCommons.SysProperties;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;

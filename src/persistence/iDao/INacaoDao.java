@@ -9,7 +9,7 @@ import java.util.SortedMap;
 import model.ComandoDetail;
 import model.Nacao;
 import model.Partida;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 /**
  *

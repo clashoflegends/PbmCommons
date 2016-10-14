@@ -5,7 +5,7 @@
 package business.facade;
 
 import baseLib.BaseModel;
-import baseLib.SysApoio;
+import persistenceCommons.SysApoio;
 import business.services.ComparatorFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,8 +21,8 @@ import model.PersonagemOrdem;
 import msgs.TitleFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import persistence.BundleManager;
-import persistence.SettingsManager;
+import persistenceCommons.BundleManager;
+import persistenceCommons.SettingsManager;
 
 /**
  *

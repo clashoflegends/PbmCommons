@@ -6,7 +6,7 @@ package persistence.iDao;
 
 import java.util.List;
 import model.Alianca;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 
 /**

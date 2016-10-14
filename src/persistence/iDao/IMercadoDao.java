@@ -6,7 +6,7 @@ package persistence.iDao;
 
 import model.Mercado;
 import model.Partida;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 /**
  *

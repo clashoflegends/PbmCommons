@@ -8,7 +8,7 @@ package persistence.iDao;
 import java.util.List;
 import model.Cenario;
 import model.HabilidadeNacao;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 /**
  *

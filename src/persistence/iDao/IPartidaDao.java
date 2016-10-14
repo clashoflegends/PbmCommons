@@ -5,7 +5,7 @@
 package persistence.iDao;
 
 import model.Partida;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 /**
  *

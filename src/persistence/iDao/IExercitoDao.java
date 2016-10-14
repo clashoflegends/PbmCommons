@@ -7,7 +7,7 @@ package persistence.iDao;
 import java.util.SortedMap;
 import model.Exercito;
 import model.Partida;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 /**
  *

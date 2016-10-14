@@ -14,8 +14,8 @@ import model.Exercito;
 import model.Feitico;
 import model.Habilidade;
 import model.Ordem;
-import persistence.BundleManager;
-import persistence.SettingsManager;
+import persistenceCommons.BundleManager;
+import persistenceCommons.SettingsManager;
 
 /**
  *

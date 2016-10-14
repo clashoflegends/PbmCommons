@@ -7,7 +7,7 @@ package persistence.iDao;
 import java.util.List;
 import model.Cenario;
 import model.Feitico;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 
 /**

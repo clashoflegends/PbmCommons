@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.util.SortedMap;
 import model.Cidade;
 import model.Partida;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 /**
  *

@@ -6,7 +6,7 @@ package persistence.iDao;
 
 import java.io.File;
 import model.World;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 /**
  *

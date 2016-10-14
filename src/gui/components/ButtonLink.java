@@ -12,8 +12,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import persistence.BundleManager;
-import persistence.SettingsManager;
+import persistenceCommons.BundleManager;
+import persistenceCommons.SettingsManager;
 
 /**
  *

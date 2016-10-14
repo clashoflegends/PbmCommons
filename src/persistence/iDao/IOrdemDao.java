@@ -7,7 +7,7 @@ package persistence.iDao;
 import java.util.SortedMap;
 import model.Cenario;
 import model.Ordem;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 /**
  *

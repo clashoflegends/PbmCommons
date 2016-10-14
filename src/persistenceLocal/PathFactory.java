@@ -2,11 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package persistence;
+package persistenceLocal;
 
+import persistenceCommons.BundleManager;
+import persistenceCommons.SettingsManager;
 import baseLib.ExtensionFileFilter;
-import baseLib.SysApoio;
-import baseLib.SysProperties;
+import persistenceCommons.SysApoio;
+import persistenceCommons.SysProperties;
 import business.services.ComparatorFactory;
 import java.io.File;
 import java.io.Serializable;

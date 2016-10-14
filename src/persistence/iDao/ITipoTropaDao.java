@@ -6,7 +6,7 @@ package persistence.iDao;
 
 import model.Cenario;
 import model.TipoTropa;
-import persistence.PersistenceException;
+import persistenceCommons.PersistenceException;
 
 /**
  *
