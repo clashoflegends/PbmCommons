@@ -5,6 +5,7 @@
 package business;
 
 import business.facade.ExercitoFacade;
+import business.facade.LocalFacade;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -20,11 +21,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import model.Cenario;
 import model.Exercito;
+import model.Habilidade;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -35,29 +39,37 @@ import org.apache.commons.logging.LogFactory;
 public class ImageFactory implements Serializable {
 
     public static final int HEX_SIZE = 61;
-    private static final Log log = LogFactory.getLog(MapaManager.class);
+    private static final Log log = LogFactory.getLog(ImageFactory.class);
     private Image[] desenhoExercito;
     private final ExercitoFacade exercitoFacade = new ExercitoFacade();
     private final JPanel form;
     private final Cenario cenario;
     private final MediaTracker mt;
     private int mti = 0;
+    private ImageIcon combat, explosion, blueBall, yellowBall;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
-    private final ImageIcon combat, explosion;
-    private final ImageIcon blueBall;
-    private final ImageIcon yellowBall;
+    private final SortedMap<String, ImageIcon> features = new TreeMap<String, ImageIcon>();
 
     /**
      * to be used to draw rastros. don't need cenario, form or mt.
      */
     public ImageFactory() {
+        doLoadIconsAll();
+        this.form = null;
+        this.mt = null;
+        this.cenario = null;
+    }
+
+    private void doLoadIconsAll() {
         yellowBall = new ImageIcon(getClass().getResource("/images/piemenu/yellow_button.png"));
         blueBall = new ImageIcon(getClass().getResource("/images/piemenu/dark_blue_button.png"));
         combat = new ImageIcon(getClass().getResource("/images/combat.png"));
         explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
-        this.form = null;
-        this.mt = null;
-        this.cenario = null;
+        for (String cdFeature : LocalFacade.getFeaturesCdArray()) {
+            //todo: refactor code to load image icon into one function.
+            //todo: link feature to image vector
+            features.put(cdFeature, new ImageIcon(getClass().getResource(getFeaturesImage().get(cdFeature))));
+        }
     }
 
     /**
@@ -67,10 +79,7 @@ public class ImageFactory implements Serializable {
      * @param aCenario
      */
     public ImageFactory(JPanel form, Cenario aCenario) {
-        yellowBall = new ImageIcon(getClass().getResource("/images/piemenu/yellow_button.png"));
-        blueBall = new ImageIcon(getClass().getResource("/images/piemenu/dark_blue_button.png"));
-        combat = new ImageIcon(getClass().getResource("/images/combat.png"));
-        explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
+        doLoadIconsAll();
         this.form = form;
         this.mt = new MediaTracker(form);
         this.cenario = aCenario;
@@ -368,5 +377,21 @@ public class ImageFactory implements Serializable {
 
     public Image doDrawExplosion() {
         return this.explosion.getImage();
+    }
+
+    public Image getFeature(Habilidade feature) {
+        return this.features.get(feature.getCodigo()).getImage();
+    }
+
+    private SortedMap<String, String> getFeaturesImage() {
+        SortedMap<String, String> featuresImage = new TreeMap<String, String>();
+        featuresImage.put(";LFC;", "/images/mapa/feature_cave.gif");
+        featuresImage.put(";LFH;", "/images/mapa/feature_henges.gif");
+        featuresImage.put(";LFI;", "/images/mapa/feature_igloo.gif");
+        featuresImage.put(";LFL;", "/images/mapa/feature_liths.gif");
+        featuresImage.put(";LFE;", "/images/mapa/feature_temple.gif");
+        featuresImage.put(";LFR;", "/images/mapa/feature_ruins.gif");
+        featuresImage.put(";LFT;", "/images/mapa/feature_tower.gif");
+        return featuresImage;
     }
 }

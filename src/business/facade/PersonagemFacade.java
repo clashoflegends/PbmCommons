@@ -4,7 +4,6 @@
  */
 package business.facade;
 
-import persistenceCommons.SysApoio;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
+import persistenceCommons.SysApoio;
 
 /**
  *
@@ -348,11 +348,13 @@ public class PersonagemFacade implements Serializable {
          * general mariola
          */
         try {
-            int nn = (int) (exercito.getComandante().getPericiaComandanteNatural() / 10) + 1;
+            final int nn = (int) Math.min((exercito.getComandante().getPericiaComandanteNatural() / 10) + 1,BaseMsgs.tituloPericiaComandante.length);
             return (String.format("%s %s",
                     BaseMsgs.tituloPericiaComandante[nn],
                     exercito.getComandante().getNome()));
         } catch (NullPointerException e) {
+            return labels.getString("UM.DESCONHECIDO");
+        } catch (ArrayIndexOutOfBoundsException e) {
             return labels.getString("UM.DESCONHECIDO");
         }
     }

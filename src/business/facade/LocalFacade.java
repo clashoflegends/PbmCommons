@@ -4,7 +4,6 @@
  */
 package business.facade;
 
-import persistenceCommons.SysApoio;
 import business.converter.ConverterFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,6 +14,7 @@ import java.util.TreeMap;
 import model.Artefato;
 import model.Cidade;
 import model.Exercito;
+import model.Habilidade;
 import model.Jogador;
 import model.Local;
 import model.Nacao;
@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
+import persistenceCommons.SysApoio;
 
 /**
  *
@@ -380,5 +381,34 @@ public class LocalFacade implements Serializable {
 
     public boolean isTerrenoMontanhaColina(Terreno terreno) {
         return terreno.isMontanha() || terreno.isColina();
+    }
+
+    public boolean hasTerrainFeatures(Local local) {
+        String[] features = getFeaturesCdArray();
+        for (String feature : features) {
+            if (local.hasHabilidade(feature)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String[] getFeaturesCdArray() {
+        final String[] features = {";LFC;", ";LFH;", ";LFI;", ";LFL;", ";LFE;", ";LFR;", ";LFT;"};
+        return features;
+    }
+
+    public boolean isTerrainFeature(Habilidade feature) {
+        return feature.hasHabilidade(";FFL;");
+    }
+
+    public List<Habilidade> getFeatures(Local local) {
+        List<Habilidade> ret = new ArrayList<Habilidade>();
+        for (Habilidade feature : local.getHabilidades().values()) {
+            if (isTerrainFeature(feature)) {
+                ret.add(feature);
+            }
+        }
+        return ret;
     }
 }

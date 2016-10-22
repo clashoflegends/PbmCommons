@@ -37,6 +37,7 @@ import model.Artefato;
 import model.Cenario;
 import model.Cidade;
 import model.Exercito;
+import model.Habilidade;
 import model.Jogador;
 import model.Local;
 import model.Nacao;
@@ -53,7 +54,7 @@ import persistenceCommons.SysApoio;
  * @author jmoura
  */
 public class MapaManager implements Serializable {
-
+    
     private static final Log log = LogFactory.getLog(MapaManager.class);
     private Image[] desenhoTerrenos;
     private Image[] desenhoTerrenoDetalhes;
@@ -72,19 +73,19 @@ public class MapaManager implements Serializable {
     private static final ArtefatoFacade artefatoFacade = new ArtefatoFacade();
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private final ImageFactory imageFactory;
-
+    
     public MapaManager(Cenario aCenario, JPanel form) {
         this.cenario = aCenario;
         this.form = form;
         imageFactory = new ImageFactory(form, cenario);
         this.carregaDesenhosDisponiveis();
     }
-
+    
     private void carregaDesenhosDisponiveis() {
         log.debug("Carregando: Desenhos...");
         Image desenho = null;
         carregaTerrenos();
-
+        
         String[] detalhesTerreno = {
             "ponte_no", "ponte_ne", "ponte_l", "ponte_se", "ponte_so", "ponte_o",
             "riacho_no", "riacho_ne", "riacho_l", "riacho_se", "riacho_so", "riacho_o",
@@ -122,7 +123,7 @@ public class MapaManager implements Serializable {
         imageFactory.carregaExercito();
         imageFactory.waitForAll();
     }
-
+    
     public Point getMapMaxSize(Collection<Local> listaLocal) {
         int[] ret = {0, 0};
         int row = 0, col = 0;
@@ -138,14 +139,14 @@ public class MapaManager implements Serializable {
         }
         return new Point(ret[1] * 60 + 30, ret[0] * 45 + 60);
     }
-
+    
     public ImageIcon getTagImage() {
         if (tagImage == null) {
             this.tagImage = new ImageIcon(this.desenhoDetalhes[dtTag]);
         }
         return tagImage;
     }
-
+    
     private void printHex(Graphics2D big, Local local, Jogador observer) {
         //calcula coordenadas e posicao no grafico.
         final Point point = ConverterFactory.localToPoint(local);
@@ -192,7 +193,7 @@ public class MapaManager implements Serializable {
             largura = fortificacao.getWidth(form);
             altura = fortificacao.getHeight(form);
             big.drawImage(fortificacao, x + (ImageFactory.HEX_SIZE - largura) / 2, y + 34 - altura, form);
-
+            
             if (CenarioFacade.isPrintGoldMine(this.cenario, local)) {
                 //imprime gold mine
                 Image goldMine = this.desenhoDetalhes[dtGoldmine];
@@ -234,6 +235,15 @@ public class MapaManager implements Serializable {
                 big.setColor(Color.BLACK);
                 big.drawString(cidadeFacade.getNacaoNome(cidade), x + 10, y + 30);
             }
+        }
+        //terrain features
+        if (local.getCoordenadas().equals("0617")) {
+            log.debug("aki!");
+        }
+        for (Habilidade feature : localFacade.getFeatures(local)) {
+            //imprime gold mine
+            Image imgFeature = imageFactory.getFeature(feature);
+            big.drawImage(imgFeature, x + (ImageFactory.HEX_SIZE - imgFeature.getWidth(form)) / 2, y + (ImageFactory.HEX_SIZE - imgFeature.getHeight(form)) / 2, form);
         }
         //imprime o fog of war
         if (!local.isVisible() && !SettingsManager.getInstance().isWorldBuilder()) {
@@ -326,7 +336,7 @@ public class MapaManager implements Serializable {
             }
         }
     }
-
+    
     private void printMapaMovPath(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
         if (!SettingsManager.getInstance().isProperties("drawPcPath", "1", "1")) {
             return;
@@ -350,7 +360,7 @@ public class MapaManager implements Serializable {
             }
         }
     }
-
+    
     public BufferedImage printMapaGeral(Collection<Local> listaLocal, Collection<Personagem> listaPers, Jogador observer) {
         //FIXME: imprimir em layers, permitindo visao do terreno, visao dos personagens, duplo clique para posicionar coisas, etc...
         log.debug("Escrevendo: MapaGeral...");
@@ -372,7 +382,7 @@ public class MapaManager implements Serializable {
         big.dispose(); //libera memoria
         return megaMap;
     }
-
+    
     private int[] exercitoToIndice(Exercito exercito) {
         int[] ret = new int[3];
         if (CenarioFacade.isGrecia(cenario)) {
@@ -392,7 +402,7 @@ public class MapaManager implements Serializable {
         }
         return ret;
     }
-
+    
     private static int terrenoToIndice(String codigoTerreno) {
         /*
          * 1 'E', '0101' alto mar<br> 2 'C', '0102' costa<br> 3 'L', '0203'
@@ -431,9 +441,9 @@ public class MapaManager implements Serializable {
             return 0;
         }
     }
-
+    
     public void printLegenda(String dirName) {
-
+        
         int legendaCounter = 0;
         int x = 0, y = 0, ih = 800, iw = 1200, gap = 12;
         String[] legendas;
@@ -483,14 +493,14 @@ public class MapaManager implements Serializable {
                 }
             }
         }
-
+        
         image = desenhoDetalhes[dtFogofwar];
         big.drawImage(desenhoTerrenos[5], x, y, form);
         big.drawImage(desenhoCidades[3], x + (ImageFactory.HEX_SIZE - desenhoCidades[3].getWidth(form)) / 2, y + 34 - desenhoCidades[3].getHeight(form), form);
         big.drawImage(this.desenhoCidades[11], x + (ImageFactory.HEX_SIZE - this.desenhoCidades[11].getWidth(form)) / 2, y + 34 - this.desenhoCidades[11].getHeight(form), form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
-
+        
         big.drawImage(desenhoTerrenos[5], x, y, form);
         big.drawImage(desenhoCidades[3], x + (ImageFactory.HEX_SIZE - desenhoCidades[3].getWidth(form)) / 2, y + 34 - desenhoCidades[3].getHeight(form), form);
         big.drawImage(this.desenhoCidades[11], x + (ImageFactory.HEX_SIZE - this.desenhoCidades[11].getWidth(form)) / 2, y + 34 - this.desenhoCidades[11].getHeight(form), form);
@@ -499,7 +509,7 @@ public class MapaManager implements Serializable {
         big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
-
+        
         image = TagManager.getInstance().drawTagStyle3(10, 10).getImage();
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
@@ -554,47 +564,47 @@ public class MapaManager implements Serializable {
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
-
+        
         image = desenhoDetalhes[dtPersonagemOutra];
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
-
+        
         image = desenhoDetalhes[dtPersonagemAlly];
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
-
+        
         image = desenhoDetalhes[dtNpc];
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
-
+        
         image = desenhoDetalhes[dtArtefato];
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
-
+        
         image = desenhoDetalhes[dtGoldmine];
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
-
+        
         image = desenhoDetalhes[dtNavio];
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
-
+        
         image = imageFactory.doDrawCombat();
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
-
+        
         image = imageFactory.doDrawExplosion();
         big.drawImage(image, x, y, form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
-
+        
         int breakLine = legendaCounter;
 
         //exercito
@@ -696,12 +706,12 @@ public class MapaManager implements Serializable {
             log.fatal("Problem", ex);
         }
     }
-
+    
     public int[] doCoordToPosition(Local destino) {
         final Point p = ConverterFactory.localToPoint(destino);
         return new int[]{(int) p.getX(), (int) p.getY()};
     }
-
+    
     public Local doPositionToCoord(Point click, SortedMap<String, Local> locais) {
         int row, col;
         row = click.y / 45;
@@ -713,7 +723,7 @@ public class MapaManager implements Serializable {
         Local ret = locais.get(SysApoio.pointToCoord(col + 1, row + 1));
         return ret;
     }
-
+    
     private void carregaTerrenos() {
         Image desenho = null;
         String[] terrenos = {"vazio", "mar", "costa", "litoral", "floresta", "planicie",
@@ -751,7 +761,7 @@ public class MapaManager implements Serializable {
             this.desenhoTerrenos[ii] = desenho;
         }
     }
-
+    
     private Image getDesenhoProperties(String filename) {
         if (SettingsManager.getInstance().isProperties("MapTiles", "2a", "2b")) {
             //feralonso bordless
