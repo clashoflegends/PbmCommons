@@ -9,6 +9,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
+import persistenceCommons.SysApoio;
 
 /**
  *
@@ -148,6 +149,9 @@ public class Cidade extends BaseModel {
     }
 
     public void setEstoque(Produto produto, int qtd) {
+        if (this.getCoordenadas().equals("1716") && produto.getId() == 5) {
+            SysApoio.imp("1716 lenha=" + qtd);
+        }
         this.estoques.put(produto, Math.max(0, qtd));
     }
 
