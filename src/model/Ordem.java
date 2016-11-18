@@ -5,7 +5,7 @@
 package model;
 
 import baseLib.BaseModel;
-import persistenceCommons.SysProperties;
+import persistenceCommons.SettingsManager;
 
 /**
  *
@@ -160,7 +160,7 @@ public class Ordem extends BaseModel {
 
     @Override
     public String getComboDisplay() {
-        if (SysProperties.getProps("mostraNumeroOrdem", "0").equalsIgnoreCase("0")) {
+        if (SettingsManager.getInstance().getConfig("mostraNumeroOrdem", "0").equalsIgnoreCase("0")) {
             return getDescricao();
         } else {
             return getNumero() + " - " + getDescricao();

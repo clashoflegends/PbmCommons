@@ -4,7 +4,6 @@
  */
 package baseLib;
 
-import persistenceCommons.SysProperties;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +12,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import persistenceCommons.SettingsManager;
 
 /**
  *
@@ -43,7 +43,7 @@ public class GenericoComboBoxModel extends DefaultComboBoxModel implements Combo
     public GenericoComboBoxModel(final IBaseModel[] items, boolean noSort) {
         super();
         try {
-            if (noSort || !SysProperties.getProps("SortAllCombos", "1").equals("1")) {
+            if (noSort || !SettingsManager.getInstance().getConfig("SortAllCombos", "1").equals("1")) {
                 sortByNone(items);
             } else {
                 sortByDisplay(items);

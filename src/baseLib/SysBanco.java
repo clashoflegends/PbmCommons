@@ -8,7 +8,6 @@
  */
 package baseLib;
 
-import persistenceCommons.SysProperties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -18,6 +17,7 @@ import java.sql.Statement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.PersistenceException;
+import persistenceCommons.SettingsManager;
 
 /**
  *
@@ -51,9 +51,9 @@ public class SysBanco {
     private static void criaConn() {
         try {
 //            Class.forName("com.mysql.jdbc.Driver");
-            final String conexao = String.format("jdbc:mysql://%s/%s", SysProperties.getProps("bdServer", "localhost"), SysProperties.getProps("bdDatabase"));
+            final String conexao = String.format("jdbc:mysql://%s/%s", SettingsManager.getInstance().getConfig("bdServer", "localhost"), SettingsManager.getInstance().getConfig("bdDatabase"));
             log.info("Conectando ao banco de dados:" + conexao);
-            setConn(DriverManager.getConnection(conexao, SysProperties.getProps("bdLogin"), SysProperties.getProps("bdSenha")));
+            setConn(DriverManager.getConnection(conexao, SettingsManager.getInstance().getConfig("bdLogin"), SettingsManager.getInstance().getConfig("bdSenha")));
         } catch (SQLException e) {
             log.error("Banco fora do ar.", e);
             throw new UnsupportedOperationException("Banco fora do ar.");

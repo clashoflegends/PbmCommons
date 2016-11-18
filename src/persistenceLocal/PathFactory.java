@@ -4,11 +4,7 @@
  */
 package persistenceLocal;
 
-import persistenceCommons.BundleManager;
-import persistenceCommons.SettingsManager;
 import baseLib.ExtensionFileFilter;
-import persistenceCommons.SysApoio;
-import persistenceCommons.SysProperties;
 import business.services.ComparatorFactory;
 import java.io.File;
 import java.io.Serializable;
@@ -16,6 +12,9 @@ import model.Partida;
 import model.World;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import persistenceCommons.BundleManager;
+import persistenceCommons.SettingsManager;
+import persistenceCommons.SysApoio;
 
 /**
  *
@@ -83,7 +82,7 @@ public class PathFactory implements Serializable {
 
     public void doMoveFile(File file) {
         // Destination directory
-        File dirNew = new File(SysProperties.getProps("doneDir"));
+        File dirNew = new File(SettingsManager.getInstance().getConfig("doneDir"));
         File destination = new File(dirNew, file.getName());
 
         // Move file to new directory
@@ -97,7 +96,7 @@ public class PathFactory implements Serializable {
 
     public File getLoadDir() {
         // Destination directory
-        File loadDir = new File(SysProperties.getProps("loadDir"));
+        File loadDir = new File(SettingsManager.getInstance().getConfig("loadDir"));
         if (!loadDir.exists()) {
             throw new UnsupportedOperationException("Folder not found: " + loadDir.getAbsolutePath());
         }
