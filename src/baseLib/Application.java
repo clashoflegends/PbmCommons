@@ -1,6 +1,5 @@
 package baseLib;
 
-import persistenceCommons.SysProperties;
 import java.awt.ActiveEvent;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -32,6 +31,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import persistenceCommons.SettingsManager;
 
 /**
  * Base Application class for Swing apps. Application provides the following
@@ -293,9 +293,9 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
      * @see <a href="#initSequence">init sequence</a>
      */
     protected void installLookAndFeel() {
-        if (SysProperties.getProps("LookAndFeelTheme", "0").equals("Cross")) {
+        if (SettingsManager.getInstance().getConfig("LookAndFeelTheme", "0").equals("Cross")) {
             setLookAndFeelCrossPlatform();
-        } else if (!SysProperties.getProps("LookAndFeelTheme", "0").equals("0")) {
+        } else if (!SettingsManager.getInstance().getConfig("LookAndFeelTheme", "0").equals("0")) {
             try {
                 setLookAndFeelProperties();
             } catch (Exception e) {
@@ -309,7 +309,7 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     private void setLookAndFeelProperties() throws IllegalAccessException, InstantiationException, UnsupportedLookAndFeelException, ClassNotFoundException {
         boolean setLooks = false;
         for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-            if (SysProperties.getProps("LookAndFeelTheme", "0").equals(info.getName())) {
+            if (SettingsManager.getInstance().getConfig("LookAndFeelTheme", "0").equals(info.getName())) {
                 UIManager.setLookAndFeel(info.getClassName());
                 setLooks = true;
                 log.info("Loaded look and feel: " + info.getName());

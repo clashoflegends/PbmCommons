@@ -338,7 +338,7 @@ public class MapaManager implements Serializable {
     }
     
     private void printMapaMovPath(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
-        if (!SettingsManager.getInstance().isProperties("drawPcPath", "1", "1")) {
+        if (!SettingsManager.getInstance().isConfig("drawPcPath", "1", "1")) {
             return;
         }
         for (Personagem pers : listaPers) {
@@ -732,28 +732,28 @@ public class MapaManager implements Serializable {
         desenhoTerrenos = new Image[terrenos.length];
         for (int ii = 0; ii < terrenos.length; ii++) {
             //FIXME: Buscar imagens de um JAR. colocar imagens num jar em separado, para facilitar downloads.
-            if (terrenos[ii].equals("mar") && !SettingsManager.getInstance().isProperties("ImagemMar")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getProperties("ImagemMar"));
-            } else if (terrenos[ii].equals("costa") && !SettingsManager.getInstance().isProperties("ImagemCosta")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getProperties("ImagemCosta"));
-            } else if (terrenos[ii].equals("litoral") && !SettingsManager.getInstance().isProperties("ImagemLitoral")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getProperties("ImagemLitoral"));
-            } else if (terrenos[ii].equals("floresta") && !SettingsManager.getInstance().isProperties("ImagemFloresta")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getProperties("ImagemFloresta"));
-            } else if (terrenos[ii].equals("planicie") && !SettingsManager.getInstance().isProperties("ImagemPlanicie")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getProperties("ImagemPlanicie"));
-            } else if (terrenos[ii].equals("montanha") && !SettingsManager.getInstance().isProperties("ImagemMontanha")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getProperties("ImagemMontanha"));
-            } else if (terrenos[ii].equals("colinas") && !SettingsManager.getInstance().isProperties("ImagemColinas")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getProperties("ImagemColinas"));
-            } else if (terrenos[ii].equals("pantano") && !SettingsManager.getInstance().isProperties("ImagemPantano")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getProperties("ImagemPantano"));
-            } else if (terrenos[ii].equals("deserto") && !SettingsManager.getInstance().isProperties("ImagemDeserto")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getProperties("ImagemDeserto"));
-            } else if (terrenos[ii].equals("wasteland") && !SettingsManager.getInstance().isProperties("ImagemWasteland")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getProperties("ImagemWasteland"));
-            } else if (terrenos[ii].equals("lago") && !SettingsManager.getInstance().isProperties("ImagemLago")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getProperties("ImagemLago"));
+            if (terrenos[ii].equals("mar") && SettingsManager.getInstance().isConfig("ImagemMar")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemMar"));
+            } else if (terrenos[ii].equals("costa") && SettingsManager.getInstance().isConfig("ImagemCosta")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemCosta"));
+            } else if (terrenos[ii].equals("litoral") && SettingsManager.getInstance().isConfig("ImagemLitoral")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemLitoral"));
+            } else if (terrenos[ii].equals("floresta") && SettingsManager.getInstance().isConfig("ImagemFloresta")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemFloresta"));
+            } else if (terrenos[ii].equals("planicie") && SettingsManager.getInstance().isConfig("ImagemPlanicie")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemPlanicie"));
+            } else if (terrenos[ii].equals("montanha") && SettingsManager.getInstance().isConfig("ImagemMontanha")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemMontanha"));
+            } else if (terrenos[ii].equals("colinas") && SettingsManager.getInstance().isConfig("ImagemColinas")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemColinas"));
+            } else if (terrenos[ii].equals("pantano") && SettingsManager.getInstance().isConfig("ImagemPantano")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemPantano"));
+            } else if (terrenos[ii].equals("deserto") && SettingsManager.getInstance().isConfig("ImagemDeserto")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemDeserto"));
+            } else if (terrenos[ii].equals("wasteland") && SettingsManager.getInstance().isConfig("ImagemWasteland")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemWasteland"));
+            } else if (terrenos[ii].equals("lago") && SettingsManager.getInstance().isConfig("ImagemLago")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemLago"));
             } else {
                 desenho = getDesenhoProperties(terrenos[ii]);
             }
@@ -763,16 +763,16 @@ public class MapaManager implements Serializable {
     }
     
     private Image getDesenhoProperties(String filename) {
-        if (SettingsManager.getInstance().isProperties("MapTiles", "2a", "2b")) {
+        if (SettingsManager.getInstance().isConfig("MapTiles", "2a", "2b")) {
             //feralonso bordless
             return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2a_" + filename + ".png"));
-        } else if (SettingsManager.getInstance().isProperties("MapTiles", "2b", "2b")) {
+        } else if (SettingsManager.getInstance().isConfig("MapTiles", "2b", "2b")) {
             //bordless meppa
             return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
-        } else if (SettingsManager.getInstance().isProperties("MapTiles", "2d", "2b")) {
+        } else if (SettingsManager.getInstance().isConfig("MapTiles", "2d", "2b")) {
             //bord meppa
             return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".gif"));
-        } else if (SettingsManager.getInstance().isProperties("MapTiles", "3d", "2b")) {
+        } else if (SettingsManager.getInstance().isConfig("MapTiles", "3d", "2b")) {
             //3d from joao bordless
             return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".png"));
         } else {

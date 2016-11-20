@@ -4,7 +4,6 @@
  */
 package business.facade;
 
-import persistenceCommons.SysApoio;
 import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
+import persistenceCommons.SysApoio;
 import utils.StringRet;
 
 /**
@@ -356,5 +356,19 @@ public class CidadeFacade implements Serializable {
             custo = custo / city.getNacao().getHabilidadeValor(";PPB;");
         }
         return (city.getTamanho() * custo + baseCost);
+    }
+
+    public void doCidadeProduz(Cidade cidade, int fatorReducao) {
+        if (cidade.getTamanho() <= 0) {
+            return;
+        }
+//        //gera producao e gera renda.
+//        for (int ii = 0; ii < 8; ii++) {
+//            final int producao = cidade.getProducao(ii) * fatorReducao / 100;
+//            cidade.sumEstoque(ii, producao);
+//            if (cidade.getNacao().hasHabilidadeNacaoOld("0054") && cidade.getLocal().getClima() >= 5) {
+//                cidade.sumEstoque(ii, producao * cidade.getNacao().getHabilidadeNacaoValor("0054") / 100);
+//            }
+//        }
     }
 }
