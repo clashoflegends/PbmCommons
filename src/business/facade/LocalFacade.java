@@ -23,18 +23,31 @@ import model.Terreno;
 import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import persistenceCommons.BundleManager;
-import persistenceCommons.SettingsManager;
 import persistenceCommons.SysApoio;
 
 /**
  *
  * @author gurgel
  */
-public class LocalFacade implements Serializable {
+public final class LocalFacade implements Serializable {
 
     private static final Log log = LogFactory.getLog(LocalFacade.class);
-    private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
+    private final SortedMap<String, String> featuresImage = new TreeMap<String, String>();
+
+    public LocalFacade() {
+        doLoadFeaturesImage();
+    }
+
+    public void doLoadFeaturesImage() {
+        featuresImage.put(";LFC;", "/images/mapa/feature_cave.gif");
+        featuresImage.put(";LFH;", "/images/mapa/feature_henges.gif");
+        featuresImage.put(";LFI;", "/images/mapa/feature_igloo.gif");
+        featuresImage.put(";LFK;", "/images/mapa/feature_lake.gif");
+        featuresImage.put(";LFL;", "/images/mapa/feature_liths.gif");
+        featuresImage.put(";LFE;", "/images/mapa/feature_temple.gif");
+        featuresImage.put(";LFR;", "/images/mapa/feature_ruins.gif");
+        featuresImage.put(";LFT;", "/images/mapa/feature_tower.gif");
+    }
 
     public SortedMap<String, Artefato> getArtefatos(Local local) {
         return local.getArtefatos();
@@ -384,18 +397,12 @@ public class LocalFacade implements Serializable {
     }
 
     public boolean hasTerrainFeatures(Local local) {
-        String[] features = getFeaturesCdArray();
-        for (String feature : features) {
+        for (String feature : getFeaturesImage().keySet()) {
             if (local.hasHabilidade(feature)) {
                 return true;
             }
         }
         return false;
-    }
-
-    public static String[] getFeaturesCdArray() {
-        final String[] features = {";LFC;", ";LFH;", ";LFI;", ";LFL;", ";LFE;", ";LFR;", ";LFT;"};
-        return features;
     }
 
     public boolean isTerrainFeature(Habilidade feature) {
@@ -410,5 +417,9 @@ public class LocalFacade implements Serializable {
             }
         }
         return ret;
+    }
+
+    public SortedMap<String, String> getFeaturesImage() {
+        return featuresImage;
     }
 }

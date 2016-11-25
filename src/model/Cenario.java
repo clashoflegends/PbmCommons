@@ -142,6 +142,10 @@ public class Cenario extends BaseModel {
         return (this.getCodigo().contains("WDO"));
     }
 
+    public boolean isLom() {
+        return (this.getCodigo().contains("LOM"));
+    }
+
     public SortedMap<String, TipoTropa> getTipoTropas() {
         return tipoTropa;
     }
