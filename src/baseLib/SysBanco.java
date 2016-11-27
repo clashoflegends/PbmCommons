@@ -85,21 +85,37 @@ public class SysBanco {
     }
 
     public static String buscaDs(String sql, String param) {
-        return SysBanco.buscaDs(sql.replace("?", "'" + param + "'"));
+        return SysBanco.doBuscaDs(sql.replace("?", "'" + param + "'"));
     }
 
     public static String buscaDs(String sql, int param) {
-        return SysBanco.buscaDs(sql.replace("?", param + ""));
+        return SysBanco.doBuscaDs(sql.replace("?", param + ""));
     }
 
     public static String buscaDs(String sql) {
+        return doBuscaDs(sql);
+    }
+
+    public static String buscaDs(String sql, String param, String fieldName) {
+        return SysBanco.doBuscaDs(sql.replace("?", "'" + param + "'"), fieldName);
+    }
+
+    private static String doBuscaDs(String sql) {
+        return doBuscaDs(sql, "1");
+    }
+
+    private static String doBuscaDs(String sql, String field) {
         //imp(sql);
         String ret = "";
         try {
             PreparedStatement pstm = getConn().prepareStatement(sql);
             ResultSet rs = pstm.executeQuery();
             if (rs.next()) {
-                ret = rs.getString(1);
+                if (field.equals("1")) {
+                    ret = rs.getString(1);
+                } else {
+                    ret = rs.getString(field);
+                }
             }
             cleanUp(pstm, rs);
         } catch (SQLException e) {
