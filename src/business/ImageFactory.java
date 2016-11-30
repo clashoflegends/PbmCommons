@@ -42,6 +42,7 @@ public class ImageFactory implements Serializable {
     private static final Log log = LogFactory.getLog(ImageFactory.class);
     private Image[] desenhoExercito;
     private final ExercitoFacade exercitoFacade = new ExercitoFacade();
+    private final LocalFacade localFacade = new LocalFacade();
     private final JPanel form;
     private final Cenario cenario;
     private final MediaTracker mt;
@@ -65,11 +66,7 @@ public class ImageFactory implements Serializable {
         blueBall = new ImageIcon(getClass().getResource("/images/piemenu/dark_blue_button.png"));
         combat = new ImageIcon(getClass().getResource("/images/combat.png"));
         explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
-        for (String cdFeature : LocalFacade.getFeaturesCdArray()) {
-            //todo: refactor code to load image icon into one function.
-            //todo: link feature to image vector
-            features.put(cdFeature, new ImageIcon(getClass().getResource(getFeaturesImage().get(cdFeature))));
-        }
+        doLoadFeaturesAll();
     }
 
     /**
@@ -127,7 +124,15 @@ public class ImageFactory implements Serializable {
                 "FreeCities.png", "Wildlings.png", "neutral2.png", "neutral3.png",
                 "Esparta.gif", "Atenas.gif", "Macedonia.gif", "Persia.gif",
                 "Tracia.gif", "Milletus.gif", "Illyria.gif", "Epirus.gif",
-                "Twainek.gif", "Frusodian.gif"
+                "Twainek.gif", "Frusodian.gif",
+                "lom_corelay.png",
+                "lom_ashimar.png",
+                "lom_gloom.png",
+                "lom_dregrim.png",
+                "lom_despair.png",
+                "lom_korkithdodrak.png",
+                "lom_valethor.png",
+                "lom_kor.png"
             };
         } else if (cenario.isGrecia()) {
             return new String[]{"neutral.png", "Esparta.gif", "Atenas.gif", "Macedonia.gif", "Persia.gif",
@@ -168,6 +173,17 @@ public class ImageFactory implements Serializable {
                 "Esparta.gif", "Atenas.gif", "Macedonia.gif", "Persia.gif",
                 "Tracia.gif", "Milletus.gif", "Illyria.gif", "Epirus.gif",
                 "Twainek.gif", "Frusodian.gif"
+            };
+        } else if (cenario.isLom()) {
+            return new String[]{"neutral.png",
+                "lom_corelay.png",
+                "lom_ashimar.png",
+                "lom_gloom.png",
+                "lom_dregrim.png",
+                "lom_despair.png",
+                "lom_korkithdodrak.png",
+                "lom_valethor.png",
+                "lom_kor.png"
             };
         } else {
             return new String[]{"neutral.png", "KingsCourt.gif", "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
@@ -380,18 +396,19 @@ public class ImageFactory implements Serializable {
     }
 
     public Image getFeature(Habilidade feature) {
-        return this.features.get(feature.getCodigo()).getImage();
+        try {
+            return this.features.get(feature.getCodigo()).getImage();
+        } catch (NullPointerException ex) {
+            log.error("Feature not found, add it to LocalFacade: " + feature.getCodigo());
+            throw new UnsupportedOperationException(ex);
+        }
     }
 
-    private SortedMap<String, String> getFeaturesImage() {
-        SortedMap<String, String> featuresImage = new TreeMap<String, String>();
-        featuresImage.put(";LFC;", "/images/mapa/feature_cave.gif");
-        featuresImage.put(";LFH;", "/images/mapa/feature_henges.gif");
-        featuresImage.put(";LFI;", "/images/mapa/feature_igloo.gif");
-        featuresImage.put(";LFL;", "/images/mapa/feature_liths.gif");
-        featuresImage.put(";LFE;", "/images/mapa/feature_temple.gif");
-        featuresImage.put(";LFR;", "/images/mapa/feature_ruins.gif");
-        featuresImage.put(";LFT;", "/images/mapa/feature_tower.gif");
-        return featuresImage;
+    private void doLoadFeaturesAll() {
+        final SortedMap<String, String> featuresImage = localFacade.getFeaturesImage();
+        for (String cdFeature : featuresImage.keySet()) {
+            //todo: link feature to image vector
+            features.put(cdFeature, new ImageIcon(getClass().getResource(featuresImage.get(cdFeature))));
+        }
     }
 }
