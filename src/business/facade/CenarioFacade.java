@@ -34,6 +34,7 @@ import persistenceCommons.SettingsManager;
  */
 public class CenarioFacade implements Serializable {
 
+    public static final int MINIMUM_LOYALTY = 50;
     public static final int COMANDANTE = 0;
     public static final int ROGUE = 1;
     public static final int DIPLOMAT = 2;
