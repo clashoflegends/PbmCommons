@@ -4,17 +4,18 @@
  */
 package business.converter;
 
-import persistenceCommons.SysApoio;
 import business.facade.LocalFacade;
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.List;
 import java.util.SortedMap;
 import model.Local;
+import model.Ordem;
 import model.Produto;
 import msgs.BaseMsgs;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
+import persistenceCommons.SysApoio;
 
 /**
  *
@@ -573,11 +574,48 @@ public final class ConverterFactory implements Serializable {
     }
 
     public static String getAtivaBd(boolean ativa) {
-        String ret = "INATIVO";
         if (ativa) {
-            ret = "ATIVO";
+            return "ATIVO";
+        } else {
+            return "INATIVO";
         }
-        return ret;
     }
 
+    public static int getSpellDamage(int levelDiff) {
+        final int[] spellDamage = {5, 5, 5, 15, 30, 30};
+        return spellDamage[levelDiff];
+    }
+
+    public static int getSpellDamage(Ordem ordem) {
+        return getSpellDamage(getDificultyToInt(ordem));
+    }
+
+    public static int getOrdemDificuldadeAjuste(String orderDif) {
+        final int[] ordemAjuste = {0, 1000, 15, 0, -10, 5};
+        return ordemAjuste[ConverterFactory.getDificultyToInt(orderDif)];
+    }
+
+    public static int getDificultyToInt(Ordem ordem) {
+        return ConverterFactory.getDificultyToInt(ordem.getDificuldade());
+    }
+
+    public static int getDificultyToInt(String orderDif) {
+        //applies to both ordem and feitico
+        if (orderDif.equalsIgnoreCase("Aut")) {
+            return 1;
+        }
+        if (orderDif.equalsIgnoreCase("Fac")) {
+            return 2;
+        }
+        if (orderDif.equalsIgnoreCase("Med")) {
+            return 3;
+        }
+        if (orderDif.equalsIgnoreCase("Dif")) {
+            return 4;
+        }
+        if (orderDif.equalsIgnoreCase("Var")) {
+            return 5;
+        }
+        return 0;
+    }
 }
