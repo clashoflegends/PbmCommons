@@ -5,6 +5,7 @@
 package business.services;
 
 import java.util.Comparator;
+import java.util.SortedMap;
 import model.Pelotao;
 import model.Terreno;
 import model.TipoTropa;
@@ -337,7 +338,14 @@ public class ComparatorCasualtiesSorterNew implements Comparator {
     }
 
     private static int getMovimentoTerrenoDesc(TipoTropa este, TipoTropa outro, Terreno terreno) {
-        return outro.getMovimentoTerreno().get(terreno) - este.getMovimentoTerreno().get(terreno);
+        try {
+            return outro.getMovimentoTerreno().get(terreno) - este.getMovimentoTerreno().get(terreno);
+        } catch (NullPointerException e) {
+            final SortedMap<Terreno, Integer> OmovimentoTerreno = outro.getMovimentoTerreno();
+            final SortedMap<Terreno, Integer> EmovimentoTerreno = este.getMovimentoTerreno();
+            return OmovimentoTerreno.get(terreno) - EmovimentoTerreno.get(terreno);
+            
+        }
     }
 
     private static int getMovimentoTerrenoAsc(TipoTropa este, TipoTropa outro, Terreno terreno) {
