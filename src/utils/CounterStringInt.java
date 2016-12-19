@@ -38,7 +38,11 @@ public final class CounterStringInt implements Serializable {
     }
 
     public int getValue(String key) {
-        return counter.get(key);
+        try {
+            return counter.get(key);
+        } catch (NullPointerException ex) {
+            return 0;
+        }
     }
 
     public String getKeyWithMinCount() {
