@@ -18,4 +18,6 @@ public interface IPartidaDao {
     public Partida get(int idPartida, int turno) throws PersistenceException;
 
     public boolean setRun(int idPartida);
+
+    public boolean setRunNow(int idPartida);
 }

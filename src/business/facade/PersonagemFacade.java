@@ -280,6 +280,22 @@ public class PersonagemFacade implements Serializable {
         }
     }
 
+    public boolean isInCidadeLealdade(Personagem personagem) {
+        try {
+            return (personagem.getLocal().getCidade().getLealdade() == CenarioFacade.MINIMUM_LOYALTY);
+        } catch (NullPointerException ex) {
+            return false;
+        }
+    }
+    public boolean isInCidadeRaca(Personagem personagem) {
+        try {
+            return (this.isInCidade(personagem)
+                    && personagem.getLocal().getCidade().getNacao().getRaca() != personagem.getLocal().getCidade().getRaca());
+        } catch (NullPointerException ex) {
+            return false;
+        }
+    }
+
     public boolean isInCidadeAlheio(Personagem personagem) {
         try {
             return (this.isInCidade(personagem)
@@ -348,7 +364,7 @@ public class PersonagemFacade implements Serializable {
          * general mariola
          */
         try {
-            final int nn = (int) Math.min((exercito.getComandante().getPericiaComandanteNatural() / 10) + 1,BaseMsgs.tituloPericiaComandante.length);
+            final int nn = (int) Math.min((exercito.getComandante().getPericiaComandanteNatural() / 10) + 1, BaseMsgs.tituloPericiaComandante.length);
             return (String.format("%s %s",
                     BaseMsgs.tituloPericiaComandante[nn],
                     exercito.getComandante().getNome()));

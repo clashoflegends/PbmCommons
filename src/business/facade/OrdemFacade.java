@@ -5,7 +5,6 @@
 package business.facade;
 
 import baseLib.BaseModel;
-import persistenceCommons.SysApoio;
 import business.services.ComparatorFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
+import persistenceCommons.SysApoio;
 
 /**
  *
@@ -274,8 +274,16 @@ public class OrdemFacade implements Serializable {
                 return false;
             }
         }
-        if (requisitos.contains("cpp") && !personagemFacade.isInCidadePropria(personagem)) {
+        if (requisitos.contains("cpp") && !personagemFacade.isInCidadePropriaNaoSitiado(personagem)) {
             //nao pode estar sitiado, mas nao fazendo a critica pq o flag de sitiado sobrevive ao turno.
+            return false;
+        }
+        if (requisitos.contains("ccn") && !personagemFacade.isInCidadeRaca(personagem)) {
+            //city and nation have same culture
+            return false;
+        }
+        if (requisitos.contains("clm") && !personagemFacade.isInCidadeLealdade(personagem)) {
+            //city loyalty above minimum
             return false;
         }
         if (requisitos.contains("cpv") && !personagemFacade.isInCidadeVassalo(personagem)) {

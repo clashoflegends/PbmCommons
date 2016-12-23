@@ -251,6 +251,14 @@ public class TitleFactory implements Serializable {
             //nao pode estar sitiado
             ret += separator + labels.getString("REQUISITO.AJUDA.CPP");
         }
+        if (requisitos.contains("ccn")) {
+            //city has same culture as nation
+            ret += separator + labels.getString("REQUISITO.AJUDA.CCN");
+        }
+        if (requisitos.contains("clm")) {
+            //city has loyalty above minimum
+            ret += separator + labels.getString("REQUISITO.AJUDA.CLM");
+        }
         if (requisitos.contains("cpv")) {
             //nao pode estar sitiado
             ret += separator + labels.getString("REQUISITO.AJUDA.CPV");
