@@ -263,6 +263,10 @@ public class PersonagemFacade implements Serializable {
         return personagem.isComandaGrupo();
     }
 
+    public boolean isInGrupo(Personagem personagem) {
+        return personagem.isComandaGrupo() || personagem.getLider() != null;
+    }
+
     public boolean isInCidadePropria(Personagem personagem) {
         try {
             return (personagem.getLocal().getCidade().getNacao() == personagem.getNacao());
@@ -287,6 +291,7 @@ public class PersonagemFacade implements Serializable {
             return false;
         }
     }
+
     public boolean isInCidadeRaca(Personagem personagem) {
         try {
             return (this.isInCidade(personagem)
