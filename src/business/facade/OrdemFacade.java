@@ -264,6 +264,12 @@ public class OrdemFacade implements Serializable {
         if (requisitos.contains("comgrp") && !personagemFacade.isComandaGrupo(personagem)) {
             return false;
         }
+        if (requisitos.contains("nogrp") && !personagemFacade.isInGrupo(personagem)) {
+            return false;
+        }
+        if (requisitos.contains("noex") && personagemFacade.isInExercito(personagem)) {
+            return false;
+        }
         if (requisitos.contains("ancoravel")) {
             //se é esquadra e ancoravel
             if (!personagemFacade.isInEsquadra(personagem)) {

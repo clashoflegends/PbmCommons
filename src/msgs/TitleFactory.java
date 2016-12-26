@@ -244,6 +244,12 @@ public class TitleFactory implements Serializable {
         if (requisitos.contains("comgrp")) {
             ret += separator + labels.getString("REQUISITO.AJUDA.COMGRP");
         }
+        if (requisitos.contains("nogrp")) {
+            ret += separator + labels.getString("REQUISITO.AJUDA.NOGRP");
+        }
+        if (requisitos.contains("noex")) {
+            ret += separator + labels.getString("REQUISITO.AJUDA.NOEX");
+        }
         if (requisitos.contains("ancoravel")) {
             ret += separator + labels.getString("REQUISITO.AJUDA.ANCORAVEL");
         }
