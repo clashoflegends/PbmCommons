@@ -240,7 +240,7 @@ public class MapaManager implements Serializable {
         if (local.getCoordenadas().equals("0617")) {
             log.debug("aki!");
         }
-        for (Habilidade feature : localFacade.getFeatures(local)) {
+        for (Habilidade feature : localFacade.getTerrainFeatures(local)) {
             //imprime gold mine
             Image imgFeature = imageFactory.getFeature(feature);
             big.drawImage(imgFeature, x + (ImageFactory.HEX_SIZE - imgFeature.getWidth(form)) / 2, y + (ImageFactory.HEX_SIZE - imgFeature.getHeight(form)) / 2, form);

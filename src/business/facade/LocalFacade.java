@@ -38,7 +38,7 @@ public final class LocalFacade implements Serializable {
         doLoadFeaturesImage();
     }
 
-    public void doLoadFeaturesImage() {
+    private void doLoadFeaturesImage() {
         featuresImage.put(";LFC;", "/images/mapa/feature_cave.gif");
         featuresImage.put(";LFH;", "/images/mapa/feature_henges.gif");
         featuresImage.put(";LFI;", "/images/mapa/feature_igloo.gif");
@@ -397,7 +397,7 @@ public final class LocalFacade implements Serializable {
     }
 
     public boolean hasTerrainFeatures(Local local) {
-        for (String feature : getFeaturesImage().keySet()) {
+        for (String feature : getTerrainFeaturesImage().keySet()) {
             if (local.hasHabilidade(feature)) {
                 return true;
             }
@@ -409,7 +409,7 @@ public final class LocalFacade implements Serializable {
         return feature.hasHabilidade(";FFL;");
     }
 
-    public List<Habilidade> getFeatures(Local local) {
+    public List<Habilidade> getTerrainFeatures(Local local) {
         List<Habilidade> ret = new ArrayList<Habilidade>();
         for (Habilidade feature : local.getHabilidades().values()) {
             if (isTerrainFeature(feature)) {
@@ -419,7 +419,7 @@ public final class LocalFacade implements Serializable {
         return ret;
     }
 
-    public SortedMap<String, String> getFeaturesImage() {
+    public SortedMap<String, String> getTerrainFeaturesImage() {
         return featuresImage;
     }
 }
