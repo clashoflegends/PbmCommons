@@ -405,7 +405,7 @@ public class ImageFactory implements Serializable {
     }
 
     private void doLoadFeaturesAll() {
-        final SortedMap<String, String> featuresImage = localFacade.getFeaturesImage();
+        final SortedMap<String, String> featuresImage = localFacade.getTerrainFeaturesImage();
         for (String cdFeature : featuresImage.keySet()) {
             //todo: link feature to image vector
             features.put(cdFeature, new ImageIcon(getClass().getResource(featuresImage.get(cdFeature))));
