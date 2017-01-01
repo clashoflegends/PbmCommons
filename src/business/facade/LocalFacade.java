@@ -116,8 +116,7 @@ public final class LocalFacade implements Serializable {
     }
 
     /**
-     * Deve ser utilizado quando importa o observador, no caso, se cidade é
-     * oculta.
+     * Deve ser utilizado quando importa o observador, no caso, se cidade é oculta.
      *
      * @param local
      * @param observer
@@ -135,8 +134,7 @@ public final class LocalFacade implements Serializable {
     }
 
     /**
-     * Este deve ser usado para verificar a existencia da cidade, sem importar
-     * se é oculta.
+     * Este deve ser usado para verificar a existencia da cidade, sem importar se é oculta.
      *
      * @param local
      * @return
@@ -337,8 +335,7 @@ public final class LocalFacade implements Serializable {
      * @param tipo 0 = todos - self
      * @param tipo 1 = mesma nacao - self
      * @param tipo 2 = outras nacoes - self
-     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao -
-     * self + Null (optional)
+     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao - self + Null (optional)
      * @param tipo 4 = todos + self
      * @return
      */
@@ -407,6 +404,10 @@ public final class LocalFacade implements Serializable {
 
     public boolean isTerrainFeature(Habilidade feature) {
         return feature.hasHabilidade(";FFL;");
+    }
+
+    public boolean isTerrainFeatureTower(Local local) {
+        return local.hasHabilidade(";LFT;");
     }
 
     public List<Habilidade> getTerrainFeatures(Local local) {
