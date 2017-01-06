@@ -410,6 +410,34 @@ public final class LocalFacade implements Serializable {
         return local.hasHabilidade(";LFT;");
     }
 
+    public boolean isTerrainFeatureLake(Local local) {
+        return local.hasHabilidade(";LFK;");
+    }
+
+    public boolean isTerrainFeatureLith(Local local) {
+        return local.hasHabilidade(";LFL;");
+    }
+
+    public boolean isTerrainFeatureCave(Local local) {
+        return local.hasHabilidade(";LFC;");
+    }
+
+    public boolean isTerrainFeatureHenge(Local local) {
+        return local.hasHabilidade(";LFH;");
+    }
+
+    public boolean isTerrainFeatureIgloo(Local local) {
+        return local.hasHabilidade(";LFI;");
+    }
+
+    public boolean isTerrainFeatureRuin(Local local) {
+        return local.hasHabilidade(";LFR;");
+    }
+
+    public boolean isTerrainFeatureTemple(Local local) {
+        return local.hasHabilidade(";LFE;");
+    }
+
     public List<Habilidade> getTerrainFeatures(Local local) {
         List<Habilidade> ret = new ArrayList<Habilidade>();
         for (Habilidade feature : local.getHabilidades().values()) {
