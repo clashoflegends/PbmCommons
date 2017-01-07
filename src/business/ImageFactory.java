@@ -395,6 +395,7 @@ public class ImageFactory implements Serializable {
         return this.explosion.getImage();
     }
 
+
     public Image getFeature(Habilidade feature) {
         try {
             return this.features.get(feature.getCodigo()).getImage();

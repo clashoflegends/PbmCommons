@@ -32,6 +32,7 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     private int limiteMovimento;
     private final List<TipoTropa> tropas = new ArrayList<TipoTropa>();
     private boolean docas;
+    private ExercitoFacade ef = new ExercitoFacade();
 
     @Override
     public MovimentoExercito clone() throws CloneNotSupportedException {
@@ -282,13 +283,10 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     }
 
     /**
-     * retorna o custo de movimentacao entre dois hexes<br> 0 = cavalaria<br> 1
-     * = infantaria<br> 2 = esquadra embarcada<p>
+     * retorna o custo de movimentacao entre dois hexes<br> 0 = cavalaria<br> 1 = infantaria<br> 2 = esquadra embarcada<p>
      * TERRAIN INFANTRY/MIXED	CAVALRY ONLY <br> NORMAL	ROAD	NORMAL	ROAD <br>
-     * SHORE/PLAINS	3	2	2	1 <br> ROUGH 5 3	3	1 <br> FOREST 5	3	5	2 <br> DESERT 4
-     * 2	2	1 <br> SWAMP 6	3	5	2 <br>
-     * MOUNTAINS	12	6	12	3 <br> BRIDGE/FORD	+1	+1	+1	+1 <br> MINOR RIVER	+2	+2
-     * +2	+2 <br>
+     * SHORE/PLAINS	3	2	2	1 <br> ROUGH 5 3	3	1 <br> FOREST 5	3	5	2 <br> DESERT 4 2	2	1 <br> SWAMP 6	3	5	2 <br>
+     * MOUNTAINS	12	6	12	3 <br> BRIDGE/FORD	+1	+1	+1	+1 <br> MINOR RIVER	+2	+2 +2	+2 <br>
      */
     private int getCustoMovimentacaoTerra() {
         if (this.getDestino() == null) {
@@ -393,7 +391,6 @@ public final class MovimentoExercito implements Serializable, Cloneable {
         if (getTropas().isEmpty()) {
             return 1;
         }
-        ExercitoFacade ef = new ExercitoFacade();
         int ret = ef.getCustoMovimentoBase(getTropas(),
                 getDestino().getTerreno(),
                 this.getOrigem().isEstrada(this.getDirecao()),

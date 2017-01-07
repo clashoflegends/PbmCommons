@@ -21,6 +21,11 @@ import javax.swing.ImageIcon;
 public class TagManager implements Serializable {
 
     private static TagManager instance;
+    private final ImageIcon tagImage;
+
+    private TagManager() {
+        tagImage = new ImageIcon(getClass().getResource("/images/mapa/hex_tag.gif"));
+    }
 
     public synchronized static TagManager getInstance() {
         if (TagManager.instance == null) {
@@ -31,11 +36,11 @@ public class TagManager implements Serializable {
 
     public ImageIcon drawTagStyle2(int dx, int dy) {
         //create graphs
-        BufferedImage tagImage = new BufferedImage(
+        BufferedImage tagImg = new BufferedImage(
                 ImageFactory.HEX_SIZE + 2 * dx,
                 ImageFactory.HEX_SIZE + 2 * dy,
                 BufferedImage.TRANSLUCENT);
-        Graphics2D big = tagImage.createGraphics();
+        Graphics2D big = tagImg.createGraphics();
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         //setup internal lines
         big.setStroke(new BasicStroke(
@@ -50,8 +55,8 @@ public class TagManager implements Serializable {
 //        int[][] cord = {{30, 0}, {60, 14}, {60, 44}, {30, 60}, {0, 44}, {0, 14}};
         path.moveTo(0 + dx, 15 + dy);
         int[][] cord = {{30 + dx, 0 + dy}, {60 + dx, 15 + dy},
-            {60 + dx, 45 + dy}, {30 + dx, 60 + dy},
-            {0 + dx, 45 + dy}, {0 + dx, 15 + dy}};
+        {60 + dx, 45 + dy}, {30 + dx, 60 + dy},
+        {0 + dx, 45 + dy}, {0 + dx, 15 + dy}};
 
         for (int[] pos : cord) {
             path.lineTo(pos[0], pos[1]);
@@ -61,18 +66,18 @@ public class TagManager implements Serializable {
         //dismiss image to clear memory
         big.dispose();
 
-        ImageIcon ret = new ImageIcon(tagImage);
+        ImageIcon ret = new ImageIcon(tagImg);
         return ret;
     }
 
     public ImageIcon drawTagStyle3(int dx, int dy) {
         final int t = 6;
         //creates graphs
-        BufferedImage tagImage = new BufferedImage(
+        BufferedImage tagImg = new BufferedImage(
                 ImageFactory.HEX_SIZE + dx * 2,
                 ImageFactory.HEX_SIZE + dy * 2,
                 BufferedImage.TRANSLUCENT);
-        Graphics2D big = tagImage.createGraphics();
+        Graphics2D big = tagImg.createGraphics();
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         //setup internal lines
         big.setStroke(new BasicStroke(
@@ -88,8 +93,8 @@ public class TagManager implements Serializable {
 //        int[][] cord = {{30, 0}, {60, 15}, {60, 45}, {30, 60}, {0, 45}, {0, 15}};
         path.moveTo(0 + dx, 15 + dy);
         int[][] cordInt = {{30 + dx, 0 + dy}, {60 + dx, 15 + dy},
-            {60 + dx, 45 + dy}, {30 + dx, 60 + dy},
-            {0 + dx, 45 + dy}, {0 + dx, 15 + dy}};
+        {60 + dx, 45 + dy}, {30 + dx, 60 + dy},
+        {0 + dx, 45 + dy}, {0 + dx, 15 + dy}};
         for (int[] pos : cordInt) {
             path.lineTo(pos[0], pos[1]);
         }
@@ -103,8 +108,8 @@ public class TagManager implements Serializable {
                 BasicStroke.JOIN_ROUND));
         path.moveTo(0 + dx - t, 15 + dy - t / 2);
         int[][] cordExt = {{30 + dx, 0 + dy - t}, {60 + dx + t, 15 + dy - t / 2},
-            {60 + dx + t, 45 + dy + t / 2}, {30 + dx, 60 + dy + t},
-            {0 + dx - t, 45 + dy + t / 2}, {0 + dx - t, 15 + dy - t / 2}};
+        {60 + dx + t, 45 + dy + t / 2}, {30 + dx, 60 + dy + t},
+        {0 + dx - t, 45 + dy + t / 2}, {0 + dx - t, 15 + dy - t / 2}};
         for (int[] pos : cordExt) {
             path.lineTo(pos[0], pos[1]);
         }
@@ -116,11 +121,14 @@ public class TagManager implements Serializable {
 //        big.setFont(new Font("Verdana", Font.PLAIN, 10));
 //        big.drawString("Ohay!", 16, 18);
 
-
         //dispensa a imagem, liberando memoria
         big.dispose();
 
-        ImageIcon ret = new ImageIcon(tagImage);
+        ImageIcon ret = new ImageIcon(tagImg);
         return ret;
+    }
+
+    public ImageIcon getTagImage() {
+        return tagImage;
     }
 }
