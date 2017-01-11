@@ -32,7 +32,7 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     private int limiteMovimento;
     private final List<TipoTropa> tropas = new ArrayList<TipoTropa>();
     private boolean docas;
-    private ExercitoFacade ef = new ExercitoFacade();
+    private final ExercitoFacade ef = new ExercitoFacade();
 
     @Override
     public MovimentoExercito clone() throws CloneNotSupportedException {
@@ -189,7 +189,7 @@ public final class MovimentoExercito implements Serializable, Cloneable {
      * @param anterior the anterior to set
      */
     public void setDirecaoAnterior(int anterior) {
-        this.direcaoAnterior = anterior;
+        this.direcaoAnterior = anterior % 6;
     }
 
     /**
