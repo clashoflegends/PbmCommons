@@ -331,6 +331,9 @@ public class CidadeFacade implements Serializable {
     }
 
     public boolean isBigCity(Cidade cidade) {
+        if (cidade == null) {
+            return false;
+        }
         return cidade.getTamanho() >= 4;
     }
 

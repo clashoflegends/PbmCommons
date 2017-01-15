@@ -286,7 +286,7 @@ public class PersonagemFacade implements Serializable {
 
     public boolean isInCidadeLealdade(Personagem personagem) {
         try {
-            return (personagem.getLocal().getCidade().getLealdade() == CenarioFacade.MINIMUM_LOYALTY);
+            return (personagem.getLocal().getCidade().getLealdade() >= CenarioFacade.MINIMUM_LOYALTY);
         } catch (NullPointerException ex) {
             return false;
         }
@@ -295,7 +295,7 @@ public class PersonagemFacade implements Serializable {
     public boolean isInCidadeRaca(Personagem personagem) {
         try {
             return (this.isInCidade(personagem)
-                    && personagem.getLocal().getCidade().getNacao().getRaca() != personagem.getLocal().getCidade().getRaca());
+                    && personagem.getLocal().getCidade().getNacao().getRaca() == personagem.getLocal().getCidade().getRaca());
         } catch (NullPointerException ex) {
             return false;
         }

@@ -38,7 +38,7 @@ public final class LocalFacade implements Serializable {
         doLoadFeaturesImage();
     }
 
-    public void doLoadFeaturesImage() {
+    private void doLoadFeaturesImage() {
         featuresImage.put(";LFC;", "/images/mapa/feature_cave.gif");
         featuresImage.put(";LFH;", "/images/mapa/feature_henges.gif");
         featuresImage.put(";LFI;", "/images/mapa/feature_igloo.gif");
@@ -116,8 +116,7 @@ public final class LocalFacade implements Serializable {
     }
 
     /**
-     * Deve ser utilizado quando importa o observador, no caso, se cidade é
-     * oculta.
+     * Deve ser utilizado quando importa o observador, no caso, se cidade é oculta.
      *
      * @param local
      * @param observer
@@ -135,8 +134,7 @@ public final class LocalFacade implements Serializable {
     }
 
     /**
-     * Este deve ser usado para verificar a existencia da cidade, sem importar
-     * se é oculta.
+     * Este deve ser usado para verificar a existencia da cidade, sem importar se é oculta.
      *
      * @param local
      * @return
@@ -337,8 +335,7 @@ public final class LocalFacade implements Serializable {
      * @param tipo 0 = todos - self
      * @param tipo 1 = mesma nacao - self
      * @param tipo 2 = outras nacoes - self
-     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao -
-     * self + Null (optional)
+     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao - self + Null (optional)
      * @param tipo 4 = todos + self
      * @return
      */
@@ -397,7 +394,7 @@ public final class LocalFacade implements Serializable {
     }
 
     public boolean hasTerrainFeatures(Local local) {
-        for (String feature : getFeaturesImage().keySet()) {
+        for (String feature : getTerrainFeaturesImage().keySet()) {
             if (local.hasHabilidade(feature)) {
                 return true;
             }
@@ -409,7 +406,39 @@ public final class LocalFacade implements Serializable {
         return feature.hasHabilidade(";FFL;");
     }
 
-    public List<Habilidade> getFeatures(Local local) {
+    public boolean isTerrainFeatureTower(Local local) {
+        return local.hasHabilidade(";LFT;");
+    }
+
+    public boolean isTerrainFeatureLake(Local local) {
+        return local.hasHabilidade(";LFK;");
+    }
+
+    public boolean isTerrainFeatureLith(Local local) {
+        return local.hasHabilidade(";LFL;");
+    }
+
+    public boolean isTerrainFeatureCave(Local local) {
+        return local.hasHabilidade(";LFC;");
+    }
+
+    public boolean isTerrainFeatureHenge(Local local) {
+        return local.hasHabilidade(";LFH;");
+    }
+
+    public boolean isTerrainFeatureIgloo(Local local) {
+        return local.hasHabilidade(";LFI;");
+    }
+
+    public boolean isTerrainFeatureRuin(Local local) {
+        return local.hasHabilidade(";LFR;");
+    }
+
+    public boolean isTerrainFeatureTemple(Local local) {
+        return local.hasHabilidade(";LFE;");
+    }
+
+    public List<Habilidade> getTerrainFeatures(Local local) {
         List<Habilidade> ret = new ArrayList<Habilidade>();
         for (Habilidade feature : local.getHabilidades().values()) {
             if (isTerrainFeature(feature)) {
@@ -419,7 +448,7 @@ public final class LocalFacade implements Serializable {
         return ret;
     }
 
-    public SortedMap<String, String> getFeaturesImage() {
+    public SortedMap<String, String> getTerrainFeaturesImage() {
         return featuresImage;
     }
 }

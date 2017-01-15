@@ -514,6 +514,28 @@ public final class ConverterFactory implements Serializable {
         return null;
     }
 
+    public static String getFeatureName(String cdFeature) {
+        if (cdFeature.equals(";LFC;")) {
+            return labels.getString("TERRAIN.CAVES.L");
+        } else if (cdFeature.equals(";LFH;")) {
+            return labels.getString("TERRAIN.HENGES.L");
+        } else if (cdFeature.equals(";LFI;")) {
+            return labels.getString("TERRAIN.IGLOOS.L");
+        } else if (cdFeature.equals(";LFK;")) {
+            return labels.getString("TERRAIN.LAKES.L");
+        } else if (cdFeature.equals(";LFL;")) {
+            return labels.getString("TERRAIN.LITHS.L");
+        } else if (cdFeature.equals(";LFE;")) {
+            return labels.getString("TERRAIN.TEMPLES.L");
+        } else if (cdFeature.equals(";LFR;")) {
+            return labels.getString("TERRAIN.RUINS.L");
+        } else if (cdFeature.equals(";LFT;")) {
+            return labels.getString("TERRAIN.TOWERS.L");
+        } else {
+            return labels.getString("TERRAIN.RUINS.L");
+        }
+    }
+
     public int estoqueToIntEnPt(String tpEstoque) {
         int ret = -1;
         if (tpEstoque.equalsIgnoreCase("LE")) {
