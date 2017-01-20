@@ -13,6 +13,7 @@ import java.util.SortedMap;
 import model.Cidade;
 import model.Jogador;
 import model.Local;
+import model.Mercado;
 import model.Nacao;
 import model.Personagem;
 import model.Produto;
@@ -220,6 +221,21 @@ public class CidadeFacade implements Serializable {
                 return null;
             }
         }
+    }
+
+    public int getResourceSell(Cidade cidade, Produto produto, Mercado mercado) {
+        return (this.getEstoque(cidade, produto) + this.getProducao(cidade, produto)) * mercado.getProdutoVlVenda(produto);
+    }
+
+    public int getResourceBestSell(Cidade cidade, Mercado mercado) {
+        int ret = 0;
+        for (Produto produto : mercado.getProdutos()) {
+            int sellTotal = getResourceSell(cidade, produto, mercado);
+            if (sellTotal > ret) {
+                ret = sellTotal;
+            }
+        }
+        return ret;
     }
 
     public int getProducao(Cidade cidade, Produto produto) {
