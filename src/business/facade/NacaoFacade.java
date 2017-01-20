@@ -175,6 +175,14 @@ public class NacaoFacade implements Serializable {
         return discount;
     }
 
+    public int getPersonagens(Nacao nacao) {
+        return nacao.getPersonagens().size();
+    }
+
+    public int getPersonagensSlot(Nacao nacao, Cenario cenario) {
+        return cenario.getNumMaxPersonagem() - getPersonagens(nacao);
+    }
+
     public int getCustoPersonagens(Nacao nacao, Cenario cenario) {
         if (cenario.hasHabilidade(";SUP;")) {
             return 0;
@@ -284,12 +292,12 @@ public class NacaoFacade implements Serializable {
         }
     }
 
-    public int getTropasQt(Nacao nacao) {
+    public int getTropasQt(Nacao nation, Collection<Exercito> armies) {
         int ret = 0;
         try {
-            for (Personagem personagem : nacao.getPersonagens()) {
-                if (nacao == personagem.getNacao() && personagem.isComandaExercito()) {
-                    ret += personagem.getExercito().getTropasTotal();
+            for (Exercito army : armies) {
+                if (nation == army.getNacao()) {
+                    ret += army.getTropasTotal();
                 }
             }
         } catch (NullPointerException ex) {
