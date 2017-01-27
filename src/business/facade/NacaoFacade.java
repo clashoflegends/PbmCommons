@@ -180,7 +180,7 @@ public class NacaoFacade implements Serializable {
     }
 
     public int getPersonagensSlot(Nacao nacao, Cenario cenario) {
-        return cenario.getNumMaxPersonagem() - getPersonagens(nacao);
+        return Math.max(cenario.getNumMaxPersonagem() - getPersonagens(nacao), 0);
     }
 
     public int getCustoPersonagens(Nacao nacao, Cenario cenario) {
