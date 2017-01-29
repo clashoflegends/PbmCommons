@@ -89,8 +89,7 @@ public class OrdemFacade implements Serializable {
     }
 
     /**
-     * Verifica se o personagem pode realizar a ordem, de acordo com o tipo do
-     * actor.
+     * Verifica se o personagem pode realizar a ordem, de acordo com o tipo do actor.
      *
      * @param personagem
      * @param ordem
@@ -280,8 +279,11 @@ public class OrdemFacade implements Serializable {
                 return false;
             }
         }
-        if (requisitos.contains("cpp") && !personagemFacade.isInCidadePropriaNaoSitiado(personagem)) {
-            //nao pode estar sitiado, mas nao fazendo a critica pq o flag de sitiado sobrevive ao turno.
+        if (requisitos.contains("cpp") && !personagemFacade.isInCidadePropria(personagem)) {
+            /* 
+             nao pode estar sitiado, mas nao fazendo a critica pq o flag de sitiado sobrevive ao turno. 
+             nao pode ser usado no Judge!!!
+             */
             return false;
         }
         if (requisitos.contains("ccn") && !personagemFacade.isInCidadeRaca(personagem)) {
