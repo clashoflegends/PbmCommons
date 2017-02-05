@@ -79,7 +79,9 @@ public class CenarioFacade implements Serializable {
         SortedMap<Integer, String[]> ret = new TreeMap<Integer, String[]>();
         final String[][] tituloPericia = cenario.getTituloPericiaAll();
         ret.put(COMANDANTE, tituloPericia[COMANDANTE]);
-        ret.put(ROGUE, tituloPericia[ROGUE]);
+        if (hasRogue(cenario)) {
+            ret.put(ROGUE, tituloPericia[ROGUE]);
+        }
         if (hasDiplomat(cenario)) {
             ret.put(DIPLOMAT, tituloPericia[DIPLOMAT]);
         }
@@ -376,6 +378,10 @@ public class CenarioFacade implements Serializable {
 
     public boolean hasDiplomat(Cenario cenario) {
         return cenario.hasHabilidade(";PE;");
+    }
+
+    public boolean hasRogue(Cenario cenario) {
+        return cenario.hasHabilidade(";PR;");
     }
 
     public boolean hasWizard(Cenario cenario) {
