@@ -377,7 +377,7 @@ public class CidadeFacade implements Serializable {
         return (city.getTamanho() * custo + baseCost);
     }
 
-    public void doCidadeProduz(Cidade cidade, int fatorReducao) {
+    private void doCidadeProduz(Cidade cidade, int fatorReducao) {
         if (cidade.getTamanho() <= 0) {
             return;
         }
