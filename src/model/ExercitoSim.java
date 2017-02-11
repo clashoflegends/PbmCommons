@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import persistenceCommons.SettingsManager;
 
 /**
  *
@@ -37,7 +38,9 @@ public class ExercitoSim extends BaseModel implements IExercito {
         try {
             this.comandante = exercito.getComandante().getPericiaComandante();
             this.comandanteNome = exercito.getComandante().getNome();
+            this.setNome(exercito.getComandante().getNome());
         } catch (NullPointerException ex) {
+            this.setNome(SettingsManager.getInstance().getBundleManager().getString("GUARNICAO"));
         }
         //TODO: clone pelotoes para poder mudar valores sem afetar original
     }
