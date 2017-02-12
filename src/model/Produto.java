@@ -62,4 +62,8 @@ public class Produto extends BaseModel implements Comparable<Object> {
     public boolean isFood() {
         return this.getCodigo().equals("cm");
     }
+
+    public boolean isWood() {
+        return this.getCodigo().equals("le");
+    }
 }
