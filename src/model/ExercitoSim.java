@@ -6,8 +6,12 @@ package model;
 
 import baseLib.BaseModel;
 import business.interfaces.IExercito;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import persistenceCommons.SettingsManager;
 
 /**
  *
@@ -22,18 +26,21 @@ public class ExercitoSim extends BaseModel implements IExercito {
     private Local local;
     private Terreno terreno;
     private Nacao nacao;
-    private SortedMap<String, Pelotao> tropas = new TreeMap();
+    private SortedMap<String, Pelotao> platoons = new TreeMap();
+    private List<TipoTropa> troops = new ArrayList<TipoTropa>();
 
     public ExercitoSim(Exercito exercito) {
         this.moral = exercito.getMoral();
-        this.tropas = exercito.getPelotoes();
+        this.platoons = exercito.getPelotoes();
         this.local = exercito.getLocal();
         this.terreno = exercito.getLocal().getTerreno();
         this.nacao = exercito.getNacao();
         try {
             this.comandante = exercito.getComandante().getPericiaComandante();
             this.comandanteNome = exercito.getComandante().getNome();
+            this.setNome(exercito.getComandante().getNome());
         } catch (NullPointerException ex) {
+            this.setNome(SettingsManager.getInstance().getBundleManager().getString("GUARNICAO"));
         }
         //TODO: clone pelotoes para poder mudar valores sem afetar original
     }
@@ -58,15 +65,7 @@ public class ExercitoSim extends BaseModel implements IExercito {
 
     @Override
     public SortedMap<String, Pelotao> getPelotoes() {
-        return tropas;
-    }
-
-    public void setTropas(SortedMap<String, Pelotao> tropas) {
-        this.tropas = tropas;
-    }
-
-    public void addPelotoes(SortedMap<String, Pelotao> pelotoes) {
-        this.tropas = pelotoes;
+        return platoons;
     }
 
     @Override
@@ -103,11 +102,21 @@ public class ExercitoSim extends BaseModel implements IExercito {
         this.comandanteNome = comandanteNome;
     }
 
+    @Override
     public Terreno getTerreno() {
         return terreno;
     }
 
     public void setTerreno(Terreno terreno) {
         this.terreno = terreno;
+    }
+
+    public Collection<TipoTropa> getTipoTropa() {
+        if (this.troops.isEmpty() && this.platoons.size() > 0) {
+            for (Pelotao platoon : platoons.values()) {
+                this.troops.add(platoon.getTipoTropa());
+            }
+        }
+        return this.troops;
     }
 }

@@ -36,8 +36,10 @@ public class OrdemFacade implements Serializable {
     private static final CidadeFacade cidadeFacade = new CidadeFacade();
     private static final NacaoFacade nacaoFacade = new NacaoFacade();
     private static final LocalFacade localFacade = new LocalFacade();
-    private static final String[] ACTIONDISABLED = new String[]{"-", "", ""};
-    private static final String[] ACTIONBLANK = new String[]{" ", "", ""};
+    public static final String ACTIONDISABLED = "-";
+    public static final String ACTIONMISSING = " ";
+    private static final String[] ACTIONDISABLEDARRAY = new String[]{ACTIONDISABLED, "", ""};
+    private static final String[] ACTIONBLANK = new String[]{ACTIONMISSING, "", ""};
 
     public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, BaseModel actor, int indexOrdemAtiva, boolean isAllOrders, boolean isStartupPackages) {
         //cria vetor e garante tamanho minimo
@@ -89,8 +91,7 @@ public class OrdemFacade implements Serializable {
     }
 
     /**
-     * Verifica se o personagem pode realizar a ordem, de acordo com o tipo do
-     * actor.
+     * Verifica se o personagem pode realizar a ordem, de acordo com o tipo do actor.
      *
      * @param personagem
      * @param ordem
@@ -280,8 +281,11 @@ public class OrdemFacade implements Serializable {
                 return false;
             }
         }
-        if (requisitos.contains("cpp") && !personagemFacade.isInCidadePropriaNaoSitiado(personagem)) {
-            //nao pode estar sitiado, mas nao fazendo a critica pq o flag de sitiado sobrevive ao turno.
+        if (requisitos.contains("cpp") && !personagemFacade.isInCidadePropria(personagem)) {
+            /* 
+             nao pode estar sitiado, mas nao fazendo a critica pq o flag de sitiado sobrevive ao turno. 
+             nao pode ser usado no Judge!!!
+             */
             return false;
         }
         if (requisitos.contains("ccn") && !personagemFacade.isInCidadeRaca(personagem)) {
@@ -401,30 +405,30 @@ public class OrdemFacade implements Serializable {
 
     public String[] getOrdemDisplay(Personagem actor, int index, Cenario cenario, Jogador owner) {
         if (!isAtivo(actor)) {
-            return (ACTIONDISABLED);
+            return (ACTIONDISABLEDARRAY);
         }
         if (!owner.isNacao(actor.getNacao())) {
-            return (ACTIONDISABLED);
+            return (ACTIONDISABLEDARRAY);
         }
         return getOrdemDisplay(actor, index, getOrdemMax(actor, cenario));
     }
 
     public String[] getOrdemDisplay(Cidade actor, int index, Cenario cenario, Jogador owner) {
         if (actor.getTamanho() <= 0) {
-            return (ACTIONDISABLED);
+            return (ACTIONDISABLEDARRAY);
         }
         if (!owner.isNacao(actor.getNacao())) {
-            return (ACTIONDISABLED);
+            return (ACTIONDISABLEDARRAY);
         }
         return getOrdemDisplay(actor, index, getOrdemMax(actor, cenario));
     }
 
     public String[] getOrdemDisplay(Nacao actor, int index, Cenario cenario, Jogador owner) {
         if (!actor.isAtiva()) {
-            return (ACTIONDISABLED);
+            return (ACTIONDISABLEDARRAY);
         }
         if (!owner.isNacao(actor)) {
-            return (ACTIONDISABLED);
+            return (ACTIONDISABLEDARRAY);
         }
         return getOrdemDisplay(actor, index, getOrdemMax(actor, cenario));
     }
@@ -440,7 +444,7 @@ public class OrdemFacade implements Serializable {
             return ret;
         } catch (NullPointerException ex) {
             if (index >= acoesMax) {
-                return (ACTIONDISABLED);
+                return (ACTIONDISABLEDARRAY);
             } else {
                 return (ACTIONBLANK);
             }

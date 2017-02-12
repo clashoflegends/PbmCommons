@@ -61,9 +61,18 @@ public class PathFactory implements Serializable {
         return SettingsManager.getInstance().getSaveDir() + "images/Pers/";
     }
 
+    public String getStatsDirName() {
+        return SettingsManager.getInstance().getSaveStatsDir();
+    }
+
+    public String getStatsFileName(int idGame, String nmGame) {
+        return String.format(SettingsManager.getInstance().getSaveStatsDir() + label.getString("XLS.STATS.FILENAME"), idGame, nmGame);
+    }
+
     public static ExtensionFileFilter getFilterAcoes() {
         return new ExtensionFileFilter(label.getString("FILTRO.ACOES"), "rc.egf", "");
     }
+
     public static ExtensionFileFilter getFilterImages() {
         return new ExtensionFileFilter(label.getString("FILTRO.IMAGE"), "png", "");
     }

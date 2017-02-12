@@ -180,7 +180,7 @@ public class ExercitoFacade implements Serializable {
      * @param pelotao
      * @return
      */
-    public String getNomeRaca(Exercito exercito, Pelotao pelotao) {
+    public String getNomeRaca(IExercito exercito, Pelotao pelotao) {
 //        return exercito.getNacao().getRaca().getTropaDescricao(pelotao.getCodigo());
         return pelotao.getTipoTropa().getNome();
     }
@@ -442,11 +442,11 @@ public class ExercitoFacade implements Serializable {
         return null;
     }
 
-    public int getAtaquePelotao(Pelotao pelotao, Exercito exercito) {
+    public int getAtaquePelotao(Pelotao pelotao, IExercito exercito) {
         return (int) battleSimFacade.getAtaquePelotao(pelotao, exercito);
     }
 
-    public int getDefesaPelotao(Pelotao pelotao, Exercito exercito) {
+    public int getDefesaPelotao(Pelotao pelotao, IExercito exercito) {
         return (int) battleSimFacade.getDefesaPelotao(pelotao, exercito.getLocal().getTerreno(), exercito);
     }
 
