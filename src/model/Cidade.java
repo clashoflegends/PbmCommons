@@ -184,7 +184,7 @@ public class Cidade extends BaseModel {
     public int getProducao(Produto produto) {
         try {
             int ret = this.getLocal().getProducaoClima(produto);
-            if (produto.isMoney()) {
+            if (!produto.isMoney()) {
                 return 0;
             }
             int[] producaoFator = {0, 100, 80, 60, 40, 20};
