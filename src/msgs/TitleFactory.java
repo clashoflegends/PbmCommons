@@ -381,6 +381,14 @@ public class TitleFactory implements Serializable {
         if (requisitos.contains("artdragonegg")) {
             ret += separator + labels.getString("REQUISITO.AJUDA.ARTDRAGONEGG");
         }
+        if (requisitos.contains("lhf")) {
+            //terrain landmark
+            ret += separator + labels.getString("REQUISITO.AJUDA.LHF");
+        }
+        if (requisitos.contains("lhs")) {
+            //terrain landmark spire
+            ret += separator + labels.getString("REQUISITO.AJUDA.LHS");
+        }
         return ret;
     }
 

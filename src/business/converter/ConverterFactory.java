@@ -514,7 +514,7 @@ public final class ConverterFactory implements Serializable {
         return null;
     }
 
-    public static String getFeatureName(String cdFeature) {
+    public static String getLandmarkName(String cdFeature) {
         if (cdFeature.equals(";LFC;")) {
             return labels.getString("TERRAIN.CAVES.L");
         } else if (cdFeature.equals(";LFH;")) {
