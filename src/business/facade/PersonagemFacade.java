@@ -353,13 +353,11 @@ public class PersonagemFacade implements Serializable {
     }
 
     public boolean isTerrainLandmark(Personagem personagem) {
-        localFacade.isTerrainLandmark(personagem.getLocal());
-        return false;
+        return localFacade.isTerrainLandmark(personagem.getLocal());
     }
 
     public boolean isTerrainLandmarkSpire(Personagem personagem) {
-        localFacade.isTerrainLandmarkSpire(personagem.getLocal());
-        return false;
+        return localFacade.isTerrainLandmarkSpire(personagem.getLocal());
     }
 
     public boolean isMorto(Personagem personagem) {
