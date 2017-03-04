@@ -566,7 +566,7 @@ public class OrdemFacade implements Serializable {
         }
         //ordens:
         if (actor.getResultados() != null && !actor.getResultados().equals("")) {
-            return SysApoio.doParseString(actor.getResultados(), labels);
+            return SysApoio.stringParse(actor.getResultados(), labels);
         }
         return "";
     }
