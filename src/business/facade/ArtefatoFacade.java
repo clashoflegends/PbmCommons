@@ -4,7 +4,6 @@
  */
 package business.facade;
 
-import persistenceCommons.SysApoio;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +15,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
+import persistenceCommons.SysApoio;
 
 /**
  *

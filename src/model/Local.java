@@ -31,6 +31,11 @@ public class Local extends BaseModel implements Cloneable {
         return (Local) super.clone();
     }
 
+    @Override
+    public String toString() {
+        return this.getCoordenadas();
+    }
+
     public SortedMap<String, Artefato> getArtefatos() {
         return this.indiceArtefato;
     }

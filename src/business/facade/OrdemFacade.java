@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
+import model.ActorAction;
 import model.Cenario;
 import model.Cidade;
 import model.Jogador;
@@ -36,10 +37,8 @@ public class OrdemFacade implements Serializable {
     private static final CidadeFacade cidadeFacade = new CidadeFacade();
     private static final NacaoFacade nacaoFacade = new NacaoFacade();
     private static final LocalFacade localFacade = new LocalFacade();
-    public static final String ACTIONDISABLED = "-";
-    public static final String ACTIONMISSING = " ";
-    private static final String[] ACTIONDISABLEDARRAY = new String[]{ACTIONDISABLED, "", ""};
-    private static final String[] ACTIONBLANK = new String[]{ACTIONMISSING, "", ""};
+    private static final String[] ACTIONDISABLEDARRAY = new String[]{ActorAction.ACTION_DISABLED, "", ""};
+    private static final String[] ACTIONBLANK = new String[]{ActorAction.ACTION_BLANK, "", ""};
 
     public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, BaseModel actor, int indexOrdemAtiva, boolean isAllOrders, boolean isStartupPackages) {
         //cria vetor e garante tamanho minimo
@@ -416,34 +415,28 @@ public class OrdemFacade implements Serializable {
         if (!isAtivo(actor)) {
             return (ACTIONDISABLEDARRAY);
         }
-        if (!owner.isNacao(actor.getNacao())) {
-            return (ACTIONDISABLEDARRAY);
-        }
-        return getOrdemDisplay(actor, index, getOrdemMax(actor, cenario));
+        return getOrdemDisplayGeneric(actor, index, getOrdemMax(actor, cenario), owner);
     }
 
     public String[] getOrdemDisplay(Cidade actor, int index, Cenario cenario, Jogador owner) {
         if (actor.getTamanho() <= 0) {
             return (ACTIONDISABLEDARRAY);
         }
-        if (!owner.isNacao(actor.getNacao())) {
-            return (ACTIONDISABLEDARRAY);
-        }
-        return getOrdemDisplay(actor, index, getOrdemMax(actor, cenario));
+        return getOrdemDisplayGeneric(actor, index, getOrdemMax(actor, cenario), owner);
     }
 
     public String[] getOrdemDisplay(Nacao actor, int index, Cenario cenario, Jogador owner) {
         if (!actor.isAtiva()) {
             return (ACTIONDISABLEDARRAY);
         }
-        if (!owner.isNacao(actor)) {
-            return (ACTIONDISABLEDARRAY);
-        }
-        return getOrdemDisplay(actor, index, getOrdemMax(actor, cenario));
+        return getOrdemDisplayGeneric(actor, index, getOrdemMax(actor, cenario), owner);
     }
 
-    private String[] getOrdemDisplay(BaseModel actor, int index, int acoesMax) {
+    private String[] getOrdemDisplayGeneric(BaseModel actor, int index, int acoesMax, Jogador owner) {
         try {
+            if (SettingsManager.getInstance().isConfig("LoadActionsOtherNations", "deny", "deny") && !owner.isNacao(actor.getNacao())) {
+                return (ACTIONDISABLEDARRAY);
+            }
             Ordem ordem = actor.getAcao(index).getOrdem();
             List parametros = actor.getAcao(index).getParametrosDisplay();
             String[] ret = new String[3];
@@ -454,10 +447,45 @@ public class OrdemFacade implements Serializable {
         } catch (NullPointerException ex) {
             if (index >= acoesMax) {
                 return (ACTIONDISABLEDARRAY);
+            } else if (!owner.isNacao(actor.getNacao())) {
+                return (ACTIONDISABLEDARRAY);
             } else {
                 return (ACTIONBLANK);
             }
         }
+    }
+
+    public ActorAction getActorAction(PersonagemOrdem po) {
+        return new ActorAction(po);
+
+    }
+
+    public ActorAction getActorActionBlank() {
+        return new ActorAction(ActorAction.STATUS_BLANK);
+
+    }
+
+    public ActorAction getActorAction(BaseModel actor, int index, int acoesMax, Jogador owner) {
+        if (SettingsManager.getInstance().isConfig("LoadActionsOtherNations", "deny", "deny") && !owner.isNacao(actor.getNacao())) {
+            return new ActorAction(ActorAction.STATUS_DISABLED);
+        }
+        if (index >= acoesMax) {
+            return new ActorAction(ActorAction.STATUS_DISABLED);
+        }
+        if (actor == null) {
+            return new ActorAction(ActorAction.STATUS_DISABLED);
+        }
+        if (actor.getAcao(index) == null && !owner.isNacao(actor.getNacao())) {
+            return new ActorAction(ActorAction.STATUS_DISABLED);
+        }
+        if (actor.getAcao(index) != null && !owner.isNacao(actor.getNacao())) {
+            return new ActorAction(actor.getAcao(index), ActorAction.STATUS_READONLY);
+        }
+        if (actor.getAcao(index) != null) {
+            return new ActorAction(actor.getAcao(index));
+        }
+        //return black
+        return new ActorAction(ActorAction.STATUS_BLANK);
     }
 
     private boolean isAtivo(Personagem actor) {
@@ -495,13 +523,6 @@ public class OrdemFacade implements Serializable {
             return null;
         }
     }
-//    public SortedMap<Integer, PersonagemOrdem> getOrdensExecutadas(Personagem personagem) {
-//        try {
-//            return personagem.getAcaoExecutadas();
-//        } catch (NullPointerException ex) {
-//            return null;
-//        }
-//    }
 
     public List<String> getParametrosId(BaseModel actor, int index) {
         try {
@@ -566,7 +587,7 @@ public class OrdemFacade implements Serializable {
         }
         //ordens:
         if (actor.getResultados() != null && !actor.getResultados().equals("")) {
-            return SysApoio.doParseString(actor.getResultados(), labels);
+            return SysApoio.stringParse(actor.getResultados(), labels);
         }
         return "";
     }

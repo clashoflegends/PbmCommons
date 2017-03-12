@@ -584,7 +584,7 @@ public class PersonagemFacade implements Serializable {
         }
         //ordens:
         if (personagem.getResultados() != null && !personagem.getResultados().equals("")) {
-            ret += SysApoio.doParseString(personagem.getResultados(), labels) + "\n";
+            ret += SysApoio.stringParse(personagem.getResultados(), labels) + "\n";
         }
         ret += getResultadoLocal(personagem);
         return ret;

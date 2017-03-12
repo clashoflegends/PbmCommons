@@ -129,7 +129,9 @@ public class TitleFactory implements Serializable {
     }
 
     public static String getTipoOrdem(Ordem ordem) {
-        if (ordem.getTipo().equals("Misc")) {
+        if (ordem == null) {
+            return "-";
+        } else if (ordem.getTipo().equals("Misc")) {
             return labels.getString("LIVRE");
         } else if (ordem.getTipo().equals("Per")) {
             return labels.getString("PRINCIPAL");
