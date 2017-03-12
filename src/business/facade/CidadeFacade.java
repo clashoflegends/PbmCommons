@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
+import model.Cenario;
 import model.Cidade;
 import model.Jogador;
 import model.Local;
@@ -37,6 +38,7 @@ public class CidadeFacade implements Serializable {
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final NacaoFacade nacaoFacade = new NacaoFacade();
     private static final LocalFacade localFacade = new LocalFacade();
+    private static final CenarioFacade cenarioFacade = new CenarioFacade();
     private static final BattleSimFacade combatSimFacade = new BattleSimFacade();
     public static final int[] ForneceComida = {0, 100, 200, 1000, 2500, 5000};
 
@@ -223,14 +225,14 @@ public class CidadeFacade implements Serializable {
         }
     }
 
-    public int getResourceSell(Cidade cidade, Produto produto, Mercado mercado) {
-        return (this.getEstoque(cidade, produto) + this.getProducao(cidade, produto)) * mercado.getProdutoVlVenda(produto);
+    public int getResourceSell(Cidade cidade, Produto produto, Mercado mercado, Cenario cenario, int turno) {
+        return (this.getEstoque(cidade, produto) + this.getProducao(cidade, produto, cenario, turno)) * mercado.getProdutoVlVenda(produto);
     }
 
-    public int getResourceBestSell(Cidade cidade, Mercado mercado) {
+    public int getResourceBestSell(Cidade cidade, Mercado mercado, Cenario cenario, int turno) {
         int ret = 0;
         for (Produto produto : mercado.getProdutos()) {
-            int sellTotal = getResourceSell(cidade, produto, mercado);
+            int sellTotal = getResourceSell(cidade, produto, mercado, cenario, turno);
             if (sellTotal > ret) {
                 ret = sellTotal;
             }
@@ -238,21 +240,26 @@ public class CidadeFacade implements Serializable {
         return ret;
     }
 
+    public int getProducao(Cidade cidade, Produto produto, Cenario cenario, int turno) {
+        return getProducao(cidade, produto) * cenarioFacade.getResourcesWinterReduction(cenario, turno) / 100;
+    }
+
     public int getProducao(Cidade cidade, Produto produto) {
-        final int producao = cidade.getProducao(produto);
+        int producao = cidade.getProducao(produto);
         try {
             final int minGold = cidade.getNacao().getHabilidadeNacaoValor("0039");
-            if (!produto.isMoney()) {
+            if (cidade.getNacao().hasHabilidade(";NWP;") && produto.isWood()) {
+                producao += producao * cidade.getNacao().getHabilidadeValor(";NWP;") / 100;
                 return producao;
-            } else if (cidade.getNacao().hasHabilidade(";PGH;")
+            } else if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGH;")
                     && localFacade.isTerrenoMontanhaColina(cidade.getLocal().getTerreno())) {
                 //se em montanha/colina e com habilidade, entao garante minimo de 500
                 return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGH;"));
-            } else if (cidade.getNacao().hasHabilidade(";PGM;")
+            } else if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGM;")
                     && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
                 return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGM;"));
-            } else if (producao <= minGold
+            } else if (produto.isMoney() && producao <= minGold
                     && cidade.getNacao().getHabilidadesNacao().containsKey("0039")
                     && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
@@ -375,19 +382,5 @@ public class CidadeFacade implements Serializable {
             custo = custo / city.getNacao().getHabilidadeValor(";PPB;");
         }
         return (city.getTamanho() * custo + baseCost);
-    }
-
-    private void doCidadeProduz(Cidade cidade, int fatorReducao) {
-        if (cidade.getTamanho() <= 0) {
-            return;
-        }
-//        //gera producao e gera renda.
-//        for (int ii = 0; ii < 8; ii++) {
-//            final int producao = cidade.getProducao(ii) * fatorReducao / 100;
-//            cidade.sumEstoque(ii, producao);
-//            if (cidade.getNacao().hasHabilidadeNacaoOld("0054") && cidade.getLocal().getClima() >= 5) {
-//                cidade.sumEstoque(ii, producao * cidade.getNacao().getHabilidadeNacaoValor("0054") / 100);
-//            }
-//        }
     }
 }

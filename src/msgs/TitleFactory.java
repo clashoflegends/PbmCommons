@@ -385,6 +385,10 @@ public class TitleFactory implements Serializable {
             //terrain landmark
             ret += separator + labels.getString("REQUISITO.AJUDA.LHF");
         }
+        if (requisitos.contains("lhn")) {
+            //terrain landmark
+            ret += separator + labels.getString("REQUISITO.AJUDA.LHN");
+        }
         if (requisitos.contains("lhs")) {
             //terrain landmark spire
             ret += separator + labels.getString("REQUISITO.AJUDA.LHS");

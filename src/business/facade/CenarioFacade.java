@@ -402,4 +402,24 @@ public class CenarioFacade implements Serializable {
         }
         return false;
     }
+
+    public boolean isWinterComing(Cenario cenario, int turno) {
+        return turno > cenario.getHabilidadeValor(";SWC;") - 5 && turno < cenario.getHabilidadeValor(";SWC;") && cenario.hasHabilidade(";SWC;");
+    }
+
+    public boolean isWinterArrived(Cenario cenario, int turno) {
+        return cenario.hasHabilidade(";SWC;") && turno >= cenario.getHabilidadeValor(";SWC;");
+    }
+
+    public boolean isWinter(Cenario cenario, int turno) {
+        return isWinterArrived(cenario, turno) || isWinterComing(cenario, turno);
+    }
+
+    public int getResourcesWinterReduction(Cenario cenario, int turno) {
+        if (isWinter(cenario, turno)) {
+            return 100 - turno + 20;
+        } else {
+            return 100;
+        }
+    }
 }

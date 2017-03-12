@@ -268,10 +268,10 @@ public class NacaoFacade implements Serializable {
         }
     }
 
-    public int getProducao(Nacao nacao, Produto produto) {
+    public int getProducao(Nacao nacao, Produto produto, Cenario cenario, int turno) {
         int ret = 0;
         for (Cidade cidade : nacao.getCidades()) {
-            ret += cidadeFacade.getProducao(cidade, produto);
+            ret += cidadeFacade.getProducao(cidade, produto, cenario, turno);
         }
         return ret;
     }
