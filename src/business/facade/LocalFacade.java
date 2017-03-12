@@ -32,21 +32,21 @@ import persistenceCommons.SysApoio;
 public final class LocalFacade implements Serializable {
 
     private static final Log log = LogFactory.getLog(LocalFacade.class);
-    private final SortedMap<String, String> featuresImage = new TreeMap<String, String>();
+    private final SortedMap<String, String> landmarkImage = new TreeMap<String, String>();
 
     public LocalFacade() {
-        doLoadFeaturesImage();
+        doLoadLandmarksImage();
     }
 
-    private void doLoadFeaturesImage() {
-        featuresImage.put(";LFC;", "/images/mapa/feature_cave.gif");
-        featuresImage.put(";LFH;", "/images/mapa/feature_henges.gif");
-        featuresImage.put(";LFI;", "/images/mapa/feature_igloo.gif");
-        featuresImage.put(";LFK;", "/images/mapa/feature_lake.gif");
-        featuresImage.put(";LFL;", "/images/mapa/feature_liths.gif");
-        featuresImage.put(";LFE;", "/images/mapa/feature_temple.gif");
-        featuresImage.put(";LFR;", "/images/mapa/feature_ruins.gif");
-        featuresImage.put(";LFT;", "/images/mapa/feature_tower.gif");
+    private void doLoadLandmarksImage() {
+        landmarkImage.put(";LFC;", "/images/mapa/feature_cave.gif");
+        landmarkImage.put(";LFH;", "/images/mapa/feature_henges.gif");
+        landmarkImage.put(";LFI;", "/images/mapa/feature_igloo.gif");
+        landmarkImage.put(";LFK;", "/images/mapa/feature_lake.gif");
+        landmarkImage.put(";LFL;", "/images/mapa/feature_liths.gif");
+        landmarkImage.put(";LFE;", "/images/mapa/feature_temple.gif");
+        landmarkImage.put(";LFR;", "/images/mapa/feature_ruins.gif");
+        landmarkImage.put(";LFT;", "/images/mapa/feature_tower.gif");
     }
 
     public SortedMap<String, Artefato> getArtefatos(Local local) {
@@ -393,62 +393,71 @@ public final class LocalFacade implements Serializable {
         return terreno.isMontanha() || terreno.isColina();
     }
 
-    public boolean hasTerrainFeatures(Local local) {
-        for (String feature : getTerrainFeaturesImage().keySet()) {
-            if (local.hasHabilidade(feature)) {
+    public boolean hasTerrainLandmark(Local local) {
+        for (String landmark : getTerrainLandmarksImage().keySet()) {
+            if (local.hasHabilidade(landmark)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean isTerrainFeature(Habilidade feature) {
-        return feature.hasHabilidade(";FFL;");
+    public boolean isTerrainLandmark(Habilidade landmark) {
+        return landmark.hasHabilidade(";FFL;");
     }
 
-    public boolean isTerrainFeatureTower(Local local) {
+    public boolean isTerrainLandmarkSpire(Local local) {
         return local.hasHabilidade(";LFT;");
     }
 
-    public boolean isTerrainFeatureLake(Local local) {
+    public boolean isTerrainLandmarkLake(Local local) {
         return local.hasHabilidade(";LFK;");
     }
 
-    public boolean isTerrainFeatureLith(Local local) {
+    public boolean isTerrainLandmarkLith(Local local) {
         return local.hasHabilidade(";LFL;");
     }
 
-    public boolean isTerrainFeatureCave(Local local) {
+    public boolean isTerrainLandmark(Local local) {
+        for (Habilidade landmark : local.getHabilidades().values()) {
+            if (isTerrainLandmark(landmark)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isTerrainLandmarkCave(Local local) {
         return local.hasHabilidade(";LFC;");
     }
 
-    public boolean isTerrainFeatureHenge(Local local) {
+    public boolean isTerrainLandmarkHenge(Local local) {
         return local.hasHabilidade(";LFH;");
     }
 
-    public boolean isTerrainFeatureIgloo(Local local) {
+    public boolean isTerrainLandmarkIgloo(Local local) {
         return local.hasHabilidade(";LFI;");
     }
 
-    public boolean isTerrainFeatureRuin(Local local) {
+    public boolean isTerrainLandmarkRuin(Local local) {
         return local.hasHabilidade(";LFR;");
     }
 
-    public boolean isTerrainFeatureTemple(Local local) {
+    public boolean isTerrainLandmarkTemple(Local local) {
         return local.hasHabilidade(";LFE;");
     }
 
-    public List<Habilidade> getTerrainFeatures(Local local) {
+    public List<Habilidade> getTerrainLandmark(Local local) {
         List<Habilidade> ret = new ArrayList<Habilidade>();
-        for (Habilidade feature : local.getHabilidades().values()) {
-            if (isTerrainFeature(feature)) {
-                ret.add(feature);
+        for (Habilidade landmark : local.getHabilidades().values()) {
+            if (isTerrainLandmark(landmark)) {
+                ret.add(landmark);
             }
         }
         return ret;
     }
 
-    public SortedMap<String, String> getTerrainFeaturesImage() {
-        return featuresImage;
+    public SortedMap<String, String> getTerrainLandmarksImage() {
+        return landmarkImage;
     }
 }

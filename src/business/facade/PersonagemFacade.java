@@ -352,6 +352,14 @@ public class PersonagemFacade implements Serializable {
         return ret;
     }
 
+    public boolean isTerrainLandmark(Personagem personagem) {
+        return localFacade.isTerrainLandmark(personagem.getLocal());
+    }
+
+    public boolean isTerrainLandmarkSpire(Personagem personagem) {
+        return localFacade.isTerrainLandmarkSpire(personagem.getLocal());
+    }
+
     public boolean isMorto(Personagem personagem) {
         if (personagem.getVida() <= 0) {
             return true;
@@ -475,8 +483,7 @@ public class PersonagemFacade implements Serializable {
      */
     private int doCalculaDueloNatural(Personagem personagem) {
         /**
-         * calcular o duelo: definir maior duelo por pericia, com artefatos ai
-         * somar 25% dos duelos das demais pericias. ai somar bonus de duelo e
+         * calcular o duelo: definir maior duelo por pericia, com artefatos ai somar 25% dos duelos das demais pericias. ai somar bonus de duelo e
          * bonus de artefato de combate
          */
         float duelo;

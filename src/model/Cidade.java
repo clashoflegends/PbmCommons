@@ -184,10 +184,11 @@ public class Cidade extends BaseModel {
     public int getProducao(Produto produto) {
         try {
             int ret = this.getLocal().getProducaoClima(produto);
-            if (!produto.isMoney()) {
-                int[] producaoFator = {0, 100, 80, 60, 40, 20};
-                ret = ret * producaoFator[this.getTamanho()] / 100;
+            if (produto.isMoney()) {
+                return ret;
             }
+            int[] sizeFactor = {0, 100, 80, 60, 40, 20};
+            ret = ret * sizeFactor[this.getTamanho()] / 100;
             return ret;
         } catch (NullPointerException ex) {
             return 0;

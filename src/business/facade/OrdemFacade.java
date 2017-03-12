@@ -380,6 +380,15 @@ public class OrdemFacade implements Serializable {
         if (requisitos.contains("cfn5") && personagemFacade.getCidadeFortificacao(personagem) == 5) {
             return false;
         }
+        if (requisitos.contains("lhf") && !personagemFacade.isTerrainLandmark(personagem)) {
+            return false;
+        }
+        if (requisitos.contains("lhn") && personagemFacade.isTerrainLandmark(personagem)) {
+            return false;
+        }
+        if (requisitos.contains("lhs") && !personagemFacade.isTerrainLandmarkSpire(personagem)) {
+            return false;
+        }
         return true;
     }
 
