@@ -31,11 +31,11 @@ public class Pelotao extends BaseModel implements Cloneable {
     }
 
     public void setModAtaque(int arma) {
-        this.modAtaque = arma;
+        this.modAtaque = Math.min(100, arma + this.modAtaque);
     }
 
     public void sumModAtaque(int arma) {
-        this.modAtaque = Math.min(100, arma + this.modAtaque);
+        setModAtaque(arma + this.getModAtaque());
     }
 
     public int getModDefesa() {
@@ -43,11 +43,11 @@ public class Pelotao extends BaseModel implements Cloneable {
     }
 
     public void setModDefesa(int armadura) {
-        this.modDefesa = armadura;
+        this.modDefesa = Math.min(100, armadura + this.modAtaque);
     }
 
     public void sumModDefesa(int armadura) {
-        this.modDefesa = Math.min(100, armadura + this.modDefesa);
+        setModDefesa(armadura + this.getModDefesa());
     }
 
     public int getQtd() {
