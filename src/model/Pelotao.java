@@ -31,7 +31,7 @@ public class Pelotao extends BaseModel implements Cloneable {
     }
 
     public void setModAtaque(int arma) {
-        this.modAtaque = Math.min(100, arma + this.modAtaque);
+        this.modAtaque = Math.max(100, arma + this.modAtaque);
     }
 
     public void sumModAtaque(int arma) {
@@ -43,7 +43,7 @@ public class Pelotao extends BaseModel implements Cloneable {
     }
 
     public void setModDefesa(int armadura) {
-        this.modDefesa = Math.min(100, armadura + this.modAtaque);
+        this.modDefesa = Math.max(100, armadura + this.modAtaque);
     }
 
     public void sumModDefesa(int armadura) {
