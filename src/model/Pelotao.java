@@ -31,7 +31,13 @@ public class Pelotao extends BaseModel implements Cloneable {
     }
 
     public void setModAtaque(int arma) {
-        this.modAtaque = Math.max(100, arma + this.modAtaque);
+        if (arma < 0) {
+            this.modAtaque = 0;
+        } else if (arma > 100) {
+            this.modAtaque = 100;
+        } else {
+            this.modAtaque = arma;
+        }
     }
 
     public void sumModAtaque(int arma) {
@@ -43,7 +49,13 @@ public class Pelotao extends BaseModel implements Cloneable {
     }
 
     public void setModDefesa(int armadura) {
-        this.modDefesa = Math.max(100, armadura + this.modAtaque);
+        if (armadura < 0) {
+            this.modDefesa = 0;
+        } else if (armadura > 100) {
+            this.modDefesa = 100;
+        } else {
+            this.modDefesa = armadura;
+        }
     }
 
     public void sumModDefesa(int armadura) {
