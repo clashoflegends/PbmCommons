@@ -333,10 +333,10 @@ public class MapaManager implements Serializable {
             return;
         }
         for (Personagem pers : listaPers) {
-            if (pers.getLocal().equals(pers.getLocalOrigem())) {
+            if (pers.getLocal() == null || pers.getLocalOrigem() == null) {
                 continue;
             }
-            if (pers.getLocal() == null || pers.getLocalOrigem() == null) {
+            if (pers.getLocal().equals(pers.getLocalOrigem())) {
                 continue;
             }
             //calculate points;
