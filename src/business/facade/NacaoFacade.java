@@ -577,7 +577,7 @@ public class NacaoFacade implements Serializable {
     public int getGoldDecay(Nacao nacao, int treasuryForecast, Cenario cenario) {
         if (cenario.hasHabilidade(";SGD;")) {
             if (nacao.hasHabilidade(";NGD;")) {
-                return treasuryForecast * cenario.getHabilidadeValor(";SGD;") * nacao.getHabilidadeValor(";NGD;") / 10000;
+                return treasuryForecast * cenario.getHabilidadeValor(";SGD;") * (100 - nacao.getHabilidadeValor(";NGD;")) / 10000;
             } else {
                 return treasuryForecast * cenario.getHabilidadeValor(";SGD;") / 100;
             }
