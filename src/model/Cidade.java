@@ -5,6 +5,7 @@
 package model;
 
 import baseLib.BaseModel;
+import business.interfaces.IActor;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import persistenceCommons.BundleManager;
@@ -14,7 +15,7 @@ import persistenceCommons.SettingsManager;
  *
  * @author gurgel
  */
-public class Cidade extends BaseModel {
+public class Cidade extends BaseModel implements IActor {
 
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private Local local;
@@ -266,5 +267,10 @@ public class Cidade extends BaseModel {
     @Override
     public String getTpActor() {
         return "C";
+    }
+
+    @Override
+    public boolean isActorActive() {
+        return this.getTamanho() > 0;
     }
 }

@@ -5,6 +5,7 @@
 package model;
 
 import baseLib.BaseModel;
+import business.interfaces.IActor;
 import java.util.Arrays;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -13,7 +14,7 @@ import java.util.TreeMap;
  *
  * @author gurgel
  */
-public class Personagem extends BaseModel {
+public class Personagem extends BaseModel implements IActor {
     // PENDING: alguns metodos deveriam sr transferidos ao Facade. Como soma de pericias. Talvez adicionar artefato.
 
     private int vida = 100, dueloBonus = 0, duelo = 0, ordensExtraQt = 0;
@@ -314,8 +315,7 @@ public class Personagem extends BaseModel {
      */
     public void doCalculaDuelo() {
         /**
-         * calcular o duelo: definir maior duelo por pericia, com artefatos ai
-         * somar 25% dos duelos das demais pericias. ai somar bonus de duelo e
+         * calcular o duelo: definir maior duelo por pericia, com artefatos ai somar 25% dos duelos das demais pericias. ai somar bonus de duelo e
          * bonus de artefato de combate
          */
         float dueloNew;
@@ -508,5 +508,10 @@ public class Personagem extends BaseModel {
     @Override
     public String getTpActor() {
         return "P";
+    }
+
+    @Override
+    public boolean isActorActive() {
+        return this.getVida() > 0;
     }
 }
