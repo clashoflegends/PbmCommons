@@ -237,10 +237,13 @@ public class MapaManager implements Serializable {
             big.drawImage(imgFeature, x + (ImageFactory.HEX_SIZE - imgFeature.getWidth(form)) / 2, y + (ImageFactory.HEX_SIZE - imgFeature.getHeight(form)) / 2, form);
         }
         //imprime o fog of war
-        if (!local.isVisible() && !SettingsManager.getInstance().isWorldBuilder()) {
-            big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .6f));
-            big.drawImage(this.desenhoDetalhes[dtFogofwar], x, y, form);
-            big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+        if (!local.isVisible() && !SettingsManager.getInstance().isWorldBuilder() && !SettingsManager.getInstance().isConfig("FogOfWarType", "0", "1")) {
+            if (SettingsManager.getInstance().isConfig("FogOfWarType", "1", "1")) {
+                //print fog
+                big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .6f));
+                big.drawImage(this.desenhoDetalhes[dtFogofwar], x, y, form);
+                big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+            }
         }
         //navios presentes
         if (localFacade.isBarcos(local)) {
