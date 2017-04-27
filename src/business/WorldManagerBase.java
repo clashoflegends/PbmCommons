@@ -68,6 +68,20 @@ public abstract class WorldManagerBase implements Serializable {
         return world.getNacoes();
     }
 
+    public Nacao getNacao(int idNation) {
+        for (Nacao nation : this.getNacoes().values()) {
+            if (nation.getId() == idNation) {
+                return nation;
+            }
+        }
+        return null;
+
+    }
+
+    public Nacao getNacao(String idNation) {
+        return getNacao(Integer.parseInt(idNation));
+    }
+
     public SortedMap<String, Ordem> getOrdens() {
         return world.getPartida().getCenario().getOrdens();
     }

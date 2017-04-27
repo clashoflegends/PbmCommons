@@ -5,6 +5,7 @@
 package model;
 
 import baseLib.BaseModel;
+import business.interfaces.IActor;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.TreeMap;
  *
  * @author gurgel
  */
-public class Nacao extends BaseModel {
+public class Nacao extends BaseModel implements IActor {
 
     private int impostos, money, pontos;
     private boolean ativa = true;
@@ -235,4 +236,8 @@ public class Nacao extends BaseModel {
         this.flAlianca = flAlianca;
     }
 
+    @Override
+    public boolean isActorActive() {
+        return this.isAtiva();
+    }
 }

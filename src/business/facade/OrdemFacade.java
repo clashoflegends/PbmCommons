@@ -5,6 +5,7 @@
 package business.facade;
 
 import baseLib.BaseModel;
+import business.interfaces.IActor;
 import business.services.ComparatorFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -465,7 +466,7 @@ public class OrdemFacade implements Serializable {
 
     }
 
-    public ActorAction getActorAction(BaseModel actor, int index, int acoesMax, Jogador owner) {
+    public ActorAction getActorAction(IActor actor, int index, int acoesMax, Jogador owner) {
         if (SettingsManager.getInstance().isConfig("LoadActionsOtherNations", "deny", "deny") && !owner.isNacao(actor.getNacao())) {
             return new ActorAction(ActorAction.STATUS_DISABLED);
         }
@@ -473,6 +474,9 @@ public class OrdemFacade implements Serializable {
             return new ActorAction(ActorAction.STATUS_DISABLED);
         }
         if (actor == null) {
+            return new ActorAction(ActorAction.STATUS_DISABLED);
+        }
+        if (!actor.isActorActive()) {
             return new ActorAction(ActorAction.STATUS_DISABLED);
         }
         if (actor.getAcao(index) == null && !owner.isNacao(actor.getNacao())) {

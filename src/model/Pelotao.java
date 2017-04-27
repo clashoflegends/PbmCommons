@@ -31,11 +31,17 @@ public class Pelotao extends BaseModel implements Cloneable {
     }
 
     public void setModAtaque(int arma) {
-        this.modAtaque = arma;
+        if (arma < 0) {
+            this.modAtaque = 0;
+        } else if (arma > 100) {
+            this.modAtaque = 100;
+        } else {
+            this.modAtaque = arma;
+        }
     }
 
     public void sumModAtaque(int arma) {
-        this.modAtaque = Math.min(100, arma + this.modAtaque);
+        setModAtaque(arma + this.getModAtaque());
     }
 
     public int getModDefesa() {
@@ -43,11 +49,17 @@ public class Pelotao extends BaseModel implements Cloneable {
     }
 
     public void setModDefesa(int armadura) {
-        this.modDefesa = armadura;
+        if (armadura < 0) {
+            this.modDefesa = 0;
+        } else if (armadura > 100) {
+            this.modDefesa = 100;
+        } else {
+            this.modDefesa = armadura;
+        }
     }
 
     public void sumModDefesa(int armadura) {
-        this.modDefesa = Math.min(100, armadura + this.modDefesa);
+        setModDefesa(armadura + this.getModDefesa());
     }
 
     public int getQtd() {
@@ -90,6 +102,7 @@ public class Pelotao extends BaseModel implements Cloneable {
     }
 
     @Override
+    @SuppressWarnings("CloneDeclaresCloneNotSupported")
     public Pelotao clone() {
         //attention: no deep copy implemented
         try {

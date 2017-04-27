@@ -361,11 +361,7 @@ public class PersonagemFacade implements Serializable {
     }
 
     public boolean isMorto(Personagem personagem) {
-        if (personagem.getVida() <= 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return (personagem.getVida() <= 0);
     }
 
     public boolean isAtivo(Personagem personagem) {

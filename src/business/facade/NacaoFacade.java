@@ -189,17 +189,18 @@ public class NacaoFacade implements Serializable {
         }
         int ret = 0;
         for (Personagem pers : nacao.getPersonagens()) {
-            if (nacao == pers.getNacao()) {
-                int mod = 20;
-                if (this.hasHabilidade(nacao, ";PUC;")) {
-                    //Free People: Character's upkeep cost %s%% less
-                    mod = 20 * (100 - nacao.getHabilidadeValor(";PUC;")) / 100;
-                } else if (this.hasHabilidade(nacao, "0043")) {
-                    //Free People: Character's upkeep cost %s%% less
-                    mod = 20 * (100 - nacao.getHabilidadeNacaoValor("0043")) / 100;
-                }
-                ret += pers.getPericiaNaturalTotal() * mod;
+            if (nacao != pers.getNacao()) {
+                continue;
             }
+            int mod = 20;
+            if (this.hasHabilidade(nacao, ";PUC;")) {
+                //Free People: Character's upkeep cost %s%% less
+                mod = 20 * (100 - nacao.getHabilidadeValor(";PUC;")) / 100;
+            } else if (this.hasHabilidade(nacao, "0043")) {
+                //Free People: Character's upkeep cost %s%% less
+                mod = 20 * (100 - nacao.getHabilidadeNacaoValor("0043")) / 100;
+            }
+            ret += pers.getPericiaNaturalTotal() * mod;
         }
         return ret;
     }
@@ -576,7 +577,7 @@ public class NacaoFacade implements Serializable {
     public int getGoldDecay(Nacao nacao, int treasuryForecast, Cenario cenario) {
         if (cenario.hasHabilidade(";SGD;")) {
             if (nacao.hasHabilidade(";NGD;")) {
-                return treasuryForecast * cenario.getHabilidadeValor(";SGD;") * nacao.getHabilidadeValor(";NGD;") / 10000;
+                return treasuryForecast * cenario.getHabilidadeValor(";SGD;") * (100 - nacao.getHabilidadeValor(";NGD;")) / 10000;
             } else {
                 return treasuryForecast * cenario.getHabilidadeValor(";SGD;") / 100;
             }
