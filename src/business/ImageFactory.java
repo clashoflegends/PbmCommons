@@ -47,7 +47,7 @@ public class ImageFactory implements Serializable {
     private final Cenario cenario;
     private final MediaTracker mt;
     private int mti = 0;
-    private ImageIcon combat, explosion, blueBall, yellowBall;
+    private ImageIcon combat, explosion, blueBall, yellowBall, iconApp;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
     private final SortedMap<String, ImageIcon> features = new TreeMap<String, ImageIcon>();
 
@@ -66,6 +66,7 @@ public class ImageFactory implements Serializable {
         blueBall = new ImageIcon(getClass().getResource("/images/piemenu/dark_blue_button.png"));
         combat = new ImageIcon(getClass().getResource("/images/combat.png"));
         explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
+        iconApp = new ImageIcon(getClass().getResource("/images/hex_wasteland.png"));
         doLoadFeaturesAll();
     }
 
@@ -395,6 +396,9 @@ public class ImageFactory implements Serializable {
         return this.explosion.getImage();
     }
 
+    public Image getIconApp() {
+        return this.iconApp.getImage();
+    }
 
     public Image getFeature(Habilidade feature) {
         try {
