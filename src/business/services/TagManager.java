@@ -4,7 +4,7 @@
  */
 package business.services;
 
-import business.ImageFactory;
+import business.ImageManager;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -37,8 +37,8 @@ public class TagManager implements Serializable {
     public ImageIcon drawTagStyle2(int dx, int dy) {
         //create graphs
         BufferedImage tagImg = new BufferedImage(
-                ImageFactory.HEX_SIZE + 2 * dx,
-                ImageFactory.HEX_SIZE + 2 * dy,
+                ImageManager.HEX_SIZE + 2 * dx,
+                ImageManager.HEX_SIZE + 2 * dy,
                 BufferedImage.TRANSLUCENT);
         Graphics2D big = tagImg.createGraphics();
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -74,8 +74,8 @@ public class TagManager implements Serializable {
         final int t = 6;
         //creates graphs
         BufferedImage tagImg = new BufferedImage(
-                ImageFactory.HEX_SIZE + dx * 2,
-                ImageFactory.HEX_SIZE + dy * 2,
+                ImageManager.HEX_SIZE + dx * 2,
+                ImageManager.HEX_SIZE + dy * 2,
                 BufferedImage.TRANSLUCENT);
         Graphics2D big = tagImg.createGraphics();
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

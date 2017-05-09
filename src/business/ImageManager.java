@@ -31,15 +31,16 @@ import model.Exercito;
 import model.Habilidade;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import persistenceCommons.SettingsManager;
 
 /**
  *
  * @author jmoura
  */
-public class ImageFactory implements Serializable {
+public class ImageManager implements Serializable {
 
     public static final int HEX_SIZE = 61;
-    private static final Log log = LogFactory.getLog(ImageFactory.class);
+    private static final Log log = LogFactory.getLog(ImageManager.class);
     private Image[] desenhoExercito;
     private final ExercitoFacade exercitoFacade = new ExercitoFacade();
     private final LocalFacade localFacade = new LocalFacade();
@@ -50,15 +51,36 @@ public class ImageFactory implements Serializable {
     private ImageIcon combat, explosion, blueBall, yellowBall, iconApp;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
     private final SortedMap<String, ImageIcon> features = new TreeMap<String, ImageIcon>();
+    private static ImageManager instance;
+
+    public synchronized static ImageManager getInstance() {
+        if (ImageManager.instance == null) {
+            ImageManager.instance = new ImageManager();
+        }
+        return ImageManager.instance;
+    }
 
     /**
      * to be used to draw rastros. don't need cenario, form or mt.
      */
-    public ImageFactory() {
+    public ImageManager() {
         doLoadIconsAll();
         this.form = null;
-        this.mt = null;
+        this.mt = new MediaTracker(form);
         this.cenario = null;
+    }
+
+    /**
+     * use to load images
+     *
+     * @param form
+     * @param aCenario
+     */
+    public ImageManager(JPanel form, Cenario aCenario) {
+        doLoadIconsAll();
+        this.form = form;
+        this.mt = new MediaTracker(form);
+        this.cenario = aCenario;
     }
 
     private void doLoadIconsAll() {
@@ -70,17 +92,12 @@ public class ImageFactory implements Serializable {
         doLoadFeaturesAll();
     }
 
-    /**
-     * use to load images
-     *
-     * @param form
-     * @param aCenario
-     */
-    public ImageFactory(JPanel form, Cenario aCenario) {
-        doLoadIconsAll();
-        this.form = form;
-        this.mt = new MediaTracker(form);
-        this.cenario = aCenario;
+    private void doLoadFeaturesAll() {
+        final SortedMap<String, String> featuresImage = localFacade.getTerrainLandmarksImage();
+        for (String cdFeature : featuresImage.keySet()) {
+            //todo: link feature to image vector
+            features.put(cdFeature, new ImageIcon(getClass().getResource(featuresImage.get(cdFeature))));
+        }
     }
 
     public void carregaExercito() {
@@ -109,7 +126,7 @@ public class ImageFactory implements Serializable {
     }
 
     private String[] getExercitoStrings(boolean all) {
-        if (all) {
+        if (all || this.cenario == null) {
             return new String[]{"neutral.png", "KingsCourt.gif", "Jofrey.png",
                 "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
                 "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
@@ -409,11 +426,61 @@ public class ImageFactory implements Serializable {
         }
     }
 
-    private void doLoadFeaturesAll() {
-        final SortedMap<String, String> featuresImage = localFacade.getTerrainLandmarksImage();
-        for (String cdFeature : featuresImage.keySet()) {
-            //todo: link feature to image vector
-            features.put(cdFeature, new ImageIcon(getClass().getResource(featuresImage.get(cdFeature))));
+    public Image[] carregaTerrenos() {
+        Image[] desenhoTerrenos;
+        Image desenho = null;
+        String[] terrenos = {"vazio", "mar", "costa", "litoral", "floresta", "planicie",
+            "montanha", "colinas", "pantano", "deserto", "wasteland", "lago"
+        };
+        desenhoTerrenos = new Image[terrenos.length];
+        for (int ii = 0; ii < terrenos.length; ii++) {
+            if (terrenos[ii].equals("mar") && SettingsManager.getInstance().isKeyExist("ImagemMar")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemMar"));
+            } else if (terrenos[ii].equals("costa") && SettingsManager.getInstance().isKeyExist("ImagemCosta")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemCosta"));
+            } else if (terrenos[ii].equals("litoral") && SettingsManager.getInstance().isKeyExist("ImagemLitoral")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemLitoral"));
+            } else if (terrenos[ii].equals("floresta") && SettingsManager.getInstance().isKeyExist("ImagemFloresta")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemFloresta"));
+            } else if (terrenos[ii].equals("planicie") && SettingsManager.getInstance().isKeyExist("ImagemPlanicie")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemPlanicie"));
+            } else if (terrenos[ii].equals("montanha") && SettingsManager.getInstance().isKeyExist("ImagemMontanha")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemMontanha"));
+            } else if (terrenos[ii].equals("colinas") && SettingsManager.getInstance().isKeyExist("ImagemColinas")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemColinas"));
+            } else if (terrenos[ii].equals("pantano") && SettingsManager.getInstance().isKeyExist("ImagemPantano")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemPantano"));
+            } else if (terrenos[ii].equals("deserto") && SettingsManager.getInstance().isKeyExist("ImagemDeserto")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemDeserto"));
+            } else if (terrenos[ii].equals("wasteland") && SettingsManager.getInstance().isKeyExist("ImagemWasteland")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemWasteland"));
+            } else if (terrenos[ii].equals("lago") && SettingsManager.getInstance().isKeyExist("ImagemLago")) {
+                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemLago"));
+            } else {
+                desenho = getDesenhoProperties(terrenos[ii]);
+            }
+            this.addImage(desenho);
+            desenhoTerrenos[ii] = desenho;
+        }
+        return desenhoTerrenos;
+    }
+
+    public Image getDesenhoProperties(String filename) {
+        if (SettingsManager.getInstance().isConfig("MapTiles", "2a", "2b")) {
+            //feralonso bordless
+            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2a_" + filename + ".png"));
+        } else if (SettingsManager.getInstance().isConfig("MapTiles", "2b", "2b")) {
+            //bordless meppa
+            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
+        } else if (SettingsManager.getInstance().isConfig("MapTiles", "2d", "2b")) {
+            //bord meppa
+            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".gif"));
+        } else if (SettingsManager.getInstance().isConfig("MapTiles", "3d", "2b")) {
+            //3d from joao bordless
+            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".png"));
+        } else {
+            //bordless meppa
+            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
         }
     }
 }

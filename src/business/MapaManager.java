@@ -70,19 +70,19 @@ public class MapaManager implements Serializable {
     private static final JogadorFacade jogadorFacade = new JogadorFacade();
     private static final ArtefatoFacade artefatoFacade = new ArtefatoFacade();
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
-    private final ImageFactory imageFactory;
+    private final ImageManager imageFactory;
 
     public MapaManager(Cenario aCenario, JPanel form) {
         this.cenario = aCenario;
         this.form = form;
-        imageFactory = new ImageFactory(form, cenario);
+        imageFactory = new ImageManager(form, cenario);
         this.carregaDesenhosDisponiveis();
     }
 
     private void carregaDesenhosDisponiveis() {
         log.debug("Carregando: Desenhos...");
         Image desenho = null;
-        carregaTerrenos();
+        this.desenhoTerrenos = imageFactory.carregaTerrenos();
 
         String[] detalhesTerreno = {
             "ponte_no", "ponte_ne", "ponte_l", "ponte_se", "ponte_so", "ponte_o",
@@ -102,7 +102,7 @@ public class MapaManager implements Serializable {
         desenhoDetalhes = new Image[detalhes.length];
         for (int ii = 0; ii < detalhes.length; ii++) {
             if (ii == dtFogofwar) {
-                desenho = getDesenhoProperties(detalhes[ii]);
+                desenho = imageFactory.getDesenhoProperties(detalhes[ii]);
             } else {
                 desenho = form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + detalhes[ii] + ".gif"));
             }
@@ -183,14 +183,14 @@ public class MapaManager implements Serializable {
             Image fortificacao = this.desenhoCidades[cidadeFacade.getFortificacao(cidade)];
             largura = fortificacao.getWidth(form);
             altura = fortificacao.getHeight(form);
-            big.drawImage(fortificacao, x + (ImageFactory.HEX_SIZE - largura) / 2, y + 34 - altura, form);
+            big.drawImage(fortificacao, x + (ImageManager.HEX_SIZE - largura) / 2, y + 34 - altura, form);
 
             if (CenarioFacade.isPrintGoldMine(this.cenario, local)) {
                 //imprime gold mine
                 Image goldMine = this.desenhoDetalhes[dtGoldmine];
                 largura = goldMine.getWidth(form);
                 //altura = goldMine.getHeight(form);
-                big.drawImage(goldMine, x + (ImageFactory.HEX_SIZE - largura) / 2, y + 30, form);
+                big.drawImage(goldMine, x + (ImageManager.HEX_SIZE - largura) / 2, y + 30, form);
             } else {
                 //verifica se cidade eh escondida
                 int cpEscondido = 0;
@@ -205,20 +205,20 @@ public class MapaManager implements Serializable {
                         form);
                 largura = colorCp.getWidth(form);
                 altura = colorCp.getHeight(form);
-                big.drawImage(colorCp, x + (ImageFactory.HEX_SIZE - largura) / 2, y + 34 - altura, form);
+                big.drawImage(colorCp, x + (ImageManager.HEX_SIZE - largura) / 2, y + 34 - altura, form);
 
                 //desenha docas
                 Image docas = this.desenhoCidades[cidadeFacade.getDocas(cidade) + 12];
                 largura = docas.getWidth(form);
                 altura = docas.getHeight(form);
-                big.drawImage(docas, x + (ImageFactory.HEX_SIZE - largura) / 2, y + 2, form);
+                big.drawImage(docas, x + (ImageManager.HEX_SIZE - largura) / 2, y + 2, form);
 
                 //desenha capital
                 if (cidadeFacade.isCapital(cidade)) {
                     Image capital = this.desenhoCidades[15];
                     largura = capital.getWidth(form);
                     altura = capital.getHeight(form);
-                    big.drawImage(capital, x + (ImageFactory.HEX_SIZE - largura) / 2, y + 30, form);
+                    big.drawImage(capital, x + (ImageManager.HEX_SIZE - largura) / 2, y + 30, form);
                 }
             }
             if (CenarioFacade.isPrintNome(this.cenario, cidade)) {
@@ -234,7 +234,7 @@ public class MapaManager implements Serializable {
         for (Habilidade feature : localFacade.getTerrainLandmark(local)) {
             //imprime gold mine
             Image imgFeature = imageFactory.getFeature(feature);
-            big.drawImage(imgFeature, x + (ImageFactory.HEX_SIZE - imgFeature.getWidth(form)) / 2, y + (ImageFactory.HEX_SIZE - imgFeature.getHeight(form)) / 2, form);
+            big.drawImage(imgFeature, x + (ImageManager.HEX_SIZE - imgFeature.getWidth(form)) / 2, y + (ImageManager.HEX_SIZE - imgFeature.getHeight(form)) / 2, form);
         }
         //imprime o fog of war
         if (!local.isVisible() && !SettingsManager.getInstance().isWorldBuilder() && !SettingsManager.getInstance().isConfig("FogOfWarType", "0", "1")) {
@@ -495,14 +495,14 @@ public class MapaManager implements Serializable {
 
         image = desenhoDetalhes[dtFogofwar];
         big.drawImage(desenhoTerrenos[5], x, y, form);
-        big.drawImage(desenhoCidades[3], x + (ImageFactory.HEX_SIZE - desenhoCidades[3].getWidth(form)) / 2, y + 34 - desenhoCidades[3].getHeight(form), form);
-        big.drawImage(this.desenhoCidades[11], x + (ImageFactory.HEX_SIZE - this.desenhoCidades[11].getWidth(form)) / 2, y + 34 - this.desenhoCidades[11].getHeight(form), form);
+        big.drawImage(desenhoCidades[3], x + (ImageManager.HEX_SIZE - desenhoCidades[3].getWidth(form)) / 2, y + 34 - desenhoCidades[3].getHeight(form), form);
+        big.drawImage(this.desenhoCidades[11], x + (ImageManager.HEX_SIZE - this.desenhoCidades[11].getWidth(form)) / 2, y + 34 - this.desenhoCidades[11].getHeight(form), form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
 
         big.drawImage(desenhoTerrenos[5], x, y, form);
-        big.drawImage(desenhoCidades[3], x + (ImageFactory.HEX_SIZE - desenhoCidades[3].getWidth(form)) / 2, y + 34 - desenhoCidades[3].getHeight(form), form);
-        big.drawImage(this.desenhoCidades[11], x + (ImageFactory.HEX_SIZE - this.desenhoCidades[11].getWidth(form)) / 2, y + 34 - this.desenhoCidades[11].getHeight(form), form);
+        big.drawImage(desenhoCidades[3], x + (ImageManager.HEX_SIZE - desenhoCidades[3].getWidth(form)) / 2, y + 34 - desenhoCidades[3].getHeight(form), form);
+        big.drawImage(this.desenhoCidades[11], x + (ImageManager.HEX_SIZE - this.desenhoCidades[11].getWidth(form)) / 2, y + 34 - this.desenhoCidades[11].getHeight(form), form);
         big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .6f));
         big.drawImage(this.desenhoDetalhes[dtFogofwar], x, y, form);
         big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
@@ -721,62 +721,5 @@ public class MapaManager implements Serializable {
         }
         Local ret = locais.get(SysApoio.pointToCoord(col + 1, row + 1));
         return ret;
-    }
-
-    private void carregaTerrenos() {
-        Image desenho = null;
-        String[] terrenos = {"vazio", "mar", "costa", "litoral", "floresta", "planicie",
-            "montanha", "colinas", "pantano", "deserto", "wasteland", "lago"
-        };
-        desenhoTerrenos = new Image[terrenos.length];
-        for (int ii = 0; ii < terrenos.length; ii++) {
-            //FIXME: Buscar imagens de um JAR. colocar imagens num jar em separado, para facilitar downloads.
-            if (terrenos[ii].equals("mar") && SettingsManager.getInstance().isKeyExist("ImagemMar")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemMar"));
-            } else if (terrenos[ii].equals("costa") && SettingsManager.getInstance().isKeyExist("ImagemCosta")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemCosta"));
-            } else if (terrenos[ii].equals("litoral") && SettingsManager.getInstance().isKeyExist("ImagemLitoral")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemLitoral"));
-            } else if (terrenos[ii].equals("floresta") && SettingsManager.getInstance().isKeyExist("ImagemFloresta")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemFloresta"));
-            } else if (terrenos[ii].equals("planicie") && SettingsManager.getInstance().isKeyExist("ImagemPlanicie")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemPlanicie"));
-            } else if (terrenos[ii].equals("montanha") && SettingsManager.getInstance().isKeyExist("ImagemMontanha")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemMontanha"));
-            } else if (terrenos[ii].equals("colinas") && SettingsManager.getInstance().isKeyExist("ImagemColinas")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemColinas"));
-            } else if (terrenos[ii].equals("pantano") && SettingsManager.getInstance().isKeyExist("ImagemPantano")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemPantano"));
-            } else if (terrenos[ii].equals("deserto") && SettingsManager.getInstance().isKeyExist("ImagemDeserto")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemDeserto"));
-            } else if (terrenos[ii].equals("wasteland") && SettingsManager.getInstance().isKeyExist("ImagemWasteland")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemWasteland"));
-            } else if (terrenos[ii].equals("lago") && SettingsManager.getInstance().isKeyExist("ImagemLago")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemLago"));
-            } else {
-                desenho = getDesenhoProperties(terrenos[ii]);
-            }
-            imageFactory.addImage(desenho);
-            this.desenhoTerrenos[ii] = desenho;
-        }
-    }
-
-    private Image getDesenhoProperties(String filename) {
-        if (SettingsManager.getInstance().isConfig("MapTiles", "2a", "2b")) {
-            //feralonso bordless
-            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2a_" + filename + ".png"));
-        } else if (SettingsManager.getInstance().isConfig("MapTiles", "2b", "2b")) {
-            //bordless meppa
-            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
-        } else if (SettingsManager.getInstance().isConfig("MapTiles", "2d", "2b")) {
-            //bord meppa
-            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".gif"));
-        } else if (SettingsManager.getInstance().isConfig("MapTiles", "3d", "2b")) {
-            //3d from joao bordless
-            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".png"));
-        } else {
-            //bordless meppa
-            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
-        }
     }
 }
