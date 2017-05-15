@@ -55,7 +55,6 @@ import persistenceCommons.SysApoio;
 public class MapaManager implements Serializable {
 
     private static final Log log = LogFactory.getLog(MapaManager.class);
-    private Image[] desenhoTerrenos;
     private Image[] desenhoTerrenoDetalhes;
     private Image[] desenhoDetalhes;
     private Image[] desenhoCidades;
@@ -70,19 +69,19 @@ public class MapaManager implements Serializable {
     private static final JogadorFacade jogadorFacade = new JogadorFacade();
     private static final ArtefatoFacade artefatoFacade = new ArtefatoFacade();
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
-    private final ImageManager imageFactory;
+    private final ImageManager imageFactory = ImageManager.getInstance();
 
     public MapaManager(Cenario aCenario, JPanel form) {
         this.cenario = aCenario;
         this.form = form;
-        imageFactory = new ImageManager(form, cenario);
+        imageFactory.setCenario(cenario);
+        imageFactory.setForm(form);
         this.carregaDesenhosDisponiveis();
     }
 
     private void carregaDesenhosDisponiveis() {
         log.debug("Carregando: Desenhos...");
         Image desenho = null;
-        this.desenhoTerrenos = imageFactory.carregaTerrenos();
 
         String[] detalhesTerreno = {
             "ponte_no", "ponte_ne", "ponte_l", "ponte_se", "ponte_so", "ponte_o",
@@ -143,7 +142,7 @@ public class MapaManager implements Serializable {
         final Point point = ConverterFactory.localToPoint(local);
         final int x = (int) point.getX(), y = (int) point.getY();
         //terreno basico
-        big.drawImage(this.desenhoTerrenos[terrenoToIndice(localFacade.getTerrenoCodigo(local))], x, y, form);
+        big.drawImage(imageFactory.getTerrainImages(localFacade.getTerrenoCodigo(local)), x, y, form);
         //detalhes do terreno
         for (int direcao = 1; direcao < 7; direcao++) {
             //detalhe estrada
@@ -356,6 +355,7 @@ public class MapaManager implements Serializable {
     }
 
     public BufferedImage redrawMapaGeral(Collection<Local> listaLocal, Collection<Personagem> listaPers, Jogador observer) {
+        ImageManager.getInstance().doLoadTerrainImages();
         this.carregaDesenhosDisponiveis();
         return printMapaGeral(listaLocal, listaPers, observer);
     }
@@ -382,65 +382,6 @@ public class MapaManager implements Serializable {
         return megaMap;
     }
 
-    private int[] exercitoToIndice(Exercito exercito) {
-        int[] ret = new int[3];
-        if (CenarioFacade.isGrecia(cenario)) {
-            int[] posX = {7, 17, 34, 46, 7, 17, 34, 46};
-            int[] posY = {36, 42, 42, 36, 36, 42, 42, 36};
-            ret[0] = exercitoFacade.getNacaoNumero(exercito);
-            ret[1] = posX[ret[0] - 1];
-            ret[2] = posY[ret[0] - 1];
-        } else {
-            int[] posX = {44, 24, 44, 10};
-            int[] posY = {36, 46, 36, 36};
-            //FIXME: criar logica para escolher o icone da alianca.
-            //ret[0] = exercitoFacade.getNacaoNumero(exercito);
-            ret[0] = exercitoFacade.getNacaoNumero(exercito) + 2;
-            ret[1] = posX[ret[0] - 1];
-            ret[2] = posY[ret[0] - 1];
-        }
-        return ret;
-    }
-
-    private static int terrenoToIndice(String codigoTerreno) {
-        /*
-         * 1 'E', '0101' alto mar<br> 2 'C', '0102' costa<br> 3 'L', '0203'
-         * litoral<br> 4 'F', '0206' floresta<br> 5 'P', '0308' planicie<br> 6
-         * 'M', '0604' montanha<br> 7 'H', '0710' colinas<br> 8 'S', '1509'
-         * pantano<br> 9 'D', '2538' deserto<br>
-         */
-        try {
-            switch (codigoTerreno.charAt(0)) {
-                case 'E':
-                    return 1;
-                case 'C':
-                    return 2;
-                case 'L':
-                    return 3;
-                case 'F':
-                    return 4;
-                case 'P':
-                    return 5;
-                case 'M':
-                    return 6;
-                case 'H':
-                    return 7;
-                case 'S':
-                    return 8;
-                case 'D':
-                    return 9;
-                case 'W':
-                    return 10;
-                case 'K':
-                    return 11;
-                default:
-                    return 0;
-            }
-        } catch (NullPointerException npe) {
-            return 0;
-        }
-    }
-
     public void printLegenda(String dirName) {
 
         int legendaCounter = 0;
@@ -465,7 +406,7 @@ public class MapaManager implements Serializable {
         legendaCounter = 0;
         x = 10 + gap;
         y = 50;
-        for (Image img : desenhoTerrenos) {
+        for (Image img : imageFactory.getTerrainImages()) {
             big.drawImage(img, x, y, form);
             big.drawString(labels.getString(legendas[legendaCounter++]), x + gap * 2 + img.getWidth(form), y + img.getHeight(form) / 2);
             y += img.getWidth(form) + gap;
@@ -479,28 +420,30 @@ public class MapaManager implements Serializable {
         y = 50;
         legendaCounter = 0;
         int ii = 0;
-        big.drawImage(desenhoTerrenos[3], x, y, form);
-        big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + desenhoTerrenos[3].getWidth(form), y + desenhoTerrenos[3].getHeight(form) / 2);
+        final Image terrainShore = imageFactory.getTerrainImages("L");
+        final Image terrainPlains = imageFactory.getTerrainImages("P");
+        big.drawImage(terrainShore, x, y, form);
+        big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + terrainShore.getWidth(form), y + terrainShore.getHeight(form) / 2);
         for (Image img : desenhoTerrenoDetalhes) {
             big.drawImage(img, x, y, form);
             ii++;
             if (ii % 6 == 0) {
                 y += img.getWidth(form) + gap;
                 if (ii < desenhoTerrenoDetalhes.length) {
-                    big.drawImage(desenhoTerrenos[3], x, y, form);
-                    big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + desenhoTerrenos[3].getWidth(form), y + desenhoTerrenos[3].getHeight(form) / 2);
+                    big.drawImage(terrainShore, x, y, form);
+                    big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + terrainShore.getWidth(form), y + terrainShore.getHeight(form) / 2);
                 }
             }
         }
 
         image = desenhoDetalhes[dtFogofwar];
-        big.drawImage(desenhoTerrenos[5], x, y, form);
+        big.drawImage(terrainPlains, x, y, form);
         big.drawImage(desenhoCidades[3], x + (ImageManager.HEX_SIZE - desenhoCidades[3].getWidth(form)) / 2, y + 34 - desenhoCidades[3].getHeight(form), form);
         big.drawImage(this.desenhoCidades[11], x + (ImageManager.HEX_SIZE - this.desenhoCidades[11].getWidth(form)) / 2, y + 34 - this.desenhoCidades[11].getHeight(form), form);
         big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + image.getWidth(form), y + image.getHeight(form) / 2);
         y += image.getWidth(form) + gap;
 
-        big.drawImage(desenhoTerrenos[5], x, y, form);
+        big.drawImage(terrainPlains, x, y, form);
         big.drawImage(desenhoCidades[3], x + (ImageManager.HEX_SIZE - desenhoCidades[3].getWidth(form)) / 2, y + 34 - desenhoCidades[3].getHeight(form), form);
         big.drawImage(this.desenhoCidades[11], x + (ImageManager.HEX_SIZE - this.desenhoCidades[11].getWidth(form)) / 2, y + 34 - this.desenhoCidades[11].getHeight(form), form);
         big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .6f));
