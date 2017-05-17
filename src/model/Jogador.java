@@ -10,11 +10,10 @@ import java.util.TreeMap;
 
 /**
  *
- * @author gurgel
- * Remember to keep aligned with JogadorPontos
+ * @author gurgel Remember to keep aligned with JogadorPontos
  */
 public class Jogador extends BaseModel {
-    
+
     private String login, senha, email;
     private final SortedMap<String, Nacao> nacoesOwned = new TreeMap<String, Nacao>();
     private boolean reportAll; //don't remove for backwards compatibility
@@ -22,7 +21,7 @@ public class Jogador extends BaseModel {
     public void addNacao(Nacao nacao) {
         this.nacoesOwned.put(nacao.getCodigo(), nacao);
     }
-    
+
     public SortedMap<String, Nacao> getNacoes() {
         return this.nacoesOwned;
     }
@@ -44,14 +43,12 @@ public class Jogador extends BaseModel {
      * @return
      */
     public boolean isNacao(int idNacao) {
-        boolean ret = false;
         for (Nacao nacao : this.nacoesOwned.values()) {
             if (nacao.getId() == idNacao) {
-                ret = true;
-                break;
+                return true;
             }
         }
-        return ret;
+        return false;
     }
 
     /*
@@ -60,45 +57,45 @@ public class Jogador extends BaseModel {
     public boolean isJogadorAliado(Nacao nacaoAlvo) {
         //FIXME: Mover para NacaoFacade
         boolean ret = this.isNacao(nacaoAlvo);
-        //se nao eh do mesmo jogador
-        if (!ret) {
-            //compara as nacoes do jogador com o alvo
-            for (Nacao nacaoJogador : this.getNacoes().values()) {
-                try {
-                    if (nacaoAlvo.getRelacionamento(nacaoJogador) > 1) {
-                        //se relacionamento da nacao com o jogador eh amigavel ou >
-                        ret = true;
-                        //so precisa de um para confirmar
-                        break;
-                    }
-                } catch (NullPointerException e) {
-                    //just ignore
+        if (ret) {
+            //se eh do mesmo jogador
+            return true;
+        }
+        //compara as nacoes do jogador com o alvo
+        for (Nacao nacaoJogador : this.getNacoes().values()) {
+            try {
+                if (nacaoAlvo.getRelacionamento(nacaoJogador) > 1) {
+                    //se relacionamento da nacao com o jogador eh amigavel ou >
+                    //so precisa de um para confirmar
+                    return true;
                 }
+            } catch (NullPointerException e) {
+                //just ignore
             }
         }
-        return ret;
+        return false;
     }
-    
+
     public String getEmail() {
         return email;
     }
-    
+
     public String getLogin() {
         return login;
     }
-    
+
     public String getSenha() {
         return senha;
     }
-    
+
     public void setEmail(String email) {
         this.email = email;
     }
-    
+
     public void setLogin(String login) {
         this.login = login;
     }
-    
+
     public void setSenha(String senha) {
         this.senha = senha;
     }
@@ -109,7 +106,7 @@ public class Jogador extends BaseModel {
     public boolean isReportAll() {
         return hasHabilidade(";JRA;");
     }
-    
+
     public boolean isNpc() {
         return hasHabilidade(";JAI;");
     }
