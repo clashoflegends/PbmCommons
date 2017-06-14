@@ -318,6 +318,16 @@ public class ImageManager implements Serializable {
         big.draw(path);
     }
 
+    public void doDrawCircle(Graphics2D big, int x, int y, Color color) {
+        //setup para os rastros
+        big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        big.setStroke(new BasicStroke());
+        big.setColor(color);
+
+        //draw on graph
+        big.drawOval(x, x, y, y);
+    }
+
     public void doDrawPathNpc(Graphics2D big, Point ori, Point dest) {
         final int x = 04 + 7 / 2 + 8;
         final int y = 22 + 13 / 2 - 3;

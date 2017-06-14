@@ -26,8 +26,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.imageio.ImageIO;
@@ -267,27 +269,39 @@ public class MapaManager implements Serializable {
         big.drawString(localFacade.getCoordenadas(local), x + 16, y + 18);
 
         //exercitos presentes
-        SortedMap<Nacao, Image> armyList = new TreeMap<Nacao, Image>();
+        final SortedMap<Nacao, Image> armyListNoDups = new TreeMap<Nacao, Image>();
+        final List<Image> armyList = new ArrayList<Image>();
+
         //monta a lista das nacoes com exercitos presentes no local
+        final boolean armyIconDrawType = SettingsManager.getInstance().isConfig("DrawAllArmyIcons", "1", "1");
         for (Exercito exercito : localFacade.getExercitos(local).values()) {
             Image img = imageFactory.getExercito(exercito);
             Nacao nac = exercitoFacade.getNacao(exercito);
-            armyList.put(nac, img);
+            armyListNoDups.put(nac, img);
+            armyList.add(img);
         }
+        //decide which list to use
+        final Collection<Image> values;
+        if (armyList.size() < 9 && armyIconDrawType) {
+            values = armyList;
+        } else {
+            values = armyListNoDups.values();
+        }
+        //possible templates
         int[][] posXY4 = {{7, 36}, {17, 42}, {34, 42}, {46, 36}};
         int[][] posXY6 = {{6, 36}, {12, 39}, {18, 42}, {36, 42}, {40, 39}, {46, 36}};
         int[][] posXY8 = {{6, 36}, {12, 39}, {18, 42}, {24, 45}, {30, 45}, {36, 42}, {40, 39}, {46, 36}};
         int[][] posXY;
-        if (armyList.size() < 5) {
+        if (values.size() < 5) {
             posXY = posXY4;
-        } else if (armyList.size() < 7) {
+        } else if (values.size() < 7) {
             posXY = posXY6;
         } else {
             posXY = posXY8;
         }
         //imprime de acordo com a quantidade
         int nn = 0;
-        for (Image imgShield : armyList.values()) {
+        for (Image imgShield : values) {
             //FIXME: imprimir exercito de nacao desconhecida???
             big.drawImage(imgShield, x + posXY[nn][0], y + posXY[nn][1], form);
             nn++;
