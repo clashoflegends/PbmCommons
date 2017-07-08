@@ -34,33 +34,53 @@ import org.apache.commons.logging.LogFactory;
 import persistenceCommons.SettingsManager;
 
 /**
- * Base Application class for Swing apps. Application provides the following functionality: <ul> <li>A sequence of methods to override that are
- * invoked as part of starting the application. All methods are invoked on the event dispatch thread. <li>Has a ResourceBundle. This is useful for
- * smallish apps that wish to place all their localized resources into a single place. <li>Has a Preferences node. This is useful for apps that wish
- * to persist state between sessions. <li>Registers itself as the UncaughtExceptionHandler. If an uncaught exception is encountered the application
- * will show a warning dialog and exit. <li>Provides a single entry point to call when the user wishes to exit the app. This can be overriden to warn
- * the user about unsaved changes, or provide similar functionality. <li>Provides a ThreadFactory that produces background threads suitable for Swing
- * applications. The application will block until all background threads vended from the thread factory have completed. <li>An arbitrary set of
- * key/value pairs. </ul>
+ * Base Application class for Swing apps. Application provides the following
+ * functionality: <ul> <li>A sequence of methods to override that are invoked as
+ * part of starting the application. All methods are invoked on the event
+ * dispatch thread. <li>Has a ResourceBundle. This is useful for smallish apps
+ * that wish to place all their localized resources into a single place. <li>Has
+ * a Preferences node. This is useful for apps that wish to persist state
+ * between sessions. <li>Registers itself as the UncaughtExceptionHandler. If an
+ * uncaught exception is encountered the application will show a warning dialog
+ * and exit. <li>Provides a single entry point to call when the user wishes to
+ * exit the app. This can be overriden to warn the user about unsaved changes,
+ * or provide similar functionality. <li>Provides a ThreadFactory that produces
+ * background threads suitable for Swing applications. The application will
+ * block until all background threads vended from the thread factory have
+ * completed. <li>An arbitrary set of key/value pairs. </ul>
  * <p>
  * <a
- * name="initSequence"></a> Application provides a handful of methods that are invoked as part of starting the application. Subclasses need only
- * override those they are interested in. The following outlines the order the methods are invoked in as well as what they are intended for. All
- * methods are invoked on the event dispatching thread. <ol> <li>preInit is invoked first. preInit is provided for any initialization that needs to be
- * done prior to creating the UI. Application's implementation invokes installLookAndFeel to install the system look and feel. <li>init is invoked
- * after preInit. init is intended for creating the actual UI. <li>ApplicationListeners are notified that the application has initialized
- * (appDidInit). <li>postInit is invoked after the listeners are notified, and is intended for any cleanup that needs to be done.
- * <li>postInitEventQueueEmpty is invoked after postInit and after the event queue has processed all pending events, such as paint events or
- * revalidate requests generated during the earlier stages of initialization. Subclasses that need to do processing after the UI is completely showing
- * should override this method. </ol>
+ * name="initSequence"></a> Application provides a handful of methods that are
+ * invoked as part of starting the application. Subclasses need only override
+ * those they are interested in. The following outlines the order the methods
+ * are invoked in as well as what they are intended for. All methods are invoked
+ * on the event dispatching thread. <ol> <li>preInit is invoked first. preInit
+ * is provided for any initialization that needs to be done prior to creating
+ * the UI. Application's implementation invokes installLookAndFeel to install
+ * the system look and feel. <li>init is invoked after preInit. init is intended
+ * for creating the actual UI. <li>ApplicationListeners are notified that the
+ * application has initialized (appDidInit). <li>postInit is invoked after the
+ * listeners are notified, and is intended for any cleanup that needs to be
+ * done.
+ * <li>postInitEventQueueEmpty is invoked after postInit and after the event
+ * queue has processed all pending events, such as paint events or revalidate
+ * requests generated during the earlier stages of initialization. Subclasses
+ * that need to do processing after the UI is completely showing should override
+ * this method. </ol>
  * <p>
- * <a name="exitSequence"> Application also provides a sequence of methods for exiting the application. When exit is invoked the following methods are
- * invoked: <ol> <li>canExit is invoked, if this returns false the application will not exit. <li>ApplicationListeners are asked if the application
- * can exit. If any IApplicationListener returns false from canApplicationExit the application will not exit.
- * <li>waitForBackgroundThreads is invoked to block until any background threads have completed. <li>All ApplicationListeners are notified that the
- * application is exiting. <li>exiting is invoked. <li>Lastly, System.exit is invoked. </ol>
+ * <a name="exitSequence"> Application also provides a sequence of methods for
+ * exiting the application. When exit is invoked the following methods are
+ * invoked: <ol> <li>canExit is invoked, if this returns false the application
+ * will not exit. <li>ApplicationListeners are asked if the application can
+ * exit. If any IApplicationListener returns false from canApplicationExit the
+ * application will not exit.
+ * <li>waitForBackgroundThreads is invoked to block until any background threads
+ * have completed. <li>All ApplicationListeners are notified that the
+ * application is exiting. <li>exiting is invoked. <li>Lastly, System.exit is
+ * invoked. </ol>
  * <p>
- * Concrete implementations need only override getName, but will undoubtedly override one of the various init methods as well.
+ * Concrete implementations need only override getName, but will undoubtedly
+ * override one of the various init methods as well.
  */
 public abstract class Application implements Thread.UncaughtExceptionHandler, Serializable {
 
@@ -99,8 +119,10 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Creates a new Application instance. Subclasses very rarely need put any logic in the constructor, especially not code that creates Swing
-     * components. Override one of the various init methods instead which are guaranteed to be invoked on the event dispatching thread.
+     * Creates a new Application instance. Subclasses very rarely need put any
+     * logic in the constructor, especially not code that creates Swing
+     * components. Override one of the various init methods instead which are
+     * guaranteed to be invoked on the event dispatching thread.
      *
      * @throws IllegalStateException if an Application has already been created
      * @see <a href="#initSequence">init sequence</a>
@@ -141,7 +163,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Associated the specified value with the specified key. This is intended for developers to place application specific data in.
+     * Associated the specified value with the specified key. This is intended
+     * for developers to place application specific data in.
      *
      * @param key the key to store the value in
      * @param value the value to associated with key
@@ -175,7 +198,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Returns the Class key used to fetch the Preferences object. This implementation returns the Application class.
+     * Returns the Class key used to fetch the Preferences object. This
+     * implementation returns the Application class.
      *
      * @return the key used to fetch the Preferences object
      * @see #getPreferences
@@ -185,7 +209,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Returns the ResourceBundle for the Application. The ResourceBundle is loaded using the value returned from getResourceBundleName.
+     * Returns the ResourceBundle for the Application. The ResourceBundle is
+     * loaded using the value returned from getResourceBundleName.
      *
      * @return the ResourceBundle for the Application
      * @see #getResourceBundleName
@@ -198,7 +223,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Returns the key for loading the resources for the Application. This implementation returns
+     * Returns the key for loading the resources for the Application. This
+     * implementation returns
      * <code>getClass().getName().resources.Resources</code>.
      *
      * @return the name used to locate the Applications ResourceBundle
@@ -208,10 +234,13 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Returns a ThreadFactory suitable for threads used within Swing applications. Threads created by the returned ThreadFactory are automatically
-     * registered with the Application, are not daemon, and have a priority of Thread.MIN_PRIORITY.
+     * Returns a ThreadFactory suitable for threads used within Swing
+     * applications. Threads created by the returned ThreadFactory are
+     * automatically registered with the Application, are not daemon, and have a
+     * priority of Thread.MIN_PRIORITY.
      * <p>
-     * When exit is invoked the Application will block until all background threads have exited.
+     * When exit is invoked the Application will block until all background
+     * threads have exited.
      *
      * @return a ThreadFactory suitable for background threads
      * @see #registerThread
@@ -225,7 +254,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Registers a background thread with the Application. When the application exits it will block until all background threads have completed.
+     * Registers a background thread with the Application. When the application
+     * exits it will block until all background threads have completed.
      * <p>
      * This method is thread safe.
      *
@@ -256,18 +286,27 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     public abstract String getName();
 
     /**
-     * Invoked from preInit to set the look and feel for the Application. This implementation sets the look and feel to the system look and feel. If
-     * setting the look and feel results in throwing an exception it will be ignored.
+     * Invoked from preInit to set the look and feel for the Application. This
+     * implementation sets the look and feel to the system look and feel. If
+     * setting the look and feel results in throwing an exception it will be
+     * ignored.
      *
      * @see <a href="#initSequence">init sequence</a>
      */
     protected void installLookAndFeel() {
+        setUIFont();
         if (SettingsManager.getInstance().getConfig("LookAndFeelTheme", "0").equals("Cross")) {
             setLookAndFeelCrossPlatform();
         } else if (!SettingsManager.getInstance().getConfig("LookAndFeelTheme", "0").equals("0")) {
             try {
                 setLookAndFeelProperties();
-            } catch (Exception e) {
+            } catch (ClassNotFoundException e) {
+                setLookAndFeelPlatform();
+            } catch (IllegalAccessException e) {
+                setLookAndFeelPlatform();
+            } catch (InstantiationException e) {
+                setLookAndFeelPlatform();
+            } catch (UnsupportedLookAndFeelException e) {
                 setLookAndFeelPlatform();
             }
         } else {
@@ -287,6 +326,24 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
         }
         if (!setLooks) {
             setLookAndFeelPlatform();
+        }
+    }
+
+    private void setUIFont() {
+        final float fontSize = SettingsManager.getInstance().getConfigAsInt("LookAndFeelFontSize");
+        if (fontSize <= 0) {
+            return;
+        }
+        //new javax.swing.plaf.FontUIResource("Dialog", Font.PLAIN, 24);
+        java.util.Enumeration keys = UIManager.getDefaults().keys();
+        while (keys.hasMoreElements()) {
+            Object key = keys.nextElement();
+            Object value = UIManager.get(key);
+            if (value != null && value instanceof javax.swing.plaf.FontUIResource) {
+                javax.swing.plaf.FontUIResource newFont = (javax.swing.plaf.FontUIResource) value;
+                //log.info(key.toString() + " - " + value.toString());
+                UIManager.put(key, newFont.deriveFont(fontSize));
+            }
         }
     }
 
@@ -316,8 +373,9 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Invoked as part of starting the application. This method invokes installLookAndFeel. See <a href="#initSequence">init sequence</a> for details
-     * on when this is invoked.
+     * Invoked as part of starting the application. This method invokes
+     * installLookAndFeel. See <a href="#initSequence">init sequence</a> for
+     * details on when this is invoked.
      *
      * @see #installLookAndFeel
      */
@@ -327,27 +385,31 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
 
     /**
      * Invoked as part of starting the application. See <a
-     * href="#initSequence">init sequence</a> for details on when this is invoked.
+     * href="#initSequence">init sequence</a> for details on when this is
+     * invoked.
      */
     protected void init() {
     }
 
     /**
      * Invoked as part of starting the application. See <a
-     * href="#initSequence">init sequence</a> for details on when this is invoked.
+     * href="#initSequence">init sequence</a> for details on when this is
+     * invoked.
      */
     protected void postInit() {
     }
 
     /**
      * Invoked as part of starting the application. See <a
-     * href="#initSequence">init sequence</a> for details on when this is invoked.
+     * href="#initSequence">init sequence</a> for details on when this is
+     * invoked.
      */
     protected void postInitEventQueueEmpty() {
     }
 
     /**
-     * Starts the Application. This method is typically invoked directly from <code>main</code>. Refer to <a href="#initSequence">init sequence</a>
+     * Starts the Application. This method is typically invoked directly from
+     * <code>main</code>. Refer to <a href="#initSequence">init sequence</a>
      * for details on which methods this invokes.
      *
      * @throws IllegalStateException if start has already been invoked
@@ -374,10 +436,12 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Returns whether the application should be allowed to exit. This is invoked from exit. A return value of false will stop the application from
+     * Returns whether the application should be allowed to exit. This is
+     * invoked from exit. A return value of false will stop the application from
      * exiting.
      *
-     * @return whether or not the application should be allowed to exit; this implementation unconditionally returns true
+     * @return whether or not the application should be allowed to exit; this
+     * implementation unconditionally returns true
      * @see #exit
      */
     protected boolean canExit() {
@@ -386,7 +450,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
 
     /**
      * Invoked as part of exiting the application. Refer to <a
-     * href="#exitSequence">exit sequence</a> for details on when this method is invoked.
+     * href="#exitSequence">exit sequence</a> for details on when this method is
+     * invoked.
      */
     protected void exiting() {
     }
@@ -403,8 +468,10 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Blocks until all registered threads have completed. This is invoked from exit. If necessary this method will invoke
-     * createBackgroundThreadDialog to create a modal dialog that is shown while waiting for background threads to exit.
+     * Blocks until all registered threads have completed. This is invoked from
+     * exit. If necessary this method will invoke createBackgroundThreadDialog
+     * to create a modal dialog that is shown while waiting for background
+     * threads to exit.
      *
      * @see #exit
      * @see #createBackgroundThreadDialog
@@ -506,7 +573,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Invoked when an uncaught exception is encountered. This invokes the method of the same name with the calling thread as an argument.
+     * Invoked when an uncaught exception is encountered. This invokes the
+     * method of the same name with the calling thread as an argument.
      *
      * @param throwable the thrown exception
      */
@@ -515,7 +583,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Invoked when an uncaught exception is encountered. This will show a modal dialog alerting the user, and exit the app. This does <b>not</b>
+     * Invoked when an uncaught exception is encountered. This will show a modal
+     * dialog alerting the user, and exit the app. This does <b>not</b>
      * invoke <code>exit</code>.
      *
      * @param thread the thread the exception was thrown on
@@ -546,7 +615,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
-     * Returns the dialog that is shown when an uncaught exception is encountered.
+     * Returns the dialog that is shown when an uncaught exception is
+     * encountered.
      *
      * @see #uncaughtException
      * @return dialog to show when an uncaught exception is encountered
@@ -564,18 +634,19 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     private void uncaughtException0() {
-        Throwable throwable;
+        Throwable aThrowable;
         synchronized (this) {
-            throwable = this.throwable;
+            aThrowable = this.throwable;
         }
-        log.fatal(throwable);
+        log.fatal(aThrowable);
         JDialog dialog = getUncaughtExceptionDialog();
         dialog.setVisible(true);
         System.exit(1);
     }
 
     /**
-     * Returns the dialog to show when waiting for any background threads to exit. The returned dialog must be modal.
+     * Returns the dialog to show when waiting for any background threads to
+     * exit. The returned dialog must be modal.
      *
      * @return dialog to shown when waiting for background threads to exit
      */
