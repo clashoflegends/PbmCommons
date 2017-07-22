@@ -7,7 +7,6 @@ package business.facade;
 import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import model.Cenario;
@@ -294,50 +293,6 @@ public class CidadeFacade implements Serializable {
 
     public Raca getNacaoRaca(Cidade cidade) {
         return getNacao(cidade).getRaca();
-    }
-
-    public List<String> getInfo(Cidade cidade, Collection<Nacao> nations) {
-        StringRet ret = new StringRet();
-        if (cidade == null) {
-            return ret.getList();
-        }
-        ret = getInfo(cidade);
-        for (Nacao nation : nations) {
-            final Nacao targetNation = getNacao(cidade);
-            if (targetNation == null || targetNation == nation) {
-                continue;
-            }
-            //print diplomacy
-            ret.addTab(String.format("%s: %s", nation.getNome(), nacaoFacade.getRelacionamento(nation, targetNation)));
-            //print if inactive
-            if (!nacaoFacade.isAtiva(targetNation)) {
-                ret.addTab(String.format("%s: %s", nation.getNome(), labels.getString("INATIVA")));
-            }
-        }
-        return ret.getList();
-    }
-
-    public StringRet getInfo(Cidade cidade) {
-        StringRet ret = new StringRet();
-        ret.add(String.format(labels.getString("CIDADE.CAPITAL.DA.NACAO"),
-                cidade.getComboDisplay(),
-                SysApoio.iif(cidade.isCapital(), labels.getString("(CAPITAL)"), ""),
-                nacaoFacade.getNome(cidade.getNacao())));
-        ret.addTab(String.format("%s: %s", labels.getString("TAMANHO"), BaseMsgs.cidadeTamanho[cidade.getTamanho()]));
-        ret.addTab(String.format("%s: %s", labels.getString("FORTIFICACOES"), BaseMsgs.cidadeFortificacao[cidade.getFortificacao()]));
-        if (cidade.getLealdade() > 0) {
-            ret.addTab(String.format("%s: %s (%s)",
-                    labels.getString("LEALDADE"),
-                    cidade.getLealdade(),
-                    cidade.getLealdade() - cidade.getLealdadeAnterior()));
-        } else {
-            ret.addTab(String.format("%s: %s", labels.getString("LEALDADE"), "?"));
-        }
-        ret.addTab(String.format("%s: %s", labels.getString("CIDADE.DOCAS"), BaseMsgs.cidadeDocas[cidade.getDocas()]));
-        ret.addTab(String.format("%s: %s", labels.getString("OCULTO"), getOculto(cidade)));
-        ret.addTab(String.format("%s: %s", labels.getString("SITIADO"), getSitiado(cidade)));
-
-        return ret;
     }
 
     public List<String> getInfoTitle(Cidade cidade) {
