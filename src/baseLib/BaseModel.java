@@ -106,7 +106,7 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     }
 
     public void remHabilidade(Habilidade habilidade) {
-        this.habilidades.remove(habilidade.getCodigo());
+        remHabilidade(habilidade.getCodigo());
     }
 
     public void remHabilidadeNone() {

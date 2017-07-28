@@ -51,7 +51,7 @@ public class ImageManager implements Serializable {
     private int mti = 0;
     private ImageIcon combat, explosion, blueBall, yellowBall, iconApp;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
-    private final SortedMap<String, ImageIcon> features = new TreeMap<String, ImageIcon>();
+    private final SortedMap<String, ImageIcon> landmarks = new TreeMap<String, ImageIcon>();
     private static ImageManager instance;
 
     /**
@@ -99,7 +99,7 @@ public class ImageManager implements Serializable {
         final SortedMap<String, String> featuresImage = localFacade.getTerrainLandmarksImage();
         for (String cdFeature : featuresImage.keySet()) {
             //todo: link feature to image vector
-            features.put(cdFeature, new ImageIcon(getClass().getResource(featuresImage.get(cdFeature))));
+            landmarks.put(cdFeature, new ImageIcon(getClass().getResource(featuresImage.get(cdFeature))));
         }
     }
 
@@ -452,7 +452,7 @@ public class ImageManager implements Serializable {
 
     public Image getFeature(Habilidade feature) {
         try {
-            return this.features.get(feature.getCodigo()).getImage();
+            return this.landmarks.get(feature.getCodigo()).getImage();
         } catch (NullPointerException ex) {
             log.error("Feature not found, add it to LocalFacade: " + feature.getCodigo());
             throw new UnsupportedOperationException(ex);

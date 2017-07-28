@@ -93,9 +93,10 @@ public class CenarioFacade implements Serializable {
 
     /**
      * 0 = comandante 1 = agente 2 = emissario 3 = mago
+     *
      * @param cenario
      * @param classe
-     * @return 
+     * @return
      */
     public String getTituloClasse(Cenario cenario, int classe) {
         String ret[];
@@ -366,6 +367,14 @@ public class CenarioFacade implements Serializable {
 
     public boolean hasRenamePersonagens(Cenario cenario) {
         return cenario.hasHabilidade(";SRP;");
+    }
+
+    public int getLandmarkRespawnValue(Cenario cenario) {
+        if (cenario.hasHabilidade(";SHL;")) {
+            return cenario.getHabilidadeValor(";SHL;");
+        } else {
+            return 0;
+        }
     }
 
     public boolean hasRenameCities(Cenario cenario) {

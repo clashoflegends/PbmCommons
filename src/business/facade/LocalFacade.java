@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import model.Artefato;
@@ -459,5 +460,9 @@ public final class LocalFacade implements Serializable {
 
     public SortedMap<String, String> getTerrainLandmarksImage() {
         return landmarkImage;
+    }
+
+    public Set<String> getTerrainLandmarksCodigo() {
+        return landmarkImage.keySet();
     }
 }
