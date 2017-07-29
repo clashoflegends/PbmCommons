@@ -228,14 +228,13 @@ public class MapaManager implements Serializable {
                 big.drawString(cidadeFacade.getNacaoNome(cidade), x + 10, y + 30);
             }
         }
-        //terrain features
-        if (local.getCoordenadas().equals("0617")) {
-            log.debug("aki!");
-        }
-        for (Habilidade feature : localFacade.getTerrainLandmark(local)) {
-            //imprime gold mine
-            Image imgFeature = imageFactory.getFeature(feature);
-            big.drawImage(imgFeature, x + (ImageManager.HEX_SIZE - imgFeature.getWidth(form)) / 2, y + (ImageManager.HEX_SIZE - imgFeature.getHeight(form)) / 2, form);
+        if (local.isVisible() && localFacade.isTerrainLandmark(local)) {
+            //terrain features
+            for (Habilidade feature : localFacade.getTerrainLandmark(local)) {
+                //imprime gold mine
+                Image imgFeature = imageFactory.getFeature(feature);
+                big.drawImage(imgFeature, x + (ImageManager.HEX_SIZE - imgFeature.getWidth(form)) / 2, y + (ImageManager.HEX_SIZE - imgFeature.getHeight(form)) / 2, form);
+            }
         }
         //imprime o fog of war
         if (!local.isVisible() && !SettingsManager.getInstance().isWorldBuilder() && !SettingsManager.getInstance().isConfig("FogOfWarType", "0", "1")) {
