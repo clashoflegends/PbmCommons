@@ -8,6 +8,8 @@ import baseLib.ExtensionFileFilter;
 import business.services.ComparatorFactory;
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import model.Partida;
 import model.World;
 import org.apache.commons.logging.Log;
@@ -116,6 +118,17 @@ public class PathFactory implements Serializable {
         File[] files = getLoadDir().listFiles(getFilterAcoesImport());
         ComparatorFactory.getComparatorFileTimeSorter(files);
         return files;
+    }
+
+    public List<File> listCommandFile(File baseDir, String mask) {
+        List<File> ret = new ArrayList<File>();
+        File[] files = baseDir.listFiles(getFilterAcoesImport());
+        for (File file : files) {
+            if (file.getName().contains(mask)) {
+                ret.add(file);
+            }
+        }
+        return ret;
     }
 
     public File getLoadDirTargetFile(String filename) {

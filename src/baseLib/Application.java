@@ -61,11 +61,12 @@ import persistenceCommons.SettingsManager;
  * for creating the actual UI. <li>ApplicationListeners are notified that the
  * application has initialized (appDidInit). <li>postInit is invoked after the
  * listeners are notified, and is intended for any cleanup that needs to be
- * done. <li>postInitEventQueueEmpty is invoked after postInit and after the
- * event queue has processed all pending events, such as paint events or
- * revalidate requests generated during the earlier stages of initialization.
- * Subclasses that need to do processing after the UI is completely showing
- * should override this method. </ol>
+ * done.
+ * <li>postInitEventQueueEmpty is invoked after postInit and after the event
+ * queue has processed all pending events, such as paint events or revalidate
+ * requests generated during the earlier stages of initialization. Subclasses
+ * that need to do processing after the UI is completely showing should override
+ * this method. </ol>
  * <p>
  * <a name="exitSequence"> Application also provides a sequence of methods for
  * exiting the application. When exit is invoked the following methods are
@@ -96,7 +97,7 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     // ThreadFactory for vending threads that are automatically registered.
     private ThreadFactory threadFactory;
     // Threads we'll block on when exiting.
-    private List<WeakReference<Thread>> threads;
+    private final List<WeakReference<Thread>> threads;
     // Whether or not the app has started
     private boolean started;
     // Preferecnes nodes for the app.
@@ -293,12 +294,19 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
      * @see <a href="#initSequence">init sequence</a>
      */
     protected void installLookAndFeel() {
+        setUIFont();
         if (SettingsManager.getInstance().getConfig("LookAndFeelTheme", "0").equals("Cross")) {
             setLookAndFeelCrossPlatform();
         } else if (!SettingsManager.getInstance().getConfig("LookAndFeelTheme", "0").equals("0")) {
             try {
                 setLookAndFeelProperties();
-            } catch (Exception e) {
+            } catch (ClassNotFoundException e) {
+                setLookAndFeelPlatform();
+            } catch (IllegalAccessException e) {
+                setLookAndFeelPlatform();
+            } catch (InstantiationException e) {
+                setLookAndFeelPlatform();
+            } catch (UnsupportedLookAndFeelException e) {
                 setLookAndFeelPlatform();
             }
         } else {
@@ -318,6 +326,24 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
         }
         if (!setLooks) {
             setLookAndFeelPlatform();
+        }
+    }
+
+    private void setUIFont() {
+        final float fontSize = SettingsManager.getInstance().getConfigAsInt("LookAndFeelFontSize");
+        if (fontSize <= 0) {
+            return;
+        }
+        //new javax.swing.plaf.FontUIResource("Dialog", Font.PLAIN, 24);
+        java.util.Enumeration keys = UIManager.getDefaults().keys();
+        while (keys.hasMoreElements()) {
+            Object key = keys.nextElement();
+            Object value = UIManager.get(key);
+            if (value != null && value instanceof javax.swing.plaf.FontUIResource) {
+                javax.swing.plaf.FontUIResource newFont = (javax.swing.plaf.FontUIResource) value;
+                //log.info(key.toString() + " - " + value.toString());
+                UIManager.put(key, newFont.deriveFont(fontSize));
+            }
         }
     }
 
@@ -383,8 +409,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
 
     /**
      * Starts the Application. This method is typically invoked directly from
-     * <code>main</code>. Refer to <a href="#initSequence">init sequence</a> for
-     * details on which methods this invokes.
+     * <code>main</code>. Refer to <a href="#initSequence">init sequence</a>
+     * for details on which methods this invokes.
      *
      * @throws IllegalStateException if start has already been invoked
      * @see <a href="#initSequence">init sequence</a>
@@ -558,8 +584,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
 
     /**
      * Invoked when an uncaught exception is encountered. This will show a modal
-     * dialog alerting the user, and exit the app. This does <b>not</b> invoke
-     * <code>exit</code>.
+     * dialog alerting the user, and exit the app. This does <b>not</b>
+     * invoke <code>exit</code>.
      *
      * @param thread the thread the exception was thrown on
      * @param throwable the thrown exception
@@ -572,7 +598,8 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
                 // An exception has occured while we're trying to display
                 // the current exception, bale.
                 System.err.println("exception thrown while altering user");
-                throwable.printStackTrace();
+//                throwable.printStackTrace();
+                log.fatal("exception thrown while altering user", throwable);
                 System.exit(1);
             } else {
                 this.throwable = throwable;
@@ -607,11 +634,11 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     private void uncaughtException0() {
-        Throwable throwable;
+        Throwable aThrowable;
         synchronized (this) {
-            throwable = this.throwable;
+            aThrowable = this.throwable;
         }
-        log.fatal(throwable);
+        log.fatal(aThrowable);
         JDialog dialog = getUncaughtExceptionDialog();
         dialog.setVisible(true);
         System.exit(1);

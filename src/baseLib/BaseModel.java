@@ -4,13 +4,13 @@
  */
 package baseLib;
 
-import persistenceCommons.SysApoio;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import model.Habilidade;
 import model.Nacao;
 import model.PersonagemOrdem;
+import persistenceCommons.SysApoio;
 
 /**
  *
@@ -52,7 +52,7 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
         return codigo;
     }
 
-    public void setId(int id) {
+    public final void setId(int id) {
         this.id = id;
     }
 
@@ -60,7 +60,7 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
         this.nome = nome;
     }
 
-    public void setCodigo(String codigo) {
+    public final void setCodigo(String codigo) {
         this.codigo = SysApoio.removeAcentos(codigo);
     }
 
@@ -106,7 +106,7 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     }
 
     public void remHabilidade(Habilidade habilidade) {
-        this.habilidades.remove(habilidade.getCodigo());
+        remHabilidade(habilidade.getCodigo());
     }
 
     public void remHabilidadeNone() {

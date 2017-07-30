@@ -42,32 +42,28 @@ public class ImageManager implements Serializable {
     public static final int HEX_SIZE = 61;
     private static final Log log = LogFactory.getLog(ImageManager.class);
     private Image[] desenhoExercito;
+    private Image[] terrainImages;
     private final ExercitoFacade exercitoFacade = new ExercitoFacade();
     private final LocalFacade localFacade = new LocalFacade();
-    private final JPanel form;
-    private final Cenario cenario;
+    private JPanel form;
+    private Cenario cenario;
     private final MediaTracker mt;
     private int mti = 0;
     private ImageIcon combat, explosion, blueBall, yellowBall, iconApp;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
-    private final SortedMap<String, ImageIcon> features = new TreeMap<String, ImageIcon>();
+    private final SortedMap<String, ImageIcon> landmarks = new TreeMap<String, ImageIcon>();
     private static ImageManager instance;
 
-    public synchronized static ImageManager getInstance() {
-        if (ImageManager.instance == null) {
-            ImageManager.instance = new ImageManager();
-        }
-        return ImageManager.instance;
-    }
-
     /**
-     * to be used to draw rastros. don't need cenario, form or mt.
+     * to be used to draw rastros. don't need cenario.
      */
-    public ImageManager() {
+    private ImageManager() {
         doLoadIconsAll();
-        this.form = null;
-        this.mt = new MediaTracker(form);
+        this.form = new JPanel();
+        this.mt = new MediaTracker(this.form);
         this.cenario = null;
+        doLoadTerrainImages();
+        waitForAll();
     }
 
     /**
@@ -83,6 +79,13 @@ public class ImageManager implements Serializable {
         this.cenario = aCenario;
     }
 
+    public synchronized static ImageManager getInstance() {
+        if (ImageManager.instance == null) {
+            ImageManager.instance = new ImageManager();
+        }
+        return ImageManager.instance;
+    }
+
     private void doLoadIconsAll() {
         yellowBall = new ImageIcon(getClass().getResource("/images/piemenu/yellow_button.png"));
         blueBall = new ImageIcon(getClass().getResource("/images/piemenu/dark_blue_button.png"));
@@ -96,8 +99,28 @@ public class ImageManager implements Serializable {
         final SortedMap<String, String> featuresImage = localFacade.getTerrainLandmarksImage();
         for (String cdFeature : featuresImage.keySet()) {
             //todo: link feature to image vector
-            features.put(cdFeature, new ImageIcon(getClass().getResource(featuresImage.get(cdFeature))));
+            landmarks.put(cdFeature, new ImageIcon(getClass().getResource(featuresImage.get(cdFeature))));
         }
+    }
+
+    public Image[] getTerrainImages() {
+        return terrainImages;
+    }
+
+    private JPanel getForm() {
+        return form;
+    }
+
+    public void setForm(JPanel form) {
+        this.form = form;
+    }
+
+    private Cenario getCenario() {
+        return cenario;
+    }
+
+    public void setCenario(Cenario cenario) {
+        this.cenario = cenario;
     }
 
     public void carregaExercito() {
@@ -105,7 +128,7 @@ public class ImageManager implements Serializable {
         String[] exercitos = getExercitoStrings(false);
         desenhoExercito = new Image[exercitos.length];
         for (int ii = 0; ii < exercitos.length; ii++) {
-            desenho = form.getToolkit().getImage(getClass().getResource("/images/armies/" + exercitos[ii]));
+            desenho = getForm().getToolkit().getImage(getClass().getResource("/images/armies/" + exercitos[ii]));
             mt.addImage(desenho, mti++);
             this.desenhoExercito[ii] = desenho;
         }
@@ -117,7 +140,7 @@ public class ImageManager implements Serializable {
         String[] exercitos = getExercitoStrings(true);
         desenhoExercitos = new Image[exercitos.length];
         for (int ii = 0; ii < exercitos.length; ii++) {
-            desenho = form.getToolkit().getImage(getClass().getResource("/images/armies/" + exercitos[ii]));
+            desenho = getForm().getToolkit().getImage(getClass().getResource("/images/armies/" + exercitos[ii]));
             mt.addImage(desenho, mti++);
             desenhoExercitos[ii] = desenho;
         }
@@ -126,7 +149,7 @@ public class ImageManager implements Serializable {
     }
 
     private String[] getExercitoStrings(boolean all) {
-        if (all || this.cenario == null) {
+        if (all || this.getCenario() == null) {
             return new String[]{"neutral.png", "KingsCourt.gif", "Jofrey.png",
                 "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
                 "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
@@ -152,12 +175,12 @@ public class ImageManager implements Serializable {
                 "lom_valethor.png",
                 "lom_kor.png"
             };
-        } else if (cenario.isGrecia()) {
+        } else if (getCenario().isGrecia()) {
             return new String[]{"neutral.png", "Esparta.gif", "Atenas.gif", "Macedonia.gif", "Persia.gif",
                 "Tracia.gif", "Milletus.gif", "Illyria.gif", "Epirus.gif"};
-        } else if (cenario.isArzhog()) {
+        } else if (getCenario().isArzhog()) {
             return new String[]{"neutral.png", "Twainek.gif", "Frusodian.gif"};
-        } else if (cenario.isGot()) {
+        } else if (getCenario().isGot()) {
             return new String[]{"neutral.png", "KingsCourt.gif", "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
                 "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
                 "NightsWatch.png", "FreeCities.png", "Wildlings.png", "neutral2.png", "neutral3.png",
@@ -170,7 +193,7 @@ public class ImageManager implements Serializable {
                 "Pentos.png",
                 "Jofrey.png"
             };
-        } else if (cenario.isWdo()) {
+        } else if (getCenario().isWdo()) {
             return new String[]{"neutral.png", "KingsCourt.gif", "Jofrey.png",
                 "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
                 "Martell.png", "Stark.gif", "Targaryen.gif", "Tully.png", "Tyrell.gif",
@@ -192,7 +215,7 @@ public class ImageManager implements Serializable {
                 "Tracia.gif", "Milletus.gif", "Illyria.gif", "Epirus.gif",
                 "Twainek.gif", "Frusodian.gif"
             };
-        } else if (cenario.isLom()) {
+        } else if (getCenario().isLom()) {
             return new String[]{"neutral.png",
                 "lom_corelay.png",
                 "lom_ashimar.png",
@@ -244,7 +267,7 @@ public class ImageManager implements Serializable {
         mt.addImage(desenho, mti++);
     }
 
-    public void waitForAll() {
+    public final void waitForAll() {
         try {
             mt.waitForAll();
         } catch (NullPointerException e) {
@@ -293,6 +316,16 @@ public class ImageManager implements Serializable {
 
         //draw on graph
         big.draw(path);
+    }
+
+    public void doDrawCircle(Graphics2D big, int x, int y, Color color) {
+        //setup para os rastros
+        big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        big.setStroke(new BasicStroke());
+        big.setColor(color);
+
+        //draw on graph
+        big.drawOval(x, x, y, y);
     }
 
     public void doDrawPathNpc(Graphics2D big, Point ori, Point dest) {
@@ -419,68 +452,111 @@ public class ImageManager implements Serializable {
 
     public Image getFeature(Habilidade feature) {
         try {
-            return this.features.get(feature.getCodigo()).getImage();
+            return this.landmarks.get(feature.getCodigo()).getImage();
         } catch (NullPointerException ex) {
             log.error("Feature not found, add it to LocalFacade: " + feature.getCodigo());
             throw new UnsupportedOperationException(ex);
         }
     }
 
-    public Image[] carregaTerrenos() {
-        Image[] desenhoTerrenos;
+    public final Image[] doLoadTerrainImages() {
         Image desenho = null;
         String[] terrenos = {"vazio", "mar", "costa", "litoral", "floresta", "planicie",
             "montanha", "colinas", "pantano", "deserto", "wasteland", "lago"
         };
-        desenhoTerrenos = new Image[terrenos.length];
+
+        terrainImages = new Image[terrenos.length];
         for (int ii = 0; ii < terrenos.length; ii++) {
             if (terrenos[ii].equals("mar") && SettingsManager.getInstance().isKeyExist("ImagemMar")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemMar"));
+                desenho = getForm().getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemMar"));
             } else if (terrenos[ii].equals("costa") && SettingsManager.getInstance().isKeyExist("ImagemCosta")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemCosta"));
+                desenho = getForm().getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemCosta"));
             } else if (terrenos[ii].equals("litoral") && SettingsManager.getInstance().isKeyExist("ImagemLitoral")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemLitoral"));
+                desenho = getForm().getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemLitoral"));
             } else if (terrenos[ii].equals("floresta") && SettingsManager.getInstance().isKeyExist("ImagemFloresta")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemFloresta"));
+                desenho = getForm().getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemFloresta"));
             } else if (terrenos[ii].equals("planicie") && SettingsManager.getInstance().isKeyExist("ImagemPlanicie")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemPlanicie"));
+                desenho = getForm().getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemPlanicie"));
             } else if (terrenos[ii].equals("montanha") && SettingsManager.getInstance().isKeyExist("ImagemMontanha")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemMontanha"));
+                desenho = getForm().getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemMontanha"));
             } else if (terrenos[ii].equals("colinas") && SettingsManager.getInstance().isKeyExist("ImagemColinas")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemColinas"));
+                desenho = getForm().getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemColinas"));
             } else if (terrenos[ii].equals("pantano") && SettingsManager.getInstance().isKeyExist("ImagemPantano")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemPantano"));
+                desenho = getForm().getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemPantano"));
             } else if (terrenos[ii].equals("deserto") && SettingsManager.getInstance().isKeyExist("ImagemDeserto")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemDeserto"));
+                desenho = getForm().getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemDeserto"));
             } else if (terrenos[ii].equals("wasteland") && SettingsManager.getInstance().isKeyExist("ImagemWasteland")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemWasteland"));
+                desenho = getForm().getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemWasteland"));
             } else if (terrenos[ii].equals("lago") && SettingsManager.getInstance().isKeyExist("ImagemLago")) {
-                desenho = form.getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemLago"));
+                desenho = getForm().getToolkit().getImage(SettingsManager.getInstance().getConfig("ImagemLago"));
             } else {
                 desenho = getDesenhoProperties(terrenos[ii]);
             }
             this.addImage(desenho);
-            desenhoTerrenos[ii] = desenho;
+            terrainImages[ii] = desenho;
         }
-        return desenhoTerrenos;
+        return getTerrainImages();
     }
 
     public Image getDesenhoProperties(String filename) {
         if (SettingsManager.getInstance().isConfig("MapTiles", "2a", "2b")) {
             //feralonso bordless
-            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2a_" + filename + ".png"));
+            return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_2a_" + filename + ".png"));
         } else if (SettingsManager.getInstance().isConfig("MapTiles", "2b", "2b")) {
             //bordless meppa
-            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
+            return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
         } else if (SettingsManager.getInstance().isConfig("MapTiles", "2d", "2b")) {
             //bord meppa
-            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".gif"));
+            return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".gif"));
         } else if (SettingsManager.getInstance().isConfig("MapTiles", "3d", "2b")) {
             //3d from joao bordless
-            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".png"));
+            return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".png"));
         } else {
             //bordless meppa
-            return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
+            return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
         }
+    }
+
+    private static int terrenoToIndice(String cdTerrain) {
+        /*
+         * 1 'E', '0101' alto mar<br> 2 'C', '0102' costa<br> 3 'L', '0203'
+         * litoral<br> 4 'F', '0206' floresta<br> 5 'P', '0308' planicie<br> 6
+         * 'M', '0604' montanha<br> 7 'H', '0710' colinas<br> 8 'S', '1509'
+         * pantano<br> 9 'D', '2538' deserto<br>
+         */
+        try {
+            switch (cdTerrain.charAt(0)) {
+                case 'E':
+                    return 1;
+                case 'C':
+                    return 2;
+                case 'L':
+                    return 3;
+                case 'F':
+                    return 4;
+                case 'P':
+                    return 5;
+                case 'M':
+                    return 6;
+                case 'H':
+                    return 7;
+                case 'S':
+                    return 8;
+                case 'D':
+                    return 9;
+                case 'W':
+                    return 10;
+                case 'K':
+                    return 11;
+                default:
+                    return 0;
+            }
+        } catch (NullPointerException npe) {
+            return 0;
+        }
+    }
+
+    public Image getTerrainImages(String terrenoCodigo) {
+        return this.terrainImages[terrenoToIndice(terrenoCodigo)];
     }
 }

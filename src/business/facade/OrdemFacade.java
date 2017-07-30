@@ -622,4 +622,9 @@ public class OrdemFacade implements Serializable {
         }
         return ret;
     }
+
+    public boolean isOpenOrdem(IActor actor) {
+        //FIXME: specialize for nations by counting points, not slots.
+        return actor.isActorActive() && actor.getOrdensQt() > actor.getAcaoSize();
+    }
 }

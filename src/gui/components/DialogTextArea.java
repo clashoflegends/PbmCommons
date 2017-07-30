@@ -19,8 +19,8 @@ public class DialogTextArea extends javax.swing.JDialog implements Serializable 
 
     private static final Log log = LogFactory.getLog(DialogTextArea.class);
     // Variables declaration - do not modify
-    private javax.swing.JScrollPane detAjuda;
-    private javax.swing.JPanel jpAjuda;
+    private javax.swing.JScrollPane detContent;
+    private javax.swing.JPanel jpContent;
     private javax.swing.JTextArea jtaTextArea;
     // End of variables declaration
 
@@ -29,30 +29,29 @@ public class DialogTextArea extends javax.swing.JDialog implements Serializable 
         this.setAlwaysOnTop(true);
         this.setPreferredSize(new Dimension(500, 400));
         initComponents();
-        //this.add(detAjuda);
     }
 
     private void initComponents() {
 
-        detAjuda = new javax.swing.JScrollPane();
-        jpAjuda = new javax.swing.JPanel();
+        detContent = new javax.swing.JScrollPane();
+        jpContent = new javax.swing.JPanel();
         jtaTextArea = new javax.swing.JTextArea();
 
-        detAjuda.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        detContent.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         jtaTextArea.setLineWrap(true);
         jtaTextArea.setRows(80);
         jtaTextArea.setWrapStyleWord(true);
 
-        javax.swing.GroupLayout jpAjudaLayout = new javax.swing.GroupLayout(jpAjuda);
-        jpAjuda.setLayout(jpAjudaLayout);
-        jpAjudaLayout.setHorizontalGroup(
-                jpAjudaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(jtaTextArea));
-        jpAjudaLayout.setVerticalGroup(
-                jpAjudaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(jtaTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE));
+        javax.swing.GroupLayout jpContentLayout = new javax.swing.GroupLayout(jpContent);
+        jpContent.setLayout(jpContentLayout);
+        jpContentLayout.setHorizontalGroup(
+                jpContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(jtaTextArea));
+        jpContentLayout.setVerticalGroup(
+                jpContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(jtaTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE));
 
-        detAjuda.setViewportView(jpAjuda);
-        this.add(detAjuda);
+        detContent.setViewportView(jpContent);
+        this.add(detContent);
     }
 
     public void setText(String text) {
