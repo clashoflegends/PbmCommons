@@ -405,4 +405,12 @@ public class TitleFactory implements Serializable {
             return combateTaticaGrito[0];
         }
     }
+
+    public static String getTaticaNome(int tactic) {
+        try {
+            return BaseMsgs.taticasLabel[tactic];
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            return BaseMsgs.taticasLabel[2];
+        }
+    }
 }

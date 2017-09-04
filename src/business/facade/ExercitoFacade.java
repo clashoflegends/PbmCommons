@@ -24,6 +24,7 @@ import model.Personagem;
 import model.Terreno;
 import model.TipoTropa;
 import msgs.BaseMsgs;
+import msgs.TitleFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
@@ -582,5 +583,9 @@ public class ExercitoFacade implements Serializable {
         //FIXME: tem que lembrar cada movimento para identificar se mudando de corpo dagua.
         //movEx.setDirecaoAnterior(this.anterior);
         return movEx.getCustoMovimento();
+    }
+
+    public String getTacticNameSelected(Exercito exercito) {
+        return TitleFactory.getTaticaNome(exercito.getTatica());
     }
 }
