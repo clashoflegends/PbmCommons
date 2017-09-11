@@ -17,12 +17,18 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -90,6 +96,7 @@ public class ImageManager implements Serializable {
         explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
         iconApp = new ImageIcon(getClass().getResource("/images/hex_wasteland.png"));
         doLoadFeaturesAll();
+        doLoadPortraits();
     }
 
     private void doLoadFeaturesAll() {
@@ -482,5 +489,34 @@ public class ImageManager implements Serializable {
             //bordless meppa
             return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
         }
+    }
+    
+    public void doLoadPortraits(){
+        boolean showPortrait = Integer.parseInt(SettingsManager.getInstance().getConfig("ShowCharacterPortraits", "0")) == 1;
+        
+        if (showPortrait) {
+            
+            File portraitsFolder = new File("portraits");            
+            if (portraitsFolder.exists()) {                
+                log.debug("Se ha encontrado la carpeta portraits");
+                File[] portraitsFile = portraitsFolder.listFiles();
+                for (File portraitFile : portraitsFile) {
+               //     try {
+                   //     String path = getPath();
+                   portraitFile.toURI();
+                        ImageIcon portraitIcon = new ImageIcon( portraitFile.getAbsolutePath());
+            //        } catch (MalformedURLException ex) {
+            //            Logger.getLogger(ImageManager.class.getName()).log(Level.SEVERE, null, ex);
+            //        }
+                }
+                
+            } else {               
+                log.info("No se ha encontrado la carpeta portraits");
+                
+            }
+            
+            
+        }
+        
     }
 }
