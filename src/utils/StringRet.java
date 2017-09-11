@@ -10,6 +10,7 @@ import java.util.List;
 
 /**
  * servers to concatenate strings
+ *
  * @author jmoura
  */
 public final class StringRet implements Serializable {
@@ -31,6 +32,10 @@ public final class StringRet implements Serializable {
 
     public void addTab(String text) {
         this.textRet.add(tab + text);
+    }
+
+    public void addTabTab(String text) {
+        this.textRet.add(tab + tab + text);
     }
 
     public void addTab(List<String> texts) {

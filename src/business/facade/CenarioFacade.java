@@ -385,6 +385,10 @@ public class CenarioFacade implements Serializable {
         return !cenario.hasHabilidade(";SNR;");
     }
 
+    public boolean hasCombatCasualtiesTactics(Cenario cenario) {
+        return cenario.hasHabilidade(";CTC;");
+    }
+
     public boolean hasShips(Cenario cenario) {
         return cenario.hasHabilidade(";TB;");
     }
