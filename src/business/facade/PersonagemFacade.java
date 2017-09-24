@@ -705,7 +705,11 @@ public class PersonagemFacade implements Serializable {
 
     public boolean isPodeMoverCidade(Personagem personagem) {
         try {
-            return (personagem.getNacao().hasHabilidadeNacao("0036"));
+            if (personagem.getNacao().hasHabilidade(";PKM;")) {
+                return true;
+            } else {
+                return (personagem.getNacao().hasHabilidadeNacao("0036"));
+            }
         } catch (NullPointerException ex) {
             return false;
         }
