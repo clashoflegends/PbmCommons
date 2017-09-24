@@ -196,19 +196,35 @@ public class PersonagemFacade implements Serializable {
             //verifica NSP
             if (nacaoFacade.hasHabilidade(this.getNacao(personagem), "0023") && feiticoAlvo.getNumero() == 502) {
                 ret = true;
+            } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), ";PZW;") && feiticoAlvo.getNumero() == 502) {
+                ret = true;
             } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), "0024") && feiticoAlvo.getNumero() == 508) {
+                ret = true;
+            } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), ";PZCM;") && feiticoAlvo.getNumero() == 508) {
                 ret = true;
             } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), "0025") && feiticoAlvo.getNumero() == 510) {
                 ret = true;
+            } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), ";PZCF;") && feiticoAlvo.getNumero() == 510) {
+                ret = true;
             } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), "0026") && feiticoAlvo.getNumero() == 512) {
+                ret = true;
+            } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), ";PZH;") && feiticoAlvo.getNumero() == 512) {
                 ret = true;
             } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), "0027") && feiticoAlvo.getNumero() == 244) {
                 ret = true;
+            } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), ";PZFH;") && feiticoAlvo.getNumero() == 244) {
+                ret = true;
             } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), "0028") && feiticoAlvo.getNumero() == 248) {
+                ret = true;
+            } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), ";PZF;") && feiticoAlvo.getNumero() == 248) {
                 ret = true;
             } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), "0029") && feiticoAlvo.getNumero() == 246) {
                 ret = true;
+            } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), ";PZS;") && feiticoAlvo.getNumero() == 246) {
+                ret = true;
             } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), "0030") && feiticoAlvo.getNumero() == 314) {
+                ret = true;
+            } else if (nacaoFacade.hasHabilidade(this.getNacao(personagem), ";PZT;") && feiticoAlvo.getNumero() == 314) {
                 ret = true;
             }
 
