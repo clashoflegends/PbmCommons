@@ -53,6 +53,7 @@ public class ImageManager implements Serializable {
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
     private final SortedMap<String, ImageIcon> landmarks = new TreeMap<String, ImageIcon>();
     private static ImageManager instance;
+    private final SortedMap<String, ImageIcon> portraitMap = new TreeMap<String, ImageIcon>();
 
     /**
      * to be used to draw rastros. don't need cenario.
@@ -558,5 +559,34 @@ public class ImageManager implements Serializable {
 
     public Image getTerrainImages(String terrenoCodigo) {
         return this.terrainImages[terrenoToIndice(terrenoCodigo)];
+    }
+    
+    public void doLoadPortraits(){
+        boolean showPortrait = Integer.parseInt(SettingsManager.getInstance().getConfig("ShowCharacterPortraits", "0")) == 1;
+        
+        if (showPortrait) {
+            
+            File portraitsFolder = new File("portraits");            
+            if (portraitsFolder.exists()) {                
+                log.debug("Se ha encontrado la carpeta portraits");
+                File[] portraitsFile = portraitsFolder.listFiles();
+                for (File portraitFile : portraitsFile) {            
+                 
+                    portraitFile.toURI();
+                    ImageIcon portraitIcon = new ImageIcon( portraitFile.getAbsolutePath());
+                    portraitIcon.getIconWidth();
+                    portraitMap.put(portraitFile.getName(), portraitIcon);
+                }
+                
+            } else {               
+                log.info("No se ha encontrado la carpeta portraits");
+                
+            }         
+        }
+        
+    }
+    public ImageIcon getPortrait(String portraitName) {
+        ImageIcon portrait = this.portraitMap.get(portraitName);
+        return portrait;
     }
 }
