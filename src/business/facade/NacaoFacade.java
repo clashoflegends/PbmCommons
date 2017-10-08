@@ -113,7 +113,12 @@ public class NacaoFacade implements Serializable {
                 ret += cidade.getDocas() * 250;
                 if (this.hasHabilidade(nacao, "0042") && cidade.getFortificacao() == 5) {
                     //The Wall: Fortress' upkeep is free
-//                    ret += cidade.getFortificacao() * 0;
+                } else if (this.hasHabilidade(nacao, ";PFG;") && cidade.getFortificacao() == 5) {
+                    //The Wall: Fortress' upkeep is free
+                    ret += 0;
+                } else if (nacao.hasHabilidade(";PUF;")) {
+                    //Pays half upkeep cost on fortifications
+                    ret += cidade.getFortificacao() * 500 / nacao.getHabilidadeValor(";PUF;");
                 } else if (this.hasHabilidade(nacao, "0037")) {
                     //Pays half upkeep cost on fortifications
                     ret += cidade.getFortificacao() * 250;

@@ -246,7 +246,6 @@ public class CidadeFacade implements Serializable {
     public int getProducao(Cidade cidade, Produto produto) {
         int producao = cidade.getProducao(produto);
         try {
-            final int minGold = cidade.getNacao().getHabilidadeNacaoValor("0039");
             if (cidade.getNacao().hasHabilidade(";NWP;") && produto.isWood()) {
                 producao += producao * cidade.getNacao().getHabilidadeValor(";NWP;") / 100;
                 return producao;
@@ -258,11 +257,11 @@ public class CidadeFacade implements Serializable {
                     && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
                 return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGM;"));
-            } else if (produto.isMoney() && producao <= minGold
+            } else if (produto.isMoney() && producao <= cidade.getNacao().getHabilidadeNacaoValor("0039")
                     && cidade.getNacao().getHabilidadesNacao().containsKey("0039")
                     && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
-                return minGold;
+                return cidade.getNacao().getHabilidadeNacaoValor("0039");
             } else {
                 return producao;
             }
@@ -316,15 +315,7 @@ public class CidadeFacade implements Serializable {
     }
 
     public int getUpkeepMoney(Cidade cidade) {
-////        if (cidade.getNacao().hasHabilidadeNacaoOld("0042") && cidade.getFortificacao() == 5) {
-////            //The Wall: Fortress' upkeep is free
-////            return (cidade.getDocas() * 250);
-////        } else if (cidade.getNacao().hasHabilidadeNacaoOld("0037")) {
-////            //Pays half upkeep cost on fortifications
-////            return (cidade.getDocas() * 250 + cidade.getFortificacao() * 500 / 2);
-////        } else {
         return (cidade.getDocas() * 250 + cidade.getFortificacao() * 500);
-//        }
     }
 
     public int getFoodGiven(Cidade cidade) {
