@@ -91,9 +91,13 @@ public class LongDate {
     }
 
     private static long calendarToLong(Calendar date) throws NumberFormatException {
+        return calendarToLong(date, 2300);
+    }
+
+    private static long calendarToLong(Calendar date, int startHour) throws NumberFormatException {
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
         final String format = sdf.format(date.getTime());
-        return Long.valueOf(format) * 10000 + 2300;
+        return Long.valueOf(format) * 10000 + startHour;
     }
 
     private Calendar longToCalendar(long dateLong) throws NumberFormatException {
@@ -111,19 +115,22 @@ public class LongDate {
         return getDaysDiff(getDateLongAsDate(), Calendar.getInstance().getTime());
     }
 
+    /**
+     * Not in use anymore, but kept around for example
+     */
     public static long nowToNextWednesday(int weeks) {
-        return nowToNextWeekday(Calendar.WEDNESDAY, weeks);
+        return nowToNextWeekday(Calendar.WEDNESDAY, weeks, 2300);
     }
 
-    public static long nowToNextWeekday(int baseWeekday, int weeks) {
+    public static long nowToNextWeekday(int baseWeekday, int qtLeadDays, int startHour) {
         Calendar date = Calendar.getInstance();
 
-        int diff = baseWeekday - date.get(Calendar.DAY_OF_WEEK) + 7 * weeks;
+        int diff = baseWeekday - date.get(Calendar.DAY_OF_WEEK) + qtLeadDays;
         if (diff <= 0) {
             diff += 7;
         }
         date.add(Calendar.DAY_OF_MONTH, diff);
-        return calendarToLong(date);
+        return calendarToLong(date, startHour);
     }
 
     public long addWeek(int weeks) {
