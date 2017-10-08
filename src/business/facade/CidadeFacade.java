@@ -7,7 +7,6 @@ package business.facade;
 import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import model.Cenario;
@@ -247,7 +246,6 @@ public class CidadeFacade implements Serializable {
     public int getProducao(Cidade cidade, Produto produto) {
         int producao = cidade.getProducao(produto);
         try {
-            final int minGold = cidade.getNacao().getHabilidadeNacaoValor("0039");
             if (cidade.getNacao().hasHabilidade(";NWP;") && produto.isWood()) {
                 producao += producao * cidade.getNacao().getHabilidadeValor(";NWP;") / 100;
                 return producao;
@@ -259,11 +257,11 @@ public class CidadeFacade implements Serializable {
                     && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
                 return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGM;"));
-            } else if (produto.isMoney() && producao <= minGold
+            } else if (produto.isMoney() && producao <= cidade.getNacao().getHabilidadeNacaoValor("0039")
                     && cidade.getNacao().getHabilidadesNacao().containsKey("0039")
                     && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
-                return minGold;
+                return cidade.getNacao().getHabilidadeNacaoValor("0039");
             } else {
                 return producao;
             }
@@ -296,50 +294,6 @@ public class CidadeFacade implements Serializable {
         return getNacao(cidade).getRaca();
     }
 
-    public List<String> getInfo(Cidade cidade, Collection<Nacao> nations) {
-        StringRet ret = new StringRet();
-        if (cidade == null) {
-            return ret.getList();
-        }
-        ret = getInfo(cidade);
-        for (Nacao nation : nations) {
-            final Nacao targetNation = getNacao(cidade);
-            if (targetNation == null || targetNation == nation) {
-                continue;
-            }
-            //print diplomacy
-            ret.addTab(String.format("%s: %s", nation.getNome(), nacaoFacade.getRelacionamento(nation, targetNation)));
-            //print if inactive
-            if (!nacaoFacade.isAtiva(targetNation)) {
-                ret.addTab(String.format("%s: %s", nation.getNome(), labels.getString("INATIVA")));
-            }
-        }
-        return ret.getList();
-    }
-
-    public StringRet getInfo(Cidade cidade) {
-        StringRet ret = new StringRet();
-        ret.add(String.format(labels.getString("CIDADE.CAPITAL.DA.NACAO"),
-                cidade.getComboDisplay(),
-                SysApoio.iif(cidade.isCapital(), labels.getString("(CAPITAL)"), ""),
-                nacaoFacade.getNome(cidade.getNacao())));
-        ret.addTab(String.format("%s: %s", labels.getString("TAMANHO"), BaseMsgs.cidadeTamanho[cidade.getTamanho()]));
-        ret.addTab(String.format("%s: %s", labels.getString("FORTIFICACOES"), BaseMsgs.cidadeFortificacao[cidade.getFortificacao()]));
-        if (cidade.getLealdade() > 0) {
-            ret.addTab(String.format("%s: %s (%s)",
-                    labels.getString("LEALDADE"),
-                    cidade.getLealdade(),
-                    cidade.getLealdade() - cidade.getLealdadeAnterior()));
-        } else {
-            ret.addTab(String.format("%s: %s", labels.getString("LEALDADE"), "?"));
-        }
-        ret.addTab(String.format("%s: %s", labels.getString("CIDADE.DOCAS"), BaseMsgs.cidadeDocas[cidade.getDocas()]));
-        ret.addTab(String.format("%s: %s", labels.getString("OCULTO"), getOculto(cidade)));
-        ret.addTab(String.format("%s: %s", labels.getString("SITIADO"), getSitiado(cidade)));
-
-        return ret;
-    }
-
     public List<String> getInfoTitle(Cidade cidade) {
         StringRet ret = new StringRet();
         if (cidade == null) {
@@ -361,15 +315,7 @@ public class CidadeFacade implements Serializable {
     }
 
     public int getUpkeepMoney(Cidade cidade) {
-////        if (cidade.getNacao().hasHabilidadeNacaoOld("0042") && cidade.getFortificacao() == 5) {
-////            //The Wall: Fortress' upkeep is free
-////            return (cidade.getDocas() * 250);
-////        } else if (cidade.getNacao().hasHabilidadeNacaoOld("0037")) {
-////            //Pays half upkeep cost on fortifications
-////            return (cidade.getDocas() * 250 + cidade.getFortificacao() * 500 / 2);
-////        } else {
         return (cidade.getDocas() * 250 + cidade.getFortificacao() * 500);
-//        }
     }
 
     public int getFoodGiven(Cidade cidade) {

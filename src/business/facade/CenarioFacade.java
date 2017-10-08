@@ -93,6 +93,10 @@ public class CenarioFacade implements Serializable {
 
     /**
      * 0 = comandante 1 = agente 2 = emissario 3 = mago
+     *
+     * @param cenario
+     * @param classe
+     * @return
      */
     public String getTituloClasse(Cenario cenario, int classe) {
         String ret[];
@@ -109,19 +113,28 @@ public class CenarioFacade implements Serializable {
     /**
      * 0 = all 1 = all but Money 2 = weapons 3 = armor
      *
+     * @param cenario
+     * @param filtro
      * @return
      */
     public Produto[] listProdutos(Cenario cenario, int filtro) {
         List<Produto> produtos = new ArrayList();
-        if (filtro == 0) {
-            produtos.addAll(cenario.getProdutos().values());
-        } else if (filtro == 1) {
-            produtos.addAll(cenario.getProdutos().values());
-            produtos.remove(cenario.getMoney());
-        } else if (filtro == 2) {
-            produtos.addAll(getProdutosArmor(cenario));
-        } else if (filtro == 3) {
-            produtos.addAll(getProdutosWeapon(cenario));
+        switch (filtro) {
+            case 0:
+                produtos.addAll(cenario.getProdutos().values());
+                break;
+            case 1:
+                produtos.addAll(cenario.getProdutos().values());
+                produtos.remove(cenario.getMoney());
+                break;
+            case 2:
+                produtos.addAll(getProdutosArmor(cenario));
+                break;
+            case 3:
+                produtos.addAll(getProdutosWeapon(cenario));
+                break;
+            default:
+                break;
         }
         return (Produto[]) produtos.toArray(new Produto[0]);
     }
@@ -356,12 +369,24 @@ public class CenarioFacade implements Serializable {
         return cenario.hasHabilidade(";SRP;");
     }
 
+    public int getLandmarkRespawnValue(Cenario cenario) {
+        if (cenario.hasHabilidade(";SHL;")) {
+            return cenario.getHabilidadeValor(";SHL;");
+        } else {
+            return 0;
+        }
+    }
+
     public boolean hasRenameCities(Cenario cenario) {
         return cenario.hasHabilidade(";SRC;");
     }
 
     public boolean hasResourceManagement(Cenario cenario) {
         return !cenario.hasHabilidade(";SNR;");
+    }
+
+    public boolean hasCombatCasualtiesTactics(Cenario cenario) {
+        return cenario.hasHabilidade(";CTC;");
     }
 
     public boolean hasShips(Cenario cenario) {

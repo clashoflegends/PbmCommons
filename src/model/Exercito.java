@@ -16,13 +16,27 @@ import java.util.TreeMap;
 public class Exercito extends BaseModel implements IExercito {
 
     private int moral = 0;
-    private int comida = 0;
+    private int comida = 0, tatica = 2;
     private int tamanhoExercito = 0, tamanhoEsquadra = 0;
     private boolean movimentacaoEvasiva = false;
     private Personagem comandante;
     private Nacao nacao;
     private Local local;
     private SortedMap<String, Pelotao> tropas = new TreeMap();
+
+    /**
+     * @return the tatica
+     */
+    public int getTatica() {
+        return tatica;
+    }
+
+    /**
+     * @param tatica the tatica to set
+     */
+    public void setTatica(int tatica) {
+        this.tatica = tatica;
+    }
 
     public void addPelotoes(SortedMap<String, Pelotao> pelotoes) {
         this.tropas = pelotoes;

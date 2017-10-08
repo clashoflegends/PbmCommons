@@ -60,6 +60,10 @@ public class Partida extends BaseModel {
         this.jogadorAtivo = jogador;
     }
 
+    public boolean isJogadorAtivo(Nacao nacao) {
+        return this.getJogadorAtivo().isNacao(nacao);
+    }
+
     public Mercado getMercado() {
         return mercado;
     }
