@@ -58,6 +58,7 @@ public class ImageManager implements Serializable {
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
     private final SortedMap<String, ImageIcon> features = new TreeMap<String, ImageIcon>();
     private static ImageManager instance;
+    private final SortedMap<String, ImageIcon> portraitMap = new TreeMap<String, ImageIcon>();
 
     public synchronized static ImageManager getInstance() {
         if (ImageManager.instance == null) {
@@ -96,7 +97,6 @@ public class ImageManager implements Serializable {
         explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
         iconApp = new ImageIcon(getClass().getResource("/images/hex_wasteland.png"));
         doLoadFeaturesAll();
-        doLoadPortraits();
     }
 
     private void doLoadFeaturesAll() {
@@ -490,7 +490,7 @@ public class ImageManager implements Serializable {
             return form.getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
         }
     }
-    
+
     public void doLoadPortraits(){
         boolean showPortrait = Integer.parseInt(SettingsManager.getInstance().getConfig("ShowCharacterPortraits", "0")) == 1;
         
@@ -500,23 +500,23 @@ public class ImageManager implements Serializable {
             if (portraitsFolder.exists()) {                
                 log.debug("Se ha encontrado la carpeta portraits");
                 File[] portraitsFile = portraitsFolder.listFiles();
-                for (File portraitFile : portraitsFile) {
-               //     try {
-                   //     String path = getPath();
-                   portraitFile.toURI();
-                        ImageIcon portraitIcon = new ImageIcon( portraitFile.getAbsolutePath());
-            //        } catch (MalformedURLException ex) {
-            //            Logger.getLogger(ImageManager.class.getName()).log(Level.SEVERE, null, ex);
-            //        }
+                for (File portraitFile : portraitsFile) {            
+                 
+                    portraitFile.toURI();
+                    ImageIcon portraitIcon = new ImageIcon( portraitFile.getAbsolutePath());
+                    portraitIcon.getIconWidth();
+                    portraitMap.put(portraitFile.getName(), portraitIcon);
                 }
                 
             } else {               
                 log.info("No se ha encontrado la carpeta portraits");
                 
-            }
-            
-            
+            }         
         }
         
+    }
+    public ImageIcon getPortrait(String portraitName) {
+        ImageIcon portrait = this.portraitMap.get(portraitName);
+        return portrait;
     }
 }
