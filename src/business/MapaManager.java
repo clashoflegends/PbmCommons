@@ -5,6 +5,7 @@
 package business;
 
 import business.converter.ConverterFactory;
+import business.facade.AcaoFacade;
 import business.facade.ArtefatoFacade;
 import business.facade.CenarioFacade;
 import business.facade.CidadeFacade;
@@ -43,6 +44,7 @@ import model.Jogador;
 import model.Local;
 import model.Nacao;
 import model.Personagem;
+import model.PersonagemOrdem;
 import msgs.ColorFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,8 +72,10 @@ public class MapaManager implements Serializable {
     private static final PersonagemFacade personagemFacade = new PersonagemFacade();
     private static final JogadorFacade jogadorFacade = new JogadorFacade();
     private static final ArtefatoFacade artefatoFacade = new ArtefatoFacade();
+    private static final AcaoFacade acaoFacade = new AcaoFacade();
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private final ImageManager imageFactory = ImageManager.getInstance();
+    private SortedMap<String, Local> locais;
 
     public MapaManager(Cenario aCenario, JPanel form) {
         this.cenario = aCenario;
@@ -81,9 +85,23 @@ public class MapaManager implements Serializable {
         this.carregaDesenhosDisponiveis();
     }
 
+    /**
+     * @return the locais
+     */
+    public SortedMap<String, Local> getLocais() {
+        return locais;
+    }
+
+    /**
+     * @param locais the locais to set
+     */
+    public void setLocais(SortedMap<String, Local> locais) {
+        this.locais = locais;
+    }
+
     private void carregaDesenhosDisponiveis() {
         log.debug("Carregando: Desenhos...");
-        Image desenho = null;
+        Image desenho;
 
         String[] detalhesTerreno = {
             "ponte_no", "ponte_ne", "ponte_l", "ponte_se", "ponte_so", "ponte_o",
@@ -125,7 +143,7 @@ public class MapaManager implements Serializable {
 
     public Point getMapMaxSize(Collection<Local> listaLocal) {
         int[] ret = {0, 0};
-        int row = 0, col = 0;
+        int row, col;
         for (Local local : listaLocal) {
             row = localFacade.getRow(local);
             col = localFacade.getCol(local);
@@ -211,14 +229,12 @@ public class MapaManager implements Serializable {
                 //desenha docas
                 Image docas = this.desenhoCidades[cidadeFacade.getDocas(cidade) + 12];
                 largura = docas.getWidth(form);
-                altura = docas.getHeight(form);
                 big.drawImage(docas, x + (ImageManager.HEX_SIZE - largura) / 2, y + 2, form);
 
                 //desenha capital
                 if (cidadeFacade.isCapital(cidade)) {
                     Image capital = this.desenhoCidades[15];
                     largura = capital.getWidth(form);
-                    altura = capital.getHeight(form);
                     big.drawImage(capital, x + (ImageManager.HEX_SIZE - largura) / 2, y + 30, form);
                 }
             }
@@ -359,10 +375,50 @@ public class MapaManager implements Serializable {
             final Point dest = ConverterFactory.localToPoint(pers.getLocal());
             if (personagemFacade.isNpc(pers)) {
                 imageFactory.doDrawPathNpc(big, ori, dest);
-            } else if (!jogadorFacade.isMine(pers, observer)) {
+            } else if (jogadorFacade.isMine(pers, observer)) {
                 imageFactory.doDrawPathPc(big, ori, dest);
+            } else if (jogadorFacade.isAlly(pers, observer)) {
+                imageFactory.doDrawPathPcAlly(big, ori, dest);
             } else {
-                imageFactory.doDrawPathPc(big, ori, dest);
+                imageFactory.doDrawPathPcEnemy(big, ori, dest);
+            }
+        }
+    }
+
+    private void printMapaMovPathOrders(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
+        if (!SettingsManager.getInstance().isConfig("drawPcPath", "1", "1")) {
+            return;
+        }
+        for (Personagem pers : listaPers) {
+            if (pers.getLocal() == null) {
+                continue;
+            }
+            if (pers.getCodigo().equalsIgnoreCase("hap b")) {
+                log.debug("AKI!");
+                log.info("found Hap!");
+//                where to add drawings?;
+//                new layer for drawing? Like tags?
+//                how to add and remove with saved orders?;
+            }
+            for (PersonagemOrdem po : pers.getAcoes().values()) {
+                if (!acaoFacade.isMovimento(po)) {
+                    continue;
+                }
+                final Local localDestination = acaoFacade.getLocalDestination(pers, po, getLocais());
+                if (localDestination == null) {
+                    continue;
+                }
+                if (pers.getLocal().equals(localDestination)) {
+                    continue;
+                }
+                //draw all movement paths.
+                final Point dest = ConverterFactory.localToPoint(localDestination);
+                final Point ori = ConverterFactory.localToPoint(pers.getLocalOrigem());
+                if (jogadorFacade.isMine(pers, observer)) {
+                    imageFactory.doDrawPathPcOrder(big, ori, dest);
+                } else if (jogadorFacade.isAlly(pers, observer)) {
+                    imageFactory.doDrawPathPcAllyOrder(big, ori, dest);
+                }
             }
         }
     }
@@ -397,8 +453,8 @@ public class MapaManager implements Serializable {
 
     public void printLegenda(String dirName) {
 
-        int legendaCounter = 0;
-        int x = 0, y = 0, ih = 800, iw = 1200, gap = 12;
+        int legendaCounter;
+        int x, y, ih = 800, iw = 1200, gap = 12;
         String[] legendas;
         BufferedImage megaMap = new BufferedImage(iw, ih, BufferedImage.TRANSLUCENT);
         Image image;
@@ -667,7 +723,7 @@ public class MapaManager implements Serializable {
         return new int[]{(int) p.getX(), (int) p.getY()};
     }
 
-    public Local doPositionToCoord(Point click, SortedMap<String, Local> locais) {
+    public Local doPositionToCoord(Point click) {
         int row, col;
         row = click.y / 45;
         if (row % 2 == 0) {
