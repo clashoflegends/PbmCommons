@@ -122,10 +122,10 @@ public class LongDate {
         return nowToNextWeekday(Calendar.WEDNESDAY, weeks, 2300);
     }
 
-    public static long nowToNextWeekday(int baseWeekday, int qtLeadDays, int startHour) {
+    public static long nowToNextWeekday(int baseWeekday, int qtLeadWeeks, int startHour) {
         Calendar date = Calendar.getInstance();
 
-        int diff = baseWeekday - date.get(Calendar.DAY_OF_WEEK) + qtLeadDays;
+        int diff = baseWeekday - date.get(Calendar.DAY_OF_WEEK) + qtLeadWeeks * 7;
         if (diff <= 0) {
             diff += 7;
         }
