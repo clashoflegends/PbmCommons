@@ -587,7 +587,13 @@ public class ImageManager implements Serializable {
         
     }
     public ImageIcon getPortrait(String portraitName) {
+        if (this.portraitMap.isEmpty()) {
+            doLoadPortraits();
+        }
         ImageIcon portrait = this.portraitMap.get(portraitName);
+        if (portrait == null) {
+            portrait = this.portraitMap.get("blank.jpg");
+        }
         return portrait;
     }
 }
