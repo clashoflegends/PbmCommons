@@ -5,17 +5,20 @@
 package business.facade;
 
 import baseLib.BaseModel;
-import persistenceCommons.SysApoio;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.SortedMap;
 import model.Habilidade;
+import model.Local;
 import model.Nacao;
 import model.Ordem;
+import model.Personagem;
 import model.PersonagemOrdem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
+import persistenceCommons.SysApoio;
 
 /**
  *
@@ -96,5 +99,24 @@ public class AcaoFacade implements Serializable {
             }
         }
         return ret;
+    }
+
+    public boolean isMovimento(PersonagemOrdem po) {
+        try {
+            return po.getOrdem().isTipoMovimentacao();
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+    public Local getLocalDestination(Personagem pers, PersonagemOrdem po, SortedMap<String, Local> locais) {
+        if (!isMovimento(po)) {
+            return pers.getLocal();
+        } else {
+            for (String coord : po.getParametrosId()) {
+                return locais.get(coord);
+            }
+            return null;
+        }
     }
 }

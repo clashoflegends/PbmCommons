@@ -55,6 +55,12 @@ public class ImageManager implements Serializable {
     private final SortedMap<String, ImageIcon> landmarks = new TreeMap<String, ImageIcon>();
     private static ImageManager instance;
     private final SortedMap<String, ImageIcon> portraitMap = new TreeMap<String, ImageIcon>();
+    private final Color colorNpc = Color.GREEN;
+    private final Color colorEnemy = new Color(204, 43, 51, 169);
+    private final Color colorMine = Color.DARK_GRAY;
+    private final Color colorAlly = new Color(0, 212, 255, 216);
+    private final Color colorMineOrdem = Color.WHITE;
+    private final Color colorAllyOrdem = Color.YELLOW;
 
     /**
      * to be used to draw rastros. don't need cenario.
@@ -332,11 +338,20 @@ public class ImageManager implements Serializable {
 
     public void doDrawPathNpc(Graphics2D big, Point ori, Point dest) {
         final int x = 04 + 7 / 2 + 8;
-        final int y = 22 + 13 / 2 - 3;
+        final int y = 22 + 13 / 2 - 2;
         doDrawPath(big,
                 new Point((int) ori.getX() + x, (int) ori.getY() + y),
                 new Point((int) dest.getX() + x, (int) dest.getY() + y),
-                Color.green);
+                colorNpc);
+    }
+
+    public void doDrawPathPcEnemy(Graphics2D big, Point ori, Point dest) {
+        final int x = 04 + 7 / 2 + 6;
+        final int y = 22 + 13 / 2 - 3 + 4;
+        doDrawPath(big,
+                new Point((int) ori.getX() + x, (int) ori.getY() + y),
+                new Point((int) dest.getX() + x, (int) dest.getY() + y),
+                colorEnemy);
     }
 
     public void doDrawPathPc(Graphics2D big, Point ori, Point dest) {
@@ -345,16 +360,34 @@ public class ImageManager implements Serializable {
         doDrawPath(big,
                 new Point((int) ori.getX() + x, (int) ori.getY() + y),
                 new Point((int) dest.getX() + x, (int) dest.getY() + y),
-                Color.blue);
+                colorMine);
     }
 
-    public void doDrawPathPcEnemy(Graphics2D big, Point ori, Point dest) {
-        final int x = 04 + 7 / 2 + 8;
-        final int y = 22 + 13 / 2 - 3 + 4;
+    public void doDrawPathPcAlly(Graphics2D big, Point ori, Point dest) {
+        final int x = 04 + 7 / 2 + 4;
+        final int y = 22 + 13 / 2 - 3 + 2;
         doDrawPath(big,
                 new Point((int) ori.getX() + x, (int) ori.getY() + y),
                 new Point((int) dest.getX() + x, (int) dest.getY() + y),
-                Color.red);
+                colorAlly);
+    }
+
+    public void doDrawPathPcOrder(Graphics2D big, Point ori, Point dest) {
+        final int x = 04 + 7 / 2 - 4;
+        final int y = 22 + 13 / 2 + 2;
+        doDrawPath(big,
+                new Point((int) ori.getX() + x, (int) ori.getY() + y),
+                new Point((int) dest.getX() + x, (int) dest.getY() + y),
+                colorMineOrdem);
+    }
+
+    public void doDrawPathPcAllyOrder(Graphics2D big, Point ori, Point dest) {
+        final int x = 04 + 7 / 2 + 4 + 4;
+        final int y = 22 + 13 / 2 - 3 - 2;
+        doDrawPath(big,
+                new Point((int) ori.getX() + x, (int) ori.getY() + y),
+                new Point((int) dest.getX() + x, (int) dest.getY() + y),
+                colorAllyOrdem);
     }
 
     private void doDrawPath(Graphics2D big, Point ori, Point dest, Color color) {
@@ -365,7 +398,7 @@ public class ImageManager implements Serializable {
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND,
                 1f,
-                new float[]{2f},
+                new float[]{3f, 5f, 7f, 5f},
                 0f));
         big.setColor(color);
         //draw path

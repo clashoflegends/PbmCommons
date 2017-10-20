@@ -640,4 +640,62 @@ public final class ConverterFactory implements Serializable {
         }
         return 0;
     }
+
+    public static String getGameFrequency(String flFrequency) {
+        if (flFrequency.equalsIgnoreCase("12H")) {
+            return ";GFH12;";
+        } else if (flFrequency.equalsIgnoreCase("14D")) {
+            return ";GF2;";
+        } else if (flFrequency.equalsIgnoreCase("14D1")) {
+            return ";GF2;";
+        } else if (flFrequency.equalsIgnoreCase("14D2")) {
+            return ";GF2;";
+        } else if (flFrequency.equalsIgnoreCase("14D3")) {
+            return ";GF2;";
+        } else if (flFrequency.equalsIgnoreCase("14D4")) {
+            return ";GF2;";
+        } else if (flFrequency.equalsIgnoreCase("14D5")) {
+            return ";GF2;";
+        } else if (flFrequency.equalsIgnoreCase("14D6")) {
+            return ";GF2;";
+        } else if (flFrequency.equalsIgnoreCase("14D7")) {
+            return ";GF2;";
+        } else if (flFrequency.equalsIgnoreCase("1D")) {
+            return ";GF0;";
+        } else if (flFrequency.equalsIgnoreCase("1H")) {
+            return ";GFH1;";
+        } else if (flFrequency.equalsIgnoreCase("2D")) {
+            return ";GF5;";
+        } else if (flFrequency.equalsIgnoreCase("2H")) {
+            return ";GFH2;";
+        } else if (flFrequency.equalsIgnoreCase("3D")) {
+            return ";GF3;";
+        } else if (flFrequency.equalsIgnoreCase("6H")) {
+            return ";GFH6;";
+        } else if (flFrequency.equalsIgnoreCase("7D")) {
+            return ";GF1;";
+        } else if (flFrequency.equalsIgnoreCase("7D1")) {
+            return ";GF1;";
+        } else if (flFrequency.equalsIgnoreCase("7D2")) {
+            return ";GF1;";
+        } else if (flFrequency.equalsIgnoreCase("7D3")) {
+            return ";GF1;";
+        } else if (flFrequency.equalsIgnoreCase("7D4")) {
+            return ";GF1;";
+        } else if (flFrequency.equalsIgnoreCase("7D5")) {
+            return ";GF1;";
+        } else if (flFrequency.equalsIgnoreCase("7D6")) {
+            return ";GF1;";
+        } else if (flFrequency.equalsIgnoreCase("7D7")) {
+            return ";GF1;";
+        } else if (flFrequency.equalsIgnoreCase("8D")) {
+            return ";GF8;";
+        } else if (flFrequency.equalsIgnoreCase("S")) {
+            return "";
+        } else if (flFrequency.equalsIgnoreCase("4D")) {
+            return ";GF4;";
+        } else {
+            return ";GF1;";
+        }
+    }
 }

@@ -79,4 +79,9 @@ public class PersonagemOrdem extends BaseModel {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return this.getNome() + "-" + getParametrosId().toString() + "-" + getClass().getName() + "@" + Integer.toHexString(hashCode());
+    }
 }
