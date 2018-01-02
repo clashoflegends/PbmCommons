@@ -156,6 +156,10 @@ public class Partida extends BaseModel {
         return this.hasHabilidade(";GLA;");
     }
 
+    public boolean isTeamWithLord() {
+        return this.hasHabilidade(";GSL;");
+    }
+
     public boolean isFreeForAll() {
         return this.hasHabilidade(";FFA;");
     }
