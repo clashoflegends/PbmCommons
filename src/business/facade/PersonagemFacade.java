@@ -127,6 +127,10 @@ public class PersonagemFacade implements Serializable {
         return personagem.isNpc();
     }
 
+    public boolean isHero(Personagem personagem) {
+        return personagem.isHero();
+    }
+
     public boolean isPersonagemHasFeitico(Personagem personagem, Feitico feitico) {
         return personagem.isFeitico(feitico);
     }
