@@ -599,10 +599,10 @@ public class ImageManager implements Serializable {
         boolean showPortrait = Integer.parseInt(SettingsManager.getInstance().getConfig("ShowCharacterPortraits", "0")) == 1;
         
         if (showPortrait) {
-            
-            File portraitsFolder = new File("portraits");            
-            if (portraitsFolder.exists()) {                
-                log.debug("Se ha encontrado la carpeta portraits");
+            String portraitsPath = SettingsManager.getInstance().getConfig("portraitsFolder", "");
+            File portraitsFolder = new File(portraitsPath);            
+            if (portraitsFolder.exists() && portraitsFolder.list().length > 0) {                
+                log.debug("Folder '" + portraitsPath + "' found.");
                 File[] portraitsFile = portraitsFolder.listFiles();
                 for (File portraitFile : portraitsFile) {            
                  
@@ -613,7 +613,7 @@ public class ImageManager implements Serializable {
                 }
                 
             } else {               
-                log.info("No se ha encontrado la carpeta portraits");
+                log.info("Folder '" + portraitsPath + "' not found.");
                 
             }         
         }
