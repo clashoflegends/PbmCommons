@@ -623,7 +623,7 @@ public class ImageManager implements Serializable {
             }         
             }
 
-    }
+            }
     public ImageIcon getPortrait(String portraitName) {
         if (this.portraitMap.isEmpty()) {
             doLoadPortraits();
