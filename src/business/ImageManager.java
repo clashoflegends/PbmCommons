@@ -136,9 +136,14 @@ public class ImageManager implements Serializable {
         String[] exercitos = getExercitoStrings(false);
         desenhoExercito = new Image[exercitos.length];
         for (int ii = 0; ii < exercitos.length; ii++) {
-            desenho = getForm().getToolkit().getImage(getClass().getResource("/images/armies/" + exercitos[ii]));
-            mt.addImage(desenho, mti++);
-            this.desenhoExercito[ii] = desenho;
+            try {
+                desenho = getForm().getToolkit().getImage(getClass().getResource("/images/armies/" + exercitos[ii]));
+                mt.addImage(desenho, mti++);
+                this.desenhoExercito[ii] = desenho;
+            } catch (NullPointerException ex) {
+                log.fatal("Fail to load image: /images/armies/" + exercitos[ii]);
+                throw new UnsupportedOperationException("Fail to load image: /images/armies/" + exercitos[ii], ex);
+            }
         }
     }
 
@@ -594,18 +599,18 @@ public class ImageManager implements Serializable {
     public Image getTerrainImages(String terrenoCodigo) {
         return this.terrainImages[terrenoToIndice(terrenoCodigo)];
     }
-    
+
     public void doLoadPortraits(){
         boolean showPortrait = Integer.parseInt(SettingsManager.getInstance().getConfig("ShowCharacterPortraits", "0")) == 1;
-        
+
         if (showPortrait) {
             String portraitsPath = SettingsManager.getInstance().getConfig("portraitsFolder", "");
             File portraitsFolder = new File(portraitsPath);            
             if (portraitsFolder.exists() && portraitsFolder.list().length > 0) {                
                 log.debug("Folder '" + portraitsPath + "' found.");
                 File[] portraitsFile = portraitsFolder.listFiles();
-                for (File portraitFile : portraitsFile) {            
-                 
+                for (File portraitFile : portraitsFile) {
+
                     portraitFile.toURI();
                     ImageIcon portraitIcon = new ImageIcon( portraitFile.getAbsolutePath());
                     portraitIcon.getIconWidth();
@@ -616,8 +621,8 @@ public class ImageManager implements Serializable {
                 log.info("Folder '" + portraitsPath + "' not found.");
                 
             }         
-        }
-        
+            }
+
     }
     public ImageIcon getPortrait(String portraitName) {
         if (this.portraitMap.isEmpty()) {

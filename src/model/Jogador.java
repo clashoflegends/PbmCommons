@@ -10,8 +10,7 @@ import java.util.TreeMap;
 
 /**
  *
- * @author gurgel
- * Remember to keep aligned with JogadorPontos
+ * @author gurgel Remember to keep aligned with JogadorPontos
  */
 public class Jogador extends BaseModel {
 
@@ -59,24 +58,24 @@ public class Jogador extends BaseModel {
      */
     public boolean isJogadorAliado(Nacao nacaoAlvo) {
         //FIXME: Mover para NacaoFacade
-        boolean ret = this.isNacao(nacaoAlvo);
+        final boolean ret = this.isNacao(nacaoAlvo);
         //se nao eh do mesmo jogador
-        if (!ret) {
+        if (ret) {
+            return true;
+        }
         //compara as nacoes do jogador com o alvo
         for (Nacao nacaoJogador : this.getNacoes().values()) {
             try {
                 if (nacaoAlvo.getRelacionamento(nacaoJogador) > 1) {
                     //se relacionamento da nacao com o jogador eh amigavel ou >
-                        ret = true;
                     //so precisa de um para confirmar
-                        break;
+                    return true;
                 }
             } catch (NullPointerException e) {
                 //just ignore
             }
         }
-    }
-        return ret;
+        return false;
     }
 
     public String getEmail() {

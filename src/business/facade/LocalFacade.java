@@ -21,6 +21,7 @@ import model.Local;
 import model.Nacao;
 import model.Personagem;
 import model.Terreno;
+import model.World;
 import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -124,14 +125,12 @@ public final class LocalFacade implements Serializable {
      * @return
      */
     public boolean isCidade(Local local, Nacao observer) {
-        boolean ret = false;
         try {
-            Cidade cidade = local.getCidade();
-            ret = (cidade != null && (!cidade.isOculto() || cidade.getNacao() == observer));
+            final Cidade cidade = local.getCidade();
+            return (cidade != null && (!cidade.isOculto() || cidade.getNacao() == observer));
         } catch (NullPointerException ex) {
-            ret = false;
+            return false;
         }
-        return ret;
     }
 
     /**
@@ -314,7 +313,7 @@ public final class LocalFacade implements Serializable {
         return local.getTerreno().isAgua();
     }
 
-    public boolean isVisible(Local local, Jogador observer) {
+    public boolean isVisible(Local local, Jogador observer, World world) {
         final String flags = local.getVisibilidadeNacao();
         if (flags == null || flags.trim().equals("")) {
             //no one has visibility
@@ -323,8 +322,16 @@ public final class LocalFacade implements Serializable {
         String[] elem = flags.split(";");
         for (String elem1 : elem) {
             String[] nat = elem1.split("=");
-            if (SysApoio.parseInt(nat[1]) > 0 && observer.isNacao(SysApoio.parseInt(nat[0]))) {
-                return true;
+            if (SysApoio.parseInt(nat[1]) <= 0) {
+                continue;
+            }
+            for (Nacao nation : world.getNacoes().values()) {
+                if (SysApoio.parseInt(nat[0]) != nation.getId()) {
+                    continue;
+                }
+                if (observer.isJogadorAliado(nation)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -342,31 +349,39 @@ public final class LocalFacade implements Serializable {
      */
     public Personagem[] listPersonagemLocal(Local local, Personagem personagem, int tipo) {
         List<Personagem> ret = new ArrayList();
-        if (tipo == 0) {
-            ret.addAll(local.getPersonagens().values());
-            ret.remove(personagem);
-        } else if (tipo == 1) {
-            for (Personagem pers : local.getPersonagens().values()) {
-                if (personagem != pers && personagem.getNacao() == pers.getNacao()) {
-                    ret.add(pers);
-                }
-            }
-            ret.remove(personagem);
-        } else if (tipo == 2) {
-            ret.addAll(local.getPersonagens().values());
-            ret.removeAll(personagem.getNacao().getPersonagens());
-            ret.remove(personagem);
-        } else if (tipo == 3) {
-            for (Personagem pers : local.getPersonagens().values()) {
-                if (pers.isComandante()) {
-                    ret.add(pers);
-                }
-            }
-            if (personagem != null && personagem.isComandaExercito()) {
+        switch (tipo) {
+            case 0:
+                ret.addAll(local.getPersonagens().values());
                 ret.remove(personagem);
-            }
-        } else if (tipo == 4) {
-            ret.addAll(local.getPersonagens().values());
+                break;
+            case 1:
+                for (Personagem pers : local.getPersonagens().values()) {
+                    if (personagem != pers && personagem.getNacao() == pers.getNacao()) {
+                        ret.add(pers);
+                    }
+                }
+                ret.remove(personagem);
+                break;
+            case 2:
+                ret.addAll(local.getPersonagens().values());
+                ret.removeAll(personagem.getNacao().getPersonagens());
+                ret.remove(personagem);
+                break;
+            case 3:
+                for (Personagem pers : local.getPersonagens().values()) {
+                    if (pers.isComandante()) {
+                        ret.add(pers);
+                    }
+                }
+                if (personagem != null && personagem.isComandaExercito()) {
+                    ret.remove(personagem);
+                }
+                break;
+            case 4:
+                ret.addAll(local.getPersonagens().values());
+                break;
+            default:
+                break;
         }
         return (Personagem[]) ret.toArray(new Personagem[0]);
     }
