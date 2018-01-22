@@ -600,31 +600,30 @@ public class ImageManager implements Serializable {
         return this.terrainImages[terrenoToIndice(terrenoCodigo)];
     }
 
-    public void doLoadPortraits() {
+    public void doLoadPortraits(){
         boolean showPortrait = Integer.parseInt(SettingsManager.getInstance().getConfig("ShowCharacterPortraits", "0")) == 1;
 
         if (showPortrait) {
-
-            File portraitsFolder = new File("portraits");
-            if (portraitsFolder.exists()) {
-                log.debug("Se ha encontrado la carpeta portraits");
+            String portraitsPath = SettingsManager.getInstance().getConfig("portraitsFolder", "");
+            File portraitsFolder = new File(portraitsPath);            
+            if (portraitsFolder.exists() && portraitsFolder.list().length > 0) {                
+                log.debug("Folder '" + portraitsPath + "' found.");
                 File[] portraitsFile = portraitsFolder.listFiles();
                 for (File portraitFile : portraitsFile) {
 
                     portraitFile.toURI();
-                    ImageIcon portraitIcon = new ImageIcon(portraitFile.getAbsolutePath());
+                    ImageIcon portraitIcon = new ImageIcon( portraitFile.getAbsolutePath());
                     portraitIcon.getIconWidth();
                     portraitMap.put(portraitFile.getName(), portraitIcon);
                 }
-
-            } else {
-                log.info("No se ha encontrado la carpeta portraits");
+                
+            } else {               
+                log.info("Folder '" + portraitsPath + "' not found.");
+                
+            }         
+            }
 
             }
-        }
-
-    }
-
     public ImageIcon getPortrait(String portraitName) {
         if (this.portraitMap.isEmpty()) {
             doLoadPortraits();
