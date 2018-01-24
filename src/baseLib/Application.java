@@ -331,7 +331,7 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
 
     private void setUIFont() {
         final float fontSize = SettingsManager.getInstance().getConfigAsInt("LookAndFeelFontSize");
-        if (fontSize <= 0) {
+        if (fontSize <= 10) {
             return;
         }
         //new javax.swing.plaf.FontUIResource("Dialog", Font.PLAIN, 24);
