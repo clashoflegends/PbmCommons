@@ -600,13 +600,13 @@ public class ImageManager implements Serializable {
         return this.terrainImages[terrenoToIndice(terrenoCodigo)];
     }
 
-    public void doLoadPortraits(){
-        boolean showPortrait = Integer.parseInt(SettingsManager.getInstance().getConfig("ShowCharacterPortraits", "0")) == 1;
+    public void doLoadPortraits() {
+        boolean showPortrait = SettingsManager.getInstance().isConfig("ShowCharacterPortraits", "1", "0");
 
         if (showPortrait) {
-            String portraitsPath = SettingsManager.getInstance().getConfig("portraitsFolder", "");
-            File portraitsFolder = new File(portraitsPath);            
-            if (portraitsFolder.exists() && portraitsFolder.list().length > 0) {                
+            String portraitsPath = SettingsManager.getInstance().getConfig("PortraitsFolder", "");
+            File portraitsFolder = new File(portraitsPath);
+            if (portraitsFolder.exists() && portraitsFolder.list().length > 0) {
                 log.debug("Folder '" + portraitsPath + "' found.");
                 File[] portraitsFile = portraitsFolder.listFiles();
                 for (File portraitFile : portraitsFile) {
