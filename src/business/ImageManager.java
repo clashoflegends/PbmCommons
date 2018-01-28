@@ -57,9 +57,9 @@ public class ImageManager implements Serializable {
     private final SortedMap<String, ImageIcon> portraitMap = new TreeMap<String, ImageIcon>();
     private final Color colorNpc = Color.GREEN;
     private final Color colorEnemy = new Color(204, 43, 51, 169);
-    private final Color colorMine = Color.DARK_GRAY;
-    private final Color colorAlly = new Color(0, 212, 255, 216);
-    private final Color colorMineOrdem = Color.WHITE;
+    private final Color colorMine = Color.BLUE;
+    private final Color colorAlly = Color.CYAN;
+    private final Color colorMineOrdem = Color.RED;
     private final Color colorAllyOrdem = Color.YELLOW;
 
     /**
@@ -264,7 +264,7 @@ public class ImageManager implements Serializable {
     }
 
     public Image getExercito(Exercito exercito) {
-        Image img = null;
+        Image img;
         try {
             img = this.getExercitos()[exercitoFacade.getNacaoNumero(exercito)];
         } catch (java.lang.ArrayIndexOutOfBoundsException e) {
