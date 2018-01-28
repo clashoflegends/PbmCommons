@@ -610,21 +610,17 @@ public class ImageManager implements Serializable {
                 log.debug("Folder '" + portraitsPath + "' found.");
                 File[] portraitsFile = portraitsFolder.listFiles();
                 for (File portraitFile : portraitsFile) {
-
                     portraitFile.toURI();
-                    ImageIcon portraitIcon = new ImageIcon(portraitFile.getAbsolutePath());
+                    ImageIcon portraitIcon = new ImageIcon( portraitFile.getAbsolutePath());
                     portraitIcon.getIconWidth();
                     portraitMap.put(portraitFile.getName(), portraitIcon);
                 }
-
-            } else {
-                log.info("Folder '" + portraitsPath + "' not found.");
-
-            }
+                
+            } else {               
+                log.debug("Folder '" + portraitsPath + "' not found.");                
+            }         
         }
-
     }
-
     public ImageIcon getPortrait(String portraitName) {
         if (this.portraitMap.isEmpty()) {
             doLoadPortraits();
