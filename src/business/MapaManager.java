@@ -76,6 +76,7 @@ public class MapaManager implements Serializable {
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private final ImageManager imageFactory = ImageManager.getInstance();
     private SortedMap<String, Local> locais;
+    private Point farPoint;
 
     public MapaManager(Cenario aCenario, JPanel form) {
         this.cenario = aCenario;
@@ -385,17 +386,15 @@ public class MapaManager implements Serializable {
         }
     }
 
-    private void printMapaMovPathOrders(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
-        if (!SettingsManager.getInstance().isConfig("drawPcPath", "1", "1")) {
-            return;
-        }
+    private void printMapaMovPathActions(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
         for (Personagem pers : listaPers) {
             if (pers.getLocal() == null) {
                 continue;
             }
-            if (pers.getCodigo().equalsIgnoreCase("hap b")) {
+            if (pers.getCodigo().equalsIgnoreCase("cleon")) {
                 log.debug("AKI!");
-                log.info("found Hap!");
+                log.info("achei PC!");
+                //esta desenhando o mapa ANTES de carregar as ordens.
 //                where to add drawings?;
 //                new layer for drawing? Like tags?
 //                how to add and remove with saved orders?;
@@ -413,7 +412,7 @@ public class MapaManager implements Serializable {
                 }
                 //draw all movement paths.
                 final Point dest = ConverterFactory.localToPoint(localDestination);
-                final Point ori = ConverterFactory.localToPoint(pers.getLocalOrigem());
+                final Point ori = ConverterFactory.localToPoint(pers.getLocal());
                 if (jogadorFacade.isMine(pers, observer)) {
                     imageFactory.doDrawPathPcOrder(big, ori, dest);
                 } else if (jogadorFacade.isAlly(pers, observer)) {
@@ -430,14 +429,16 @@ public class MapaManager implements Serializable {
     }
 
     public BufferedImage printMapaGeral(Collection<Local> listaLocal, Collection<Personagem> listaPers, Jogador observer) {
+        if (farPoint == null) {
+            this.farPoint = getMapMaxSize(listaLocal);
+        }
+
         //FIXME: imprimir em layers, permitindo visao do terreno, visao dos personagens, duplo clique para posicionar coisas, etc...
         log.debug("Escrevendo: MapaGeral...");
-        Point farPoint = getMapMaxSize(listaLocal);
         int legendaW = 0, legendaH = 0;
         //cria a imagem base
         BufferedImage megaMap = new BufferedImage(farPoint.x + legendaW, farPoint.y + legendaH, BufferedImage.TRANSLUCENT);
-        Graphics2D big;
-        big = megaMap.createGraphics();
+        final Graphics2D big = megaMap.createGraphics();
         //desenhando box para o mapa
         big.setBackground(Color.WHITE);
         big.clearRect(0, 0, farPoint.x, farPoint.y);
@@ -447,6 +448,19 @@ public class MapaManager implements Serializable {
             printHex(big, local, observer);
         }
         printMapaMovPath(big, listaPers, observer);
+        big.dispose(); //libera memoria
+        return megaMap;
+    }
+
+    public BufferedImage printActionsOnMap(Collection<Local> listaLocal, Collection<Personagem> listaPers, Jogador observer) {
+        if (farPoint == null) {
+            this.farPoint = getMapMaxSize(listaLocal);
+        }
+        //cria a imagem base
+        BufferedImage megaMap = new BufferedImage(farPoint.x, farPoint.y, BufferedImage.TRANSLUCENT);
+        final Graphics2D big = megaMap.createGraphics();
+        //desenhando box para o mapa
+        printMapaMovPathActions(big, listaPers, observer);
         big.dispose(); //libera memoria
         return megaMap;
     }
