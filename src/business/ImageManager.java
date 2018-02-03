@@ -425,7 +425,7 @@ public class ImageManager implements Serializable {
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND,
                 1f,
-                new float[]{3f, 5f, 7f, 5f},
+                new float[]{3f, 5f, 7f, 5f, 11f, 5f, 15f, 5f, 21f, 5f, 27f, 5f, 33f, 5f},
                 0f));
         big.setColor(color);
         //draw path
