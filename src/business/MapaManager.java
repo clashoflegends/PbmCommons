@@ -361,7 +361,7 @@ public class MapaManager implements Serializable {
     }
 
     private void printMapaMovPath(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
-        if (!SettingsManager.getInstance().isConfig("drawPcPath", "1", "1")) {
+        if (!SettingsManager.getInstance().isConfig("drawPcPath", "1", "1") && !SettingsManager.getInstance().isConfig("drawPcPath", "2", "1")) {
             return;
         }
         for (Personagem pers : listaPers) {
@@ -391,34 +391,30 @@ public class MapaManager implements Serializable {
             if (pers.getLocal() == null) {
                 continue;
             }
-            if (pers.getCodigo().equalsIgnoreCase("cleon")) {
-                log.debug("AKI!");
-                log.info("achei PC!");
-                //esta desenhando o mapa ANTES de carregar as ordens.
-//                where to add drawings?;
-//                new layer for drawing? Like tags?
-//                how to add and remove with saved orders?;
-            }
             for (PersonagemOrdem po : pers.getAcoes().values()) {
-                if (!acaoFacade.isMovimento(po)) {
-                    continue;
-                }
-                final Local localDestination = acaoFacade.getLocalDestination(pers, po, getLocais());
-                if (localDestination == null) {
-                    continue;
-                }
-                if (pers.getLocal().equals(localDestination)) {
-                    continue;
-                }
-                //draw all movement paths.
-                final Point dest = ConverterFactory.localToPoint(localDestination);
-                final Point ori = ConverterFactory.localToPoint(pers.getLocal());
-                if (jogadorFacade.isMine(pers, observer)) {
-                    imageFactory.doDrawPathPcOrder(big, ori, dest);
-                } else if (jogadorFacade.isAlly(pers, observer)) {
-                    imageFactory.doDrawPathPcAllyOrder(big, ori, dest);
-                }
+                doMovPathPc(po, pers, observer, big);
             }
+        }
+    }
+
+    private void doMovPathPc(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
+        if (!acaoFacade.isMovimento(po)) {
+            return;
+        }
+        final Local localDestination = acaoFacade.getLocalDestination(pers, po, getLocais());
+        if (localDestination == null) {
+            return;
+        }
+        if (pers.getLocal().equals(localDestination)) {
+            return;
+        }
+        //draw all movement paths.
+        final Point dest = ConverterFactory.localToPoint(localDestination);
+        final Point ori = ConverterFactory.localToPoint(pers.getLocal());
+        if (jogadorFacade.isMine(pers, observer)) {
+            imageFactory.doDrawPathPcOrder(big, ori, dest);
+        } else if (jogadorFacade.isAlly(pers, observer)) {
+            imageFactory.doDrawPathPcAllyOrder(big, ori, dest);
         }
     }
 

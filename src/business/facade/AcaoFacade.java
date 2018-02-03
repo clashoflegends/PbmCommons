@@ -113,6 +113,7 @@ public class AcaoFacade implements Serializable {
         if (!isMovimento(po)) {
             return pers.getLocal();
         } else {
+            //TODO: If there's army movement, then needs to calculate final hex. Regrets not having hex list as opposed to directions list. Fixme someday?
             for (String coord : po.getParametrosId()) {
                 return locais.get(coord);
             }
