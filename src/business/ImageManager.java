@@ -1,5 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package business;
@@ -59,8 +60,8 @@ public class ImageManager implements Serializable {
     private final Color colorEnemy = new Color(204, 43, 51, 169);
     private final Color colorMine = Color.BLUE;
     private final Color colorAlly = Color.CYAN;
-    private final Color colorMineOrdem = Color.RED;
-    private final Color colorAllyOrdem = Color.YELLOW;
+    private final Color colorMineOrdem = Color.BLUE.brighter();
+    private final Color colorAllyOrdem = Color.CYAN.brighter();
 
     /**
      * to be used to draw rastros. don't need cenario.
@@ -380,7 +381,7 @@ public class ImageManager implements Serializable {
     public void doDrawPathPcOrder(Graphics2D big, Point ori, Point dest) {
         final int x = 04 + 7 / 2 - 4;
         final int y = 22 + 13 / 2 + 2;
-        doDrawPath(big,
+        doDrawPathOrdem(big,
                 new Point((int) ori.getX() + x, (int) ori.getY() + y),
                 new Point((int) dest.getX() + x, (int) dest.getY() + y),
                 colorMineOrdem);
@@ -389,10 +390,31 @@ public class ImageManager implements Serializable {
     public void doDrawPathPcAllyOrder(Graphics2D big, Point ori, Point dest) {
         final int x = 04 + 7 / 2 + 4 + 4;
         final int y = 22 + 13 / 2 - 3 - 2;
-        doDrawPath(big,
+        doDrawPathOrdem(big,
                 new Point((int) ori.getX() + x, (int) ori.getY() + y),
                 new Point((int) dest.getX() + x, (int) dest.getY() + y),
                 colorAllyOrdem);
+    }
+
+    private void doDrawPathOrdem(Graphics2D big, Point ori, Point dest, Color color) {
+        //setup para os rastros
+        big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        big.setStroke(new BasicStroke(
+                1.75f,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND,
+                1f,
+                new float[]{3f, 5f, 7f, 5f, 11f, 5f, 15f, 5f, 21f, 5f, 27f, 5f, 33f, 5f},
+                0f));
+        big.setColor(color);
+        //draw path
+        Path2D.Double path = new Path2D.Double();
+        path.moveTo(ori.getX(), ori.getY());
+        path.curveTo(dest.getX() - 20, dest.getY() + 20, dest.getX() + 20, dest.getY() - 20, dest.getX() + 12, dest.getY());
+        //path.lineTo(dest.getX(), dest.getY());
+
+        //draw on graph
+        big.draw(path);
     }
 
     private void doDrawPath(Graphics2D big, Point ori, Point dest, Color color) {
@@ -403,7 +425,7 @@ public class ImageManager implements Serializable {
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND,
                 1f,
-                new float[]{3f, 5f, 7f, 5f},
+                new float[]{3f, 5f, 7f, 5f, 11f, 5f, 15f, 5f, 21f, 5f, 27f, 5f, 33f, 5f},
                 0f));
         big.setColor(color);
         //draw path
@@ -500,7 +522,7 @@ public class ImageManager implements Serializable {
     }
 
     public final Image[] doLoadTerrainImages() {
-        Image desenho = null;
+        Image desenho;
         String[] terrenos = {"vazio", "mar", "costa", "litoral", "floresta", "planicie",
             "montanha", "colinas", "pantano", "deserto", "wasteland", "lago"
         };
@@ -611,16 +633,17 @@ public class ImageManager implements Serializable {
                 File[] portraitsFile = portraitsFolder.listFiles();
                 for (File portraitFile : portraitsFile) {
                     portraitFile.toURI();
-                    ImageIcon portraitIcon = new ImageIcon( portraitFile.getAbsolutePath());
+                    ImageIcon portraitIcon = new ImageIcon(portraitFile.getAbsolutePath());
                     portraitIcon.getIconWidth();
                     portraitMap.put(portraitFile.getName(), portraitIcon);
                 }
-                
-            } else {               
-                log.debug("Folder '" + portraitsPath + "' not found.");                
-            }         
+
+            } else {
+                log.debug("Folder '" + portraitsPath + "' not found.");
+            }
         }
     }
+
     public ImageIcon getPortrait(String portraitName) {
         if (this.portraitMap.isEmpty()) {
             doLoadPortraits();
