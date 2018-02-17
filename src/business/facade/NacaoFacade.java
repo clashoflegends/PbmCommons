@@ -430,19 +430,23 @@ public class NacaoFacade implements Serializable {
         }
         int relacionamento = nacaoBase.getRelacionamento(nacaoAlvo);
         List<String[]> ret = new ArrayList<String[]>();
-        if (relacionamento == 3) {
-            //se vassalo, rebela
-            ret.add(rebel);
-        } else if (relacionamento == 4) {
-            //se lord, libera
-            ret.add(release);
-        } else {
-            for (int ii = 0; ii < pode[relacionamento + 2].length; ii++) {
-                int tipo = pode[relacionamento + 2][ii];
-                if (tipo > 0) {
-                    ret.add(nacaoRelacionamentoCombo[ii]);
+        switch (relacionamento) {
+            case 3:
+                //se vassalo, rebela
+                ret.add(rebel);
+                break;
+            case 4:
+                //se lord, libera
+                ret.add(release);
+                break;
+            default:
+                for (int ii = 0; ii < pode[relacionamento + 2].length; ii++) {
+                    int tipo = pode[relacionamento + 2][ii];
+                    if (tipo > 0) {
+                        ret.add(nacaoRelacionamentoCombo[ii]);
+                    }
                 }
-            }
+                break;
         }
         return ret.toArray(new String[0][0]);
     }
@@ -513,7 +517,7 @@ public class NacaoFacade implements Serializable {
         }
         //else, select main city
         int max = 0;
-        int current = 0;
+        int current;
         List<Cidade> potential = new ArrayList<Cidade>(nacao.getCidades().size());
         for (Cidade cidade : nacao.getCidades()) {
             current = cidade.getTamanho() * 1000000 + cidade.getFortificacao() * 1000 + cidade.getLealdade();
