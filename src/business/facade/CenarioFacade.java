@@ -447,4 +447,14 @@ public class CenarioFacade implements Serializable {
             return 100;
         }
     }
+
+    public int getArmyMoveMaxPoints(Cenario cenario) {
+        if (cenario.hasHabilidade(";AM14;")) {
+            return cenario.getHabilidadeValor(";AM14;");
+        } else if (cenario.hasHabilidade(";AM12;")) {
+            return cenario.getHabilidadeValor(";AM12;");
+        } else {
+            return 14;
+        }
+    }
 }
