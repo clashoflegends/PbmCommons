@@ -623,24 +623,27 @@ public class ImageManager implements Serializable {
     }
 
     public void doLoadPortraits() {
-        boolean showPortrait = SettingsManager.getInstance().isConfig("ShowCharacterPortraits", "1", "0");
-
-        if (showPortrait) {
-            String portraitsPath = SettingsManager.getInstance().getConfig("PortraitsFolder", "");
-            File portraitsFolder = new File(portraitsPath);
-            if (portraitsFolder.exists() && portraitsFolder.list().length > 0) {
-                log.debug("Folder '" + portraitsPath + "' found.");
-                File[] portraitsFile = portraitsFolder.listFiles();
-                for (File portraitFile : portraitsFile) {
-                    portraitFile.toURI();
-                    ImageIcon portraitIcon = new ImageIcon(portraitFile.getAbsolutePath());
-                    portraitIcon.getIconWidth();
-                    portraitMap.put(portraitFile.getName(), portraitIcon);
-                }
-
-            } else {
-                log.debug("Folder '" + portraitsPath + "' not found.");
-            }
+//        boolean showPortrait = SettingsManager.getInstance().isConfig("ShowCharacterPortraits", "1", "0");
+//
+//        if (!showPortrait ) {
+//            return;
+//        }
+        if (!portraitMap.isEmpty()) {
+            return;
+        }
+        String portraitsPath = SettingsManager.getInstance().getConfig("PortraitsFolder", "");
+        File portraitsFolder = new File(portraitsPath);
+        if (!portraitsFolder.exists() || portraitsFolder.list().length <= 0) {
+            log.debug("Folder '" + portraitsPath + "' not found.");
+            return;
+        }
+        log.debug("Folder '" + portraitsPath + "' found.");
+        File[] portraitsFile = portraitsFolder.listFiles();
+        for (File portraitFile : portraitsFile) {
+            portraitFile.toURI();
+            ImageIcon portraitIcon = new ImageIcon(portraitFile.getAbsolutePath());
+            portraitIcon.getIconWidth();
+            portraitMap.put(portraitFile.getName(), portraitIcon);
         }
     }
 
