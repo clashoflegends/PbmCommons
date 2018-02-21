@@ -7,6 +7,7 @@ package business.converter;
 import business.facade.LocalFacade;
 import java.awt.Point;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import model.Local;
@@ -86,7 +87,7 @@ public final class ConverterFactory implements Serializable {
     }
 
     public static String direcaoToStr(String direcao) {
-        String ret = "0";
+        String ret;
         if (direcao.equalsIgnoreCase("C")) {
             ret = "0";
         } else if (direcao.equalsIgnoreCase("NO")) {
@@ -109,28 +110,37 @@ public final class ConverterFactory implements Serializable {
 
     public static String direcaoToLabel(int direcao) {
         String ret;
-        if (direcao == 0) {
-            ret = labels.getString("CENTRO.ABREVIADO");
-        } else if (direcao == 1) {
-            ret = labels.getString("NORTEOESTE.ABREVIADO");
-        } else if (direcao == 2) {
-            ret = labels.getString("NORTELESTE.ABREVIADO");
-        } else if (direcao == 3) {
-            ret = labels.getString("LESTE.ABREVIADO");
-        } else if (direcao == 4) {
-            ret = labels.getString("SULLESTE.ABREVIADO");
-        } else if (direcao == 5) {
-            ret = labels.getString("SULOESTE.ABREVIADO");
-        } else if (direcao == 6) {
-            ret = labels.getString("OESTE.ABREVIADO");
-        } else {
-            ret = labels.getString("CENTRO.ABREVIADO");
+        switch (direcao) {
+            case 0:
+                ret = labels.getString("CENTRO.ABREVIADO");
+                break;
+            case 1:
+                ret = labels.getString("NORTEOESTE.ABREVIADO");
+                break;
+            case 2:
+                ret = labels.getString("NORTELESTE.ABREVIADO");
+                break;
+            case 3:
+                ret = labels.getString("LESTE.ABREVIADO");
+                break;
+            case 4:
+                ret = labels.getString("SULLESTE.ABREVIADO");
+                break;
+            case 5:
+                ret = labels.getString("SULOESTE.ABREVIADO");
+                break;
+            case 6:
+                ret = labels.getString("OESTE.ABREVIADO");
+                break;
+            default:
+                ret = labels.getString("CENTRO.ABREVIADO");
+                break;
         }
         return ret;
     }
 
     public static int direcaoToInt(String direcao) {
-        int ret = 0;
+        int ret;
         if (direcao.equalsIgnoreCase("C")) {
             ret = 0;
         } else if (direcao.equalsIgnoreCase("H")) {
@@ -185,35 +195,31 @@ public final class ConverterFactory implements Serializable {
     }
 
     public static boolean isDirecaoValid(String direcao) {
-        boolean ret = false;
         if (direcao.equalsIgnoreCase("C")) {
-            ret = true;
+            return true;
         } else if (direcao.equalsIgnoreCase("H")) {
-            ret = true;
+            return true;
         } else if (direcao.equalsIgnoreCase("NO")) {
-            ret = true;
+            return true;
         } else if (direcao.equalsIgnoreCase("NW")) {
-            ret = true;
+            return true;
         } else if (direcao.equalsIgnoreCase("NE")) {
-            ret = true;
+            return true;
         } else if (direcao.equalsIgnoreCase("L")) {
-            ret = true;
+            return true;
         } else if (direcao.equalsIgnoreCase("E")) {
-            ret = true;
+            return true;
         } else if (direcao.equalsIgnoreCase("SE")) {
-            ret = true;
+            return true;
         } else if (direcao.equalsIgnoreCase("SO")) {
-            ret = true;
+            return true;
         } else if (direcao.equalsIgnoreCase("SW")) {
-            ret = true;
+            return true;
         } else if (direcao.equalsIgnoreCase("O")) {
-            ret = true;
-        } else if (direcao.equalsIgnoreCase("W")) {
-            ret = true;
+            return true;
         } else {
-            ret = false;
+            return direcao.equalsIgnoreCase("W");
         }
-        return ret;
     }
 
     public static String getCodigoVizinho(Local local, int direcao) {
@@ -271,6 +277,25 @@ public final class ConverterFactory implements Serializable {
         return newIdentificacao;
     }
 
+    public static List<String> armyPathToList(String directions) {
+        final List<String> ret = new ArrayList<String>();
+        if (directions.equals("")) {
+            return ret;
+        }
+        String[] movs = directions.split(";");
+        for (String elem : movs) {
+            //tipo de movimentacao ou vazio, ignorar.
+            if ((elem.equals("nr") || elem.equals("ev")) || elem.equals("")) {
+                continue;
+            }
+            if (ConverterFactory.isDirecaoValid(elem)) {
+                //validates if there is garbage as parameter and clean it up.
+                ret.add(elem);
+            }
+        }
+        return ret;
+    }
+
     public static Point localToPoint(Local local) {
         final Point ret;
         //calcula coordenadas e posicao no grafico.
@@ -284,7 +309,7 @@ public final class ConverterFactory implements Serializable {
     }
 
     public static String coordAlphaToInt(String coord) {
-        String ret = "", x, y = "xx", z;
+        String ret, x, y = "xx", z;
         if (coord.length() == 4) {
             x = coord.substring(0, 2);
             z = coord.substring(2, 4);
