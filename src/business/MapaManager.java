@@ -392,15 +392,47 @@ public class MapaManager implements Serializable {
                 continue;
             }
             for (PersonagemOrdem po : pers.getAcoes().values()) {
-                doMovPathPc(po, pers, observer, big);
+                if (!acaoFacade.isMovimento(po)) {
+                    continue;
+                }
+                if (pers.getCodigo().equalsIgnoreCase("Wille")) {
+                    log.debug("Aki!");
+                }
+                if (pers.getCodigo().equalsIgnoreCase("hugh ")) {
+                    log.debug("Aki!");
+                }
+                if (acaoFacade.isMovimentoDirection(po)) {
+                    doMovPathArmy(po, pers, observer, big);
+                } else {
+                    doMovPathPc(po, pers, observer, big);
+                }
             }
         }
     }
 
-    private void doMovPathPc(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
-        if (!acaoFacade.isMovimento(po)) {
+    private void doMovPathArmy(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
+        final List<Local> pathMov = acaoFacade.getLocalDestinationPath(pers, po, getLocais());
+        if (pathMov.isEmpty()) {
             return;
         }
+        Local baseLocal = pers.getLocal();
+        for (Local nextLocal : pathMov) {
+            if (baseLocal.equals(nextLocal)) {
+                continue;
+            }
+            //draw all movement paths.
+            final Point dest = ConverterFactory.localToPoint(nextLocal);
+            final Point ori = ConverterFactory.localToPoint(baseLocal);
+            if (jogadorFacade.isMine(pers, observer)) {
+                imageFactory.doDrawPathArmyOrder(big, ori, dest);
+            } else if (jogadorFacade.isAlly(pers, observer)) {
+                imageFactory.doDrawPathArmyAllyOrder(big, ori, dest);
+            }
+            baseLocal = nextLocal;
+        }
+    }
+
+    private void doMovPathPc(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
         final Local localDestination = acaoFacade.getLocalDestination(pers, po, getLocais());
         if (localDestination == null) {
             return;

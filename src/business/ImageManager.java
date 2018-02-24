@@ -7,6 +7,7 @@ package business;
 
 import business.facade.ExercitoFacade;
 import business.facade.LocalFacade;
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -62,6 +63,9 @@ public class ImageManager implements Serializable {
     private final Color colorAlly = Color.CYAN;
     private final Color colorMineOrdem = Color.BLUE.brighter();
     private final Color colorAllyOrdem = Color.CYAN.brighter();
+    private final Color colorMineArmyOrdem = Color.BLUE.darker();
+    private final Color colorAllyArmyOrdem = Color.CYAN.brighter().brighter();
+    private final AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
 
     /**
      * to be used to draw rastros. don't need cenario.
@@ -396,6 +400,45 @@ public class ImageManager implements Serializable {
                 colorAllyOrdem);
     }
 
+    public void doDrawPathArmyOrder(Graphics2D big, Point ori, Point dest) {
+        final int x = 30;
+        final int y = 30;
+        doDrawPathOrdemArmy(big,
+                new Point((int) ori.getX() + x, (int) ori.getY() + y),
+                new Point((int) dest.getX() + x, (int) dest.getY() + y),
+                colorMineArmyOrdem);
+    }
+
+    public void doDrawPathArmyAllyOrder(Graphics2D big, Point ori, Point dest) {
+        final int x = 45;
+        final int y = 45;
+        doDrawPathOrdemArmy(big,
+                new Point((int) ori.getX() + x, (int) ori.getY() + y),
+                new Point((int) dest.getX() + x, (int) dest.getY() + y),
+                colorAllyArmyOrdem);
+    }
+
+    private void doDrawPathOrdemArmy(Graphics2D big, Point ori, Point dest, Color color) {
+        //setup para os rastros
+        big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        big.setComposite(alcom);
+        big.setStroke(new BasicStroke(
+                3f,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND,
+                1f,
+                new float[]{3f, 5f, 7f, 5f, 11f, 5f, 15f, 5f, 21f, 5f, 27f, 5f, 33f, 5f},
+                0f));
+        big.setColor(color);
+        //draw path
+        Path2D.Double path = new Path2D.Double();
+        path.moveTo(ori.getX(), ori.getY());
+        path.curveTo(dest.getX() + 10, dest.getY() - 10, dest.getX() - 10, dest.getY() + 10, dest.getX(), dest.getY());
+
+        //draw on graph
+        big.draw(path);
+    }
+
     private void doDrawPathOrdem(Graphics2D big, Point ori, Point dest, Color color) {
         //setup para os rastros
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -623,24 +666,27 @@ public class ImageManager implements Serializable {
     }
 
     public void doLoadPortraits() {
-        boolean showPortrait = SettingsManager.getInstance().isConfig("ShowCharacterPortraits", "1", "0");
-
-        if (showPortrait) {
-            String portraitsPath = SettingsManager.getInstance().getConfig("PortraitsFolder", "");
-            File portraitsFolder = new File(portraitsPath);
-            if (portraitsFolder.exists() && portraitsFolder.list().length > 0) {
-                log.debug("Folder '" + portraitsPath + "' found.");
-                File[] portraitsFile = portraitsFolder.listFiles();
-                for (File portraitFile : portraitsFile) {
-                    portraitFile.toURI();
-                    ImageIcon portraitIcon = new ImageIcon(portraitFile.getAbsolutePath());
-                    portraitIcon.getIconWidth();
-                    portraitMap.put(portraitFile.getName(), portraitIcon);
-                }
-
-            } else {
-                log.debug("Folder '" + portraitsPath + "' not found.");
-            }
+//        boolean showPortrait = SettingsManager.getInstance().isConfig("ShowCharacterPortraits", "1", "0");
+//
+//        if (!showPortrait ) {
+//            return;
+//        }
+        if (!portraitMap.isEmpty()) {
+            return;
+        }
+        String portraitsPath = SettingsManager.getInstance().getConfig("PortraitsFolder", "");
+        File portraitsFolder = new File(portraitsPath);
+        if (!portraitsFolder.exists() || portraitsFolder.list().length <= 0) {
+            log.debug("Folder '" + portraitsPath + "' not found.");
+            return;
+        }
+        log.debug("Folder '" + portraitsPath + "' found.");
+        File[] portraitsFile = portraitsFolder.listFiles();
+        for (File portraitFile : portraitsFile) {
+            portraitFile.toURI();
+            ImageIcon portraitIcon = new ImageIcon(portraitFile.getAbsolutePath());
+            portraitIcon.getIconWidth();
+            portraitMap.put(portraitFile.getName(), portraitIcon);
         }
     }
 

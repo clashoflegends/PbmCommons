@@ -5,8 +5,11 @@
 package business.facade;
 
 import baseLib.BaseModel;
+import business.converter.ConverterFactory;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.SortedMap;
 import model.Habilidade;
 import model.Local;
@@ -28,6 +31,7 @@ public class AcaoFacade implements Serializable {
 
     private static final Log log = LogFactory.getLog(AcaoFacade.class);
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
+    private final LocalFacade localFacade = new LocalFacade();
 
     public String getImproveRank(Ordem ordem) {
         try {
@@ -109,15 +113,37 @@ public class AcaoFacade implements Serializable {
         }
     }
 
-    public Local getLocalDestination(Personagem pers, PersonagemOrdem po, SortedMap<String, Local> locais) {
-        if (!isMovimento(po)) {
-            return pers.getLocal();
-        } else {
-            //TODO: If there's army movement, then needs to calculate final hex. Regrets not having hex list as opposed to directions list. Fixme someday?
-            for (String coord : po.getParametrosId()) {
-                return locais.get(coord);
-            }
-            return null;
+    public boolean isMovimentoDirection(PersonagemOrdem po) {
+        try {
+            return po.getOrdem().isTipoMovimentacao() && po.getOrdem().getParametroIde(0).contains("Direcao");
+        } catch (NullPointerException e) {
+            return false;
         }
+    }
+
+    public Local getLocalDestination(Personagem pers, PersonagemOrdem po, SortedMap<String, Local> locais) {
+        for (int ii = 0; ii < po.getOrdem().getParametrosIdeQtd(); ii++) {
+            if (!po.getOrdem().getParametroIde(ii).contains("Coordenada")) {
+                continue;
+            }
+            final String coord = po.getParametrosId().get(ii);
+            return locais.get(coord);
+        }
+        return pers.getLocal();
+    }
+
+    public List<Local> getLocalDestinationPath(Personagem pers, PersonagemOrdem po, SortedMap<String, Local> locais) {
+        //FIXME: Regrets not having hex list as opposed to directions list. Fixme someday?
+        Local currentBase = pers.getLocal();
+        final List<Local> pathArmyMov = new ArrayList<Local>();
+        final List<String> directions = new ArrayList<String>();
+        directions.addAll(ConverterFactory.armyPathToList(po.getParametrosId().get(0)));
+        for (String direction : directions) {
+            //TODO: If there's army movement, then needs to calculate final hex. 
+            final String coord = localFacade.getIdentificacaoVizinho(currentBase, direction);
+            currentBase = locais.get(coord);
+            pathArmyMov.add(currentBase);
+        }
+        return pathArmyMov;
     }
 }
