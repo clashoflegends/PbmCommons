@@ -395,12 +395,6 @@ public class MapaManager implements Serializable {
                 if (!acaoFacade.isMovimento(po)) {
                     continue;
                 }
-                if (pers.getCodigo().equalsIgnoreCase("Wille")) {
-                    log.debug("Aki!");
-                }
-                if (pers.getCodigo().equalsIgnoreCase("hugh ")) {
-                    log.debug("Aki!");
-                }
                 if (acaoFacade.isMovimentoDirection(po)) {
                     doMovPathArmy(po, pers, observer, big);
                 } else {
