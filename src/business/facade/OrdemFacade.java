@@ -17,6 +17,7 @@ import model.Cidade;
 import model.Jogador;
 import model.Nacao;
 import model.Ordem;
+import model.Partida;
 import model.Personagem;
 import model.PersonagemOrdem;
 import msgs.TitleFactory;
@@ -38,6 +39,7 @@ public class OrdemFacade implements Serializable {
     private static final CidadeFacade cidadeFacade = new CidadeFacade();
     private static final NacaoFacade nacaoFacade = new NacaoFacade();
     private static final LocalFacade localFacade = new LocalFacade();
+    private static final CenarioFacade cenarioFacade = new CenarioFacade();
     private static final String[] ACTIONDISABLEDARRAY = new String[]{ActorAction.ACTION_DISABLED, "", ""};
     private static final String[] ACTIONBLANK = new String[]{ActorAction.ACTION_BLANK, "", ""};
 
@@ -401,14 +403,27 @@ public class OrdemFacade implements Serializable {
     }
 
     public int getOrdemMax(Personagem actor, Cenario cenario) {
-        return actor.getOrdensQt();
+        return getOrdemMax(actor);
     }
 
     public int getOrdemMax(Cidade actor, Cenario cenario) {
-        return actor.getOrdensQt();
+        return getOrdemMax(actor);
     }
 
     public int getOrdemMax(Nacao actor, Cenario cenario) {
+        return getOrdemMax(actor);
+    }
+
+    public int getOrdemMax(BaseModel actor, Partida game) {
+        if (cenarioFacade.hasOrdens(game, actor)) {
+            return getOrdemMax(actor);
+        } else {
+            return 0;
+        }
+    }
+
+    public int getOrdemMax(BaseModel actor) {
+//        "add filters to see if there are orders for nation / city / army";
         return actor.getOrdensQt();
     }
 
