@@ -192,7 +192,11 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     }
 
     public void setAcao(int index, PersonagemOrdem pOrdem) {
-        this.acao.put(index, pOrdem);
+        if (pOrdem != null) {
+            this.acao.put(index, pOrdem);
+        } else {
+            this.acao.remove(index);
+        }
     }
 
     public int getAcaoSize() {
