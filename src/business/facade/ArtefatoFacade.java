@@ -40,6 +40,8 @@ public class ArtefatoFacade implements Serializable {
             return personagemFacade.getCoordenadas(artefato.getOwner());
         } else if (artefato.getSabeAonde() != null && artefato.getLocal() != null) {
             return artefato.getLocal().getCoordenadas();
+        } else if (artefato.getLocal() != null) {
+            return artefato.getLocal().getCoordenadas();
         } else {
             //FIXME: Artefato pode ter localizacao conhecida (por magia)
             return "-";

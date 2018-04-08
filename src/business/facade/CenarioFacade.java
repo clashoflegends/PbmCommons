@@ -457,4 +457,14 @@ public class CenarioFacade implements Serializable {
             return 14;
         }
     }
+
+    public int getStartupPackagesLimit(Partida game) {
+        if (game.isStartupPackages()) {
+            return game.getHabilidadeValor(";GCS;");
+        } else if (game.isNationPackages()) {
+            return game.getNationPackagesLimit();
+        } else {
+            return 0;
+        }
+    }
 }
