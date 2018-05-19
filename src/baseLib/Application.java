@@ -317,6 +317,7 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     private void setLookAndFeelProperties() throws IllegalAccessException, InstantiationException, UnsupportedLookAndFeelException, ClassNotFoundException {
         boolean setLooks = false;
         for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+            log.info(info.getName());
             if (SettingsManager.getInstance().getConfig("LookAndFeelTheme", "0").equals(info.getName())) {
                 UIManager.setLookAndFeel(info.getClassName());
                 setLooks = true;
@@ -350,6 +351,7 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     private void setLookAndFeelPlatform() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            log.info(UIManager.getSystemLookAndFeelClassName());
 //            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             //Make sure we have nice window decorations.
 //            JFrame.setDefaultLookAndFeelDecorated(false);
