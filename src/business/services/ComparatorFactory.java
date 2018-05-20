@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import model.Nacao;
 import model.Ordem;
 import model.Pelotao;
 import model.PersonagemOrdem;
@@ -25,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
  * @author jmoura
  */
 public class ComparatorFactory implements Serializable {
-
+    
     private static final Log log = LogFactory.getLog(ComparatorFactory.class);
 
     /**
@@ -35,6 +36,16 @@ public class ComparatorFactory implements Serializable {
      */
     public static void getComparatorOrdemSorter(List<Ordem> lista) {
         Collections.sort(lista, new ComparatorOrdemSorter());
+    }
+    
+    public static void getComparatorNationVictoryPointsSorter(List<Nacao> nations) {
+        Collections.sort(nations, new Comparator() {
+            @Override
+            public int compare(Object a, Object b) {
+                return ((Nacao) a).compareToByPv((Nacao) b);
+            }
+        });
+        
     }
 
     /**
@@ -83,7 +94,7 @@ public class ComparatorFactory implements Serializable {
     public static void getComparatorCasualtiesPelotaoSorter(List<Pelotao> lista, int tatica, Terreno terreno, int partidaId) {
         Collections.sort(lista, new ComparatorCasualtiesSorterNew(tatica, terreno));
     }
-
+    
     private static void getComparatorCasualtiesPelotaoSorter(List<Pelotao> lista, int tatica, Terreno terreno) {
         Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
     }
@@ -102,7 +113,7 @@ public class ComparatorFactory implements Serializable {
             Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
         }
     }
-
+    
     private static void getComparatorCasualtiesTipoTropaSorter(List<TipoTropa> lista, int tatica, Terreno terreno) {
         Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
     }
@@ -115,19 +126,19 @@ public class ComparatorFactory implements Serializable {
     public static void getComparatorPelotaoUpkeepSorter(List<Pelotao> lista) {
         Collections.sort(lista, new ComparatorTipoTropaUpkeepSorter());
     }
-
+    
     public static void getComparatorProdutoSorter(List<Produto> lista) {
         Collections.sort(lista, new ComparatorBaseModelSorter(false));
     }
-
+    
     public static void getComparatorProdutoDescSorter(List<Produto> lista) {
         Collections.sort(lista, new ComparatorBaseModelSorter(true));
     }
-
+    
     public static void getComparatorComboDisplaySorter(List<? extends BaseModel> lista) {
         Collections.sort(lista, new ComparatorBaseDisplayModelSorter(false));
     }
-
+    
     public static void getComparatorFileTimeSorter(File[] files) {
         Arrays.sort(files, new Comparator<File>() {
             @Override
