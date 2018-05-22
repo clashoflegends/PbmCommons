@@ -350,6 +350,7 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     private void setLookAndFeelPlatform() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            log.debug(UIManager.getSystemLookAndFeelClassName());
 //            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             //Make sure we have nice window decorations.
 //            JFrame.setDefaultLookAndFeelDecorated(false);

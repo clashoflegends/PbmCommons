@@ -240,4 +240,9 @@ public class Nacao extends BaseModel implements IActor {
     public boolean isActorActive() {
         return this.isAtiva();
     }
+
+    public int compareToByPv(Object o) {
+        Nacao outro = (Nacao) o;
+        return (this.getPontosVitoria() - outro.getPontosVitoria());
+    }
 }
