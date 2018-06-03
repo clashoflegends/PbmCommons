@@ -696,6 +696,7 @@ public class ImageManager implements Serializable {
         }
         ImageIcon portrait = this.portraitMap.get(portraitName);
         if (portrait == null) {
+            log.warn("Portrait image name " + portraitName + " not found.");
             portrait = this.portraitMap.get("blank.jpg");
         }
         return portrait;
