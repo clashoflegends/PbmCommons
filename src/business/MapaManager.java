@@ -360,7 +360,7 @@ public class MapaManager implements Serializable {
         }
     }
 
-    private void printMapaMovPath(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
+    private void drawMapaMovPath(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
         if (!SettingsManager.getInstance().isConfig("drawPcPath", "1", "1") && !SettingsManager.getInstance().isConfig("drawPcPath", "2", "1")) {
             return;
         }
@@ -386,7 +386,7 @@ public class MapaManager implements Serializable {
         }
     }
 
-    private void printMapaMovPathActions(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
+    private void drawMapaMovPathActions(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
         for (Personagem pers : listaPers) {
             if (pers.getLocal() == null) {
                 continue;
@@ -396,15 +396,15 @@ public class MapaManager implements Serializable {
                     continue;
                 }
                 if (acaoFacade.isMovimentoDirection(po)) {
-                    doMovPathArmy(po, pers, observer, big);
+                    drawMovPathArmy(po, pers, observer, big);
                 } else {
-                    doMovPathPc(po, pers, observer, big);
+                    drawMovPathPc(po, pers, observer, big);
                 }
             }
         }
     }
 
-    private void doMovPathArmy(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
+    private void drawMovPathArmy(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
         final List<Local> pathMov = acaoFacade.getLocalDestinationPath(pers, po, getLocais());
         if (pathMov.isEmpty()) {
             return;
@@ -426,7 +426,7 @@ public class MapaManager implements Serializable {
         }
     }
 
-    private void doMovPathPc(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
+    private void drawMovPathPc(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
         final Local localDestination = acaoFacade.getLocalDestination(pers, po, getLocais());
         if (localDestination == null) {
             return;
@@ -461,6 +461,14 @@ public class MapaManager implements Serializable {
         //cria a imagem base
         BufferedImage megaMap = new BufferedImage(farPoint.x + legendaW, farPoint.y + legendaH, BufferedImage.TRANSLUCENT);
         final Graphics2D big = megaMap.createGraphics();
+
+        //TODO: set scale for graph
+        //big.scale(2.0, 2.0);
+        //TODO: outra opcao
+        double percent = 1.5;
+//            Graphics2D g2d = outputImage.createGraphics();
+//        g2d.drawImage(inputImage, 0, 0, scaledWidth, scaledHeight, null);
+//        g2d.dispose();
         //desenhando box para o mapa
         big.setBackground(Color.WHITE);
         big.clearRect(0, 0, farPoint.x, farPoint.y);
@@ -469,7 +477,7 @@ public class MapaManager implements Serializable {
         for (Local local : listaLocal) {
             printHex(big, local, observer);
         }
-        printMapaMovPath(big, listaPers, observer);
+        drawMapaMovPath(big, listaPers, observer);
         big.dispose(); //libera memoria
         return megaMap;
     }
@@ -482,7 +490,7 @@ public class MapaManager implements Serializable {
         BufferedImage megaMap = new BufferedImage(farPoint.x, farPoint.y, BufferedImage.TRANSLUCENT);
         final Graphics2D big = megaMap.createGraphics();
         //desenhando box para o mapa
-        printMapaMovPathActions(big, listaPers, observer);
+        drawMapaMovPathActions(big, listaPers, observer);
         big.dispose(); //libera memoria
         return megaMap;
     }
