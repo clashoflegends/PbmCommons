@@ -73,4 +73,8 @@ public class Terreno extends BaseModel {
     public boolean isPlanicie() {
         return getCodigo().equals("P");
     }
+
+    public boolean isDeserto() {
+        return getCodigo().equals("D");
+    }
 }

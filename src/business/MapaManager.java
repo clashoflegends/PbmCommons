@@ -65,7 +65,7 @@ public class MapaManager implements Serializable {
     private final Cenario cenario;
     private final JPanel form;
     private static final int dtPersonagem = 0, dtNpc = 1, dtArtefato = 2, dtGoldmine = 3, dtNavio = 4, dtTag = 5,
-            dtFogofwar = 6, dtPersonagemOutra = 7, dtPersonagemAlly = 8;
+            dtFogofwar = 6, dtPersonagemOutra = 7, dtPersonagemAlly = 8, dtArtefatoKnown = 9;
     private static final LocalFacade localFacade = new LocalFacade();
     private static final CidadeFacade cidadeFacade = new CidadeFacade();
     private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
@@ -118,7 +118,7 @@ public class MapaManager implements Serializable {
             imageFactory.addImage(desenho);
             this.desenhoTerrenoDetalhes[ii] = desenho;
         }
-        String[] detalhes = {"personagem", "npc", "artefato", "goldmine", "navio", "tag", "fogofwar", "pers_other", "pers_ally"};
+        String[] detalhes = {"personagem", "npc", "artefato", "goldmine", "navio", "tag", "fogofwar", "pers_other", "pers_ally", "artefatoKnown"};
         desenhoDetalhes = new Image[detalhes.length];
         for (int ii = 0; ii < detalhes.length; ii++) {
             if (ii == dtFogofwar) {
@@ -330,7 +330,7 @@ public class MapaManager implements Serializable {
             if (artefatoFacade.isPosse(artefato)) {
                 big.drawImage(this.desenhoDetalhes[dtArtefato], x + 11, y + 22, form);
             } else {
-                big.drawImage(this.desenhoDetalhes[dtArtefato], x + 46, y + 22, form);
+                big.drawImage(this.desenhoDetalhes[dtArtefatoKnown], x + 46, y + 22, form);
             }
         }
         //personagens presentes

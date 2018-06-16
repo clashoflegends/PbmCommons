@@ -84,7 +84,7 @@ public class Cenario extends BaseModel {
 
     public int getMoneyIndex() {
         // PENDING: criar um flag de controle independente da PK (id).
-        int moneyIndex = 7;
+        int moneyIndex;
         if (getCodigo().equals("GRECIA01")) {
             moneyIndex = 7;
         } else if (getCodigo().equals("1650ER01")) {
