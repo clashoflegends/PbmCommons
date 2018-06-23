@@ -15,6 +15,7 @@ import model.World;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
+import persistenceCommons.PersistenceException;
 import persistenceCommons.SettingsManager;
 import persistenceCommons.SysApoio;
 
@@ -112,6 +113,16 @@ public class PathFactory implements Serializable {
             throw new UnsupportedOperationException("Folder not found: " + loadDir.getAbsolutePath());
         }
         return loadDir;
+    }
+
+    public File getDeployDistilerDir() throws PersistenceException {
+        // Destination directory
+        File deployDir = new File(SettingsManager.getInstance().getConfig("deployDistiler"));
+        deployDir.mkdirs();
+        if (!deployDir.exists()) {
+            throw new PersistenceException("Folder not found: " + deployDir.getAbsolutePath());
+        }
+        return deployDir;
     }
 
     public File[] getLoadDirFiles() {
