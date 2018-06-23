@@ -115,11 +115,13 @@ public class PathFactory implements Serializable {
         return loadDir;
     }
 
-    public File getDeployDistilerDir() throws PersistenceException {
+    public File getDeployFolder(final String tagProp) throws PersistenceException {
         // Destination directory
-        File deployDir = new File(SettingsManager.getInstance().getConfig("deployDistiler"));
+        File deployDir = new File(SettingsManager.getInstance().getConfig(tagProp));
+        // confirm it exists (creates if it doesn't
         deployDir.mkdirs();
         if (!deployDir.exists()) {
+            //oops
             throw new PersistenceException("Folder not found: " + deployDir.getAbsolutePath());
         }
         return deployDir;
