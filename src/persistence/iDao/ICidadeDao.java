@@ -22,7 +22,7 @@ public interface ICidadeDao {
 
     public SortedMap<String, Cidade> list(Partida partida) throws PersistenceException;
 
-    public void update(Cidade cidade);
+    public void update(Cidade cidade, Partida partida);
 
     public Cidade get(ResultSet rs, Partida partida) throws PersistenceException;
 }
