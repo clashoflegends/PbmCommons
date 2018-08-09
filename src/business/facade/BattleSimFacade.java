@@ -134,6 +134,10 @@ public class BattleSimFacade implements Serializable {
         return pelotao.getQtd() * vlConstituicao * (1F + vlArmadura / 100F);
     }
 
+    public float getDefesaPelotao(Pelotao pelotao, IExercito exercito) {
+        return getDefesaPelotao(pelotao, exercito.getTerreno(), exercito);
+    }
+
     public int getDefesaExercito(IExercito exercito, boolean naval) {
         //TODO: combate em terra vs. naval
         int ret = 0;
