@@ -24,16 +24,11 @@ public class Exercito extends BaseModel implements IExercito {
     private Local local;
     private SortedMap<String, Pelotao> tropas = new TreeMap();
 
-    /**
-     * @return the tatica
-     */
+    @Override
     public int getTatica() {
         return tatica;
     }
 
-    /**
-     * @param tatica the tatica to set
-     */
     public void setTatica(int tatica) {
         this.tatica = tatica;
     }
@@ -173,5 +168,15 @@ public class Exercito extends BaseModel implements IExercito {
     @Override
     public String getTpActor() {
         return "E";
+    }
+
+    @Override
+    public int getBonusAttack() {
+        return 0;
+    }
+
+    @Override
+    public int getBonusDefense() {
+        return 0;
     }
 }

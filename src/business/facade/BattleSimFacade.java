@@ -41,26 +41,6 @@ public class BattleSimFacade implements Serializable {
         return ret;
     }
 
-//    private int getAtaqueExercito(IExercito exercito, int round) {
-//        int ret;
-//        if (round == 0) {
-//            //first strike
-//            ret = getAtaqueExercito(exercito, ";TT1;");
-//        } else {
-//            ret = getAtaqueExercito(exercito);
-//        }
-//        return ret;
-//    }
-//
-//    private int getAtaqueExercito(IExercito exercito, String habilidade) {
-//        int ret = 0;
-//        for (Pelotao pelotao : exercito.getPelotoes().values()) {
-//            if (pelotao.getTipoTropa().hasHabilidade(habilidade)) {
-//                ret += getAtaquePelotao(pelotao, exercito);
-//            }
-//        }
-//        return ret;
-//    }
     public float getAtaqueExercito(IExercito exercito, boolean naval) {
         float ret = 0;
         for (Pelotao pelotao : exercito.getPelotoes().values()) {
@@ -147,6 +127,14 @@ public class BattleSimFacade implements Serializable {
             }
         }
         return ret;
+    }
+
+    public int getDefesaBonus(IExercito exercito) {
+        return exercito.getBonusDefense();
+    }
+
+    public int getAtaqueBonus(IExercito exercito) {
+        return exercito.getBonusAttack();
     }
 
     public ExercitoSim clone(Exercito exercito) {

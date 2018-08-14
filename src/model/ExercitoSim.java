@@ -23,6 +23,7 @@ public class ExercitoSim extends BaseModel implements IExercito {
     private int comandante = 0;
     private String comandanteNome;
     private int tatica = 2;
+    private int bonusAttack = 0, bonusDefense = 0;
     private Local local;
     private Terreno terreno;
     private Nacao nacao;
@@ -77,6 +78,7 @@ public class ExercitoSim extends BaseModel implements IExercito {
         this.local = local;
     }
 
+    @Override
     public int getTatica() {
         return tatica;
     }
@@ -109,6 +111,24 @@ public class ExercitoSim extends BaseModel implements IExercito {
 
     public void setTerreno(Terreno terreno) {
         this.terreno = terreno;
+    }
+
+    @Override
+    public int getBonusAttack() {
+        return bonusAttack;
+    }
+
+    public void setBonusAttack(int bonusAttack) {
+        this.bonusAttack = bonusAttack;
+    }
+
+    @Override
+    public int getBonusDefense() {
+        return bonusDefense;
+    }
+
+    public void setBonusDefense(int bonusDefense) {
+        this.bonusDefense = bonusDefense;
     }
 
     public Collection<TipoTropa> getTipoTropa() {
