@@ -19,16 +19,23 @@ import persistenceCommons.SettingsManager;
  */
 public class ExercitoSim extends BaseModel implements IExercito {
 
-    private int moral = 0;
-    private int comandante = 0;
-    private String comandanteNome;
-    private int tatica = 2;
+    private int moral = 10;
+    private int comandante = 10;
+    private int tatica = 0;
     private int bonusAttack = 0, bonusDefense = 0;
+    private String comandanteNome;
     private Local local;
     private Terreno terreno;
     private Nacao nacao;
     private SortedMap<String, Pelotao> platoons = new TreeMap();
     private List<TipoTropa> troops = new ArrayList<TipoTropa>();
+
+    public ExercitoSim(String name, Terreno terrain) {
+        this.setNome(name);
+        this.comandanteNome = name;
+        this.terreno = terrain;
+        //FIXME: needs to receive Local for the Battle to be resolved. Deal with this later.
+    }
 
     public ExercitoSim(Exercito exercito) {
         this.moral = exercito.getMoral();
@@ -40,6 +47,22 @@ public class ExercitoSim extends BaseModel implements IExercito {
             this.comandante = exercito.getComandante().getPericiaComandante();
             this.comandanteNome = exercito.getComandante().getNome();
             this.setNome(exercito.getComandante().getNome());
+        } catch (NullPointerException ex) {
+            this.setNome(SettingsManager.getInstance().getBundleManager().getString("GUARNICAO"));
+        }
+        //TODO: clone pelotoes para poder mudar valores sem afetar original
+    }
+
+    public ExercitoSim(ExercitoSim exercito) {
+        this.moral = exercito.getMoral();
+        this.platoons = exercito.getPelotoes();
+        this.local = exercito.getLocal();
+        this.terreno = exercito.getLocal().getTerreno();
+        this.nacao = exercito.getNacao();
+        try {
+            this.comandante = exercito.getPericiaComandante();
+            this.comandanteNome = exercito.getNome();
+            this.setNome(exercito.getNome());
         } catch (NullPointerException ex) {
             this.setNome(SettingsManager.getInstance().getBundleManager().getString("GUARNICAO"));
         }

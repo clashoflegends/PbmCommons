@@ -140,4 +140,8 @@ public class BattleSimFacade implements Serializable {
     public ExercitoSim clone(Exercito exercito) {
         return new ExercitoSim(exercito);
     }
+
+    public ExercitoSim clone(ExercitoSim exercito) {
+        return new ExercitoSim(exercito);
+    }
 }
