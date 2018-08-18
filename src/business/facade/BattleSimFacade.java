@@ -129,19 +129,23 @@ public class BattleSimFacade implements Serializable {
         return ret;
     }
 
-    public int getDefesaBonus(IExercito exercito) {
-        return exercito.getBonusDefense();
+    public int getDefesaBonus(IExercito army) {
+        return army.getBonusDefense();
     }
 
-    public int getAtaqueBonus(IExercito exercito) {
-        return exercito.getBonusAttack();
+    public int getAtaqueBonus(IExercito army) {
+        return army.getBonusAttack();
     }
 
-    public ExercitoSim clone(Exercito exercito) {
-        return new ExercitoSim(exercito);
+    public ExercitoSim clone(Exercito army) {
+        return new ExercitoSim(army);
     }
 
-    public ExercitoSim clone(ExercitoSim exercito) {
-        return new ExercitoSim(exercito);
+    public ExercitoSim clone(ExercitoSim army) {
+        return new ExercitoSim(army);
+    }
+
+    public Pelotao clone(Pelotao platoon) {
+        return platoon.clone();
     }
 }

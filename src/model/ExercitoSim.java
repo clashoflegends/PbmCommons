@@ -39,7 +39,7 @@ public class ExercitoSim extends BaseModel implements IExercito {
 
     public ExercitoSim(Exercito exercito) {
         this.moral = exercito.getMoral();
-        this.platoons = exercito.getPelotoes();
+        this.platoons.putAll(exercito.getPelotoes());
         this.local = exercito.getLocal();
         this.terreno = exercito.getLocal().getTerreno();
         this.nacao = exercito.getNacao();
@@ -55,7 +55,7 @@ public class ExercitoSim extends BaseModel implements IExercito {
 
     public ExercitoSim(ExercitoSim exercito) {
         this.moral = exercito.getMoral();
-        this.platoons = exercito.getPelotoes();
+        this.platoons.putAll(exercito.getPelotoes());
         this.local = exercito.getLocal();
         this.terreno = exercito.getLocal().getTerreno();
         this.nacao = exercito.getNacao();
