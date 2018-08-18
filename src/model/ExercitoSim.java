@@ -57,7 +57,7 @@ public class ExercitoSim extends BaseModel implements IExercito {
         this.moral = exercito.getMoral();
         this.platoons.putAll(exercito.getPelotoes());
         this.local = exercito.getLocal();
-        this.terreno = exercito.getLocal().getTerreno();
+        this.terreno = exercito.getTerreno();
         this.nacao = exercito.getNacao();
         try {
             this.comandante = exercito.getPericiaComandante();
