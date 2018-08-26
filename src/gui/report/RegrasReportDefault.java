@@ -9,7 +9,6 @@ import business.facade.CenarioFacade;
 import business.services.ComparatorFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import model.Feitico;
@@ -137,10 +136,6 @@ public class RegrasReportDefault implements Serializable {
     }
 
     private void printTropasSection() {
-        if (!this.getPartida().getCenario().isWdo()) {
-            //only prints for WDO for now
-            return;
-        }
         final int borderBefore = getReport().getBorder();
         getReport().setBorder(1);
         getReport().setConvertNewLine(true);
@@ -277,10 +272,9 @@ public class RegrasReportDefault implements Serializable {
     }
 
     private void printTropasTable() throws PersistenceException {
-        final Collection<TipoTropa> tropas = getPartida().getCenario().getTipoTropas().values();
-//        final List<TipoTropa> tropas = PersistFactory.getTipoTropaServerDao().listTropasWdo(partida.getCenario());
+        final List<TipoTropa> tropas = new ArrayList<TipoTropa>(getPartida().getCenario().getTipoTropas().values());
         //sort array
-//        ComparatorFactory.getComparator;
+        ComparatorFactory.getComparatorBaseModelNameSorter(tropas);
         getReport().writeTabela(6);
 
         //titles
