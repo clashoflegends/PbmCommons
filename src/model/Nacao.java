@@ -235,6 +235,38 @@ public class Nacao extends BaseModel implements IActor {
     public void setTeamFlag(String flAlianca) {
         this.flAlianca = flAlianca;
     }
+    /**
+     * relacionamento negativo <0
+     */
+    public boolean isInimigo(Nacao nacao) {
+        return (this.getRelacionamento(nacao) < 0);
+    }
+
+    public boolean isInimigoNeutro(Nacao nacao) {
+        boolean ret = false;
+        if (this != nacao && this.getRelacionamento(nacao) <= 0) {
+            ret = true;
+        }
+        return ret;
+    }
+
+    /**
+     * relacionamento positivo >0
+     */
+    public boolean isAmigo(Nacao nacao) {
+        return (this.getRelacionamento(nacao) > 0);
+    }
+
+    /**
+     * relacionamento >1
+     */
+    public boolean isAliado(Nacao nacao) {
+        return (this.getRelacionamento(nacao) >= 2);
+    }
+
+    public boolean isLord(Nacao nacao) {
+        return (this.getRelacionamento(nacao) == 4);
+    }
 
     @Override
     public boolean isActorActive() {
