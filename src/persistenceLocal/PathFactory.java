@@ -176,4 +176,32 @@ public class PathFactory implements Serializable {
 //        }
         return success;
     }
+
+    public String criaBaseDir(Partida partida) {
+        return criaBaseDir(PathFactory.getDirName(partida), partida.getTurno());
+    }
+
+    public String criaBaseDir(String diretorio, int turno) {
+        boolean success = true;
+        //verifica e cria diretorio para a partida
+        if (!(new File(diretorio)).exists()) {
+            success = (new File(diretorio)).mkdir();
+        }
+
+        //verifica e cria o diretorio para o turno
+        diretorio += SysApoio.lpad(turno + "", '0', 3) + "/";
+        if (!(new File(diretorio)).exists()) {
+            success = (new File(diretorio)).mkdir();
+        }
+        //verifica e cria diretorio para os mapas HTM
+        String mapaDir = diretorio + "mapas/";
+        if (!(new File(mapaDir)).exists()) {
+            success = (new File(mapaDir)).mkdir();
+        }
+        if (success) {
+            return diretorio;
+        } else {
+            return null;
+        }
+    }
 }

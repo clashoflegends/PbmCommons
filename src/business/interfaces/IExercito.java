@@ -28,6 +28,12 @@ public interface IExercito {
 
     public SortedMap<String, Pelotao> getPelotoes();
 
+    public int getBonusAttack();
+
+    public int getTatica();
+
+    public int getBonusDefense();
+
     @Override
     public String toString();
 }

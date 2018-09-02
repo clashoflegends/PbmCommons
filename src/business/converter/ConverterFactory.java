@@ -68,7 +68,7 @@ public final class ConverterFactory implements Serializable {
         return "@PADRAO#";
     }
 
-    private static String taticaToCodigo(int tatica) {
+    public static String taticaToCodigo(int tatica) {
         switch (tatica) {
             case 0:
                 return "ca";
@@ -82,6 +82,14 @@ public final class ConverterFactory implements Serializable {
                 return "gu";
             case 5:
                 return "em";
+            case 6:
+                return "ba";
+            case 7:
+                return "sh";
+            case 8:
+                return "sf";
+            case 9:
+                return "sm";
             default:
                 return "pa";
         }

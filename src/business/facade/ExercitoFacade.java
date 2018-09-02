@@ -105,6 +105,14 @@ public class ExercitoFacade implements Serializable {
         }
     }
 
+    public int getPericiaComandante(IExercito exercito) {
+        try {
+            return exercito.getPericiaComandante();
+        } catch (NullPointerException ex) {
+            return 0;
+        }
+    }
+
     public int getComida(Exercito exercito) {
         return exercito.getComida();
     }
@@ -125,7 +133,7 @@ public class ExercitoFacade implements Serializable {
         return ret;
     }
 
-    public int getMoral(Exercito exercito) {
+    public int getMoral(IExercito exercito) {
         return exercito.getMoral();
     }
 
@@ -448,7 +456,7 @@ public class ExercitoFacade implements Serializable {
     }
 
     public int getDefesaPelotao(Pelotao pelotao, IExercito exercito) {
-        return (int) battleSimFacade.getDefesaPelotao(pelotao, exercito.getLocal().getTerreno(), exercito);
+        return (int) battleSimFacade.getDefesaPelotao(pelotao, exercito);
     }
 
     public int getAtaqueExercito(IExercito exercito, boolean naval) {
@@ -457,6 +465,14 @@ public class ExercitoFacade implements Serializable {
 
     public int getDefesaExercito(IExercito exercito, boolean naval) {
         return battleSimFacade.getDefesaExercito(exercito, naval);
+    }
+
+    public int getAtaqueBonusExercito(IExercito exercito) {
+        return (int) battleSimFacade.getAtaqueBonus(exercito);
+    }
+
+    public int getDefesaBonusExercito(IExercito exercito) {
+        return battleSimFacade.getDefesaBonus(exercito);
     }
 
     public List<TipoTropa> getTipoTropas(Exercito exercito) {
@@ -585,7 +601,7 @@ public class ExercitoFacade implements Serializable {
         return movEx.getCustoMovimento();
     }
 
-    public String getTacticNameSelected(Exercito exercito) {
+    public String getTacticNameSelected(IExercito exercito) {
         return TitleFactory.getTaticaNome(exercito.getTatica());
     }
 }

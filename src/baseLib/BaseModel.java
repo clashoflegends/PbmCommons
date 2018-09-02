@@ -56,7 +56,7 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
         this.id = id;
     }
 
-    public void setNome(String nome) {
+    public final void setNome(String nome) {
         this.nome = nome;
     }
 

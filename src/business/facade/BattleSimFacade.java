@@ -41,26 +41,6 @@ public class BattleSimFacade implements Serializable {
         return ret;
     }
 
-//    private int getAtaqueExercito(IExercito exercito, int round) {
-//        int ret;
-//        if (round == 0) {
-//            //first strike
-//            ret = getAtaqueExercito(exercito, ";TT1;");
-//        } else {
-//            ret = getAtaqueExercito(exercito);
-//        }
-//        return ret;
-//    }
-//
-//    private int getAtaqueExercito(IExercito exercito, String habilidade) {
-//        int ret = 0;
-//        for (Pelotao pelotao : exercito.getPelotoes().values()) {
-//            if (pelotao.getTipoTropa().hasHabilidade(habilidade)) {
-//                ret += getAtaquePelotao(pelotao, exercito);
-//            }
-//        }
-//        return ret;
-//    }
     public float getAtaqueExercito(IExercito exercito, boolean naval) {
         float ret = 0;
         for (Pelotao pelotao : exercito.getPelotoes().values()) {
@@ -134,6 +114,10 @@ public class BattleSimFacade implements Serializable {
         return pelotao.getQtd() * vlConstituicao * (1F + vlArmadura / 100F);
     }
 
+    public float getDefesaPelotao(Pelotao pelotao, IExercito exercito) {
+        return getDefesaPelotao(pelotao, exercito.getTerreno(), exercito);
+    }
+
     public int getDefesaExercito(IExercito exercito, boolean naval) {
         //TODO: combate em terra vs. naval
         int ret = 0;
@@ -145,7 +129,23 @@ public class BattleSimFacade implements Serializable {
         return ret;
     }
 
-    public ExercitoSim clone(Exercito exercito) {
-        return new ExercitoSim(exercito);
+    public int getDefesaBonus(IExercito army) {
+        return army.getBonusDefense();
+    }
+
+    public int getAtaqueBonus(IExercito army) {
+        return army.getBonusAttack();
+    }
+
+    public ExercitoSim clone(Exercito army) {
+        return new ExercitoSim(army);
+    }
+
+    public ExercitoSim clone(ExercitoSim army) {
+        return new ExercitoSim(army);
+    }
+
+    public Pelotao clone(Pelotao platoon) {
+        return platoon.clone();
     }
 }
