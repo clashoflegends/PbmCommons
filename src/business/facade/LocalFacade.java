@@ -480,4 +480,8 @@ public final class LocalFacade implements Serializable {
     public Set<String> getTerrainLandmarksCodigo() {
         return landmarkImage.keySet();
     }
+
+    public void addHabilidade(Local local, Habilidade hab) {
+        local.addHabilidade(hab);
+    }
 }

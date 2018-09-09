@@ -273,4 +273,12 @@ public class Cidade extends BaseModel implements IActor {
     public boolean isActorActive() {
         return this.getTamanho() > 0;
     }
+
+    public int getDefenseBonus() {
+        return 0;
+    }
+
+    public void setDefenseBonus(int bonusDefense) {
+        //do nothing here. 
+    }
 }

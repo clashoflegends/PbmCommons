@@ -46,6 +46,11 @@ public class Exercito extends BaseModel implements IExercito {
     }
 
     @Override
+    public Personagem getComandanteModel() {
+        return getComandante();
+    }
+
+    @Override
     public Nacao getNacao() {
         return this.nacao;
     }
@@ -147,7 +152,7 @@ public class Exercito extends BaseModel implements IExercito {
     }
 
     @Override
-    public int getPericiaComandante() {
+    public int getComandantePericia() {
         try {
             return getComandante().getPericiaComandante();
         } catch (NullPointerException ex) {
@@ -171,12 +176,56 @@ public class Exercito extends BaseModel implements IExercito {
     }
 
     @Override
-    public int getBonusAttack() {
+    public int getAttackBonus() {
         return 0;
     }
 
     @Override
-    public int getBonusDefense() {
+    public int getArmyDefenseBonus() {
         return 0;
+    }
+
+    @Override
+    public void doDisband() {
+        //nothing to do for now. We don't disband in Counselor so far.
+    }
+
+    @Override
+    public boolean isGarrison() {
+        return getComandante() == null;
+    }
+
+    @Override
+    public String getComandanteNome() {
+        try {
+            return getComandante().getNome();
+        } catch (NullPointerException ex) {
+            return "";
+        }
+    }
+
+    @Override
+    public boolean isDisband() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setArmyDefenseBonus(int bonus) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void doDisbandWithMsg() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setDisband(boolean disband) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setCombatDamageClear() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

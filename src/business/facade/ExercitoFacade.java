@@ -6,7 +6,9 @@ package business.facade;
 
 import business.ArmyPath;
 import business.MovimentoExercito;
+import business.combat.ArmySim;
 import business.interfaces.IExercito;
+import business.services.ComparatorFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +17,6 @@ import java.util.List;
 import java.util.SortedMap;
 import model.Cenario;
 import model.Exercito;
-import model.ExercitoSim;
 import model.Jogador;
 import model.Local;
 import model.Nacao;
@@ -90,12 +91,43 @@ public class ExercitoFacade implements Serializable {
         }
     }
 
-    public String getComandanteTitulo(ExercitoSim exercito, Cenario cenario) {
+    public String getNomeTituloComandante(IExercito army) {
+        return this.getTituloComandante(army) + " " + army.getComandanteNome();
+    }
+
+    public String getTituloComandante(IExercito army) {
+        /**
+         * general mariola
+         */
+        try {
+            final int nn = (int) Math.min((army.getComandantePericia() / 10) + 1, BaseMsgs.tituloPericiaComandante.length);
+            return (String.format("%s %s",
+                    BaseMsgs.tituloPericiaComandante[nn],
+                    army.getComandanteNome()));
+        } catch (NullPointerException e) {
+            return labels.getString("UM.DESCONHECIDO");
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return labels.getString("UM.DESCONHECIDO");
+        }
+    }
+
+    public String getNomeTituloNacaoComandante(IExercito army) {
+        String ret = "";
+        if (army.isGarrison()) {
+            ret += String.format("%s (%s)", labels.getString("GUARNICAO"), army.getLocal().getCoordenadas());
+        } else {
+            ret += getNomeTituloComandante(army);
+        }
+        ret += " " + army.getNacao().getNome();
+        return ret;
+    }
+
+    public String getComandanteTitulo(ArmySim exercito, Cenario cenario) {
         try {
             return String.format("%s %s",
                     cenarioFacade.getTituloPericia(cenario,
                             CenarioFacade.COMANDANTE,
-                            exercito.getPericiaComandante()),
+                            exercito.getComandantePericia()),
                     exercito.getComandanteNome());
         } catch (NullPointerException ex) {
             return String.format(labels.getString("GUARNICAO.NOME"),
@@ -107,7 +139,7 @@ public class ExercitoFacade implements Serializable {
 
     public int getPericiaComandante(IExercito exercito) {
         try {
-            return exercito.getPericiaComandante();
+            return exercito.getComandantePericia();
         } catch (NullPointerException ex) {
             return 0;
         }
@@ -194,8 +226,8 @@ public class ExercitoFacade implements Serializable {
         return pelotao.getTipoTropa().getNome();
     }
 
-    public boolean isGuarnicao(Exercito exercito) {
-        return exercito.getComandante() == null;
+    public boolean isGuarnicao(IExercito exercito) {
+        return exercito.isGarrison();
     }
 
     public boolean isComida(Exercito exercito) {
@@ -222,7 +254,7 @@ public class ExercitoFacade implements Serializable {
         return ret;
     }
 
-    private boolean isHabilidade(Exercito exercito, String habilidade) {
+    private boolean isHabilidade(IExercito exercito, String habilidade) {
         boolean ret = false;
         for (Pelotao pelotao : exercito.getPelotoes().values()) {
             if (pelotao.getTipoTropa().hasHabilidade(habilidade) && pelotao.getQtd() > 0) {
@@ -267,7 +299,7 @@ public class ExercitoFacade implements Serializable {
         return isHabilidade(exercito, ";TTE;");
     }
 
-    public boolean isEsquadra(Exercito exercito) {
+    public boolean isEsquadra(IExercito exercito) {
         return isHabilidade(exercito, ";TTN;");
     }
 
@@ -367,7 +399,7 @@ public class ExercitoFacade implements Serializable {
      * @param exercito
      * @return
      */
-    public int getTropasCavalaria(Exercito exercito) {
+    public int getQtTropasCavalaria(Exercito exercito) {
         return getQtHabilidade(exercito, ";TTF;", ";TTN;");
     }
 
@@ -377,8 +409,22 @@ public class ExercitoFacade implements Serializable {
      * @param exercito
      * @return
      */
-    public int getTropasInfantaria(Exercito exercito) {
+    public int getQtTropasInfantaria(Exercito exercito) {
         return getQtHabilidade(exercito, ";TTR;", ";TTN;");
+    }
+
+    /**
+     * count how many troops total
+     *
+     * @param exercito
+     * @return
+     */
+    public int getQtTropasTotal(IExercito exercito) {
+        int ret = 0;
+        for (Pelotao pelotao : exercito.getPelotoes().values()) {
+            ret += pelotao.getQtd();
+        }
+        return ret;
     }
 
     public int getTamanhoEsquadra(Exercito exercito) {
@@ -387,6 +433,10 @@ public class ExercitoFacade implements Serializable {
 
     public SortedMap<String, Pelotao> getPelotoes(Exercito exercito) {
         return exercito.getPelotoes();
+    }
+
+    public Pelotao getPlatoon(IExercito army, TipoTropa tpTrop) {
+        return army.getPelotoes().get(tpTrop.getCodigo());
     }
 
     public int getCustoMovimentoBase(List<TipoTropa> tropas, Terreno destino, boolean estrada, boolean agua) {
@@ -452,27 +502,27 @@ public class ExercitoFacade implements Serializable {
     }
 
     public int getAtaquePelotao(Pelotao pelotao, IExercito exercito) {
-        return (int) battleSimFacade.getAtaquePelotao(pelotao, exercito);
+        return (int) battleSimFacade.getPlatoonAttack(pelotao, exercito);
     }
 
     public int getDefesaPelotao(Pelotao pelotao, IExercito exercito) {
-        return (int) battleSimFacade.getDefesaPelotao(pelotao, exercito);
+        return (int) battleSimFacade.getPlatoonDefense(pelotao, exercito);
     }
 
     public int getAtaqueExercito(IExercito exercito, boolean naval) {
-        return (int) battleSimFacade.getAtaqueExercito(exercito, naval);
+        return (int) battleSimFacade.getArmyAttack(exercito, naval);
     }
 
     public int getDefesaExercito(IExercito exercito, boolean naval) {
-        return battleSimFacade.getDefesaExercito(exercito, naval);
+        return battleSimFacade.getArmyDefense(exercito, naval);
     }
 
     public int getAtaqueBonusExercito(IExercito exercito) {
-        return (int) battleSimFacade.getAtaqueBonus(exercito);
+        return (int) battleSimFacade.getArmyAttackBonus(exercito);
     }
 
     public int getDefesaBonusExercito(IExercito exercito) {
-        return battleSimFacade.getDefesaBonus(exercito);
+        return battleSimFacade.getArmyDefenseBonus(exercito);
     }
 
     public List<TipoTropa> getTipoTropas(Exercito exercito) {
@@ -518,7 +568,7 @@ public class ExercitoFacade implements Serializable {
         //comeca pelo hex atual...
         hexesToProcess.add(startHex);
 
-        int prevCost = 0;
+        int prevCost;
         while (hexesToProcess.size() > 0) {
             Local atual = hexesToProcess.remove(0);
             for (int direcao = 1; direcao < 7; direcao++) {
@@ -603,5 +653,76 @@ public class ExercitoFacade implements Serializable {
 
     public String getTacticNameSelected(IExercito exercito) {
         return TitleFactory.getTaticaNome(exercito.getTatica());
+    }
+
+    public boolean isTropaHabilidadeUma(IExercito army, String habilidade) {
+        for (Pelotao platoon : army.getPelotoes().values()) {
+            if (platoon.getQtd() > 0 && platoon.getTipoTropa().hasHabilidade(habilidade)) {
+                //so precisa ter uma...
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isSiege(IExercito army) {
+        return isTropaHabilidadeUma(army, ";TTS;");
+    }
+
+    public boolean isHero(IExercito army) {
+        try {
+            return army.getComandanteModel().isHero();
+        } catch (NullPointerException ex) {
+            return false;
+        }
+    }
+
+    public List<Pelotao> listaTropasTerra(IExercito army) {
+        //prepara lista de Land
+        List<Pelotao> tropas = new ArrayList<Pelotao>();
+        for (Pelotao pelotao : army.getPelotoes().values()) {
+            if (!pelotao.getTipoTropa().isBarcos()) {
+                tropas.add(pelotao);
+            }
+        }
+        //ordena a lista de pelotoes pelo Id
+//        Collections.sort(tropas, ComparatorFactory.getComparatorCasualtiesSorter(getTatica(), getHexagono().getTerrenoCenario().getTerreno()));
+        ComparatorFactory.getComparatorCasualtiesPelotaoSorter(tropas, army.getTatica(), army.getTerreno());
+        return tropas;
+    }
+
+    public void subTropaQt(IExercito army, TipoTropa troopType, int qtTroops) {
+        if (qtTroops <= 0) {
+            return;
+        }
+        try {
+            final SortedMap<String, Pelotao> platoons = army.getPelotoes();
+            Pelotao pelotao = platoons.get(troopType.getCodigo());
+            int temp = pelotao.getQtd() - qtTroops;
+            if (temp > 0) {
+                pelotao.setQtd(temp);
+            } else {
+                pelotao.setQtd(0);
+                platoons.remove(pelotao.getCodigo());
+            }
+            if (this.getQtTropasTotal(army) < 1) {
+                //debanda exercito
+                army.setDisband(true);
+            }
+        } catch (NullPointerException e) {
+            //Pelotao nao existe, logo nao precisa subtrair.
+            //deve ocorrer apenas com Barcos e maquinas de guerra. um dia bola uma coisa melhor
+        }
+        this.isPrecisaDebandar(army);
+    }
+
+    public boolean isPrecisaDebandar(IExercito army) {
+        if (this.getQtTropasTotal(army) >= 1 && !army.isDisband()) {
+            //no need to disband
+            return false;
+        }
+
+        army.doDisbandWithMsg();
+        return true;
     }
 }

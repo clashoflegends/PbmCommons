@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package model;
+package business.combat;
 
 import baseLib.BaseModel;
 import business.interfaces.IExercito;
@@ -11,13 +11,20 @@ import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import model.Exercito;
+import model.Local;
+import model.Nacao;
+import model.Pelotao;
+import model.Personagem;
+import model.Terreno;
+import model.TipoTropa;
 import persistenceCommons.SettingsManager;
 
 /**
  *
  * @author jmoura
  */
-public class ExercitoSim extends BaseModel implements IExercito {
+public class ArmySim extends BaseModel implements IExercito {
 
     private int moral = 10;
     private int comandante = 10;
@@ -30,14 +37,14 @@ public class ExercitoSim extends BaseModel implements IExercito {
     private SortedMap<String, Pelotao> platoons = new TreeMap();
     private List<TipoTropa> troops = new ArrayList<TipoTropa>();
 
-    public ExercitoSim(String name, Terreno terrain) {
+    public ArmySim(String name, Terreno terrain) {
         this.setNome(name);
         this.comandanteNome = name;
         this.terreno = terrain;
         //FIXME: needs to receive Local for the Battle to be resolved. Deal with this later.
     }
 
-    public ExercitoSim(Exercito exercito) {
+    public ArmySim(Exercito exercito) {
         this.moral = exercito.getMoral();
         this.platoons.putAll(exercito.getPelotoes());
         this.local = exercito.getLocal();
@@ -53,14 +60,14 @@ public class ExercitoSim extends BaseModel implements IExercito {
         //TODO: clone pelotoes para poder mudar valores sem afetar original
     }
 
-    public ExercitoSim(ExercitoSim exercito) {
+    public ArmySim(ArmySim exercito) {
         this.moral = exercito.getMoral();
         this.platoons.putAll(exercito.getPelotoes());
         this.local = exercito.getLocal();
         this.terreno = exercito.getTerreno();
         this.nacao = exercito.getNacao();
         try {
-            this.comandante = exercito.getPericiaComandante();
+            this.comandante = exercito.getComandantePericia();
             this.comandanteNome = exercito.getNome();
             this.setNome(exercito.getNome());
         } catch (NullPointerException ex) {
@@ -70,7 +77,7 @@ public class ExercitoSim extends BaseModel implements IExercito {
     }
 
     @Override
-    public int getPericiaComandante() {
+    public int getComandantePericia() {
         return comandante;
     }
 
@@ -119,6 +126,13 @@ public class ExercitoSim extends BaseModel implements IExercito {
         this.nacao = nacao;
     }
 
+    @Override
+    public Personagem getComandanteModel() {
+        //FIXME: someday, do commander here.
+        return null;
+    }
+
+    @Override
     public String getComandanteNome() {
         return comandanteNome;
     }
@@ -137,7 +151,7 @@ public class ExercitoSim extends BaseModel implements IExercito {
     }
 
     @Override
-    public int getBonusAttack() {
+    public int getAttackBonus() {
         return bonusAttack;
     }
 
@@ -146,7 +160,7 @@ public class ExercitoSim extends BaseModel implements IExercito {
     }
 
     @Override
-    public int getBonusDefense() {
+    public int getArmyDefenseBonus() {
         return bonusDefense;
     }
 
@@ -161,5 +175,41 @@ public class ExercitoSim extends BaseModel implements IExercito {
             }
         }
         return this.troops;
+    }
+
+    @Override
+    public void doDisband() {
+        //destroy army to remove it from combat
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean isGarrison() {
+        return comandante <= 0;
+    }
+
+    @Override
+    public boolean isDisband() {
+        return getPelotoes().isEmpty();
+    }
+
+    @Override
+    public void setArmyDefenseBonus(int bonus) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void doDisbandWithMsg() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setDisband(boolean disband) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setCombatDamageClear() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
