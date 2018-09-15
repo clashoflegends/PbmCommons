@@ -9,6 +9,7 @@ import business.facade.CenarioFacade;
 import business.facade.ExercitoFacade;
 import business.facade.FeiticoFacade;
 import business.facade.PersonagemFacade;
+import business.interfaces.IExercito;
 import java.io.Serializable;
 import model.Exercito;
 import model.Feitico;
@@ -54,7 +55,7 @@ public class TitleFactory implements Serializable {
         return tipoSkill;
     }
 
-    public static String displayExercitotitulo(Exercito exercito) {
+    public static String displayExercitoTitle(Exercito exercito) {
         String ret;
         try {
             if (exercitoFacade.isGuarnicao(exercito)) {
@@ -65,15 +66,32 @@ public class TitleFactory implements Serializable {
                 ret = String.format(labels.getString("ESQUADRA.AVISTADO"),
                         exercitoFacade.getDescricaoTamanho(exercito),
                         exercitoFacade.getNacaoNome(exercito),
-                        personagemFacade.getTituloComandante(exercito));
+                        exercitoFacade.getTituloComandante(exercito));
             } else {
                 ret = String.format(labels.getString("EXERCITO.AVISTADO"),
                         exercitoFacade.getDescricaoTamanho(exercito),
                         exercitoFacade.getNacaoNome(exercito),
-                        personagemFacade.getTituloComandante(exercito));
+                        exercitoFacade.getTituloComandante(exercito));
             }
         } catch (NullPointerException e) {
             ret = labels.getString("EXERCITO.DESCONHECIDO");
+        }
+        return ret;
+    }
+
+    public String displayComanderTitle(IExercito exercito) {
+        String ret;
+        try {
+            if (exercitoFacade.isGuarnicao(exercito)) {
+                ret = String.format(labels.getString("GUARNICAO.TITLE"),
+                        exercitoFacade.getNacaoNome(exercito));
+            } else {
+                ret = String.format(labels.getString("EXERCITO.COMMANDER"),
+                        exercitoFacade.getTituloComandante(exercito),
+                        exercitoFacade.getNacaoNome(exercito));
+            }
+        } catch (NullPointerException e) {
+            ret = labels.getString("EXERCITO.INESTIMADO");
         }
         return ret;
     }

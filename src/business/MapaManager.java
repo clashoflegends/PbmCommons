@@ -337,9 +337,6 @@ public class MapaManager implements Serializable {
         lista = localFacade.getPersonagens(local).values().iterator();
         while (lista.hasNext()) {
             Personagem pers = (Personagem) lista.next();
-//            if (pers.getNome().contains("Ghost")) {
-//                log.debug("AKI!!");
-//            }
             if (personagemFacade.isNpc(pers)) {
                 int dx = 04 + 8;
                 int dy = 22 - 3;

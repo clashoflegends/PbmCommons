@@ -279,11 +279,11 @@ public class CidadeFacade implements Serializable {
     }
 
     public int getDefesa(Cidade cidade) {
-        return combatSimFacade.getDefesa(cidade);
+        return combatSimFacade.getCityDefenseBase(cidade);
     }
 
     public int getDefesa(int tamanho, int fortificacao, int lealdade) {
-        return combatSimFacade.getDefesa(tamanho, fortificacao, lealdade);
+        return combatSimFacade.getCityDefense(tamanho, fortificacao, lealdade);
     }
 
     public boolean isAtivo(Cidade cidade) {
@@ -328,5 +328,23 @@ public class CidadeFacade implements Serializable {
             custo = custo / city.getNacao().getHabilidadeValor(";PPB;");
         }
         return (city.getTamanho() * custo + baseCost);
+    }
+
+    public int subEstoque(Cidade city, Produto produto, int qtd) {
+        city.setEstoque(produto, city.getEstoque(produto) - qtd);
+        return city.getEstoque(produto);
+    }
+
+    public int sumEstoque(Cidade city, Produto produto, int qtd) {
+        city.setEstoque(produto, city.getEstoque(produto) + qtd);
+        return city.getEstoque(produto);
+    }
+
+    public String getNomeHex(Cidade city) {
+        return (city.getNome() + " (" + city.getLocal().getCoordenadas() + ")");
+    }
+
+    public void subFortification(Cidade city, int fator) {
+        city.setFortificacao(city.getFortificacao() - fator);
     }
 }

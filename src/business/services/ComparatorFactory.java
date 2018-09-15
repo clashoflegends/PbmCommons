@@ -91,11 +91,11 @@ public class ComparatorFactory implements Serializable {
      * @param tatica
      * @param terreno
      */
-    public static void getComparatorCasualtiesPelotaoSorter(List<Pelotao> lista, int tatica, Terreno terreno, int partidaId) {
+    private static void getComparatorCasualtiesPelotaoSorter(List<Pelotao> lista, int tatica, Terreno terreno, int partidaId) {
         Collections.sort(lista, new ComparatorCasualtiesSorterNew(tatica, terreno));
     }
 
-    private static void getComparatorCasualtiesPelotaoSorter(List<Pelotao> lista, int tatica, Terreno terreno) {
+    public static void getComparatorCasualtiesPelotaoSorter(List<Pelotao> lista, int tatica, Terreno terreno) {
         Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
     }
 

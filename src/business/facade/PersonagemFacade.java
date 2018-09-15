@@ -388,22 +388,6 @@ public class PersonagemFacade implements Serializable {
         return isLocalConhecido(personagem);
     }
 
-    public String getTituloComandante(Exercito exercito) {
-        /**
-         * general mariola
-         */
-        try {
-            final int nn = (int) Math.min((exercito.getComandante().getPericiaComandanteNatural() / 10) + 1, BaseMsgs.tituloPericiaComandante.length);
-            return (String.format("%s %s",
-                    BaseMsgs.tituloPericiaComandante[nn],
-                    exercito.getComandante().getNome()));
-        } catch (NullPointerException e) {
-            return labels.getString("UM.DESCONHECIDO");
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return labels.getString("UM.DESCONHECIDO");
-        }
-    }
-
     public List<String[]> getPericias(Personagem personagem, Cenario cenario) {
         int aTipo = 0, aTitulo = 1, aNatural = 2, aFinal = 3;
         List<String[]> pericias = new ArrayList<String[]>();
