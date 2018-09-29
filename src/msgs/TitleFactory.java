@@ -66,12 +66,12 @@ public class TitleFactory implements Serializable {
                 ret = String.format(labels.getString("ESQUADRA.AVISTADO"),
                         exercitoFacade.getDescricaoTamanho(exercito),
                         exercitoFacade.getNacaoNome(exercito),
-                        exercitoFacade.getTituloComandante(exercito));
+                        exercitoFacade.getNomeTituloComandante(exercito));
             } else {
                 ret = String.format(labels.getString("EXERCITO.AVISTADO"),
                         exercitoFacade.getDescricaoTamanho(exercito),
                         exercitoFacade.getNacaoNome(exercito),
-                        exercitoFacade.getTituloComandante(exercito));
+                        exercitoFacade.getNomeTituloComandante(exercito));
             }
         } catch (NullPointerException e) {
             ret = labels.getString("EXERCITO.DESCONHECIDO");
@@ -87,7 +87,7 @@ public class TitleFactory implements Serializable {
                         exercitoFacade.getNacaoNome(exercito));
             } else {
                 ret = String.format(labels.getString("EXERCITO.COMMANDER"),
-                        exercitoFacade.getTituloComandante(exercito),
+                        exercitoFacade.getNomeTituloComandante(exercito),
                         exercitoFacade.getNacaoNome(exercito));
             }
         } catch (NullPointerException e) {

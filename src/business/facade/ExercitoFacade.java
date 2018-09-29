@@ -101,9 +101,14 @@ public class ExercitoFacade implements Serializable {
          */
         try {
             final int nn = (int) Math.min((army.getComandantePericia() / 10) + 1, BaseMsgs.tituloPericiaComandante.length);
-            return (String.format("%s %s",
+            //No passado, fiz um merge e tinha o nome do comandnate aqui. Talvez o nome do comandnate esteja faltando em algum lugar, dai use getNomeTituloComandante()
+            /*
+                return (String.format("%s %s",
                     BaseMsgs.tituloPericiaComandante[nn],
                     army.getComandanteNome()));
+
+             */
+            return BaseMsgs.tituloPericiaComandante[nn];
         } catch (NullPointerException e) {
             return labels.getString("UM.DESCONHECIDO");
         } catch (ArrayIndexOutOfBoundsException e) {
