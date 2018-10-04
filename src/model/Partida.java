@@ -164,6 +164,10 @@ public class Partida extends BaseModel {
         return this.hasHabilidade(";FFA;");
     }
 
+    public boolean isBattleRoyal() {
+        return this.hasHabilidade(";GBR;");
+    }
+
     public boolean isNationPackages() {
         return this.hasHabilidade(";GSP;");
     }
