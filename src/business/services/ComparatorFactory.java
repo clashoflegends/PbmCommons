@@ -92,11 +92,11 @@ public class ComparatorFactory implements Serializable {
      * @param terreno
      */
     private static void getComparatorCasualtiesPelotaoSorter(List<Pelotao> lista, int tatica, Terreno terreno, int partidaId) {
-        Collections.sort(lista, new ComparatorCasualtiesSorterNew(tatica, terreno));
+        Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
     }
 
     public static void getComparatorCasualtiesPelotaoSorter(List<Pelotao> lista, int tatica, Terreno terreno) {
-        Collections.sort(lista, new ComparatorCasualtiesSorterNew(tatica, terreno));
+        Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
     }
 
     /**
@@ -107,11 +107,11 @@ public class ComparatorFactory implements Serializable {
      * @param terreno
      */
     public static void getComparatorCasualtiesTipoTropaSorter(List<TipoTropa> lista, int tatica, Terreno terreno, int partidaId) {
-        Collections.sort(lista, new ComparatorCasualtiesSorterNew(tatica, terreno));
+        Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
     }
 
     private static void getComparatorCasualtiesTipoTropaSorter(List<TipoTropa> lista, int tatica, Terreno terreno) {
-        Collections.sort(lista, new ComparatorCasualtiesSorterNew(tatica, terreno));
+        Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
     }
 
     /**
