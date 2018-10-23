@@ -408,6 +408,9 @@ public class MapaManager implements Serializable {
         }
         Local baseLocal = pers.getLocal();
         for (Local nextLocal : pathMov) {
+            if (nextLocal == null) {
+                break;
+            }
             if (baseLocal.equals(nextLocal)) {
                 continue;
             }
