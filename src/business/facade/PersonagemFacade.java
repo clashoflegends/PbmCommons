@@ -355,8 +355,17 @@ public class PersonagemFacade implements Serializable {
     public boolean isInCidadeVassalo(Personagem personagem) {
         //cidade propria ou aliada
         try {
-            return (this.isInCidadePropria(personagem)
-                    || personagem.getLocal().getCidade().getNacao().getRelacionamento(personagem.getNacao()) == 3);
+            if (this.isInCidadePropria(personagem)) {
+                return true;
+            } else if (personagem.getLocal().getCidade().getNacao().getRelacionamento(personagem.getNacao()) == 3) {
+                return true;
+            } else {
+                if (personagem.getNacao().hasHabilidade(";PRA;")
+                        && personagem.getLocal().getCidade().getNacao().getRelacionamento(personagem.getNacao()) >= 2) {
+                    return true;
+                }
+            }
+            return false;
         } catch (NullPointerException ex) {
             return false;
         }
