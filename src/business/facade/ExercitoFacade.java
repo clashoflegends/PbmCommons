@@ -25,7 +25,7 @@ import model.Personagem;
 import model.Terreno;
 import model.TipoTropa;
 import msgs.BaseMsgs;
-import msgs.TitleFactory;
+import business.services.TitleFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;

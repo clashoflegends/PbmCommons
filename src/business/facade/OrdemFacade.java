@@ -21,7 +21,7 @@ import model.Ordem;
 import model.Partida;
 import model.Personagem;
 import model.PersonagemOrdem;
-import msgs.TitleFactory;
+import business.services.TitleFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;

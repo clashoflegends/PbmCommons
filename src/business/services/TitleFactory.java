@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package msgs;
+package business.services;
 
 import business.facade.AcaoFacade;
 import business.facade.CenarioFacade;
@@ -15,6 +15,7 @@ import model.Exercito;
 import model.Feitico;
 import model.Habilidade;
 import model.Ordem;
+import msgs.BaseMsgs;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
 

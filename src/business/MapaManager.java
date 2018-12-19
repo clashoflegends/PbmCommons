@@ -45,7 +45,7 @@ import model.Local;
 import model.Nacao;
 import model.Personagem;
 import model.PersonagemOrdem;
-import msgs.ColorFactory;
+import business.services.ColorFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;

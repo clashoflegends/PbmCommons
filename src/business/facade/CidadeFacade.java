@@ -19,7 +19,7 @@ import model.Personagem;
 import model.Produto;
 import model.Raca;
 import msgs.BaseMsgs;
-import msgs.ColorFactory;
+import business.services.ColorFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
