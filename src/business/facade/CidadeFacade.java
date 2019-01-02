@@ -4,6 +4,7 @@
  */
 package business.facade;
 
+import business.services.ColorFactory;
 import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,7 +20,6 @@ import model.Personagem;
 import model.Produto;
 import model.Raca;
 import msgs.BaseMsgs;
-import business.services.ColorFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
@@ -249,22 +249,28 @@ public class CidadeFacade implements Serializable {
             if (cidade.getNacao().hasHabilidade(";NWP;") && produto.isWood()) {
                 producao += producao * cidade.getNacao().getHabilidadeValor(";NWP;") / 100;
                 return producao;
-            } else if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGH;")
+            }
+            if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGH;")
                     && localFacade.isTerrenoMontanhaColina(cidade.getLocal().getTerreno())) {
                 //se em montanha/colina e com habilidade, entao garante minimo de 500
                 return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGH;"));
-            } else if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGM;")
+            }
+            if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGM;")
                     && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
                 return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGM;"));
-            } else if (produto.isMoney() && producao <= cidade.getNacao().getHabilidadeNacaoValor("0039")
+            }
+            if (cidade.getNacao().hasHabilidade(";NSW;") && cidade.getLocal().getClima() >= 5) {
+                //Summer Production: 50% production bonus in warm or better climate
+                return producao * cidade.getNacao().getHabilidadeValor(";NSW;") / 100;
+            }
+            if (produto.isMoney() && producao <= cidade.getNacao().getHabilidadeNacaoValor("0039")
                     && cidade.getNacao().getHabilidadesNacao().containsKey("0039")
                     && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
                 return cidade.getNacao().getHabilidadeNacaoValor("0039");
-            } else {
-                return producao;
             }
+            return producao;
         } catch (NullPointerException ex) {
             return producao;
         }
