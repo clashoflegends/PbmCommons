@@ -242,7 +242,13 @@ public class ImageManager implements Serializable {
                 "lom_despair.png",
                 "lom_korkithdodrak.png",
                 "lom_valethor.png",
-                "lom_kor.png"
+                "lom_kor.png",
+                "neutral2.png",
+                "neutral3.png",
+                "lom_wolf.png",
+                "lom_skulkrin.png",
+                "lom_icetrolls.png",
+                "lom_dragon.png"
             };
         } else {
             return new String[]{"neutral.png", "KingsCourt.gif", "Arryn.png", "Baratheon.gif", "Greyjoy.gif", "Lannister.gif",
