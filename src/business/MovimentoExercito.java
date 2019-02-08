@@ -27,12 +27,15 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     private boolean comida;
     private boolean moveMountain = true;
     private boolean cavalarias;
-    private boolean porAgua;
+    private int moveType = 0;
     private boolean evasivo;
     private int limiteMovimento;
     private final List<TipoTropa> tropas = new ArrayList<TipoTropa>();
     private boolean docas;
     private final ExercitoFacade ef = new ExercitoFacade();
+    public static final int BY_LAND = 0;
+    public static final int BY_WATER = 1;
+    public static final int BY_FIXED = 2;
 
     @Override
     public MovimentoExercito clone() throws CloneNotSupportedException {
@@ -48,6 +51,9 @@ public final class MovimentoExercito implements Serializable, Cloneable {
         if (isPorAgua()) {
             //por agua
             ret = getCustoMovimentacaoAgua();
+        } else if (isPorFixed()) {
+            //PC or fixed cost
+            ret = 1;
         } else {
             //por terra
             ret = getCustoMovimentacaoTerra();
@@ -136,18 +142,34 @@ public final class MovimentoExercito implements Serializable, Cloneable {
         this.cavalarias = cavalarias;
     }
 
+    public int getMoveType() {
+        return moveType;
+    }
+
+    public void setMoveType(int moveType) {
+        this.moveType = moveType;
+    }
+
     /**
      * @return the porAgua
      */
     public boolean isPorAgua() {
-        return porAgua;
+        return getMoveType() == MovimentoExercito.BY_WATER;
+    }
+
+    public boolean isPorFixed() {
+        return getMoveType() == MovimentoExercito.BY_FIXED;
     }
 
     /**
      * @param porAgua the porAgua to set
      */
     public void setPorAgua(boolean porAgua) {
-        this.porAgua = porAgua;
+        if (porAgua) {
+            setMoveType(MovimentoExercito.BY_WATER);
+        } else {
+            setMoveType(MovimentoExercito.BY_LAND);
+        }
     }
 
     /**
