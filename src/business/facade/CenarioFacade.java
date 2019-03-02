@@ -453,6 +453,8 @@ public class CenarioFacade implements Serializable {
             return cenario.getHabilidadeValor(";AM14;");
         } else if (cenario.hasHabilidade(";AM12;")) {
             return cenario.getHabilidadeValor(";AM12;");
+        } else if (cenario.hasHabilidade(";AM08;")) {
+            return cenario.getHabilidadeValor(";AM08;");
         } else {
             return 14;
         }

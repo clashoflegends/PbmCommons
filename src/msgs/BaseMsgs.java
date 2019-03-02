@@ -45,4 +45,5 @@ public final class BaseMsgs {
         {labels.getString("SUL-OESTE"), "so"},
         {labels.getString("OESTE"), "o"}
     };
+    public static final int[] dificuldadeBonus = {-35, -25, -10, 0, 10, 25, 25, 25}; //-10, -5, 0, 25
 }

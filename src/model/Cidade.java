@@ -15,7 +15,7 @@ import persistenceCommons.SettingsManager;
  *
  * @author gurgel
  */
-public class Cidade extends BaseModel implements IActor {
+public class Cidade extends BaseModel implements IActor, Cloneable {
 
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private Local local;
@@ -280,5 +280,16 @@ public class Cidade extends BaseModel implements IActor {
 
     public void setDefenseBonus(int bonusDefense) {
         //do nothing here. 
+    }
+
+    @Override
+    @SuppressWarnings("CloneDeclaresCloneNotSupported")
+    public Cidade clone() {
+        //attention: no deep copy implemented
+        try {
+            return (Cidade) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new UnsupportedOperationException(ex);
+        }
     }
 }

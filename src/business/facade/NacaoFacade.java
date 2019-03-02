@@ -594,4 +594,8 @@ public class NacaoFacade implements Serializable {
             return 0;
         }
     }
+
+    public int getBonusRelacionamento(Nacao nationBase, Nacao nationTarget) {
+        return BaseMsgs.dificuldadeBonus[nationBase.getRelacionamento(nationTarget) + 3];
+    }
 }

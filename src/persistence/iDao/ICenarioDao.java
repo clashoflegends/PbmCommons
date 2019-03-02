@@ -5,6 +5,7 @@
 package persistence.iDao;
 
 import model.Cenario;
+import model.Partida;
 import persistenceCommons.PersistenceException;
 
 /**
@@ -15,5 +16,14 @@ public interface ICenarioDao {
 
     public void clear();
 
-    public Cenario get(int idPartida) throws PersistenceException;
+    /**
+     * To be called from PbmDistiler<br>
+     * Also hides forbidden orders
+     *
+     * @param idPartida
+     * @return
+     * @throws PersistenceException
+     */
+    public Cenario get(Partida idPartida) throws PersistenceException;
+
 }

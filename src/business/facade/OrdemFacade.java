@@ -8,6 +8,7 @@ import baseLib.BaseModel;
 import business.converter.ConverterFactory;
 import business.interfaces.IActor;
 import business.services.ComparatorFactory;
+import business.services.TitleFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,6 @@ import model.Ordem;
 import model.Partida;
 import model.Personagem;
 import model.PersonagemOrdem;
-import msgs.TitleFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
@@ -269,7 +269,7 @@ public class OrdemFacade implements Serializable {
         if (requisitos.contains("comgrp") && !personagemFacade.isComandaGrupo(personagem)) {
             return false;
         }
-        if (requisitos.contains("nogrp") && !personagemFacade.isInGrupo(personagem)) {
+        if (requisitos.contains("nogrp") && personagemFacade.isInGrupo(personagem)) {
             return false;
         }
         if (requisitos.contains("noex") && personagemFacade.isInExercito(personagem)) {

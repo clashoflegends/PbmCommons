@@ -17,7 +17,7 @@ import model.Ordem;
 import model.Partida;
 import model.Terreno;
 import model.TipoTropa;
-import msgs.TitleFactory;
+import business.services.TitleFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.reports.SysReport;
@@ -76,7 +76,7 @@ public class RegrasReportDefault implements Serializable {
                 PathFactory.getDirName(getPartida()),
                 PathFactory.getFileNameRegras(getPartida()),
                 getPartida().getTurno(),
-                true);
+                !SettingsManager.getInstance().isDebug());
     }
 
     /**

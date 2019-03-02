@@ -14,6 +14,7 @@ import java.util.List;
 import model.Nacao;
 import model.Ordem;
 import model.Pelotao;
+import model.Personagem;
 import model.PersonagemOrdem;
 import model.Produto;
 import model.Terreno;
@@ -45,7 +46,15 @@ public class ComparatorFactory implements Serializable {
                 return ((Nacao) a).compareToByPv((Nacao) b);
             }
         });
+    }
 
+    public static void getComparatorNationSorter(List<Personagem> chars) {
+        Collections.sort(chars, new Comparator() {
+            @Override
+            public int compare(Object a, Object b) {
+                return ((Personagem) a).getNacao().compareTo(((Personagem) b).getNacao());
+            }
+        });
     }
 
     /**
@@ -92,7 +101,7 @@ public class ComparatorFactory implements Serializable {
      * @param terreno
      */
     private static void getComparatorCasualtiesPelotaoSorter(List<Pelotao> lista, int tatica, Terreno terreno, int partidaId) {
-        Collections.sort(lista, new ComparatorCasualtiesSorterNew(tatica, terreno));
+        Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
     }
 
     public static void getComparatorCasualtiesPelotaoSorter(List<Pelotao> lista, int tatica, Terreno terreno) {
@@ -107,11 +116,7 @@ public class ComparatorFactory implements Serializable {
      * @param terreno
      */
     public static void getComparatorCasualtiesTipoTropaSorter(List<TipoTropa> lista, int tatica, Terreno terreno, int partidaId) {
-        if (partidaId > 274 || partidaId == 110) {
-            Collections.sort(lista, new ComparatorCasualtiesSorterNew(tatica, terreno));
-        } else {
-            Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
-        }
+        Collections.sort(lista, new ComparatorCasualtiesSorter(tatica, terreno));
     }
 
     private static void getComparatorCasualtiesTipoTropaSorter(List<TipoTropa> lista, int tatica, Terreno terreno) {

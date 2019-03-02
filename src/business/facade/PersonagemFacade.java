@@ -355,8 +355,17 @@ public class PersonagemFacade implements Serializable {
     public boolean isInCidadeVassalo(Personagem personagem) {
         //cidade propria ou aliada
         try {
-            return (this.isInCidadePropria(personagem)
-                    || personagem.getLocal().getCidade().getNacao().getRelacionamento(personagem.getNacao()) == 3);
+            if (this.isInCidadePropria(personagem)) {
+                return true;
+            } else if (personagem.getLocal().getCidade().getNacao().getRelacionamento(personagem.getNacao()) == 3) {
+                return true;
+            } else {
+                if (personagem.getNacao().hasHabilidade(";PRA;")
+                        && personagem.getLocal().getCidade().getNacao().getRelacionamento(personagem.getNacao()) >= 2) {
+                    return true;
+                }
+            }
+            return false;
         } catch (NullPointerException ex) {
             return false;
         }
@@ -752,5 +761,42 @@ public class PersonagemFacade implements Serializable {
             ret += personagem.getPericiaNaturalTotal() * 20;
         }
         return ret;
+    }
+
+    public String getInfoShort(Personagem personagem) {
+        String ret = getPericiasShort(personagem);
+        if (this.isComandaEsquadra(personagem)) {
+            ret += " " + labels.getString("ESQUADRA");
+        } else if (this.isComandaExercito(personagem)) {
+            ret += " " + labels.getString("EXERCITO");
+        } else if (this.isComandaGrupo(personagem)) {
+            ret += " " + labels.getString("GRUPO");
+        }
+        return ret;
+    }
+
+    public String getPericiasShort(Personagem personagem) {
+        if (isMorto(personagem)) {
+            return labels.getString("MORTO");
+        }
+        String skills = "";
+        if (personagem.isComandante()) {
+            skills += " C" + personagem.getPericiaComandante();
+        }
+        if (personagem.isMago()) {
+            skills += " W" + personagem.getPericiaMago();
+        }
+        if (personagem.isEmissario()) {
+            skills += " D" + personagem.getPericiaEmissario();
+        }
+        if (personagem.isAgente()) {
+            skills += " R" + personagem.getPericiaAgente();
+        }
+        if (personagem.getPericiaFurtividade() > 0) {
+            skills += " S" + personagem.getPericiaFurtividade();
+        }
+        skills += " L" + personagem.getVida();
+        skills += " C" + personagem.getDuelo();
+        return skills;
     }
 }

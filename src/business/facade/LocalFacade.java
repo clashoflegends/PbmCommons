@@ -463,6 +463,10 @@ public final class LocalFacade implements Serializable {
         return local.hasHabilidade(";LFE;");
     }
 
+    public boolean isTerrainLandmarkSpent(Local local) {
+        return local.hasHabilidade(";LFT;");
+    }
+
     public List<Habilidade> getTerrainLandmark(Local local) {
         List<Habilidade> ret = new ArrayList<Habilidade>();
         for (Habilidade landmark : local.getHabilidades().values()) {
