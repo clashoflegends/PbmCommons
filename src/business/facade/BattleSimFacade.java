@@ -91,21 +91,19 @@ public class BattleSimFacade implements Serializable {
         int ret = 0;
         for (Pelotao pelotao : exercito.getPelotoes().values()) {
             if (naval == pelotao.getTipoTropa().isBarcos()) {
-                ret += getPlatoonDefense(pelotao, exercito.getTerreno(), exercito);
+                ret += getPlatoonDefense(exercito, pelotao);
             }
         }
         return ret;
     }
 
     //replaced getConstituicaoTotalLand
-    public int getArmyDefenseTotalLand(IExercito army, boolean hasResourceManagement) {
+    public int getArmyDefenseTotalLand(IExercito army) {
         int ret = 0;
         float total = 0F;
         for (Pelotao pelotao : army.getPelotoes().values()) {
             if (!pelotao.getTipoTropa().isBarcos()) {
-                total += getPlatoonDefense(pelotao, army.getLocal(), army.getNacao(),
-                        ef.isHero(army),
-                        hasResourceManagement);
+                total += getPlatoonDefense(army, pelotao);
             }
         }
         if (total > 0F) {
@@ -124,7 +122,7 @@ public class BattleSimFacade implements Serializable {
         * the local can change depending on the usage, but keeps terraina nd local in sync. 
         * NPC AI trying to decide where to attack.
          */
-        return getPlatoonAttack(pelotao, exercito, local, local.getTerreno());
+        return getPlatoonAttack(pelotao, exercito, local, exercito.getTerreno());
 
     }
 
@@ -159,6 +157,14 @@ public class BattleSimFacade implements Serializable {
                 } catch (NullPointerException ex) {
                 }
             }
+            if (exercito.getNacao().hasHabilidade(";PAB;") && !tpTropa.isBarcos()
+                    && lf.getDistanciaToCapital(exercito.getNacao(), local) <= 10) {
+                tropasValor = tropasValor * exercito.getNacao().getHabilidadeValor(";PAB;") / 100;
+            }
+            if (exercito.getNacao().hasHabilidade(";PABN;") && tpTropa.isBarcos()
+                    && lf.getDistanciaToCapital(exercito.getNacao(), local) <= 10) {
+                tropasValor = tropasValor * exercito.getNacao().getHabilidadeValor(";PABN;") / 100;
+            }
             return (tropasValor);
         } catch (NullPointerException ex) {
             //nao tem a tropa, retorna forca 0
@@ -166,67 +172,48 @@ public class BattleSimFacade implements Serializable {
         }
     }
 
-    private float getTroopDefense(TipoTropa tpTropa, Terreno terreno, IExercito exercito) {
+    private float getTroopDefense(TipoTropa tpTropa, Terreno terreno) {
         try {
-            float defesa = tpTropa.getDefesaTerreno().get(terreno);
-            if (tpTropa.isHalfDefenseOutAlliedCities() && lf.isCidade(exercito.getLocal())) {
-                //D = defesa eh metade do ataque
-                Nacao nacaoCidade = exercito.getLocal().getCidade().getNacao();
-                if (!exercito.getNacao().equals(nacaoCidade) && !nf.isAliado(exercito.getNacao(), nacaoCidade)) {
-                    defesa = defesa / 2f;
-                }
-            }
-            return defesa;
+            return tpTropa.getDefesaTerreno().get(terreno);
         } catch (NullPointerException ex) {
             return 0;
         }
     }
 
-    //FIXME: merge with above
-    private float getTroopDefense(TipoTropa tpTropa, Local local, Nacao nacao) {
-        try {
-            float defesa = tpTropa.getDefesaTerreno().get(local.getTerreno());
-            if (tpTropa.isHalfDefenseOutAlliedCities()) {
-                //D = defesa eh metade do ataque
-                try {
-                    final Nacao nacaoCidade = local.getCidade().getNacao();
-                    if (!nacao.equals(nacaoCidade) && !nacao.isAmigo(nacaoCidade)) {
-                        defesa = defesa / 2f;
-                    }
-                } catch (NullPointerException e) {
-                    defesa = defesa / 2f;
+    public float getPlatoonDefense(IExercito army, Pelotao pelotao) {
+        final TipoTropa tpTropa = pelotao.getTipoTropa();
+        float vlConstituicao = getTroopDefense(tpTropa, army.getTerreno());
+        //D = defesa eh metade do ataque outside allied or owned cities
+        if (tpTropa.isHalfDefenseOutAlliedCities()) {
+            try {
+                final Nacao nacaoCidade = army.getLocal().getCidade().getNacao();
+                if (!army.getNacao().equals(nacaoCidade) && !nf.isAliado(army.getNacao(), nacaoCidade)) {
+                    vlConstituicao = vlConstituicao / 2f;
                 }
+            } catch (NullPointerException e) {
+                vlConstituicao = vlConstituicao / 2f;
             }
-            return defesa;
-        } catch (NullPointerException e) {
-            //nao tem a tropa, retorna forca 0
-            return 0;
         }
-    }
+        //heroes leading army have bonuses
+        if (ef.isHero(army) && tpTropa.hasHabilidade(";TAH;")) {
+            vlConstituicao += vlConstituicao * tpTropa.getHabilidadeValor(";TAH;") / 100;
+        }
+        if (army.getNacao().hasHabilidade(";PDB;") && !tpTropa.isBarcos()
+                && lf.getDistanciaToCapital(army.getNacao(), army.getLocal()) <= 10) {
+            vlConstituicao += vlConstituicao * army.getNacao().getHabilidadeValor(";PDB;") / 100;
+        }
+        if (army.getNacao().hasHabilidade(";PDBN;") && tpTropa.isBarcos()
+                && lf.getDistanciaToCapital(army.getNacao(), army.getLocal()) <= 10) {
+            vlConstituicao += vlConstituicao * army.getNacao().getHabilidadeValor(";PDBN;") / 100;
+        }
 
-    public float getPlatoonDefense(Pelotao pelotao, Local local, Nacao nacao, boolean heroCommander, boolean gameHasResources) {
-        float vlConstituicao = getTroopDefense(pelotao.getTipoTropa(), local, nacao);
-        if (heroCommander && pelotao.getTipoTropa().hasHabilidade(";TAH;")) {
-            vlConstituicao += vlConstituicao * pelotao.getTipoTropa().getHabilidadeValor(";TAH;") / 100;
-        }
         float vlArmadura;
-        if (gameHasResources) {
+        if (army.isGameHasResourceManagement()) {
             vlArmadura = (float) pelotao.getModDefesa(); //GOT
         } else {
             vlArmadura = pelotao.getTreino(); //WDO
         }
         return pelotao.getQtd() * vlConstituicao * (1F + vlArmadura / 100F);
-    }
-
-    //FIXME: REfactor to merge with the other getPlatoonDefense(Pelotao pelotao, Local local, Nacao nacao, boolean heroCommander, boolean gameHasResources) 
-    public float getPlatoonDefense(Pelotao pelotao, Terreno terreno, IExercito exercito) {
-        float vlConstituicao = getTroopDefense(pelotao.getTipoTropa(), terreno, exercito);
-        float vlArmadura = (float) pelotao.getModDefesa();
-        return pelotao.getQtd() * vlConstituicao * (1F + vlArmadura / 100F);
-    }
-
-    public float getPlatoonDefense(Pelotao pelotao, IExercito exercito) {
-        return getPlatoonDefense(pelotao, exercito.getTerreno(), exercito);
     }
 
     //City methods start here

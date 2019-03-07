@@ -40,6 +40,8 @@ public interface IExercito {
 
     public boolean isGarrison();
 
+    public boolean isGameHasResourceManagement();
+
     public void doDisband();
 
     public void doDisbandWithMsg();

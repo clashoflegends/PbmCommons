@@ -294,6 +294,24 @@ public final class LocalFacade implements Serializable {
         }
     }
 
+    /**
+     * Return highValue if there isn't a capital
+     *
+     * @param nation
+     * @param destino
+     * @return
+     */
+    public int getDistanciaToCapital(Nacao nation, Local destino) {
+        Local capital;
+        try {
+            capital = nation.getCapital().getLocal();
+        } catch (NullPointerException e) {
+            //Return highValue if there isn't a capital
+            return 9999;
+        }
+        return this.getDistancia(capital, destino);
+    }
+
     public HashMap<Local, Integer> getLocalRange(Local local, int range, boolean borderOnly, SortedMap<String, Local> listLocais) {
         HashMap<Local, Integer> list = new HashMap<Local, Integer>();
         for (Local target : listLocais.values()) {

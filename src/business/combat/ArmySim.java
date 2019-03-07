@@ -212,4 +212,10 @@ public class ArmySim extends BaseModel implements IExercito {
     public void setCombatDamageClear() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public boolean isGameHasResourceManagement() {
+        //FIXME: How to know if the scenario has resource management?
+        return true;
+    }
 }

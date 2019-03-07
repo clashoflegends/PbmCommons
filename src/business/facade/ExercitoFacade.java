@@ -9,6 +9,7 @@ import business.MovimentoExercito;
 import business.combat.ArmySim;
 import business.interfaces.IExercito;
 import business.services.ComparatorFactory;
+import business.services.TitleFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +26,6 @@ import model.Personagem;
 import model.Terreno;
 import model.TipoTropa;
 import msgs.BaseMsgs;
-import business.services.TitleFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
@@ -511,7 +511,7 @@ public class ExercitoFacade implements Serializable {
     }
 
     public int getDefesaPelotao(Pelotao pelotao, IExercito exercito) {
-        return (int) battleSimFacade.getPlatoonDefense(pelotao, exercito);
+        return (int) battleSimFacade.getPlatoonDefense(exercito, pelotao);
     }
 
     public int getAtaqueExercito(IExercito exercito, boolean naval) {
