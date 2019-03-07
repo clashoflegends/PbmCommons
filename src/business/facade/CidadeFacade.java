@@ -41,8 +41,35 @@ public class CidadeFacade implements Serializable {
     private static final BattleSimFacade combatSimFacade = new BattleSimFacade();
     public static final int[] ForneceComida = {0, 100, 200, 1000, 2500, 5000};
 
-    public int getArrecadacaoImpostos(Cidade cidade) {
-        return cidade.getArrecadacaoImpostos();
+    public int getArrecadacaoImpostos(Cidade city) {
+        try {
+            int base = 2500;
+            if (city.getNacao().hasHabilidade(";NSP;") && city.getLocal().getTerreno().isPlanicie()) {
+                base = base * (100 + city.getNacao().getHabilidadeValor(";NSP;")) / 100;
+            }
+            if (city.getNacao().hasHabilidade(";NST;")) {
+                base = base * (100 + city.getNacao().getHabilidadeValor(";NST;")) / 100;
+            }
+            if (city.getNacao().hasHabilidade(";NTL;")) {
+                base = base * (100 + city.getNacao().getHabilidadeValor(";NTL;")) / 100;
+            }
+            if (city.getNacao().hasHabilidade(";NTH;") && isHeroPresent(city)) {
+                base = base * (100 + city.getNacao().getHabilidadeValor(";NTH;")) / 100;
+            }
+            return (city.getNacao().getImpostos() * base * (Math.max(city.getTamanho() - 1, 0))) / 100;
+        } catch (NullPointerException ex) {
+            return 0;
+        }
+    }
+
+    private boolean isHeroPresent(Cidade city) {
+        Nacao nationCity = city.getNacao();
+        for (Personagem pc : city.getLocal().getPersonagens().values()) {
+            if (pc.getNacao() == nationCity) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getCoordenadas(Cidade cidade) {

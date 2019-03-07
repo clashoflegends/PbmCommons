@@ -81,7 +81,7 @@ public class NacaoFacade implements Serializable {
         int ret = 0;
         for (Cidade cidade : nacao.getCidades()) {
             if (nacao == cidade.getNacao()) {
-                ret += cidade.getArrecadacaoImpostos();
+                ret += cidadeFacade.getArrecadacaoImpostos(cidade);
             }
         }
         return ret;
