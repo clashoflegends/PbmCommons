@@ -158,12 +158,13 @@ public class BattleSimFacade implements Serializable {
                 }
             }
             if (exercito.getNacao().hasHabilidade(";PAB;") && !tpTropa.isBarcos()
-                    && lf.getDistanciaToCapital(exercito.getNacao(), local) <= 10) {
-                tropasValor = tropasValor * exercito.getNacao().getHabilidadeValor(";PAB;") / 100;
+                    && lf.getDistanciaToCapital(exercito.getNacao(), local)
+                    <= exercito.getNacao().getHabilidadeValor(";PAB;")) {
+                tropasValor = tropasValor * 0.15f;
             }
             if (exercito.getNacao().hasHabilidade(";PABN;") && tpTropa.isBarcos()
-                    && lf.getDistanciaToCapital(exercito.getNacao(), local) <= 10) {
-                tropasValor = tropasValor * exercito.getNacao().getHabilidadeValor(";PABN;") / 100;
+                    && lf.getDistanciaToCapital(exercito.getNacao(), local) <= exercito.getNacao().getHabilidadeValor(";PABN;")) {
+                tropasValor = tropasValor * 0.15f;
             }
             return (tropasValor);
         } catch (NullPointerException ex) {
@@ -199,12 +200,12 @@ public class BattleSimFacade implements Serializable {
             vlConstituicao += vlConstituicao * tpTropa.getHabilidadeValor(";TAH;") / 100;
         }
         if (army.getNacao().hasHabilidade(";PDB;") && !tpTropa.isBarcos()
-                && lf.getDistanciaToCapital(army.getNacao(), army.getLocal()) <= 10) {
-            vlConstituicao += vlConstituicao * army.getNacao().getHabilidadeValor(";PDB;") / 100;
+                && lf.getDistanciaToCapital(army.getNacao(), army.getLocal()) <= army.getNacao().getHabilidadeValor(";PDB;")) {
+            vlConstituicao += vlConstituicao * 0.2f;
         }
         if (army.getNacao().hasHabilidade(";PDBN;") && tpTropa.isBarcos()
-                && lf.getDistanciaToCapital(army.getNacao(), army.getLocal()) <= 10) {
-            vlConstituicao += vlConstituicao * army.getNacao().getHabilidadeValor(";PDBN;") / 100;
+                && lf.getDistanciaToCapital(army.getNacao(), army.getLocal()) <= army.getNacao().getHabilidadeValor(";PDBN;")) {
+            vlConstituicao += vlConstituicao * 0.2f;
         }
 
         float vlArmadura;
