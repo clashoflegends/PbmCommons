@@ -39,7 +39,6 @@ public class CidadeFacade implements Serializable {
     private static final LocalFacade localFacade = new LocalFacade();
     private static final CenarioFacade cenarioFacade = new CenarioFacade();
     private static final BattleSimFacade combatSimFacade = new BattleSimFacade();
-    private final CidadeFacade cidadeFacade = new CidadeFacade();
     public static final int[] ForneceComida = {0, 100, 200, 1000, 2500, 5000};
 
     public int getArrecadacaoImpostos(Cidade city) {
@@ -281,7 +280,7 @@ public class CidadeFacade implements Serializable {
                 //Summer Production: 50% production bonus in warm or better climate
                 producao = producao * cidade.getNacao().getHabilidadeValor(";NSW;") / 100;
             }
-            if (cidade.getNacao().hasHabilidade(";NTR;") && cidadeFacade.isHeroPresent(cidade)) {
+            if (cidade.getNacao().hasHabilidade(";NTR;") && isHeroPresent(cidade)) {
                 //Summer Production: 50% production bonus in warm or better climate
                 producao = producao * cidade.getNacao().getHabilidadeValor(";NTR;") / 100;
             }
