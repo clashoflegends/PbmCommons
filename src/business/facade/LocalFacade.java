@@ -482,7 +482,7 @@ public final class LocalFacade implements Serializable {
     }
 
     public boolean isTerrainLandmarkSpent(Local local) {
-        return local.hasHabilidade(";LFT;");
+        return local.hasHabilidade(";LFX;");
     }
 
     public List<Habilidade> getTerrainLandmark(Local local) {
