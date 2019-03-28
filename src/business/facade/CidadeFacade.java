@@ -39,6 +39,7 @@ public class CidadeFacade implements Serializable {
     private static final LocalFacade localFacade = new LocalFacade();
     private static final CenarioFacade cenarioFacade = new CenarioFacade();
     private static final BattleSimFacade combatSimFacade = new BattleSimFacade();
+    private final CidadeFacade cidadeFacade = new CidadeFacade();
     public static final int[] ForneceComida = {0, 100, 200, 1000, 2500, 5000};
 
     public int getArrecadacaoImpostos(Cidade city) {
@@ -62,7 +63,7 @@ public class CidadeFacade implements Serializable {
         }
     }
 
-    private boolean isHeroPresent(Cidade city) {
+    public boolean isHeroPresent(Cidade city) {
         Nacao nationCity = city.getNacao();
         for (Personagem pc : city.getLocal().getPersonagens().values()) {
             if (pc.getNacao() == nationCity) {
@@ -275,27 +276,30 @@ public class CidadeFacade implements Serializable {
         try {
             if (cidade.getNacao().hasHabilidade(";NWP;") && produto.isWood()) {
                 producao += producao * cidade.getNacao().getHabilidadeValor(";NWP;") / 100;
-                return producao;
-            }
-            if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGH;")
-                    && localFacade.isTerrenoMontanhaColina(cidade.getLocal().getTerreno())) {
-                //se em montanha/colina e com habilidade, entao garante minimo de 500
-                return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGH;"));
-            }
-            if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGM;")
-                    && cidade.getNacao().getRaca() == cidade.getRaca()) {
-                //se mesma cultura e com habilidade, entao garante minimo de 250
-                return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGM;"));
             }
             if (cidade.getNacao().hasHabilidade(";NSW;") && cidade.getLocal().getClima() >= 5) {
                 //Summer Production: 50% production bonus in warm or better climate
-                return producao * cidade.getNacao().getHabilidadeValor(";NSW;") / 100;
+                producao = producao * cidade.getNacao().getHabilidadeValor(";NSW;") / 100;
+            }
+            if (cidade.getNacao().hasHabilidade(";NTR;") && cidadeFacade.isHeroPresent(cidade)) {
+                //Summer Production: 50% production bonus in warm or better climate
+                producao = producao * cidade.getNacao().getHabilidadeValor(";NTR;") / 100;
             }
             if (produto.isMoney() && producao <= cidade.getNacao().getHabilidadeNacaoValor("0039")
                     && cidade.getNacao().getHabilidadesNacao().containsKey("0039")
                     && cidade.getNacao().getRaca() == cidade.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
-                return cidade.getNacao().getHabilidadeNacaoValor("0039");
+                producao = cidade.getNacao().getHabilidadeNacaoValor("0039");
+            }
+            if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGH;")
+                    && localFacade.isTerrenoMontanhaColina(cidade.getLocal().getTerreno())) {
+                //se em montanha/colina e com habilidade, entao garante minimo de 500
+                producao = Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGH;"));
+            }
+            if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGM;")
+                    && cidade.getNacao().getRaca() == cidade.getRaca()) {
+                //se mesma cultura e com habilidade, entao garante minimo de 250
+                producao = Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGM;"));
             }
             return producao;
         } catch (NullPointerException ex) {
