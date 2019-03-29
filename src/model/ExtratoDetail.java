@@ -10,7 +10,7 @@ import java.io.Serializable;
  *
  * @author jmoura
  */
-public class ExtratoDetail implements Serializable {
+public final class ExtratoDetail implements Serializable {
 
     private int sequencial;
     private int valor;
