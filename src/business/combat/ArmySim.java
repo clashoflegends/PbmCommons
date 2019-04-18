@@ -37,10 +37,11 @@ public class ArmySim extends BaseModel implements IExercito {
     private SortedMap<String, Pelotao> platoons = new TreeMap();
     private List<TipoTropa> troops = new ArrayList<TipoTropa>();
 
-    public ArmySim(String name, Terreno terrain) {
+    public ArmySim(String name, Terreno terrain, Nacao nation) {
         this.setNome(name);
         this.comandanteNome = name;
         this.terreno = terrain;
+        this.nacao = nation;
         //FIXME: needs to receive Local for the Battle to be resolved. Deal with this later.
     }
 
