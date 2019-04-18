@@ -503,6 +503,10 @@ public final class LocalFacade implements Serializable {
         return landmarkImage.keySet();
     }
 
+    public boolean remTerrainLandmark(Local local) {
+        return local.remTerrainLandmark();
+    }
+
     public void addHabilidade(Local local, Habilidade hab) {
         local.addHabilidade(hab);
     }
