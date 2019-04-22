@@ -124,7 +124,7 @@ public class PersonagemFacade implements Serializable {
     }
 
     public boolean isNpc(Personagem personagem) {
-        return personagem.isNpc();
+        return personagem.isNpc() || nacaoFacade.isNpc(personagem);
     }
 
     public boolean isHero(Personagem personagem) {

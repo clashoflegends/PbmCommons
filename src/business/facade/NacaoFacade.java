@@ -598,4 +598,9 @@ public class NacaoFacade implements Serializable {
     public int getBonusRelacionamento(Nacao nationBase, Nacao nationTarget) {
         return BaseMsgs.dificuldadeBonus[nationBase.getRelacionamento(nationTarget) + 3];
     }
+
+    public boolean isNpc(Personagem personagem) {
+        //FIXME: look for hability to indicate
+        return personagem.getNacao().getOwner().getId() == 1 && personagem.getNacao().getNome().equals("Barbarians");
+    }
 }
