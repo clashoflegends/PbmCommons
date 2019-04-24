@@ -18,10 +18,6 @@ public class ComparatorPersonagemOrdemSorter implements Comparator {
 
     @Override
     public int compare(Object a, Object b) {
-        try {
-            return ((PersonagemOrdem) a).compareToByNumber((PersonagemOrdem) b);
-        } catch (Exception e) {
-            return ((PersonagemOrdem) a).compareToByNumber((PersonagemOrdem) b);
-        }
+        return ((PersonagemOrdem) a).compareToByNumber((PersonagemOrdem) b);
     }
 }
