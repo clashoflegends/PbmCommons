@@ -63,7 +63,7 @@ public class ComparatorFactory implements Serializable {
      * @param lista
      */
     public static void getComparatorPersonagemOrdemSorter(List<PersonagemOrdem> lista) {
-        Collections.sort(lista, new ComparatorPersonagemOrdemSorter());
+            Collections.sort(lista, new ComparatorPersonagemOrdemSorter());
     }
 
     /**
