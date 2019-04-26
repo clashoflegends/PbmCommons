@@ -601,6 +601,11 @@ public class NacaoFacade implements Serializable {
 
     public boolean isNpc(Personagem personagem) {
         //FIXME: look for hability to indicate
-        return personagem.getNacao().getOwner().getId() == 1 && personagem.getNacao().getNome().equals("Barbarians");
+        try {
+            return personagem.getNacao().getOwner().getId() == 1 && personagem.getNacao().getNome().equals("Barbarians");
+        } catch (NullPointerException e) {
+            //Jogador not loaded. Not to bleed into other players files like DM/GB
+            return false;
+        }
     }
 }
