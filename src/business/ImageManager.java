@@ -143,7 +143,6 @@ public class ImageManager implements Serializable {
         for (int ii = 0; ii < exercitos.length; ii++) {
             try {
                 desenho = getForm().getToolkit().getImage(getClass().getResource("/images/armies/" + exercitos[ii]));
-                log.info(String.format("Army Img: %s %s", ii, exercitos[ii]));
                 mt.addImage(desenho, mti++);
                 this.desenhoExercito[ii] = desenho;
             } catch (NullPointerException ex) {
@@ -214,26 +213,26 @@ public class ImageManager implements Serializable {
                 "Jofrey.png"
             };
         } else if (getCenario().isWdo()) {
-            return new String[]{"neutral.png", "wdo_carndun.gif", "wdo_gram.png",
-                "wdo_gundabad.png", "wdo_highpass.gif", "wdo_moria.gif", "wdo_methedras.gif",
-                "wdo_morannon.png", "wdo_dolguldur.gif", "wdo_wargriders.gif", "wdo_grey.png", "wdo_rangers.gif",
-                "wdo_rivendell.png",
-                "wdo_beornings.png",
-                "wdo_silvan.png",
-                "wdo_menlake.jpg",
-                "wdo_longbeard.png",
-                "wdo_broadbeams.png",
-                "wdo_stonefist.png",
-                "wdo_ironhelm.gif",
-                "wdo_blackhammer.png",
-                "wdo_dorwinion.gif",
-                "wdo_halfling.png",
-                "wdo_lindon.png",
-                "wdo_lorien.png",
-                "wdo_lossoth.png", "wdo_northmen.png", "wdo_rohan.png", "wdo_woodmen.png",
-                "wdo_woses.gif", "wdo_baltoch.gif", "wdo_druedain.gif", "wdo_forochel.gif",
-                "wdo_mistygoblin.gif", "wdo_northorcs.gif", "wdo_raiders.gif", "wdo_variags.gif",
-                "wdo_wainriders.gif", "wdo_neutral1.gif"
+            return new String[]{"neutral.png", "wdor_carndun.gif", "wdor_gram.gif",
+                "wdor_gundabad.png", "wdor_highpass.gif", "wdor_moria.png", "wdor_methedras.gif",
+                "wdor_morannon.png", "wdor_dolguldur.png", "wdor_wargriders.gif", "wdor_grey.png", "wdob_rangers.png",
+                "wdob_rivendell.png",
+                "wdob_beornings.png",
+                "wdob_silvan.png",
+                "wdob_menlake.png",
+                "wdob_longbeard.gif",
+                "wdob_broadbeams.png",
+                "wdob_stonefist.png",
+                "wdob_ironhelm.png",
+                "wdob_blackhammer.png",
+                "wdob_dorwinion.gif",
+                "wdob_halfling.png",
+                "wdob_lindon.png",
+                "wdob_lorien.gif",
+                "wdob_lossoth.png", "wdob_northmen.png", "wdob_rohan.gif", "wdob_woodmen.png",
+                "wdob_woses.png", "wdor_baltoch.gif", "wdor_druedain.gif", "wdor_forochel.gif",
+                "wdor_mistygoblin.gif", "wdor_northorcs.png", "wdor_raiders.gif", "wdor_variags.gif",
+                "wdor_wainriders.gif", "wdon_neutral1.gif"
             };
         } else if (getCenario().isLom()) {
             return new String[]{"neutral.png",
