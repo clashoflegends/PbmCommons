@@ -159,7 +159,7 @@ public class ImageManager implements Serializable {
         desenhoExercitos = new Image[exercitos.length];
         for (int ii = 0; ii < exercitos.length; ii++) {
             desenho = getForm().getToolkit().getImage(getClass().getResource("/images/armies/" + exercitos[ii]));
-            log.info(String.format("ArmyImg: %s %s", ii, exercitos[ii]));
+//            log.info(String.format("ArmyImg: %s %s", ii, exercitos[ii]));
             mt.addImage(desenho, mti++);
             desenhoExercitos[ii] = desenho;
         }

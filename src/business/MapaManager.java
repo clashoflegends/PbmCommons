@@ -749,7 +749,7 @@ public class MapaManager implements Serializable {
             }
             big.drawImage(img, x, y, form);
             big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + img.getWidth(form), y + 2 + img.getHeight(form) / 2);
-            log.info(String.format("Legenda:%s %s %s", legendaCounter-1, legendas[legendaCounter], labels.getString(legendas[legendaCounter])));
+//            log.info(String.format("Legenda:%s %s %s", legendaCounter-1, legendas[legendaCounter], labels.getString(legendas[legendaCounter])));
             y += img.getWidth(form) + gap;
         }
 
