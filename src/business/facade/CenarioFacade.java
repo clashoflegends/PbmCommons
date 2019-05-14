@@ -289,6 +289,17 @@ public class CenarioFacade implements Serializable {
 
     }
 
+    public List<TipoTropa> getTipoTropasBasic(Cenario cenario) {
+        final List<TipoTropa> ret = new ArrayList<TipoTropa>(cenario.getTipoTropas().size());
+        for (TipoTropa troop : cenario.getTipoTropas().values()) {
+            if (!troop.isBasicType()) {
+                continue;
+            }
+            ret.add(troop);
+        }
+        return ret;
+    }
+
     public Collection<TipoTropa> getTipoTropas(Cenario cenario) {
         return cenario.getTipoTropas().values();
     }
