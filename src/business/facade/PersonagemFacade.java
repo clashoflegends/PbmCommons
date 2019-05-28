@@ -64,9 +64,8 @@ public class PersonagemFacade implements Serializable {
     public Cidade getCidade(Personagem personagem) {
         Cidade cidade = null;
         if (isLocalConhecido(personagem)) {
-            LocalFacade loc = new LocalFacade();
-            if (loc.isCidade(personagem.getLocal(), this.getNacao(personagem))) {
-                cidade = loc.getCidade(personagem.getLocal());
+            if (localFacade.isCidade(personagem.getLocal(), this.getNacao(personagem))) {
+                cidade = localFacade.getCidade(personagem.getLocal());
             }
         }
         return cidade;
