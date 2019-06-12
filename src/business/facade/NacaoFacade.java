@@ -608,4 +608,30 @@ public class NacaoFacade implements Serializable {
             return false;
         }
     }
+
+    public int getCidadeRecruitingLimit(Nacao nation, String nome, Cenario cenario) {
+        if (cenario.isWdo()) {
+            //assume 100 for WDO
+            return 100;
+        }
+        return getCidadeTamanho(nation, nome) * 100;
+    }
+
+    public int getCidadeTamanho(Nacao nation, String nome) {
+        for (Cidade city : nation.getCidades()) {
+            if (city.getNome().equals(nome)) {
+                return city.getTamanho();
+            }
+        }
+        for (Personagem pers : nation.getPersonagens()) {
+            if (pers.getNome().equals(nome)) {
+                try {
+                    return pers.getLocal().getCidade().getTamanho();
+                } catch (NullPointerException e) {
+                    return 0;
+                }
+            }
+        }
+        return 0;
+    }
 }

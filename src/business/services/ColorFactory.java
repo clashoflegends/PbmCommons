@@ -139,14 +139,23 @@ public class ColorFactory implements Serializable {
         ImageFilter filter = new RGBImageFilter() {
             @Override
             public final int filterRGB(int x, int y, int rgb) {
-                if (rgb == -197116) {     // "recheio"
-                    rgb = (new Color(nacaoCor.getRed(), nacaoCor.getGreen(), nacaoCor.getBlue(), 255)).getRGB();
+                switch (rgb) {
+                    case -197116:
+                        // "recheio"
+                        rgb = (new Color(nacaoCor.getRed(), nacaoCor.getGreen(), nacaoCor.getBlue(), 255)).getRGB();
 //                    rgb = nacaoCor.getRGB();
-                } else if (rgb == -16514556) {  // borda
-                    rgb = nacaoBorder.getRGB();
-                } else if (rgb == 16515588) { // fundo
-                    //Color col = new Color(255, 0, 0);
-                    rgb = (new Color(nacaoCor.getRed(), nacaoCor.getGreen(), nacaoCor.getBlue(), 0)).getRGB();
+                        break;
+                    case -16514556:
+                        // borda
+                        rgb = nacaoBorder.getRGB();
+                        break;
+                    case 16515588:
+                        // fundo
+                        //Color col = new Color(255, 0, 0);
+                        rgb = (new Color(nacaoCor.getRed(), nacaoCor.getGreen(), nacaoCor.getBlue(), 0)).getRGB();
+                        break;
+                    default:
+                        break;
                 }
                 return rgb;
             }

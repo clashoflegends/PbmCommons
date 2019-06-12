@@ -8,7 +8,6 @@ import business.facade.AcaoFacade;
 import business.facade.CenarioFacade;
 import business.facade.ExercitoFacade;
 import business.facade.FeiticoFacade;
-import business.facade.PersonagemFacade;
 import business.interfaces.IExercito;
 import java.io.Serializable;
 import model.Exercito;
@@ -26,7 +25,6 @@ import persistenceCommons.SettingsManager;
 public class TitleFactory implements Serializable {
 
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
-    private static final PersonagemFacade personagemFacade = new PersonagemFacade();
     private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
     private static final AcaoFacade acaoFacade = new AcaoFacade();
     private static final String[] tipoPersonagem = {labels.getString("QUALQUER"), labels.getString("COMANDANTE"),
