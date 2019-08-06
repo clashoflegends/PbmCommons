@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import model.Cenario;
+import model.Cidade;
 import model.Habilidade;
 import model.Local;
 import model.Nacao;
@@ -104,6 +105,9 @@ public class AcaoFacade implements Serializable {
                 return qtTroops * vlCost;
             } else if (order.getOrdem().getCodigo().equals("550")) {
                 return (nacaoFacade.getCidadeTamanho(nation, order.getNome()) + 1) * 2000;
+            } else if (order.getOrdem().getCodigo().equals("494")) {
+                final Cidade city = nacaoFacade.getCidade(nation, order.getNome());
+                return nacaoFacade.getCidadeFortificacaoCusto(city);
             } else {
                 return order.getOrdem().getCusto();
             }

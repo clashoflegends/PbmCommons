@@ -634,4 +634,41 @@ public class NacaoFacade implements Serializable {
         }
         return 0;
     }
+
+    public Cidade getCidade(Nacao nation, String nome) {
+        for (Cidade city : nation.getCidades()) {
+            if (city.getNome().equals(nome)) {
+                return city;
+            }
+        }
+        for (Personagem pers : nation.getPersonagens()) {
+            if (!pers.getNome().equals(nome)) {
+                //not this one
+                continue;
+            }
+            try {
+                return pers.getLocal().getCidade();
+            } catch (NullPointerException e) {
+                //trouble in paradise; how can we find the city?
+                return null;
+            }
+        }
+        //trouble in paradise; how can we find the city?
+        return null;
+    }
+
+    public int getCidadeFortificacaoCusto(Cidade city) {
+        //TODO: add nation powers for discounts and stuff
+        final int[] custo = {1000, 3000, 5000, 8000, 12000};
+        int ret;
+        try {
+            ret = custo[city.getFortificacao()];
+        } catch (IndexOutOfBoundsException ex) {
+            ret = -1;
+        }
+        if (city.getNacao().hasHabilidade(";NFG;")) {
+            ret = ret * city.getNacao().getHabilidadeValor(";NFG;") / 100;
+        }
+        return ret;
+    }
 }
