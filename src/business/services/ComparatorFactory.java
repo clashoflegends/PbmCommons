@@ -63,7 +63,13 @@ public class ComparatorFactory implements Serializable {
      * @param lista
      */
     public static void getComparatorPersonagemOrdemSorter(List<PersonagemOrdem> lista) {
-        Collections.sort(lista, new ComparatorPersonagemOrdemSorter());
+        try {
+            Collections.sort(lista, new ComparatorPersonagemOrdemSorter());
+        } catch (IllegalArgumentException e) {
+            //FIXME: Comparison method violates its general contract!
+            log.error("Comparison method for PersonagemOrder violates its general contract!", e);
+            //don't sort. 
+        }
     }
 
     /**

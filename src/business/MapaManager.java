@@ -13,6 +13,7 @@ import business.facade.ExercitoFacade;
 import business.facade.JogadorFacade;
 import business.facade.LocalFacade;
 import business.facade.PersonagemFacade;
+import business.services.ColorFactory;
 import business.services.TagManager;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -45,7 +46,6 @@ import model.Local;
 import model.Nacao;
 import model.Personagem;
 import model.PersonagemOrdem;
-import business.services.ColorFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
@@ -337,6 +337,9 @@ public class MapaManager implements Serializable {
         lista = localFacade.getPersonagens(local).values().iterator();
         while (lista.hasNext()) {
             Personagem pers = (Personagem) lista.next();
+            if (pers.getNome().equals("Silverwing")) {
+                log.debug("AKI!");
+            }
             if (personagemFacade.isNpc(pers)) {
                 int dx = 04 + 8;
                 int dy = 22 - 3;
@@ -746,6 +749,7 @@ public class MapaManager implements Serializable {
             }
             big.drawImage(img, x, y, form);
             big.drawString(labels.getString(legendas[legendaCounter++]), x + gap + img.getWidth(form), y + 2 + img.getHeight(form) / 2);
+//            log.info(String.format("Legenda:%s %s %s", legendaCounter-1, legendas[legendaCounter], labels.getString(legendas[legendaCounter])));
             y += img.getWidth(form) + gap;
         }
 

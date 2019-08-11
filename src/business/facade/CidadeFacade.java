@@ -41,8 +41,41 @@ public class CidadeFacade implements Serializable {
     private static final BattleSimFacade combatSimFacade = new BattleSimFacade();
     public static final int[] ForneceComida = {0, 100, 200, 1000, 2500, 5000};
 
-    public int getArrecadacaoImpostos(Cidade cidade) {
-        return cidade.getArrecadacaoImpostos();
+    public int getArrecadacaoImpostos(Cidade city) {
+        try {
+            int base = 2500;
+            if (city.getNacao().hasHabilidade(";NSP;") && city.getLocal().getTerreno().isPlanicie()) {
+                base = base * (100 + city.getNacao().getHabilidadeValor(";NSP;")) / 100;
+            }
+            if (city.getNacao().hasHabilidade(";NST;")) {
+                base = base * (100 + city.getNacao().getHabilidadeValor(";NST;")) / 100;
+            }
+            if (city.getNacao().hasHabilidade(";NTL;")) {
+                base = base * (100 + city.getNacao().getHabilidadeValor(";NTL;")) / 100;
+            }
+            if (city.getNacao().hasHabilidade(";NTH;") && isHeroPresent(city)) {
+                base = base * (100 + city.getNacao().getHabilidadeValor(";NTH;")) / 100;
+            }
+            return (city.getNacao().getImpostos() * base * (Math.max(city.getTamanho() - 1, 0))) / 100;
+        } catch (NullPointerException ex) {
+            return 0;
+        }
+    }
+
+    public boolean isHeroPresent(Cidade city) {
+        Nacao nationCity = city.getNacao();
+        for (Personagem pc : city.getLocal().getPersonagens().values()) {
+            if (pc.getNacao() != nationCity) {
+                //not same nation
+                continue;
+            }
+            if (!pc.isHero()) {
+                //not hero
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
 
     public String getCoordenadas(Cidade cidade) {
@@ -243,32 +276,39 @@ public class CidadeFacade implements Serializable {
         return getProducao(cidade, produto) * cenarioFacade.getResourcesWinterReduction(cenario, turno) / 100;
     }
 
-    public int getProducao(Cidade cidade, Produto produto) {
-        int producao = cidade.getProducao(produto);
+    public int getProducao(Cidade city, Produto produto) {
+        int producao = city.getProducao(produto);
         try {
-            if (cidade.getNacao().hasHabilidade(";NWP;") && produto.isWood()) {
-                producao += producao * cidade.getNacao().getHabilidadeValor(";NWP;") / 100;
-                return producao;
+            if (city.getLocal().getCoordenadas().equals("1330")) {
+                log.debug("AKI!");
             }
-            if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGH;")
-                    && localFacade.isTerrenoMontanhaColina(cidade.getLocal().getTerreno())) {
-                //se em montanha/colina e com habilidade, entao garante minimo de 500
-                return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGH;"));
+
+            if (city.getNacao().hasHabilidade(";NWP;") && produto.isWood()) {
+                producao += producao * city.getNacao().getHabilidadeValor(";NWP;") / 100;
             }
-            if (produto.isMoney() && cidade.getNacao().hasHabilidade(";PGM;")
-                    && cidade.getNacao().getRaca() == cidade.getRaca()) {
-                //se mesma cultura e com habilidade, entao garante minimo de 250
-                return Math.max(producao, cidade.getNacao().getHabilidadeValor(";PGM;"));
-            }
-            if (cidade.getNacao().hasHabilidade(";NSW;") && cidade.getLocal().getClima() >= 5) {
+            if (city.getNacao().hasHabilidade(";NSW;") && city.getLocal().getClima() >= 5) {
                 //Summer Production: 50% production bonus in warm or better climate
-                return producao * cidade.getNacao().getHabilidadeValor(";NSW;") / 100;
+                producao = producao * city.getNacao().getHabilidadeValor(";NSW;") / 100;
             }
-            if (produto.isMoney() && producao <= cidade.getNacao().getHabilidadeNacaoValor("0039")
-                    && cidade.getNacao().getHabilidadesNacao().containsKey("0039")
-                    && cidade.getNacao().getRaca() == cidade.getRaca()) {
+            if (city.getNacao().hasHabilidade(";NTR;") && isHeroPresent(city)) {
+                //Epic hero presence boosts resource production by 3x
+                producao = producao * city.getNacao().getHabilidadeValor(";NTR;") / 100;
+            }
+            if (produto.isMoney() && producao <= city.getNacao().getHabilidadeNacaoValor("0039")
+                    && city.getNacao().getHabilidadesNacao().containsKey("0039")
+                    && city.getNacao().getRaca() == city.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
-                return cidade.getNacao().getHabilidadeNacaoValor("0039");
+                producao = city.getNacao().getHabilidadeNacaoValor("0039");
+            }
+            if (produto.isMoney() && city.getNacao().hasHabilidade(";PGH;")
+                    && localFacade.isTerrenoMontanhaColina(city.getLocal().getTerreno())) {
+                //se em montanha/colina e com habilidade, entao garante minimo de 500
+                producao = Math.max(producao, city.getNacao().getHabilidadeValor(";PGH;"));
+            }
+            if (produto.isMoney() && city.getNacao().hasHabilidade(";PGM;")
+                    && city.getNacao().getRaca() == city.getRaca()) {
+                //se mesma cultura e com habilidade, entao garante minimo de 250
+                producao = Math.max(producao, city.getNacao().getHabilidadeValor(";PGM;"));
             }
             return producao;
         } catch (NullPointerException ex) {

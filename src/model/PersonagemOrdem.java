@@ -7,12 +7,16 @@ package model;
 import baseLib.BaseModel;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  *
  * @author gurgel
  */
 public class PersonagemOrdem extends BaseModel {
+
+    private static final Log log = LogFactory.getLog(PersonagemOrdem.class);
 
     private BaseModel personagem; //mantem o nome por compatibilidade com turnos velhos que jogadores podem ter salvo.
     private Ordem ordem;
@@ -67,14 +71,21 @@ public class PersonagemOrdem extends BaseModel {
     public int compareToByNumber(Object o) {
         PersonagemOrdem outro = (PersonagemOrdem) o;
         try {
+//            log.info(String.format("%s %s %s %s %s ", (this.getOrdem().getNumero() - outro.getOrdem().getNumero()), this.getOrdem().toString(), this.getOrdem().getNumero(), outro.getOrdem().toString(), outro.getOrdem().getNumero()));
             return (this.getOrdem().getNumero() - outro.getOrdem().getNumero());
         } catch (NullPointerException ex) {
             //zzz: 497/498
-            if (outro.getOrdem() == null) {
+            if (outro.getOrdem() == null && this.getOrdem() == null) {
+//                log.info("both nulls! ");
+                return 0;
+            } else if (outro.getOrdem() == null) {
+//                log.info(String.format("0 %s %s ", this.getOrdem().toString(), this.getOrdem().getNumero()));
                 return 0;
             } else if (this.getOrdem() == null) {
+//                log.info(String.format("0 %s %s ", outro.getOrdem().toString(), outro.getOrdem().getNumero()));
                 return (497 - outro.getOrdem().getNumero());
             } else {
+//                log.info("both nulls? ");
                 return (this.getOrdem().getNumero() - 497);
             }
         }

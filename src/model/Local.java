@@ -432,12 +432,15 @@ public class Local extends BaseModel implements Cloneable {
         this.remHabilidade(";LHO;");
     }
 
-    public void setLandmarksOff() {
+    public boolean remTerrainLandmark() {
+        boolean ret = false;
         final List<Habilidade> list = new ArrayList<Habilidade>(this.getHabilidades().values());
         for (Habilidade hab : list) {
             if (hab.hasHabilidade(";FFL;")) {
                 this.remHabilidade(hab);
+                ret = true;
             }
         }
+        return ret;
     }
 }

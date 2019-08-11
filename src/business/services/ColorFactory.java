@@ -79,7 +79,7 @@ public class ColorFactory implements Serializable {
         new Color(Integer.parseInt("0F0F0F", 16)) ///25 Future 3
     };
     public static final Color[] colorBorder = {
-        new Color(Integer.parseInt("000000", 16)), //00 unknown
+        new Color(Integer.parseInt("999999", 16)), //00 unknown
         new Color(Integer.parseInt("000000", 16)), //01 KC
         new Color(Integer.parseInt("000000", 16)), //02 arryn
         new Color(Integer.parseInt("000000", 16)), //03 baratheon
@@ -139,14 +139,23 @@ public class ColorFactory implements Serializable {
         ImageFilter filter = new RGBImageFilter() {
             @Override
             public final int filterRGB(int x, int y, int rgb) {
-                if (rgb == -197116) {     // "recheio"
-                    rgb = (new Color(nacaoCor.getRed(), nacaoCor.getGreen(), nacaoCor.getBlue(), 255)).getRGB();
+                switch (rgb) {
+                    case -197116:
+                        // "recheio"
+                        rgb = (new Color(nacaoCor.getRed(), nacaoCor.getGreen(), nacaoCor.getBlue(), 255)).getRGB();
 //                    rgb = nacaoCor.getRGB();
-                } else if (rgb == -16514556) {  // borda
-                    rgb = nacaoBorder.getRGB();
-                } else if (rgb == 16515588) { // fundo
-                    //Color col = new Color(255, 0, 0);
-                    rgb = (new Color(nacaoCor.getRed(), nacaoCor.getGreen(), nacaoCor.getBlue(), 0)).getRGB();
+                        break;
+                    case -16514556:
+                        // borda
+                        rgb = nacaoBorder.getRGB();
+                        break;
+                    case 16515588:
+                        // fundo
+                        //Color col = new Color(255, 0, 0);
+                        rgb = (new Color(nacaoCor.getRed(), nacaoCor.getGreen(), nacaoCor.getBlue(), 0)).getRGB();
+                        break;
+                    default:
+                        break;
                 }
                 return rgb;
             }

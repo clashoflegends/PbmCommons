@@ -170,4 +170,8 @@ public class TipoTropa extends BaseModel {
     public boolean isHalfDefenseOutAlliedCities() {
         return this.hasHabilidade(";TTD;");
     }
+
+    public boolean isBasicType() {
+        return this.hasHabilidade(";TTB;");
+    }
 }

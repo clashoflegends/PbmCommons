@@ -65,7 +65,7 @@ public final class ActorAction extends BaseModel {
         return getNome();
     }
 
-    private int getStatus() {
+    public int getStatus() {
         return status;
     }
 

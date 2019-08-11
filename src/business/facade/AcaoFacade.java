@@ -11,12 +11,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
+import model.Cenario;
+import model.Cidade;
 import model.Habilidade;
 import model.Local;
 import model.Nacao;
 import model.Ordem;
 import model.Personagem;
 import model.PersonagemOrdem;
+import model.TipoTropa;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
@@ -32,6 +35,7 @@ public class AcaoFacade implements Serializable {
     private static final Log log = LogFactory.getLog(AcaoFacade.class);
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private final LocalFacade localFacade = new LocalFacade();
+    private final NacaoFacade nacaoFacade = new NacaoFacade();
 
     public String getImproveRank(Ordem ordem) {
         try {
@@ -77,9 +81,36 @@ public class AcaoFacade implements Serializable {
         }
     }
 
-    public int getCusto(PersonagemOrdem ordem) {
+    public int getCusto(PersonagemOrdem order) {
         try {
-            return ordem.getOrdem().getCusto();
+            return order.getOrdem().getCusto();
+        } catch (NullPointerException ex) {
+            return 0;
+        }
+    }
+
+    public int getCusto(PersonagemOrdem order, Nacao nation, Cenario cenario) {
+        try {
+            if (order.getOrdem().getCodigo().equals("411")) {
+                //find qt tropas
+                int qtTroops = SysApoio.parseInt(order.getParametrosId().get(0));
+                if (qtTroops == 0) {
+                    //find actor
+                    qtTroops = nacaoFacade.getCidadeRecruitingLimit(nation, order.getNome(), cenario);
+                }
+                //find cost of troops
+                TipoTropa troop = cenario.getTipoTropas().get(order.getParametrosId().get(1));
+                int vlCost = troop.getRecruitCostMoney();
+                //assume will recruit maximum allowed numbers
+                return qtTroops * vlCost;
+            } else if (order.getOrdem().getCodigo().equals("550")) {
+                return (nacaoFacade.getCidadeTamanho(nation, order.getNome()) + 1) * 2000;
+            } else if (order.getOrdem().getCodigo().equals("494")) {
+                final Cidade city = nacaoFacade.getCidade(nation, order.getNome());
+                return nacaoFacade.getCidadeFortificacaoCusto(city);
+            } else {
+                return order.getOrdem().getCusto();
+            }
         } catch (NullPointerException ex) {
             return 0;
         }

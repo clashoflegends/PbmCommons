@@ -164,24 +164,6 @@ public class Cidade extends BaseModel implements IActor, Cloneable {
         this.tpTropa.put(cdTipoTropa, tpTropa);
     }
 
-    public int getArrecadacaoImpostos() {
-        try {
-            int base = 2500;
-            if (getNacao().hasHabilidade(";NSP;") && getLocal().getTerreno().isPlanicie()) {
-                base = base * (100 + getNacao().getHabilidadeValor(";NSP;")) / 100;
-            }
-            if (getNacao().hasHabilidade(";NST;")) {
-                base = base * (100 + getNacao().getHabilidadeValor(";NST;")) / 100;
-            }
-            if (getNacao().hasHabilidade(";NTL;")) {
-                base = base * (100 + getNacao().getHabilidadeValor(";NTL;")) / 100;
-            }
-            return (this.getNacao().getImpostos() * base * (Math.max(this.getTamanho() - 1, 0))) / 100;
-        } catch (Exception ex) {
-            return 0;
-        }
-    }
-
     public int getProducao(Produto produto) {
         try {
             int ret = this.getLocal().getProducaoClima(produto);

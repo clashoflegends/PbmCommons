@@ -294,6 +294,24 @@ public final class LocalFacade implements Serializable {
         }
     }
 
+    /**
+     * Return highValue if there isn't a capital
+     *
+     * @param nation
+     * @param destino
+     * @return
+     */
+    public int getDistanciaToCapital(Nacao nation, Local destino) {
+        Local capital;
+        try {
+            capital = nation.getCapital().getLocal();
+        } catch (NullPointerException e) {
+            //Return highValue if there isn't a capital
+            return 9999;
+        }
+        return this.getDistancia(capital, destino);
+    }
+
     public HashMap<Local, Integer> getLocalRange(Local local, int range, boolean borderOnly, SortedMap<String, Local> listLocais) {
         HashMap<Local, Integer> list = new HashMap<Local, Integer>();
         for (Local target : listLocais.values()) {
@@ -464,7 +482,7 @@ public final class LocalFacade implements Serializable {
     }
 
     public boolean isTerrainLandmarkSpent(Local local) {
-        return local.hasHabilidade(";LFT;");
+        return local.hasHabilidade(";LFX;");
     }
 
     public List<Habilidade> getTerrainLandmark(Local local) {
@@ -483,6 +501,10 @@ public final class LocalFacade implements Serializable {
 
     public Set<String> getTerrainLandmarksCodigo() {
         return landmarkImage.keySet();
+    }
+
+    public boolean remTerrainLandmark(Local local) {
+        return local.remTerrainLandmark();
     }
 
     public void addHabilidade(Local local, Habilidade hab) {

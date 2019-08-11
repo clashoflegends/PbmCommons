@@ -81,7 +81,7 @@ public class NacaoFacade implements Serializable {
         int ret = 0;
         for (Cidade cidade : nacao.getCidades()) {
             if (nacao == cidade.getNacao()) {
-                ret += cidade.getArrecadacaoImpostos();
+                ret += cidadeFacade.getArrecadacaoImpostos(cidade);
             }
         }
         return ret;
@@ -597,5 +597,78 @@ public class NacaoFacade implements Serializable {
 
     public int getBonusRelacionamento(Nacao nationBase, Nacao nationTarget) {
         return BaseMsgs.dificuldadeBonus[nationBase.getRelacionamento(nationTarget) + 3];
+    }
+
+    public boolean isNpc(Personagem personagem) {
+        //FIXME: look for hability to indicate
+        try {
+            return personagem.getNacao().getOwner().getId() == 1 && personagem.getNacao().getNome().equals("Barbarians");
+        } catch (NullPointerException e) {
+            //Jogador not loaded. Not to bleed into other players files like DM/GB
+            return false;
+        }
+    }
+
+    public int getCidadeRecruitingLimit(Nacao nation, String nome, Cenario cenario) {
+        if (cenario.isWdo()) {
+            //assume 100 for WDO
+            return 100;
+        }
+        return getCidadeTamanho(nation, nome) * 100;
+    }
+
+    public int getCidadeTamanho(Nacao nation, String nome) {
+        for (Cidade city : nation.getCidades()) {
+            if (city.getNome().equals(nome)) {
+                return city.getTamanho();
+            }
+        }
+        for (Personagem pers : nation.getPersonagens()) {
+            if (pers.getNome().equals(nome)) {
+                try {
+                    return pers.getLocal().getCidade().getTamanho();
+                } catch (NullPointerException e) {
+                    return 0;
+                }
+            }
+        }
+        return 0;
+    }
+
+    public Cidade getCidade(Nacao nation, String nome) {
+        for (Cidade city : nation.getCidades()) {
+            if (city.getNome().equals(nome)) {
+                return city;
+            }
+        }
+        for (Personagem pers : nation.getPersonagens()) {
+            if (!pers.getNome().equals(nome)) {
+                //not this one
+                continue;
+            }
+            try {
+                return pers.getLocal().getCidade();
+            } catch (NullPointerException e) {
+                //trouble in paradise; how can we find the city?
+                return null;
+            }
+        }
+        //trouble in paradise; how can we find the city?
+        return null;
+    }
+
+    public int getCidadeFortificacaoCusto(Cidade city) {
+        //TODO: add nation powers for discounts and stuff
+        final int[] custo = {1000, 3000, 5000, 8000, 12000};
+        int ret;
+        try {
+            ret = custo[city.getFortificacao()];
+        } catch (IndexOutOfBoundsException ex) {
+            ret = -1;
+        }
+        if (city.getNacao().hasHabilidade(";NFG;")) {
+            ret = ret * city.getNacao().getHabilidadeValor(";NFG;") / 100;
+        }
+        return ret;
     }
 }

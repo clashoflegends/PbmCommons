@@ -287,6 +287,39 @@ public class CenarioFacade implements Serializable {
         this.bonusTatica[9][3] = 80;
         this.bonusTatica[9][9] = 100;
 
+        //standard has always a penalty against natural ones
+        this.bonusTatica[2][0] = 80;
+        this.bonusTatica[2][1] = 80;
+        this.bonusTatica[2][2] = 80;
+        this.bonusTatica[2][3] = 80;
+        this.bonusTatica[2][4] = 80;
+        this.bonusTatica[2][5] = 80;
+        this.bonusTatica[2][6] = 80;
+        this.bonusTatica[2][7] = 80;
+        this.bonusTatica[2][8] = 80;
+        this.bonusTatica[2][9] = 80;
+        this.bonusTatica[0][2] = 120;
+        this.bonusTatica[1][2] = 120;
+        this.bonusTatica[2][2] = 100;
+        this.bonusTatica[3][2] = 120;
+        this.bonusTatica[4][2] = 120;
+        this.bonusTatica[5][2] = 120;
+        this.bonusTatica[6][2] = 120;
+        this.bonusTatica[7][2] = 120;
+        this.bonusTatica[8][2] = 120;
+        this.bonusTatica[9][2] = 120;
+
+    }
+
+    public List<TipoTropa> getTipoTropasBasic(Cenario cenario) {
+        final List<TipoTropa> ret = new ArrayList<TipoTropa>(cenario.getTipoTropas().size());
+        for (TipoTropa troop : cenario.getTipoTropas().values()) {
+            if (!troop.isBasicType()) {
+                continue;
+            }
+            ret.add(troop);
+        }
+        return ret;
     }
 
     public Collection<TipoTropa> getTipoTropas(Cenario cenario) {
