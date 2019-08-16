@@ -639,11 +639,13 @@ public class PersonagemFacade implements Serializable {
         //FIXME: Tratamento para personagem refem
         if (this.isComandaExercito(personagem)) {
             //PENDING: exercito ou esquadra?
-            ret += labels.getString("PERSONAGEM.COMANDA.EXERCITO.ESQUADRA") + getAcompanhantes(personagem);
+            ret += String.format(labels.getString("PERSONAGEM.COMANDA.EXERCITO.ESQUADRA"), personagem.getNome());
+            ret += getAcompanhantes(personagem);
             ret += "\n";
         }
         if (this.isComandaGrupo(personagem)) {
-            ret += labels.getString("PERSONAGEM.COMANDA.GRUPO") + getAcompanhantes(personagem);
+            ret += String.format(labels.getString("PERSONAGEM.COMANDA.GRUPO.NOME"), personagem.getNome());
+            ret += getAcompanhantes(personagem);
             ret += "\n";
         }
         if (personagem.getLider() != null) {
