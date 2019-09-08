@@ -17,7 +17,7 @@
         </propertyfile>
     </target>
     <target name="-post-jar">
-        <copy file="${dist.jar}" todir="/tmpbm/PbmCounselor/lib"/>
+        <copy file="${dist.jar}" todir="/Clash/PbmCounselor/lib"/>
     </target>
     <!--
 
