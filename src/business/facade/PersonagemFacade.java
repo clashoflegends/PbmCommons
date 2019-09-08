@@ -640,11 +640,13 @@ public class PersonagemFacade implements Serializable {
         if (this.isComandaExercito(personagem)) {
             //PENDING: exercito ou esquadra?
             ret += String.format(labels.getString("PERSONAGEM.COMANDA.EXERCITO.ESQUADRA"), personagem.getNome());
+            ret += "\n";
             ret += getAcompanhantes(personagem);
             ret += "\n";
         }
         if (this.isComandaGrupo(personagem)) {
             ret += String.format(labels.getString("PERSONAGEM.COMANDA.GRUPO.NOME"), personagem.getNome());
+            ret += "\n";
             ret += getAcompanhantes(personagem);
             ret += "\n";
         }
