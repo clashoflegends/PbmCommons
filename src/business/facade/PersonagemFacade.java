@@ -491,7 +491,8 @@ public class PersonagemFacade implements Serializable {
      */
     private int doCalculaDueloNatural(Personagem personagem) {
         /**
-         * calcular o duelo: definir maior duelo por pericia, com artefatos ai somar 25% dos duelos das demais pericias. ai somar bonus de duelo e
+         * calcular o duelo: definir maior duelo por pericia, com artefatos ai
+         * somar 25% dos duelos das demais pericias. ai somar bonus de duelo e
          * bonus de artefato de combate
          */
         float duelo;
