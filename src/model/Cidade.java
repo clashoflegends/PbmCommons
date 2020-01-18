@@ -8,6 +8,8 @@ import baseLib.BaseModel;
 import business.interfaces.IActor;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
 
@@ -148,7 +150,12 @@ public class Cidade extends BaseModel implements IActor, Cloneable {
         }
     }
 
+    // private static final Log log = LogFactory.getLog(Cidade.class);
     public void setEstoque(Produto produto, int qtd) {
+        // Investigate resources production
+        //if (this.getLocal().getCodigo().equals("0750") && produto.getCodigo().equalsIgnoreCase("br")) {
+        //    log.info(String.format("0750: %s to %s", this.estoques.get(produto), qtd));
+        //}
         this.estoques.put(produto, Math.max(0, qtd));
     }
 
