@@ -5,8 +5,6 @@
 package model;
 
 import baseLib.BaseModel;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -422,25 +420,5 @@ public class Local extends BaseModel implements Cloneable {
 
     public void setLanding(String landing) {
         this.landing = landing;
-    }
-
-    public void setCombatTookPlaceOff() {
-        this.remHabilidade(";LHC;");
-    }
-
-    public void setOverrunTookPlaceOff() {
-        this.remHabilidade(";LHO;");
-    }
-
-    public boolean remTerrainLandmark() {
-        boolean ret = false;
-        final List<Habilidade> list = new ArrayList<Habilidade>(this.getHabilidades().values());
-        for (Habilidade hab : list) {
-            if (hab.hasHabilidade(";FFL;")) {
-                this.remHabilidade(hab);
-                ret = true;
-            }
-        }
-        return ret;
     }
 }

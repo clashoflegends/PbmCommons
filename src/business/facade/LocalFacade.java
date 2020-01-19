@@ -415,6 +415,20 @@ public final class LocalFacade implements Serializable {
         return (Personagem[]) ret.toArray(new Personagem[0]);
     }
 
+    public void doClearVisibility(Local local) {
+        if (!local.isVisible()) {
+            local.setRastro("");
+            local.remHabilidade(";LHC;");
+            local.remHabilidade(";LHO;");
+            //remove all terrain landmarks
+            this.remTerrainLandmark(local);
+        }
+        if (!local.isProducaoInfo()) {
+            local.clearProducao();
+        }
+        local.setVisibilidadeNacao("");
+    }
+
     public boolean isCombatTookPlace(Local local) {
         return local.hasHabilidade(";LHC;");
     }
@@ -504,7 +518,15 @@ public final class LocalFacade implements Serializable {
     }
 
     public boolean remTerrainLandmark(Local local) {
-        return local.remTerrainLandmark();
+        boolean ret = false;
+        final List<Habilidade> list = new ArrayList<Habilidade>(local.getHabilidades().values());
+        for (Habilidade hab : list) {
+            if (hab.hasHabilidade(";FFL;")) {
+                local.remHabilidade(hab);
+                ret = true;
+            }
+        }
+        return ret;
     }
 
     public void addHabilidade(Local local, Habilidade hab) {
