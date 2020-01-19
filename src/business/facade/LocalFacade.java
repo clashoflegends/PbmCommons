@@ -435,6 +435,14 @@ public final class LocalFacade implements Serializable {
         return local.hasHabilidade(";LHC;");
     }
 
+    public boolean isCombatTookPlaceBigNavy(Local local) {
+        return local.hasHabilidade(";LHCN;");
+    }
+
+    public boolean isCombatTookPlaceBigArmy(Local local) {
+        return local.hasHabilidade(";LHCA;");
+    }
+
     public boolean isOverrunTookPlace(Local local) {
         return local.hasHabilidade(";LHO;");
     }
