@@ -419,6 +419,8 @@ public final class LocalFacade implements Serializable {
         if (!local.isVisible()) {
             local.setRastro("");
             local.remHabilidade(";LHC;");
+            local.remHabilidade(";LHCA;");
+            local.remHabilidade(";LHCN;");
             local.remHabilidade(";LHO;");
             //remove all terrain landmarks
             this.remTerrainLandmark(local);
