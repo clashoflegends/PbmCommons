@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import model.Artefato;
 import model.Cidade;
 import model.Exercito;
@@ -225,7 +226,10 @@ public final class LocalFacade implements Serializable {
     }
 
     public String getIdentificacaoVizinho(Local atual, int direcao) {
-        String newIdentificacao;
+        if (direcao == 0) {
+            //short circuit response
+            return atual.getCodigo();
+        }
         //int newHex[] = this.identificacaoToInt();
         Integer lCol = this.getCol(atual);
         Integer lRow = this.getRow(atual);
@@ -269,18 +273,8 @@ public final class LocalFacade implements Serializable {
                 lRow = -1;
                 break;
         }
-        //converte row/col em coordenada
-        if (direcao == 0) {
-            newIdentificacao = atual.getCodigo();
-            //verifica se saiu do mapa
-//        } else if (lCol < 1 || lRow < 1) {
-//            //fora do mapa.
-//            newIdentificacao = null;
-        } else {
-            //converte de volta para string e retorna o Hex
-            newIdentificacao = SysApoio.pointToCoord(lCol, lRow);
-        }
-        return newIdentificacao;
+        //converte de volta para string e retorna o Hex
+        return SysApoio.pointToCoord(lCol, lRow);
     }
 
     public int getDistancia(Local origem, Local destino) {
@@ -547,5 +541,47 @@ public final class LocalFacade implements Serializable {
 
     public void addHabilidade(Local local, Habilidade hab) {
         local.addHabilidade(hab);
+    }
+
+    /**
+     *
+     * @param baseLocal the value of baseHex
+     * @param range the value of range
+     */
+    public Set<Local> listLocalRange(Local baseLocal, int range, SortedMap<String, Local> lista) {
+        final Set<Local> visibleHexes = new TreeSet<Local>();
+        final Set<Local> borderHexes = new TreeSet<Local>();
+        //cant mutate borderHex while in a loop.
+        final Set<Local> newBorderHexes = new TreeSet<Local>();
+
+        //add self
+        visibleHexes.add(baseLocal);
+        //initial seed for border
+        borderHexes.add(baseLocal);
+        for (int radius = 1; radius <= range; radius++) {
+            for (Local border : borderHexes) {
+                for (int ii = 1; ii < 7; ii++) {
+                    Local localVizinho = this.getLocalVizinho(border, ii, lista);
+                    if (localVizinho == null) {
+                        //edge of map
+                        continue;
+                    }
+                    if (visibleHexes.contains(localVizinho)) {
+                        //Already done, inside the border
+                        continue;
+                    }
+                    //list border for the next loop, overlap removed by Set.
+                    newBorderHexes.add(localVizinho);
+                }
+            }
+            //clear list for a new hex
+            borderHexes.clear();
+            borderHexes.addAll(newBorderHexes);
+            //add all visible to final list. Set will remove intersection
+            visibleHexes.addAll(newBorderHexes);
+            //clear new border
+            newBorderHexes.clear();
+        }
+        return visibleHexes;
     }
 }

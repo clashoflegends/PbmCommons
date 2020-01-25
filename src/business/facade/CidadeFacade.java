@@ -136,6 +136,14 @@ public class CidadeFacade implements Serializable {
         return cidade.getTamanho();
     }
 
+    public int getTamanho(Local local) {
+        try {
+            return local.getCidade().getTamanho();
+        } catch (NullPointerException e) {
+            return 0;
+        }
+    }
+
     public String getTamanhoNome(Cidade cidade) {
         return BaseMsgs.cidadeTamanho[cidade.getTamanho()];
     }
