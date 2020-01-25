@@ -19,6 +19,7 @@ import model.Habilidade;
 import model.Jogador;
 import model.Local;
 import model.Nacao;
+import model.Partida;
 import model.Personagem;
 import model.Terreno;
 import model.World;
@@ -415,15 +416,20 @@ public final class LocalFacade implements Serializable {
         return (Personagem[]) ret.toArray(new Personagem[0]);
     }
 
-    public void doClearVisibility(Local local) {
+    public void doClearVisibility(Local local, Partida game) {
         if (!local.isVisible()) {
             local.setRastro("");
-            local.remHabilidade(";LHC;");
-            local.remHabilidade(";LHCA;");
-            local.remHabilidade(";LHCN;");
-            local.remHabilidade(";LHO;");
             //remove all terrain landmarks
             this.remTerrainLandmark(local);
+            //remove volatile
+            local.remHabilidade(";LHO;");
+            //remove battle sites
+            local.remHabilidade(";LHC;");
+            if (!game.isInformationNetwork()) {
+                //battle sites visible is GIN is enabled for the game
+                local.remHabilidade(";LHCA;");
+                local.remHabilidade(";LHCN;");
+            }
         }
         if (!local.isProducaoInfo()) {
             local.clearProducao();
