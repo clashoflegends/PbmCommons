@@ -491,6 +491,10 @@ public class NacaoFacade implements Serializable {
         return nacao.isAtiva();
     }
 
+    public boolean isAtivaPC(Nacao nacao) {
+        return nacao.isAtiva() && nacao.getOwner().getId() != 1;
+    }
+
     public Personagem[] listPersonagemNaoNacao(Nacao nacao, Collection<Personagem> listPersonagens) {
         List<Personagem> lista = new ArrayList();
         lista.addAll(listPersonagens);
