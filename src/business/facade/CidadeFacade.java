@@ -403,7 +403,7 @@ public class CidadeFacade implements Serializable {
     }
 
     public int getPointsDomination(Cidade city) {
-        if (!isCityPoints(city)) {
+        if (!isPointsDomination(city)) {
             return 0;
         } else if (city.hasHabilidade(";LCP5;")) {
             return city.getHabilidadeValor(";LCP5;");
@@ -416,7 +416,7 @@ public class CidadeFacade implements Serializable {
         }
     }
 
-    public boolean isCityPoints(Cidade city) {
+    public boolean isPointsDomination(Cidade city) {
         return city.hasHabilidade(";LCP;");
     }
 
