@@ -679,4 +679,12 @@ public class NacaoFacade implements Serializable {
         }
         return ret;
     }
+
+    public int getPointsDomination(Nacao nation) {
+        int ret = 0;
+        for (Cidade city : nation.getCidades()) {
+            ret += cidadeFacade.getPointsDomination(city);
+        }
+        return ret;
+    }
 }
