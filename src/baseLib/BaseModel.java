@@ -67,6 +67,10 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     public String getHabilidadesToDb() {
         String ret = ";";
         for (String cdHab : getHabilidades().keySet()) {
+            if (cdHab.equals(";-;")) {
+            //skip none, it will be added later. Serves to purge NONE when another Hab is added
+                continue;
+            }
             ret += cdHab.substring(1);
         }
         if (ret.equals(";")) {
