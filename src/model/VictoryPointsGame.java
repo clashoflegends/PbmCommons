@@ -5,13 +5,16 @@
 package model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Prepping and structuring data for JavaFX Graphs in Counselor. 
+ * Prepping and structuring data for JavaFX Graphs in Counselor.
+ *
  * @author gurgel
  */
 public class VictoryPointsGame implements Serializable {
@@ -30,14 +33,30 @@ public class VictoryPointsGame implements Serializable {
             nationsPoints.put(nation, newMap);
         }
         //update list of turns for easy keys extraction
-        getTurnList().add(turn);
+        turnList.add(turn);
     }
 
-    public Set<Integer> getTurnList() {
-        return turnList;
+    public List<String> getTurnListAsString() {
+        List<String> ret = new ArrayList<String>();
+        for (Integer turn : turnList) {
+            ret.add(turn + "");
+        }
+        return ret;
+    }
+
+    public List<Integer> getTurnList() {
+        return new ArrayList<Integer>(turnList);
     }
 
     public Set<Nacao> getNationsList() {
         return nationsPoints.keySet();
+    }
+
+    public SortedMap<Integer, Integer> getNationPoints(Nacao nation) {
+        return nationsPoints.get(nation);
+    }
+
+    public boolean isEmpty() {
+        return turnList.isEmpty();
     }
 }
