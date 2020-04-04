@@ -211,7 +211,12 @@ public final class MovimentoExercito implements Serializable, Cloneable {
      * @param anterior the anterior to set
      */
     public void setDirecaoAnterior(int anterior) {
-        this.direcaoAnterior = anterior % 6;
+        int oldDirection = anterior % 6;
+        if (oldDirection == 0) {
+            //6%6 returns zero, but we want to keep 6.
+            oldDirection = 6;
+        }
+        this.direcaoAnterior = oldDirection;
     }
 
     /**
