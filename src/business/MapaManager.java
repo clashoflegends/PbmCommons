@@ -272,7 +272,15 @@ public class MapaManager implements Serializable {
         if (local.isVisible() && localFacade.isCombatTookPlace(local)) {
             int dx = 46;
             int dy = 30;
-            big.drawImage(imageFactory.doDrawCombat(), x + dx, y + dy, form);
+            //what type of combat?
+            if (localFacade.isCombatTookPlaceBigNavy(local)) {
+                big.drawImage(imageFactory.doDrawCombatBigNavy(), x + dx, y + dy, form);
+            } else if (localFacade.isCombatTookPlaceBigArmy(local)) {
+                big.drawImage(imageFactory.doDrawCombatBigArmy(), x + dx, y + dy, form);
+            } else {
+                //none of the above
+                big.drawImage(imageFactory.doDrawCombat(), x + dx, y + dy, form);
+            }
         }
         //has overrun?
         if (local.isVisible() && localFacade.isOverrunTookPlace(local)) {

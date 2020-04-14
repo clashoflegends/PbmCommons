@@ -62,6 +62,27 @@ public final class CounterStringInt implements Serializable {
         return maxKey;
     }
 
+    public String getKeyWithMaxCount() {
+        if (counter.isEmpty()) {
+            return "";
+        }
+        int minCount = -999999999;
+        String maxKey = "";
+        final List<String> keySet = new ArrayList<String>(counter.keySet());
+        Collections.shuffle(keySet);
+        for (String key : keySet) {
+            if (counter.get(key) > minCount) {
+                minCount = counter.get(key);
+                maxKey = key;
+            }
+        }
+        return maxKey;
+    }
+
+    public void remove(String key) {
+        counter.remove(key);
+    }
+
     public void add(String key) {
         add(key, 1);
     }

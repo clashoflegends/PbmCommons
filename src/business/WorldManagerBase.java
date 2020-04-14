@@ -19,6 +19,7 @@ import model.Nacao;
 import model.Ordem;
 import model.Partida;
 import model.Personagem;
+import model.VictoryPointsGame;
 import model.World;
 
 /**
@@ -84,6 +85,10 @@ public abstract class WorldManagerBase implements Serializable {
 
     public SortedMap<String, Ordem> getOrdens() {
         return world.getPartida().getCenario().getOrdens();
+    }
+
+    public VictoryPointsGame getVictoryPoints() {
+        return world.getVictoryPoints();
     }
 
     public Partida getPartida() {

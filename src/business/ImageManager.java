@@ -52,7 +52,7 @@ public class ImageManager implements Serializable {
     private Cenario cenario;
     private final MediaTracker mt;
     private int mti = 0;
-    private ImageIcon combat, explosion, blueBall, yellowBall, iconApp;
+    private ImageIcon combat, combatBigArmy, combatBigNavy, explosion, blueBall, yellowBall, iconApp;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
     private final SortedMap<String, ImageIcon> landmarks = new TreeMap<String, ImageIcon>();
     private static ImageManager instance;
@@ -103,6 +103,8 @@ public class ImageManager implements Serializable {
         yellowBall = new ImageIcon(getClass().getResource("/images/piemenu/yellow_button.png"));
         blueBall = new ImageIcon(getClass().getResource("/images/piemenu/dark_blue_button.png"));
         combat = new ImageIcon(getClass().getResource("/images/combat.png"));
+        combatBigNavy = new ImageIcon(getClass().getResource("/images/combat_blue.png"));
+        combatBigArmy = new ImageIcon(getClass().getResource("/images/combat_green.png"));
         explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
         iconApp = new ImageIcon(getClass().getResource("/images/hex_wasteland.png"));
         doLoadFeaturesAll();
@@ -552,6 +554,14 @@ public class ImageManager implements Serializable {
 
     public Image doDrawCombat() {
         return this.combat.getImage();
+    }
+
+    public Image doDrawCombatBigNavy() {
+        return this.combatBigNavy.getImage();
+    }
+
+    public Image doDrawCombatBigArmy() {
+        return this.combatBigArmy.getImage();
     }
 
     public Image doDrawExplosion() {

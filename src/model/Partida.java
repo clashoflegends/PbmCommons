@@ -168,6 +168,10 @@ public class Partida extends BaseModel {
         return this.hasHabilidade(";GBR;");
     }
 
+    public boolean isInformationNetwork() {
+        return this.hasHabilidade(";GIN;");
+    }
+
     public boolean isNewRules() {
         return this.hasHabilidade(";GNR;");
     }

@@ -136,6 +136,14 @@ public class CidadeFacade implements Serializable {
         return cidade.getTamanho();
     }
 
+    public int getTamanho(Local local) {
+        try {
+            return local.getCidade().getTamanho();
+        } catch (NullPointerException e) {
+            return 0;
+        }
+    }
+
     public String getTamanhoNome(Cidade cidade) {
         return BaseMsgs.cidadeTamanho[cidade.getTamanho()];
     }
@@ -393,4 +401,23 @@ public class CidadeFacade implements Serializable {
     public void subFortification(Cidade city, int fator) {
         city.setFortificacao(city.getFortificacao() - fator);
     }
+
+    public int getPointsDomination(Cidade city) {
+        if (!isPointsDomination(city)) {
+            return 0;
+        } else if (city.hasHabilidade(";LCP5;")) {
+            return city.getHabilidadeValor(";LCP5;");
+        } else if (city.hasHabilidade(";LCP2;")) {
+            return city.getHabilidadeValor(";LCP2;");
+        } else if (city.hasHabilidade(";LCP1;")) {
+            return city.getHabilidadeValor(";LCP1;");
+        } else {
+            return 0;
+        }
+    }
+
+    public boolean isPointsDomination(Cidade city) {
+        return city.hasHabilidade(";LCP;");
+    }
+
 }

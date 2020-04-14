@@ -15,6 +15,7 @@ import java.util.TreeMap;
 public class World implements Serializable {
 
     private Partida partida;
+    private VictoryPointsGame victoryPoints;
     private final SortedMap<String, Jogador> jogadores = new TreeMap();
     private SortedMap<String, Nacao> nacoes = new TreeMap();
     private SortedMap<String, Personagem> personagens = new TreeMap();
@@ -129,5 +130,13 @@ public class World implements Serializable {
                 }
             }
         }
+    }
+
+    public VictoryPointsGame getVictoryPoints() {
+        return victoryPoints;
+    }
+
+    public void setVictoryPoints(VictoryPointsGame victoryPoints) {
+        this.victoryPoints = victoryPoints;
     }
 }

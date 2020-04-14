@@ -8,6 +8,7 @@ import business.facade.LocalFacade;
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import model.Local;
@@ -539,7 +540,7 @@ public final class ConverterFactory implements Serializable {
         return null;
     }
 
-    public static Produto intToProduto(int tipoProduto, List<Produto> produtos) {
+    public static Produto intToProduto(int tipoProduto, Collection<Produto> produtos) {
         for (Produto produto : produtos) {
             if (produto.getId() == tipoProduto) {
                 return produto;

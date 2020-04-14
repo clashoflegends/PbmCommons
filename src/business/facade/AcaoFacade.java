@@ -15,6 +15,7 @@ import model.Cenario;
 import model.Cidade;
 import model.Habilidade;
 import model.Local;
+import model.Mercado;
 import model.Nacao;
 import model.Ordem;
 import model.Personagem;
@@ -89,7 +90,7 @@ public class AcaoFacade implements Serializable {
         }
     }
 
-    public int getCusto(PersonagemOrdem order, Nacao nation, Cenario cenario) {
+    public int getCusto(PersonagemOrdem order, Nacao nation, Cenario cenario, Mercado market) {
         try {
             if (order.getOrdem().getCodigo().equals("411")) {
                 //find qt tropas
@@ -108,6 +109,11 @@ public class AcaoFacade implements Serializable {
             } else if (order.getOrdem().getCodigo().equals("494")) {
                 final Cidade city = nacaoFacade.getCidade(nation, order.getNome());
                 return nacaoFacade.getCidadeFortificacaoCusto(city);
+            } else if (order.getOrdem().getCodigo().equals("315")) {
+                int productType = ConverterFactory.estoqueToInt(order.getParametrosId().get(0));
+                int qtGold = market.getProdutoVlCompra(ConverterFactory.intToProduto(productType, market.getProdutos()));
+                int qtProduct = SysApoio.parseInt(order.getParametrosId().get(1));
+                return qtProduct * qtGold;
             } else {
                 return order.getOrdem().getCusto();
             }

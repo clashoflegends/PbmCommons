@@ -491,6 +491,14 @@ public class NacaoFacade implements Serializable {
         return nacao.isAtiva();
     }
 
+    public boolean isAtivaPC(Nacao nacao) {
+        try {
+            return nacao.isAtiva() && nacao.getOwner().getId() != 1;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public Personagem[] listPersonagemNaoNacao(Nacao nacao, Collection<Personagem> listPersonagens) {
         List<Personagem> lista = new ArrayList();
         lista.addAll(listPersonagens);
@@ -668,6 +676,14 @@ public class NacaoFacade implements Serializable {
         }
         if (city.getNacao().hasHabilidade(";NFG;")) {
             ret = ret * city.getNacao().getHabilidadeValor(";NFG;") / 100;
+        }
+        return ret;
+    }
+
+    public Integer getPointsDomination(Nacao nation) {
+        int ret = 0;
+        for (Cidade city : nation.getCidades()) {
+            ret += cidadeFacade.getPointsDomination(city);
         }
         return ret;
     }

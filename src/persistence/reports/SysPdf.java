@@ -1,7 +1,7 @@
 /*
  * SysPdf.java
  *
- * Created on 30 de Mar�o de 2007, 09:23
+ * Created on 30 de Marco de 2007, 09:23
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
