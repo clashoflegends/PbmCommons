@@ -149,6 +149,45 @@ public final class ConverterFactory implements Serializable {
         return ret;
     }
 
+    public static int terrainToIndex(String cdTerrain) {
+        /*
+         * 1 'E', '0101' alto mar<br> 2 'C', '0102' costa<br> 3 'L', '0203'
+         * litoral<br> 4 'F', '0206' floresta<br> 5 'P', '0308' planicie<br> 6
+         * 'M', '0604' montanha<br> 7 'H', '0710' colinas<br> 8 'S', '1509'
+         * pantano<br> 9 'D', '2538' deserto<br>
+         */
+        try {
+            switch (cdTerrain.charAt(0)) {
+                case 'E':
+                    return 1;
+                case 'C':
+                    return 2;
+                case 'L':
+                    return 3;
+                case 'F':
+                    return 4;
+                case 'P':
+                    return 5;
+                case 'M':
+                    return 6;
+                case 'H':
+                    return 7;
+                case 'S':
+                    return 8;
+                case 'D':
+                    return 9;
+                case 'W':
+                    return 10;
+                case 'K':
+                    return 11;
+                default:
+                    return 0;
+            }
+        } catch (NullPointerException npe) {
+            return 0;
+        }
+    }
+
     public static int direcaoToInt(String direcao) {
         int ret;
         if (direcao.equalsIgnoreCase("C")) {
