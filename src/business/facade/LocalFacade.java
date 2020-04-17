@@ -326,6 +326,10 @@ public final class LocalFacade implements Serializable {
         return local.getTerreno().isAgua();
     }
 
+    public boolean isVisible(Local local) {
+        return local.isVisible();
+    }
+
     public boolean isVisible(Local local, Jogador observer, World world) {
         final String flags = local.getVisibilidadeNacao();
         if (flags == null || flags.trim().equals("")) {
