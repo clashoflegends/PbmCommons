@@ -7,6 +7,7 @@ package business.facade;
 import business.ArmyPath;
 import business.MovimentoExercito;
 import business.combat.ArmySim;
+import business.converter.ConverterFactory;
 import business.interfaces.IExercito;
 import business.services.ComparatorFactory;
 import business.services.TitleFactory;
@@ -30,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
+import utils.StringIntSortedCell;
 
 /**
  *
@@ -66,6 +68,20 @@ public class ExercitoFacade implements Serializable {
             ret = BaseMsgs.exercitoTamanho[exercito.getTamanhoExercito()];
         }
         return ret;
+    }
+
+    public StringIntSortedCell getTamanhoCell(Exercito exercito) {
+        if (isGuarnicao(exercito)) {
+            if (isEsquadra(exercito) || exercito.getTamanhoEsquadra() > 0) {
+                return ConverterFactory.getArmySizeCell(exercito.getTamanhoEsquadra(), BaseMsgs.guarnicaoTamanho[exercito.getTamanhoEsquadra()]);
+            } else {
+                return ConverterFactory.getArmySizeCell(exercito.getTamanhoExercito(), BaseMsgs.guarnicaoTamanho[exercito.getTamanhoExercito()]);
+            }
+        } else if (isEsquadra(exercito) || exercito.getTamanhoEsquadra() > 0) {
+            return ConverterFactory.getArmySizeCell(exercito.getTamanhoEsquadra(), BaseMsgs.esquadraTamanho[exercito.getTamanhoEsquadra()]);
+        } else {
+            return ConverterFactory.getArmySizeCell(exercito.getTamanhoExercito(), BaseMsgs.exercitoTamanho[exercito.getTamanhoExercito()]);
+        }
     }
 
     public String getTerreno(Exercito exercito) {
