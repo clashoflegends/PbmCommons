@@ -287,9 +287,6 @@ public class ImageManager implements Serializable {
         return img;
     }
 
-    /**
-     * @return the mt
-     */
     public void addImage(Image desenho) {
         mt.addImage(desenho, mti++);
     }

@@ -687,4 +687,8 @@ public class NacaoFacade implements Serializable {
         }
         return ret;
     }
+
+    public int getNacaoNumero(Nacao nation) {
+        return Integer.valueOf(nation.getCodigo());
+    }
 }
