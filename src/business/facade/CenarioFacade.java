@@ -33,7 +33,7 @@ import persistenceCommons.SettingsManager;
  * @author gurgel
  */
 public class CenarioFacade implements Serializable {
-
+    
     public static final int MINIMUM_LOYALTY = 50;
     public static final int COMANDANTE = 0;
     public static final int ROGUE = 1;
@@ -44,15 +44,15 @@ public class CenarioFacade implements Serializable {
     private final int[][] bonusTatica = new int[10][10];
     private final SortedMap<Integer, String> taticas = new TreeMap<Integer, String>();
     private String typeTatica = "-";
-
+    
     public static boolean isGrecia(Cenario cenario) {
         return cenario.isGrecia();
     }
-
+    
     public static boolean isPrintNome(Cenario cenario, Cidade cidade) {
         return (cenario.isSW() && cidade.isCapital());
     }
-
+    
     public static boolean isPrintGoldMine(Cenario cenario, Local local) {
         try {
             return (cenario.isSW() && local.getCidade().getTamanho() == 1);
@@ -60,11 +60,11 @@ public class CenarioFacade implements Serializable {
             return false;
         }
     }
-
+    
     public static boolean isSw(Cenario cenario) {
         return cenario.isSW();
     }
-
+    
     public String getTituloPericia(Cenario cenario, int classe, int vlPericia) {
         int indice = (int) Math.floor(vlPericia / 10) + 1;
         if (vlPericia <= 0) {
@@ -74,7 +74,7 @@ public class CenarioFacade implements Serializable {
         }
         return (cenario.getTituloPericia(classe, indice));
     }
-
+    
     public SortedMap<Integer, String[]> getTituloPericiaAll(Cenario cenario) {
         SortedMap<Integer, String[]> ret = new TreeMap<Integer, String[]>();
         final String[][] tituloPericia = cenario.getTituloPericiaAll();
@@ -138,7 +138,7 @@ public class CenarioFacade implements Serializable {
         }
         return (Produto[]) produtos.toArray(new Produto[0]);
     }
-
+    
     public String[][] listTaticas(Cenario cenario) {
         if (cenario.hasHabilidade(";ST1;")) {
             return BaseMsgs.taticasGb;
@@ -148,26 +148,26 @@ public class CenarioFacade implements Serializable {
             return BaseMsgs.taticasGb;
         }
     }
-
+    
     public IBaseModel[] listTerrains(Cenario cenario) {
         final List<IBaseModel> values = new ArrayList<IBaseModel>(cenario.getTerrenos().values());
         return values.toArray(new IBaseModel[0]);
     }
-
+    
     public SortedMap<Integer, String> listTaticasAsList(Cenario cenario) {
         doLoadTaticas(cenario);
         return taticas;
     }
-
+    
     public int getTaticaBonus(Cenario cenario, String taticaA, String taticaB) {
         return getTaticaBonus(cenario, ConverterFactory.taticaToInt(taticaA), ConverterFactory.taticaToInt(taticaB));
     }
-
+    
     public int getTaticaBonus(Cenario cenario, int taticaA, int taticaB) {
         doLoadTaticas(cenario);
         return this.bonusTatica[taticaA][taticaB];
     }
-
+    
     private void doLoadTaticas(Cenario cenario) {
         if (cenario.hasHabilidade(typeTatica)) {
             return;
@@ -183,7 +183,7 @@ public class CenarioFacade implements Serializable {
             this.taticas.put(ConverterFactory.taticaToInt(aTatica[1]), aTatica[0]);
         }
     }
-
+    
     private void setBonusTaticaCFSSGA() {
         //Traditional (Charge, Flank, Standard, Surround, Guerrilla, Ambush)
         this.bonusTatica[0][0] = 100;
@@ -192,35 +192,35 @@ public class CenarioFacade implements Serializable {
         this.bonusTatica[0][3] = 100;
         this.bonusTatica[0][4] = 120;
         this.bonusTatica[0][5] = 80;
-
+        
         this.bonusTatica[1][0] = 100;
         this.bonusTatica[1][1] = 100;
         this.bonusTatica[1][2] = 90;
         this.bonusTatica[1][3] = 80;
         this.bonusTatica[1][4] = 110;
         this.bonusTatica[1][5] = 120;
-
+        
         this.bonusTatica[2][0] = 80;
         this.bonusTatica[2][1] = 120;
         this.bonusTatica[2][2] = 100;
         this.bonusTatica[2][3] = 100;
         this.bonusTatica[2][4] = 100;
         this.bonusTatica[2][5] = 100;
-
+        
         this.bonusTatica[3][0] = 100;
         this.bonusTatica[3][1] = 120;
         this.bonusTatica[3][2] = 100;
         this.bonusTatica[3][3] = 100;
         this.bonusTatica[3][4] = 80;
         this.bonusTatica[3][5] = 100;
-
+        
         this.bonusTatica[4][0] = 90;
         this.bonusTatica[4][1] = 80;
         this.bonusTatica[4][2] = 100;
         this.bonusTatica[4][3] = 120;
         this.bonusTatica[4][4] = 100;
         this.bonusTatica[4][5] = 100;
-
+        
         this.bonusTatica[5][0] = 120;
         this.bonusTatica[5][1] = 80;
         this.bonusTatica[5][2] = 100;
@@ -228,7 +228,7 @@ public class CenarioFacade implements Serializable {
         this.bonusTatica[5][4] = 100;
         this.bonusTatica[5][5] = 100;
     }
-
+    
     private void setBonusTaticaBCFSSSS() {
         //new (Barrage, Shieldwall, StandFirm, Swarm)
         this.bonusTatica[6][6] = 100;
@@ -238,7 +238,7 @@ public class CenarioFacade implements Serializable {
         this.bonusTatica[6][8] = 120;
         this.bonusTatica[6][3] = 100;
         this.bonusTatica[6][9] = 90;
-
+        
         this.bonusTatica[0][6] = 120;
         this.bonusTatica[0][0] = 100;
         this.bonusTatica[0][1] = 100;
@@ -246,7 +246,7 @@ public class CenarioFacade implements Serializable {
         this.bonusTatica[0][8] = 80;
         this.bonusTatica[0][3] = 100;
         this.bonusTatica[0][9] = 110;
-
+        
         this.bonusTatica[1][6] = 100;
         this.bonusTatica[1][0] = 100;
         this.bonusTatica[1][1] = 100;
@@ -254,7 +254,7 @@ public class CenarioFacade implements Serializable {
         this.bonusTatica[1][8] = 90;
         this.bonusTatica[1][3] = 110;
         this.bonusTatica[1][9] = 80;
-
+        
         this.bonusTatica[7][6] = 90;
         this.bonusTatica[7][0] = 110;
         this.bonusTatica[7][1] = 80;
@@ -262,7 +262,7 @@ public class CenarioFacade implements Serializable {
         this.bonusTatica[7][8] = 100;
         this.bonusTatica[7][3] = 120;
         this.bonusTatica[7][9] = 100;
-
+        
         this.bonusTatica[8][6] = 80;
         this.bonusTatica[8][0] = 120;
         this.bonusTatica[8][1] = 110;
@@ -270,7 +270,7 @@ public class CenarioFacade implements Serializable {
         this.bonusTatica[8][8] = 100;
         this.bonusTatica[8][3] = 90;
         this.bonusTatica[8][9] = 100;
-
+        
         this.bonusTatica[3][6] = 100;
         this.bonusTatica[3][0] = 100;
         this.bonusTatica[3][1] = 90;
@@ -278,7 +278,7 @@ public class CenarioFacade implements Serializable {
         this.bonusTatica[3][8] = 110;
         this.bonusTatica[3][3] = 100;
         this.bonusTatica[3][9] = 120;
-
+        
         this.bonusTatica[9][6] = 110;
         this.bonusTatica[9][0] = 90;
         this.bonusTatica[9][1] = 120;
@@ -308,9 +308,9 @@ public class CenarioFacade implements Serializable {
         this.bonusTatica[7][2] = 120;
         this.bonusTatica[8][2] = 120;
         this.bonusTatica[9][2] = 120;
-
+        
     }
-
+    
     public List<TipoTropa> getTipoTropasBasic(Cenario cenario) {
         final List<TipoTropa> ret = new ArrayList<TipoTropa>(cenario.getTipoTropas().size());
         for (TipoTropa troop : cenario.getTipoTropas().values()) {
@@ -321,16 +321,16 @@ public class CenarioFacade implements Serializable {
         }
         return ret;
     }
-
+    
     public Collection<TipoTropa> getTipoTropas(Cenario cenario) {
         return cenario.getTipoTropas().values();
     }
-
+    
     public boolean isTropaRecruitable(Cenario cenario, Raca racaCidade, Raca racaActor, TipoTropa tipoTropa) {
         final Collection<TipoTropa> tipoTropas = getTipoTropas(cenario, racaCidade, racaActor);
         return tipoTropas.contains(tipoTropa);
     }
-
+    
     public Collection<TipoTropa> getTipoTropas(Cenario cenario, Raca racaCidade, Raca racaNacao) {
         Set<TipoTropa> tropas = new TreeSet<TipoTropa>();
         if (racaCidade == racaNacao) {
@@ -355,7 +355,7 @@ public class CenarioFacade implements Serializable {
         }
         return tropas;
     }
-
+    
     private List getProdutosArmor(Cenario cenario) {
         List<Produto> ret = new ArrayList();
         ret.add(this.getProdutoArmorDefault());
@@ -366,7 +366,7 @@ public class CenarioFacade implements Serializable {
         }
         return ret;
     }
-
+    
     private List getProdutosWeapon(Cenario cenario) {
         List ret = new ArrayList();
         ret.add(this.getProdutoWeaponDefault());
@@ -377,7 +377,7 @@ public class CenarioFacade implements Serializable {
         }
         return ret;
     }
-
+    
     private Produto getProdutoArmorDefault() {
         Produto ret = new Produto();
         ret.setArmor(true);
@@ -385,7 +385,7 @@ public class CenarioFacade implements Serializable {
         ret.setNome(label.getString("NENHUM"));
         return ret;
     }
-
+    
     private Produto getProdutoWeaponDefault() {
         Produto ret = new Produto();
         ret.setWeapon(true);
@@ -393,15 +393,15 @@ public class CenarioFacade implements Serializable {
         ret.setNome(label.getString("IMPROVISADA"));
         return ret;
     }
-
+    
     public boolean hasOrdensCidade(Cenario cenario) {
         return cenario.hasHabilidade(";SOC;");
     }
-
+    
     public boolean hasRenamePersonagens(Cenario cenario) {
         return cenario.hasHabilidade(";SRP;");
     }
-
+    
     public int getLandmarkRespawnValue(Cenario cenario) {
         if (cenario.hasHabilidade(";SHL;")) {
             return cenario.getHabilidadeValor(";SHL;");
@@ -409,47 +409,47 @@ public class CenarioFacade implements Serializable {
             return 0;
         }
     }
-
+    
     public boolean hasRenameCities(Cenario cenario) {
         return cenario.hasHabilidade(";SRC;");
     }
-
+    
     public boolean hasResourceManagement(Cenario cenario) {
         return !cenario.hasHabilidade(";SNR;");
     }
-
+    
     public boolean hasCombatCasualtiesTactics(Cenario cenario) {
         return cenario.hasHabilidade(";CTC;");
     }
-
+    
     public boolean hasShips(Cenario cenario) {
         return cenario.hasHabilidade(";TB;");
     }
-
+    
     public boolean hasLockedAlliances(Cenario cenario) {
         return cenario.hasHabilidade(";LOA;");
     }
-
-    public boolean hasLordVasalAlliances(Cenario cenario) {
-        return cenario.hasHabilidade(";SVS;");
+    
+    public boolean hasLordVasalAlliances(Partida game) {
+        return game.hasHabilidade(";SVS;") || game.getCenario().hasHabilidade(";SVS;");
     }
-
+    
     public boolean hasDiplomat(Cenario cenario) {
         return cenario.hasHabilidade(";PE;");
     }
-
+    
     public boolean hasRogue(Cenario cenario) {
         return cenario.hasHabilidade(";PR;");
     }
-
+    
     public boolean hasWizard(Cenario cenario) {
         return cenario.hasHabilidade(";PW;");
     }
-
+    
     public boolean hasOrdensNacao(Partida partida) {
         return partida.getTurno() == 0 && partida.isNationPackages();
     }
-
+    
     public boolean hasOrdens(Partida partida, BaseModel actor) {
         if (actor.isPersonagem()) {
             return true;
@@ -460,19 +460,19 @@ public class CenarioFacade implements Serializable {
         }
         return false;
     }
-
+    
     public boolean isWinterComing(Cenario cenario, int turno) {
         return turno > cenario.getHabilidadeValor(";SWC;") - 5 && turno < cenario.getHabilidadeValor(";SWC;") && cenario.hasHabilidade(";SWC;");
     }
-
+    
     public boolean isWinterArrived(Cenario cenario, int turno) {
         return cenario.hasHabilidade(";SWC;") && turno >= cenario.getHabilidadeValor(";SWC;");
     }
-
+    
     public boolean isWinter(Cenario cenario, int turno) {
         return isWinterArrived(cenario, turno) || isWinterComing(cenario, turno);
     }
-
+    
     public int getResourcesWinterReduction(Cenario cenario, int turno) {
         if (isWinter(cenario, turno)) {
             return 100 - turno + 20;
@@ -480,7 +480,7 @@ public class CenarioFacade implements Serializable {
             return 100;
         }
     }
-
+    
     public int getArmyMoveMaxPoints(Cenario cenario) {
         if (cenario.hasHabilidade(";AM14;")) {
             return cenario.getHabilidadeValor(";AM14;");
@@ -492,7 +492,7 @@ public class CenarioFacade implements Serializable {
             return 14;
         }
     }
-
+    
     public int getStartupPackagesLimit(Partida game) {
         if (game.isStartupPackages()) {
             return game.getHabilidadeValor(";GCS;");

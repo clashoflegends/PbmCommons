@@ -482,6 +482,7 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
         // after 100 ms threads are still running, then show a modal dialog.
         if (!waitForBackgroundThreadsToExit(100)) {
             // spawn background thread
+            //FIXME: remove all Swing form PbmCommons, or add a FX alternative.
             JDialog threadDialog = createBackgroundThreadDialog();
             new Thread(new Handler(RUN_WAIT_FOR_BACKGROUND_THREADS, threadDialog)).start();
             threadDialog.setVisible(true);

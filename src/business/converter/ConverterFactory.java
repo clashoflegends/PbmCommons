@@ -18,6 +18,7 @@ import msgs.BaseMsgs;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
 import persistenceCommons.SysApoio;
+import utils.StringIntSortedCell;
 
 /**
  *
@@ -608,6 +609,10 @@ public final class ConverterFactory implements Serializable {
         } else {
             return labels.getString("TERRAIN.RUINS.L");
         }
+    }
+
+    public static StringIntSortedCell getArmySizeCell(int armySizeInt, String sizeDescription) {
+        return new StringIntSortedCell(armySizeInt, sizeDescription);
     }
 
     public int estoqueToIntEnPt(String tpEstoque) {
