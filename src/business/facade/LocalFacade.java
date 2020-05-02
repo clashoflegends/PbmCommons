@@ -57,7 +57,7 @@ public final class LocalFacade implements Serializable {
         return local.getArtefatos();
     }
 
-    public int getCol(Local local) {
+    public static int getCol(Local local) {
         return Integer.parseInt(local.getCodigo().substring(0, 2));
     }
 
@@ -91,7 +91,7 @@ public final class LocalFacade implements Serializable {
         return ret;
     }
 
-    public int getRow(Local local) {
+    public static int getRow(Local local) {
         return Integer.parseInt(local.getCodigo().substring(2));
     }
 
