@@ -349,13 +349,24 @@ public final class ConverterFactory implements Serializable {
     public static Point localToPoint(Local local) {
         final Point ret;
         //calcula coordenadas e posicao no grafico.
-        final int row = localFacade.getRow(local) - 1, col = localFacade.getCol(local) - 1;
+        final int row = LocalFacade.getRow(local) - 1, col = LocalFacade.getCol(local) - 1;
         if (row % 2 == 0) {
             ret = new Point(col * 60, row * 45);
         } else {
             ret = new Point(col * 60 + 30, row * 45);
         }
         return ret;
+    }
+
+    public static String doPositionToCoord(double x, double y) {
+        int row, col;
+        row = (int) (y / 45);
+        if (row % 2 == 0) {
+            col = (int) (x / 60);
+        } else {
+            col = (int) ((x - 30) / 60);
+        }
+        return SysApoio.pointToCoord(col + 1, row + 1);
     }
 
     public static String coordAlphaToInt(String coord) {
