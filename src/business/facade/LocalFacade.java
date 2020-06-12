@@ -57,17 +57,28 @@ public final class LocalFacade implements Serializable {
         return local.getArtefatos();
     }
 
+    public static int getRow(Local local) {
+        return Integer.parseInt(local.getCodigo().substring(2));
+    }
+
     public static int getCol(Local local) {
         return Integer.parseInt(local.getCodigo().substring(0, 2));
     }
 
-    public String getCoordenadas(Local local) {
+    public static int getRow(String coordinates) {
+        return Integer.parseInt(coordinates.substring(2));
+    }
+
+    public static int getCol(String coordinates) {
+        return Integer.parseInt(coordinates.substring(0, 2));
+    }
+
+    public static String getCoordenadas(Local local) {
         if (local == null) {
             return "-";
         } else {
             return local.getCoordenadas();
         }
-
     }
 
     public SortedMap<String, Exercito> getExercitos(Local local) {
@@ -89,10 +100,6 @@ public final class LocalFacade implements Serializable {
             }
         }
         return ret;
-    }
-
-    public static int getRow(Local local) {
-        return Integer.parseInt(local.getCodigo().substring(2));
     }
 
     public String getTerrenoNome(Local local) {
