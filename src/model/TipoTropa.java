@@ -59,6 +59,33 @@ public class TipoTropa extends BaseModel {
         this.recruitCostTime = recruitCostTime;
     }
 
+    public int getFactorWeapon(boolean isNewRules) {
+        if (isNewRules && this.hasHabilidade(";TCW;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCW;");
+        } else {
+            return 1;
+        }
+    }
+
+    public int getFactorArmor(boolean isNewRules) {
+        if (isNewRules && this.hasHabilidade(";TCA;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCA;");
+        } else {
+            return 1;
+        }
+    }
+
+    public int getFactorRecruits(boolean isNewRules) {
+        if (isNewRules && this.hasHabilidade(";TCR;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCR;");
+        } else {
+            return 1;
+        }
+    }
+
     /**
      * @return the ataqueTerreno
      */
@@ -105,11 +132,11 @@ public class TipoTropa extends BaseModel {
         //FIXME: adicionar ao banco de dados por tipo tropa.postergado apra nao focar mudanca no model agora.
         int tpTropa = getInt();
         int bonusTatica[][] = {{120, 100, 100, 100, 100, 80},
-            {100, 100, 100, 120, 100, 80},
-            {100, 120, 100, 80, 100, 100},
-            {80, 100, 100, 100, 120, 100},
-            {100, 80, 100, 100, 100, 120},
-            {80, 100, 100, 100, 120, 100}};
+        {100, 100, 100, 120, 100, 80},
+        {100, 120, 100, 80, 100, 100},
+        {80, 100, 100, 100, 120, 100},
+        {100, 80, 100, 100, 100, 120},
+        {80, 100, 100, 100, 120, 100}};
         return (bonusTatica[tpTropa][tatica]);
     }
 
@@ -143,6 +170,7 @@ public class TipoTropa extends BaseModel {
     public boolean isSiege() {
         return this.hasHabilidade(";TTS;");
     }
+
     public boolean isGiant() {
         return this.hasHabilidade(";TGA;");
     }
