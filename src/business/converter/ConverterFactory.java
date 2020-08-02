@@ -26,10 +26,9 @@ import utils.StringIntSortedCell;
  */
 public final class ConverterFactory implements Serializable {
 
-    private static final LocalFacade localFacade = new LocalFacade();
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     public static final float POINTS_TO_ACTION_CONVERSION = 30f;
-    public static final int PARTIDA_GRAVEYARD = 586;
+    public static final int GAME_GRAVEYARD = 586;
 
     public static int taticaToInt(String tatica) {
         if (tatica.equalsIgnoreCase("CA")) {
