@@ -13,7 +13,7 @@ import business.facade.ExercitoFacade;
 import business.facade.JogadorFacade;
 import business.facade.LocalFacade;
 import business.facade.PersonagemFacade;
-import business.services.ColorFactory;
+import business.converter.ColorFactory;
 import business.services.TagManager;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;

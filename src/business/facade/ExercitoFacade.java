@@ -10,7 +10,7 @@ import business.combat.ArmySim;
 import business.converter.ConverterFactory;
 import business.interfaces.IExercito;
 import business.services.ComparatorFactory;
-import business.services.TitleFactory;
+import business.converter.TitleFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
