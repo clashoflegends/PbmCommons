@@ -17,7 +17,7 @@ import model.Ordem;
 import model.Partida;
 import model.Terreno;
 import model.TipoTropa;
-import business.services.TitleFactory;
+import business.converter.TitleFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.reports.SysReport;

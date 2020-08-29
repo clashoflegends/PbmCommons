@@ -26,9 +26,9 @@ import utils.StringIntSortedCell;
  */
 public final class ConverterFactory implements Serializable {
 
-    private static final LocalFacade localFacade = new LocalFacade();
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     public static final float POINTS_TO_ACTION_CONVERSION = 30f;
+    public static final int GAME_GRAVEYARD = 586;
 
     public static int taticaToInt(String tatica) {
         if (tatica.equalsIgnoreCase("CA")) {
@@ -328,7 +328,7 @@ public final class ConverterFactory implements Serializable {
     }
 
     public static List<String> armyPathToList(String directions) {
-        final List<String> ret = new ArrayList<String>();
+        final List<String> ret = new ArrayList<>();
         if (directions.equals("")) {
             return ret;
         }
@@ -601,24 +601,25 @@ public final class ConverterFactory implements Serializable {
     }
 
     public static String getLandmarkName(String cdFeature) {
-        if (cdFeature.equals(";LFC;")) {
-            return labels.getString("TERRAIN.CAVES.L");
-        } else if (cdFeature.equals(";LFH;")) {
-            return labels.getString("TERRAIN.HENGES.L");
-        } else if (cdFeature.equals(";LFI;")) {
-            return labels.getString("TERRAIN.IGLOOS.L");
-        } else if (cdFeature.equals(";LFK;")) {
-            return labels.getString("TERRAIN.LAKES.L");
-        } else if (cdFeature.equals(";LFL;")) {
-            return labels.getString("TERRAIN.LITHS.L");
-        } else if (cdFeature.equals(";LFE;")) {
-            return labels.getString("TERRAIN.TEMPLES.L");
-        } else if (cdFeature.equals(";LFR;")) {
-            return labels.getString("TERRAIN.RUINS.L");
-        } else if (cdFeature.equals(";LFT;")) {
-            return labels.getString("TERRAIN.TOWERS.L");
-        } else {
-            return labels.getString("TERRAIN.RUINS.L");
+        switch (cdFeature) {
+            case ";LFC;":
+                return labels.getString("TERRAIN.CAVES.L");
+            case ";LFH;":
+                return labels.getString("TERRAIN.HENGES.L");
+            case ";LFI;":
+                return labels.getString("TERRAIN.IGLOOS.L");
+            case ";LFK;":
+                return labels.getString("TERRAIN.LAKES.L");
+            case ";LFL;":
+                return labels.getString("TERRAIN.LITHS.L");
+            case ";LFE;":
+                return labels.getString("TERRAIN.TEMPLES.L");
+            case ";LFR;":
+                return labels.getString("TERRAIN.RUINS.L");
+            case ";LFT;":
+                return labels.getString("TERRAIN.TOWERS.L");
+            default:
+                return labels.getString("TERRAIN.RUINS.L");
         }
     }
 
