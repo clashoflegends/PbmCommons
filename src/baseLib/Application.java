@@ -552,7 +552,7 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
             this.throwable = throwable;
         }
         if (!SwingUtilities.isEventDispatchThread()) {
-            log.fatal("Ooopps...", throwable);
+            log.fatal("Opps....", throwable);
             SwingUtilities.invokeLater(new Handler(UNCAUGHT_EXCEPTION));
         } else {
             log.fatal("Oopps...", throwable);
