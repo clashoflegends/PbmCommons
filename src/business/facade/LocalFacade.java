@@ -36,7 +36,7 @@ import persistenceCommons.SysApoio;
 public final class LocalFacade implements Serializable {
 
     private static final Log log = LogFactory.getLog(LocalFacade.class);
-    private final SortedMap<String, String> landmarkImage = new TreeMap<String, String>();
+    private final SortedMap<String, String> landmarkImage = new TreeMap<>();
 
     public LocalFacade() {
         doLoadLandmarksImage();
@@ -93,7 +93,7 @@ public final class LocalFacade implements Serializable {
      */
     public SortedMap<String, Personagem> getPersonagens(Local local) {
         PersonagemFacade personagemFacade = new PersonagemFacade();
-        final SortedMap<String, Personagem> ret = new TreeMap<String, Personagem>();
+        final SortedMap<String, Personagem> ret = new TreeMap<>();
         for (Personagem personagem : local.getPersonagens().values()) {
             if (personagemFacade.isLocalConhecido(personagem)) {
                 ret.put(personagem.getCodigo(), personagem);
@@ -238,8 +238,8 @@ public final class LocalFacade implements Serializable {
             return atual.getCodigo();
         }
         //int newHex[] = this.identificacaoToInt();
-        Integer lCol = this.getCol(atual);
-        Integer lRow = this.getRow(atual);
+        Integer lCol = LocalFacade.getCol(atual);
+        Integer lRow = LocalFacade.getRow(atual);
         //calcula row & col
         switch (direcao) {
             case 0: //C 0 0
@@ -288,10 +288,10 @@ public final class LocalFacade implements Serializable {
         if (origem == destino) {
             return 0;
         } else {
-            int rowOrigem = this.getRow(origem);
-            int colOrigem = this.getCol(origem);
-            int rowDestino = this.getRow(destino);
-            int colDestino = this.getCol(destino);
+            int rowOrigem = LocalFacade.getRow(origem);
+            int colOrigem = LocalFacade.getCol(origem);
+            int rowDestino = LocalFacade.getRow(destino);
+            int colDestino = LocalFacade.getCol(destino);
             return SysApoio.getDistancia(colOrigem, colDestino, rowOrigem, rowDestino);
         }
     }
@@ -315,7 +315,7 @@ public final class LocalFacade implements Serializable {
     }
 
     public HashMap<Local, Integer> getLocalRange(Local local, int range, boolean borderOnly, SortedMap<String, Local> listLocais) {
-        HashMap<Local, Integer> list = new HashMap<Local, Integer>();
+        HashMap<Local, Integer> list = new HashMap<>();
         for (Local target : listLocais.values()) {
             final int distancia = getDistancia(local, target);
             if (borderOnly && distancia == range) {
@@ -431,7 +431,7 @@ public final class LocalFacade implements Serializable {
             //remove battle sites
             local.remHabilidade(";LHC;");
             if (!game.isInformationNetwork()) {
-                //battle sites visible is GIN is enabled for the game
+                //battle sites visible if GIN is enabled for the game
                 local.remHabilidade(";LHCA;");
                 local.remHabilidade(";LHCN;");
             }
@@ -521,7 +521,7 @@ public final class LocalFacade implements Serializable {
     }
 
     public List<Habilidade> getTerrainLandmark(Local local) {
-        List<Habilidade> ret = new ArrayList<Habilidade>();
+        List<Habilidade> ret = new ArrayList<>();
         for (Habilidade landmark : local.getHabilidades().values()) {
             if (isTerrainLandmark(landmark)) {
                 ret.add(landmark);
@@ -540,7 +540,7 @@ public final class LocalFacade implements Serializable {
 
     public boolean remTerrainLandmark(Local local) {
         boolean ret = false;
-        final List<Habilidade> list = new ArrayList<Habilidade>(local.getHabilidades().values());
+        final List<Habilidade> list = new ArrayList<>(local.getHabilidades().values());
         for (Habilidade hab : list) {
             if (hab.hasHabilidade(";FFL;")) {
                 local.remHabilidade(hab);
@@ -560,10 +560,10 @@ public final class LocalFacade implements Serializable {
      * @param range the value of range
      */
     public Set<Local> listLocalRange(Local baseLocal, int range, SortedMap<String, Local> lista) {
-        final Set<Local> visibleHexes = new TreeSet<Local>();
-        final Set<Local> borderHexes = new TreeSet<Local>();
+        final Set<Local> visibleHexes = new TreeSet<>();
+        final Set<Local> borderHexes = new TreeSet<>();
         //cant mutate borderHex while in a loop.
-        final Set<Local> newBorderHexes = new TreeSet<Local>();
+        final Set<Local> newBorderHexes = new TreeSet<>();
 
         //add self
         visibleHexes.add(baseLocal);
