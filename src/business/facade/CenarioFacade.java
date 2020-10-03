@@ -42,7 +42,7 @@ public class CenarioFacade implements Serializable {
     private static final Log log = LogFactory.getLog(CenarioFacade.class);
     private static final BundleManager label = SettingsManager.getInstance().getBundleManager();
     private final int[][] bonusTatica = new int[10][10];
-    private final SortedMap<Integer, String> taticas = new TreeMap<Integer, String>();
+    private final SortedMap<Integer, String> taticas = new TreeMap<>();
     private String typeTatica = "-";
     
     public static boolean isGrecia(Cenario cenario) {
@@ -76,7 +76,7 @@ public class CenarioFacade implements Serializable {
     }
     
     public SortedMap<Integer, String[]> getTituloPericiaAll(Cenario cenario) {
-        SortedMap<Integer, String[]> ret = new TreeMap<Integer, String[]>();
+        SortedMap<Integer, String[]> ret = new TreeMap<>();
         final String[][] tituloPericia = cenario.getTituloPericiaAll();
         ret.put(COMANDANTE, tituloPericia[COMANDANTE]);
         if (hasRogue(cenario)) {
@@ -150,7 +150,7 @@ public class CenarioFacade implements Serializable {
     }
     
     public IBaseModel[] listTerrains(Cenario cenario) {
-        final List<IBaseModel> values = new ArrayList<IBaseModel>(cenario.getTerrenos().values());
+        final List<IBaseModel> values = new ArrayList<>(cenario.getTerrenos().values());
         return values.toArray(new IBaseModel[0]);
     }
     
@@ -312,7 +312,7 @@ public class CenarioFacade implements Serializable {
     }
     
     public List<TipoTropa> getTipoTropasBasic(Cenario cenario) {
-        final List<TipoTropa> ret = new ArrayList<TipoTropa>(cenario.getTipoTropas().size());
+        final List<TipoTropa> ret = new ArrayList<>(cenario.getTipoTropas().size());
         for (TipoTropa troop : cenario.getTipoTropas().values()) {
             if (!troop.isBasicType()) {
                 continue;
@@ -332,7 +332,7 @@ public class CenarioFacade implements Serializable {
     }
     
     public Collection<TipoTropa> getTipoTropas(Cenario cenario, Raca racaCidade, Raca racaNacao) {
-        Set<TipoTropa> tropas = new TreeSet<TipoTropa>();
+        Set<TipoTropa> tropas = new TreeSet<>();
         if (racaCidade == racaNacao) {
             //se racaCidade == racaPersonagem, entao lista especial da raca (=todos)
             tropas.addAll(racaNacao.getTropas().keySet());
