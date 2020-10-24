@@ -63,6 +63,12 @@ public class TipoTropa extends BaseModel {
         if (isNewRules && this.hasHabilidade(";TCW;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCW;");
+        } else if (isNewRules && this.hasHabilidade(";TCW3;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCW10;");
+        } else if (isNewRules && this.hasHabilidade(";TCW10;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCW10;");
         } else {
             return 1;
         }
@@ -72,6 +78,12 @@ public class TipoTropa extends BaseModel {
         if (isNewRules && this.hasHabilidade(";TCA;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCA;");
+        } else if (isNewRules && this.hasHabilidade(";TCA3;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCA3;");
+        } else if (isNewRules && this.hasHabilidade(";TCA10;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCA10;");
         } else {
             return 1;
         }
@@ -81,6 +93,12 @@ public class TipoTropa extends BaseModel {
         if (isNewRules && this.hasHabilidade(";TCR;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCR;");
+        } else if (isNewRules && this.hasHabilidade(";TCR3;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCR3;");
+        } else if (isNewRules && this.hasHabilidade(";TCR10;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCR10;");
         } else {
             return 1;
         }
