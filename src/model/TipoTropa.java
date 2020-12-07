@@ -65,7 +65,7 @@ public class TipoTropa extends BaseModel {
             return this.getHabilidadeValor(";TCW;");
         } else if (isNewRules && this.hasHabilidade(";TCW3;")) {
             //NewRules: Cleanup when become standard rules
-            return this.getHabilidadeValor(";TCW10;");
+            return this.getHabilidadeValor(";TCW3;");
         } else if (isNewRules && this.hasHabilidade(";TCW10;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCW10;");
