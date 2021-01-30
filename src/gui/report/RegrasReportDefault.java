@@ -76,7 +76,7 @@ public class RegrasReportDefault implements Serializable {
                 PathFactory.getDirName(getPartida()),
                 PathFactory.getFileNameRegras(getPartida()),
                 getPartida().getTurno(),
-                !SettingsManager.getInstance().isDebug());
+                SettingsManager.getInstance().isConfig("PdfPrint", "1", "0"));
     }
 
     /**
