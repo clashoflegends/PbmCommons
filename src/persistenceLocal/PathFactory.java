@@ -51,13 +51,22 @@ public class PathFactory implements Serializable {
 
     public static String getFileNameRegras(Partida partida) {
         return String.format(label.getString("FILENAME.SAVE.REGRAS"),
-                partida.getId());
+                partida.getCenario().getNome(), partida.getId());
+    }
+
+    public static String getFileNameSample(Partida partida) {
+        return String.format(label.getString("FILENAME.SAVE.SAMPLE"),
+                partida.getCenario().getNome(), partida.getId());
     }
 
     public static String getDirName(Partida partida) {
-        return SettingsManager.getInstance().getSaveDir() + String.format("%s_%s/",
-                SysApoio.lpad(partida.getId() + "", '0', 3),
-                partida.getCodigo());
+        if (SettingsManager.getInstance().isRules()) {
+            return SettingsManager.getInstance().getSaveDir();
+        } else {
+            return SettingsManager.getInstance().getSaveDir() + String.format("%s_%s/",
+                    SysApoio.lpad(partida.getId() + "", '0', 3),
+                    partida.getCodigo());
+        }
     }
 
     public static String getPortraitDirName() {
@@ -134,7 +143,7 @@ public class PathFactory implements Serializable {
     }
 
     public List<File> listCommandFile(File baseDir, String mask) {
-        List<File> ret = new ArrayList<File>();
+        List<File> ret = new ArrayList<>();
         File[] files = baseDir.listFiles(getFilterAcoesImport());
         for (File file : files) {
             if (file.getName().contains(mask)) {

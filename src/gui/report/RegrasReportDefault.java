@@ -40,7 +40,7 @@ public class RegrasReportDefault implements Serializable {
     private Partida partida;
     protected static BundleManager labels;
     private final SysReport report = new SysReport();
-    private NacaoFacade cf = new NacaoFacade();
+    private final NacaoFacade nacaoFacade = new NacaoFacade();
 
     public RegrasReportDefault(Partida aPartida) {
         labels = SettingsManager.getInstance().getBundleManager();
@@ -349,11 +349,11 @@ public class RegrasReportDefault implements Serializable {
             getReport().writeCelula(nation.getNome());
             getReport().writeCelula(nation.getTeamFlag());
             getReport().writeCelula(nation.getRaca().getNome());
-            //capital. Remember that WDO/Factions for have all nations setup with a selected capital
-            if (partida.getCenario().isWdo()) {
+            try {
+                getReport().writeCelula(nacaoFacade.getCapital(nation).getCoordenadas());
+            } catch (NullPointerException e) {
+                //capital. Remember that WDO/Factions for have all nations setup with a selected capital. Barbarians dont have a capital too
                 getReport().writeCelula(labels.getString("VARIADA"));
-            } else {
-                getReport().writeCelula(cf.getCapital(nation).getCoordenadas());
             }
             //nation powers
             String msg = "";

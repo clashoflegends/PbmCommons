@@ -766,7 +766,7 @@ public class MapaManager implements Serializable {
         //salva em disco pra debug...
         try {
             // Save image
-            File file = new File(dirName + "maplegend.png");
+            File file = new File(dirName + "map - legend.png");
             ImageIO.write(megaMap, "png", file);
 //            ImageIO.write(rendImage, "jpg", file);
         } catch (IOException ex) {
