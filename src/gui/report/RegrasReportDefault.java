@@ -18,6 +18,8 @@ import model.Partida;
 import model.Terreno;
 import model.TipoTropa;
 import business.converter.TitleFactory;
+import business.facade.NacaoFacade;
+import model.Nacao;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import persistence.reports.SysReport;
@@ -38,6 +40,7 @@ public class RegrasReportDefault implements Serializable {
     private Partida partida;
     protected static BundleManager labels;
     private final SysReport report = new SysReport();
+    private final NacaoFacade nacaoFacade = new NacaoFacade();
 
     public RegrasReportDefault(Partida aPartida) {
         labels = SettingsManager.getInstance().getBundleManager();
@@ -51,9 +54,10 @@ public class RegrasReportDefault implements Serializable {
         printIntro();
         printOrdens();
         printFeiticos();
-        printSkills();
+        printNacoes();
         printTropasSection();
         printTaticasTropas();
+        printSkills();
         if (cenarioFacade.hasLockedAlliances(getPartida().getCenario())) {
             //todo: what???
         }
@@ -76,7 +80,7 @@ public class RegrasReportDefault implements Serializable {
                 PathFactory.getDirName(getPartida()),
                 PathFactory.getFileNameRegras(getPartida()),
                 getPartida().getTurno(),
-                !SettingsManager.getInstance().isDebug());
+                SettingsManager.getInstance().isConfig("PdfPrint", "1", "0"));
     }
 
     /**
@@ -199,7 +203,7 @@ public class RegrasReportDefault implements Serializable {
                 if (tatica[1].equals("pa")) {
                     continue;
                 }
-                final List<TipoTropa> tropas = new ArrayList<TipoTropa>();
+                final List<TipoTropa> tropas = new ArrayList<>();
                 for (TipoTropa tipoTropa : getPartida().getCenario().getTipoTropas().values()) {
                     if (tipoTropa.isBarcos() == water) {
                         tropas.add(tipoTropa);
@@ -252,6 +256,26 @@ public class RegrasReportDefault implements Serializable {
         getReport().setBorder(borderBefore);
     }
 
+    private void printNacoes() {
+        final int borderBefore = getReport().getBorder();
+        getReport().setBorder(1);
+        getReport().setConvertNewLine(true);
+        getReport().write("\n");
+        getReport().write("\n");
+        getReport().lineSeparator();
+        getReport().write("\n");
+        getReport().writeTitle(labels.getString("RULES.TITLE.NATIONS"));
+        try {
+            printNationsTable();
+        } catch (PersistenceException ex) {
+            getReport().write("Ops. Error on printNacoes Section\n");
+            log.error(ex);
+        }
+        getReport().write("\n");
+        getReport().setBorder(borderBefore);
+        getReport().setConvertNewLine(false);
+    }
+
     private void printTaticasVsTaticasTable() {
         final String[][] taticas = cenarioFacade.listTaticas(partida.getCenario());
         getReport().writeTabela(taticas.length + 1);
@@ -272,7 +296,7 @@ public class RegrasReportDefault implements Serializable {
     }
 
     private void printTropasTable() throws PersistenceException {
-        final List<TipoTropa> tropas = new ArrayList<TipoTropa>(getPartida().getCenario().getTipoTropas().values());
+        final List<TipoTropa> tropas = new ArrayList<>(getPartida().getCenario().getTipoTropas().values());
         //sort array
         ComparatorFactory.getComparatorBaseModelNameSorter(tropas);
         getReport().writeTabela(6);
@@ -301,6 +325,58 @@ public class RegrasReportDefault implements Serializable {
             getReport().writeCelula(msg);
         }
         getReport().writeTabelaFecha();
+    }
 
+    private void printNationsTable() throws PersistenceException {
+        final List<Nacao> nations = new ArrayList<>(getPartida().getJogadorAtivo().getNacoes().values());
+        //sort array
+        ComparatorFactory.getComparatorBaseModelNameSorter(nations);
+        getReport().writeTabela(7);
+
+        //titles
+        getReport().writeTabelaLine();
+        getReport().writeCelula(labels.getString("NOME"));
+        getReport().writeCelula(labels.getString("TEAM"));
+        getReport().writeCelula(labels.getString("RACA"));
+        getReport().writeCelula(labels.getString("CAPITAL"));
+        getReport().writeCelula(labels.getString("HABILIDADES.ESPECIAIS"));
+        getReport().writeCelula(labels.getString("TROPA.ESPECIAL"));
+        getReport().writeCelula(labels.getString("TROPA.REGULAR"));
+
+        //details
+        for (Nacao nation : nations) {
+            getReport().writeTabelaLine();
+            getReport().writeCelula(nation.getNome());
+            getReport().writeCelula(nation.getTeamFlag());
+            getReport().writeCelula(nation.getRaca().getNome());
+            try {
+                getReport().writeCelula(nacaoFacade.getCapital(nation).getCoordenadas());
+            } catch (NullPointerException e) {
+                //capital. Remember that WDO/Factions for have all nations setup with a selected capital. Barbarians dont have a capital too
+                getReport().writeCelula(labels.getString("VARIADA"));
+            }
+            //nation powers
+            String msg = "";
+            for (Habilidade habilidade : nation.getHabilidades().values()) {
+                if (habilidade.isFilter() || habilidade.isHidden()) {
+                    continue;
+                }
+                msg += habilidade.getNome() + "\n";
+            }
+            getReport().writeCelula(msg);
+            //special troops 
+            msg = "";
+            for (TipoTropa troop : nation.getRaca().getTropasElite()) {
+                msg += troop.getNome() + "\n";
+            }
+            getReport().writeCelula(msg);
+            //regular troops 
+            msg = "";
+            for (TipoTropa troop : nation.getRaca().getTropasRegular()) {
+                msg += troop.getNome() + "\n";
+            }
+            getReport().writeCelula(msg);
+        }
+        getReport().writeTabelaFecha();
     }
 }

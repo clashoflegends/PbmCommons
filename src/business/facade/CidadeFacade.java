@@ -307,7 +307,7 @@ public class CidadeFacade implements Serializable {
     public int getProducao(Cidade city, Produto produto) {
         int producao = city.getProducao(produto);
         try {
-            if (city.getLocal().getCoordenadas().equals("1330")) {
+            if (city.getLocal().getCoordenadas().equals("0961")) {
                 log.debug("AKI!");
             }
 
@@ -316,11 +316,11 @@ public class CidadeFacade implements Serializable {
             }
             if (city.getNacao().hasHabilidade(";NSW;") && city.getLocal().getClima() >= 5) {
                 //Summer Production: 50% production bonus in warm or better climate
-                producao = producao * city.getNacao().getHabilidadeValor(";NSW;") / 100;
+                producao += producao * city.getNacao().getHabilidadeValor(";NSW;") / 100;
             }
             if (city.getNacao().hasHabilidade(";NTR;") && isHeroPresent(city)) {
                 //Epic hero presence boosts resource production by 3x
-                producao = producao * city.getNacao().getHabilidadeValor(";NTR;") / 100;
+                producao += producao * city.getNacao().getHabilidadeValor(";NTR;") / 100;
             }
             if (produto.isMoney() && producao <= city.getNacao().getHabilidadeNacaoValor("0039")
                     && city.getNacao().getHabilidadesNacao().containsKey("0039")

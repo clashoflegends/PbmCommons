@@ -186,6 +186,7 @@ public class CenarioFacade implements Serializable {
     
     private void setBonusTaticaCFSSGA() {
         //Traditional (Charge, Flank, Standard, Surround, Guerrilla, Ambush)
+        //valid: 0,1,2,3,4,5
         this.bonusTatica[0][0] = 100;
         this.bonusTatica[0][1] = 100;
         this.bonusTatica[0][2] = 110;
@@ -231,6 +232,7 @@ public class CenarioFacade implements Serializable {
     
     private void setBonusTaticaBCFSSSS() {
         //new (Barrage, Shieldwall, StandFirm, Swarm)
+        //valid: 0, 1, 3, 6, 7, 8, 9
         this.bonusTatica[6][6] = 100;
         this.bonusTatica[6][0] = 80;
         this.bonusTatica[6][1] = 100;

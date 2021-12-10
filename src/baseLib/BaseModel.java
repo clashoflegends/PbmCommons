@@ -23,7 +23,7 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     private String codigo;
     private boolean changed = false;
     private String resultados = "";
-    private SortedMap<String, Habilidade> habilidades = new TreeMap<String, Habilidade>();
+    private SortedMap<String, Habilidade> habilidades = new TreeMap<>();
     private final SortedMap<Integer, PersonagemOrdem> acao = new TreeMap();
     private final SortedMap<Integer, PersonagemOrdem> acaoExecutadas = new TreeMap();
 

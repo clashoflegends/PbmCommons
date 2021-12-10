@@ -341,7 +341,7 @@ public class NacaoFacade implements Serializable {
     }
 
     public Iterable<String> getMensagensAll(Nacao nacao) {
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         for (String chave : nacao.getMensagensNacao().keySet()) {
             try {
                 List<String> listMsg = (List<String>) nacao.getMensagensNacao().get(chave);
@@ -356,7 +356,7 @@ public class NacaoFacade implements Serializable {
 
     public Iterable<String> getMensagensCombatesDuelos(Nacao nacao) {
         String[] keys = {"Duelos", "Combates"};
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         for (String chave : keys) {
             try {
                 List<String> listMsg = (List<String>) nacao.getMensagensNacao().get(chave);
@@ -371,7 +371,7 @@ public class NacaoFacade implements Serializable {
 
     public Iterable<String> getMensagensResultsRumoresEncontros(Nacao nacao) {
         String[] keys = {"Results", "Rumores", "Encontros"};
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         for (String chave : keys) {
             try {
                 List<String> listMsg = (List<String>) nacao.getMensagensNacao().get(chave);
@@ -429,7 +429,7 @@ public class NacaoFacade implements Serializable {
             pode = getPodeAny();
         }
         int relacionamento = nacaoBase.getRelacionamento(nacaoAlvo);
-        List<String[]> ret = new ArrayList<String[]>();
+        List<String[]> ret = new ArrayList<>();
         switch (relacionamento) {
             case 3:
                 //se vassalo, rebela
@@ -526,7 +526,7 @@ public class NacaoFacade implements Serializable {
         //else, select main city
         int max = 0;
         int current;
-        List<Cidade> potential = new ArrayList<Cidade>(nacao.getCidades().size());
+        List<Cidade> potential = new ArrayList<>(nacao.getCidades().size());
         for (Cidade cidade : nacao.getCidades()) {
             current = cidade.getTamanho() * 1000000 + cidade.getFortificacao() * 1000 + cidade.getLealdade();
             if (current > max) {
