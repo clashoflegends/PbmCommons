@@ -203,6 +203,20 @@ public class SysBanco {
         return ret;
     }
 
+    public static int rodaUpdate(String sql, String par1) {
+        int ret = -1;
+        try {
+            PreparedStatement pstm;
+            pstm = getConn().prepareStatement(sql);
+            pstm.setString(1, par1);
+            ret = pstm.executeUpdate();
+            SysBanco.cleanUp(pstm);
+        } catch (SQLException e) {
+            log.error("texto: SQLException..." + sql, e);
+        }
+        return ret;
+    }
+
     public static int rodaUpdate(String sql) {
         int ret = -1;
         try {
