@@ -268,6 +268,9 @@ public class Cidade extends BaseModel implements IActor, Cloneable {
     public void setDefenseBonus(int bonusDefense) {
         //do nothing here. 
     }
+    public void addDefenseBonus(int bonusDefense) {
+        //do nothing here. 
+    }
 
     @Override
     @SuppressWarnings("CloneDeclaresCloneNotSupported")
