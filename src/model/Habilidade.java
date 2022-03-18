@@ -63,6 +63,10 @@ public class Habilidade extends BaseModel {
         return tipo.equalsIgnoreCase("FILTER");
     }
 
+    public boolean isPowerNation() {
+        return tipo.equalsIgnoreCase("NATION");
+    }
+
     public boolean isChance() {
         return tipo.equalsIgnoreCase("GAME") && getCodigo().contains(";C");
     }

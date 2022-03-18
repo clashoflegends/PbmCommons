@@ -333,6 +333,11 @@ public class CidadeFacade implements Serializable {
                 //se em montanha/colina e com habilidade, entao garante minimo de 500
                 producao = Math.max(producao, city.getNacao().getHabilidadeValor(";PGH;"));
             }
+            if (produto.isMoney() && city.getNacao().hasHabilidade(";PGH2;")
+                    && localFacade.isTerrenoMontanhaColina(city.getLocal().getTerreno())) {
+                //se em montanha/colina e com habilidade, entao garante minimo de 500
+                producao = Math.max(producao, city.getNacao().getHabilidadeValor(";PGH2;"));
+            }
             if (produto.isMoney() && city.getNacao().hasHabilidade(";PGM;")
                     && city.getNacao().getRaca() == city.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
