@@ -79,7 +79,7 @@ public class CidadeFacade implements Serializable {
     }
 
     public String getCoordenadas(Cidade cidade) {
-        return localFacade.getCoordenadas(cidade.getLocal());
+        return LocalFacade.getCoordenadas(cidade.getLocal());
     }
 
     public int getDocas(Cidade cidade) {
