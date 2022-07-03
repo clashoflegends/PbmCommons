@@ -125,9 +125,7 @@ public class ExercitoFacade implements Serializable {
 
              */
             return BaseMsgs.tituloPericiaComandante[nn];
-        } catch (NullPointerException e) {
-            return labels.getString("UM.DESCONHECIDO");
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (NullPointerException | ArrayIndexOutOfBoundsException e) {
             return labels.getString("UM.DESCONHECIDO");
         }
     }
@@ -313,11 +311,11 @@ public class ExercitoFacade implements Serializable {
      * Lista habilidades C = Cavalaria, usa tabela demovimento de cavalaria T =
      * Transporte A = Ataque N = Navy, anda na agua, usa tabela de movimento de
      * esquadra W = War Machines E = explorar gratis F = anda em qualquer
-     * terreno I = infantaria (soldados a pe, usa tabela demovimentod e
+     * terreno I = infantaria (soldados a pe, usa tabela de movimento de
      * infantaria)
      */
     public boolean hasExplorar(Exercito exercito) {
-        return isHabilidade(exercito, ";TTE;");
+        return isHabilidade(exercito, ";TTE;") || isHabilidade(exercito, ";TTE2;") || isHabilidade(exercito, ";TTE3;");
     }
 
     public boolean isEsquadra(IExercito exercito) {
@@ -347,22 +345,13 @@ public class ExercitoFacade implements Serializable {
     public int getTransportesAvailable(SortedMap<String, Pelotao> pelotoes) {
         float capacidade = 0 - ExercitoFacade.this.getTransportesCargoUsed(pelotoes);
         for (Pelotao pelotao : pelotoes.values()) {
-            capacidade += getTransportesAvailable(pelotao);
+            capacidade += getTransportesCapacity(pelotao);
         }
         return (int) capacidade;
     }
 
     public int getTransportesAvailable(Exercito exercito) {
         return getTransportesAvailable(exercito.getPelotoes());
-    }
-
-    public int getTransportesAvailable(Pelotao pelotao) {
-        if (pelotao.getTipoTropa().hasHabilidade(";TTT;")) {
-            //conta capacidade de carga
-            return pelotao.getQtd() * ExercitoFacade.SHIP_CAPACITY;
-        } else {
-            return 0;
-        }
     }
 
     public int getTransportesCapacity(SortedMap<String, Pelotao> pelotoes) {
@@ -380,7 +369,10 @@ public class ExercitoFacade implements Serializable {
     public int getTransportesCapacity(Pelotao pelotao) {
         if (pelotao.getTipoTropa().hasHabilidade(";TTT;")) {
             //conta capacidade de carga
-            return pelotao.getQtd() * ExercitoFacade.SHIP_CAPACITY;
+            return pelotao.getQtd() * pelotao.getTipoTropa().getHabilidadeValor(";TTT;");
+        } else if (pelotao.getTipoTropa().hasHabilidade(";TTT5;")) {
+            //conta capacidade de carga
+            return pelotao.getQtd() * pelotao.getTipoTropa().getHabilidadeValor(";TTT5;");
         } else {
             return 0;
         }
@@ -406,9 +398,16 @@ public class ExercitoFacade implements Serializable {
         } else if (tropa.isBarcos()) {
             //nao conta outros navios...
             return 0;
+        } else if (tropa.hasHabilidade(";TT0;")) {
+            //no burden
+            return 0f;
         } else if (tropa.hasHabilidade(";TT2;")) {
             //se cavalaria, conta dobrado
-            return qtd * 2f;
+            return qtd * tropa.getHabilidadeValor(";TT2;");
+        } else if (tropa.hasHabilidade(";TT3;")) {
+            return qtd * tropa.getHabilidadeValor(";TT3;");
+        } else if (tropa.hasHabilidade(";TT5;")) {
+            return qtd * tropa.getHabilidadeValor(";TT5;");
         } else {
             return qtd;
         }
@@ -547,7 +546,7 @@ public class ExercitoFacade implements Serializable {
     }
 
     public List<TipoTropa> getTipoTropas(Exercito exercito) {
-        List<TipoTropa> tropas = new ArrayList<TipoTropa>();
+        List<TipoTropa> tropas = new ArrayList<>();
         for (Pelotao pelotao : exercito.getPelotoes().values()) {
             tropas.add(pelotao.getTipoTropa());
         }
@@ -555,7 +554,7 @@ public class ExercitoFacade implements Serializable {
     }
 
     public List<TipoTropa> getTipoTropasTerra(Exercito exercito) {
-        List<TipoTropa> tropas = new ArrayList<TipoTropa>();
+        List<TipoTropa> tropas = new ArrayList<>();
         for (Pelotao pelotao : exercito.getPelotoes().values()) {
             if (!pelotao.getTipoTropa().isBarcos()) {
                 tropas.add(pelotao.getTipoTropa());
@@ -565,7 +564,7 @@ public class ExercitoFacade implements Serializable {
     }
 
     public List<TipoTropa> getTipoTropasAgua(Exercito exercito) {
-        List<TipoTropa> tropas = new ArrayList<TipoTropa>();
+        List<TipoTropa> tropas = new ArrayList<>();
         for (Pelotao pelotao : exercito.getPelotoes().values()) {
             if (pelotao.getTipoTropa().isBarcos()) {
                 tropas.add(pelotao.getTipoTropa());
@@ -700,7 +699,7 @@ public class ExercitoFacade implements Serializable {
 
     public List<Pelotao> listaTropasTerra(IExercito army) {
         //prepara lista de Land
-        List<Pelotao> tropas = new ArrayList<Pelotao>();
+        List<Pelotao> tropas = new ArrayList<>();
         for (Pelotao pelotao : army.getPelotoes().values()) {
             if (!pelotao.getTipoTropa().isBarcos()) {
                 tropas.add(pelotao);
