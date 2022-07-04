@@ -16,6 +16,7 @@ import model.Cenario;
 import model.Cidade;
 import model.Exercito;
 import model.Feitico;
+import model.Habilidade;
 import model.Local;
 import model.Nacao;
 import model.Ordem;
@@ -801,5 +802,16 @@ public class PersonagemFacade implements Serializable {
         skills += " L" + personagem.getVida();
         skills += " C" + personagem.getDuelo();
         return skills;
+    }
+
+    public Collection<Habilidade> getHabilidades(Personagem pers) {
+        Collection<Habilidade> ret = new ArrayList<>();
+        for (Habilidade hab : pers.getHabilidades().values()) {
+            if (hab.getCodigo().equals(";-;") || hab.isHidden()) {
+                continue;
+            }
+            ret.add(hab);
+        }
+        return ret;
     }
 }
