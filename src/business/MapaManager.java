@@ -146,8 +146,8 @@ public class MapaManager implements Serializable {
         int[] ret = {0, 0};
         int row, col;
         for (Local local : listaLocal) {
-            row = localFacade.getRow(local);
-            col = localFacade.getCol(local);
+            row = LocalFacade.getRow(local);
+            col = LocalFacade.getCol(local);
             if (row > ret[0]) {
                 ret[0] = row;
             }
@@ -290,11 +290,11 @@ public class MapaManager implements Serializable {
         }
         //grava numero hex
         big.setColor(Color.BLACK);
-        big.drawString(localFacade.getCoordenadas(local), x + 16, y + 18);
+        big.drawString(LocalFacade.getCoordenadas(local), x + 16, y + 18);
 
         //exercitos presentes
-        final SortedMap<Nacao, Image> armyListNoDups = new TreeMap<Nacao, Image>();
-        final List<Image> armyList = new ArrayList<Image>();
+        final SortedMap<Nacao, Image> armyListNoDups = new TreeMap<>();
+        final List<Image> armyList = new ArrayList<>();
 
         //monta a lista das nacoes com exercitos presentes no local
         final boolean armyIconDrawType = SettingsManager.getInstance().isConfig("DrawAllArmyIcons", "1", "1");

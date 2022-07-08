@@ -142,6 +142,10 @@ public class Cenario extends BaseModel {
         return (this.getCodigo().contains("WDO"));
     }
 
+    public boolean is1age() {
+        return (this.getCodigo().contains("ME1A"));
+    }
+
     public boolean isLom() {
         return (this.getCodigo().contains("LOM"));
     }

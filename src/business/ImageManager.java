@@ -54,9 +54,9 @@ public class ImageManager implements Serializable {
     private int mti = 0;
     private ImageIcon combat, combatBigArmy, combatBigNavy, explosion, blueBall, yellowBall, iconApp;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
-    private final SortedMap<String, ImageIcon> landmarks = new TreeMap<String, ImageIcon>();
+    private final SortedMap<String, ImageIcon> landmarks = new TreeMap<>();
     private static ImageManager instance;
-    private final SortedMap<String, ImageIcon> portraitMap = new TreeMap<String, ImageIcon>();
+    private final SortedMap<String, ImageIcon> portraitMap = new TreeMap<>();
     private final Color colorNpc = Color.GREEN;
     private final Color colorEnemy = new Color(204, 43, 51, 169);
     private final Color colorMine = Color.BLUE;
@@ -214,6 +214,22 @@ public class ImageManager implements Serializable {
                 "Pentos.png",
                 "Jofrey.png"
             };
+        } else if (getCenario().is1age()) {
+            return new String[]{"neutral.png",
+                "wdor_gundabad.png",
+                "wdor_methedras.gif",
+                "wdor_carndun.gif",
+                "wdor_morannon.png",
+                "wdob_rivendell.png",
+                "wdob_dorwinion.gif",
+                "wdob_halfling.png",
+                "wdob_lorien.gif",
+                "wdob_silvan.png",
+                "wdob_blackhammer.png",
+                "wdob_woodmen.png",
+                "wdob_beornings.png",
+                "wdon_neutral1.gif"
+            };
         } else if (getCenario().isWdo()) {
             return new String[]{"neutral.png", "wdor_carndun.gif", "wdor_gram.gif",
                 "wdor_gundabad.png", "wdor_highpass.gif", "wdor_moria.png", "wdor_methedras.gif",
@@ -294,9 +310,7 @@ public class ImageManager implements Serializable {
     public final void waitForAll() {
         try {
             mt.waitForAll();
-        } catch (NullPointerException e) {
-            log.error("problema na carga de imagens:", e);
-        } catch (InterruptedException e) {
+        } catch (NullPointerException | InterruptedException e) {
             log.error("problema na carga de imagens:", e);
         }
         log.debug("Carregados");
@@ -512,7 +526,7 @@ public class ImageManager implements Serializable {
     }
 
     public ImageIcon getTeaser() {
-        List<String> listTeaser = new ArrayList<String>();
+        List<String> listTeaser = new ArrayList<>();
         listTeaser.add("/images/teaser/Walker_image.png");
         listTeaser.add("/images/teaser/Esparta_image.png");
         listTeaser.add("/images/teaser/Hobbit_image.png");
