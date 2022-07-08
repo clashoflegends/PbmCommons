@@ -321,7 +321,7 @@ public final class LocalFacade implements Serializable {
             if (borderOnly && distancia == range) {
                 //no filling, border only
                 list.put(target, distancia);
-            } else if (distancia <= range) {
+            } else if (!borderOnly && distancia <= range) {
                 //with filling
                 list.put(target, distancia);
             }
