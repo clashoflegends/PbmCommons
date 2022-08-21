@@ -31,7 +31,7 @@ public class Nacao extends BaseModel implements IActor {
     private final List<Personagem> personagens = new ArrayList();
     private final SortedMap<String, HabilidadeNacao> habilidadesNacao = new TreeMap();
     private SortedMap<Nacao, Integer> relacionamentos = new TreeMap();
-    private SortedMap<String, List<String>> mensagensNacao = new TreeMap<String, List<String>>();
+    private SortedMap<String, List<String>> mensagensNacao = new TreeMap<>();
 
     @Override
     public Nacao getNacao() {

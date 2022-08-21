@@ -40,7 +40,7 @@ import utils.StringIntSortedCell;
 public class ExercitoFacade implements Serializable {
 
     private static final Log log = LogFactory.getLog(ExercitoFacade.class);
-    public static final int SHIP_CAPACITY = 250;
+    public static final int SHIP_CAPACITY = 250; //FIXME: remove this constant. Ships have different sizes now
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final CenarioFacade cenarioFacade = new CenarioFacade();
     private static final LocalFacade localFacade = new LocalFacade();
