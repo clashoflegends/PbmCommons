@@ -164,26 +164,27 @@ public class TitleFactory implements Serializable {
     }
 
     public static String getTipoPersonagem(Ordem ordem) {
-        if (ordem.getTipoPersonagem().equals("X")) {
-            return tipoPersonagem[0];
-        } else if (ordem.getTipoPersonagem().equals("C")) {
-            return tipoPersonagem[1];
-        } else if (ordem.getTipoPersonagem().equals("A")) {
-            return tipoPersonagem[2];
-        } else if (ordem.getTipoPersonagem().equals("E")) {
-            return tipoPersonagem[3];
-        } else if (ordem.getTipoPersonagem().equals("M")) {
-            return tipoPersonagem[4];
-        } else if (ordem.getTipoPersonagem().equals("Z")) {
-            return tipoPersonagem[5];
-        } else if (ordem.getTipoPersonagem().equals("F")) {
-            return tipoPersonagem[6];
-        } else if (ordem.getTipoPersonagem().equals("N")) {
-            return tipoPersonagem[7];
-        } else if (ordem.getTipoPersonagem().equals("G")) {
-            return tipoPersonagem[8];
-        } else {
-            return "-";
+        switch (ordem.getTipoPersonagem()) {
+            case "X":
+                return tipoPersonagem[0];
+            case "C":
+                return tipoPersonagem[1];
+            case "A":
+                return tipoPersonagem[2];
+            case "E":
+                return tipoPersonagem[3];
+            case "M":
+                return tipoPersonagem[4];
+            case "Z":
+                return tipoPersonagem[5];
+            case "F":
+                return tipoPersonagem[6];
+            case "N":
+                return tipoPersonagem[7];
+            case "G":
+                return tipoPersonagem[8];
+            default:
+                return "-";
         }
     }
 
@@ -202,37 +203,60 @@ public class TitleFactory implements Serializable {
         }
     }
 
+    public static String getSkillName(String cdSkill) {
+        switch (cdSkill) {
+            case "A":
+                return labels.getString(tipoSkill[1]);
+            case "C":
+                return labels.getString(tipoSkill[0]);
+            case "E":
+                return labels.getString(tipoSkill[2]);
+            case "M":
+                return labels.getString(tipoSkill[3]);
+            default:
+                return tipoPersonagem[0];
+        }
+    }
+
     private static String getAjudaTipoOrdem(Ordem ordem) {
         String ret = " - ";
-        if (ordem.getTipo().equals("Misc")) {
-            ret += labels.getString("LIVRE.AJUDA");
-        } else if (ordem.getTipo().equals("Per")) {
-            ret += labels.getString("PRINCIPAL.AJUDA");
-        } else if (ordem.getTipo().equals("Mov")) {
-            ret += labels.getString("MOVIMENTACAO.AJUDA");
-        } else if (ordem.getTipo().equals("Cid")) {
-            ret += labels.getString("CIDADE.AJUDA");
-        } else if (ordem.getTipo().equals("Milestone")) {
-            ret += labels.getString("MILESTONE.AJUDA");
-        } else {
-            ret = "";
+        switch (ordem.getTipo()) {
+            case "Misc":
+                ret += labels.getString("LIVRE.AJUDA");
+                break;
+            case "Per":
+                ret += labels.getString("PRINCIPAL.AJUDA");
+                break;
+            case "Mov":
+                ret += labels.getString("MOVIMENTACAO.AJUDA");
+                break;
+            case "Cid":
+                ret += labels.getString("CIDADE.AJUDA");
+                break;
+            case "Milestone":
+                ret += labels.getString("MILESTONE.AJUDA");
+                break;
+            default:
+                ret = "";
+                break;
         }
         return ret;
     }
 
     public static String getDificuldade(Ordem ordem) {
-        if (ordem.getDificuldade().equals("Aut")) {
-            return labels.getString("AUTOMATICA");
-        } else if (ordem.getDificuldade().equals("Dif")) {
-            return labels.getString("DIFICIL");
-        } else if (ordem.getDificuldade().equals("Fac")) {
-            return labels.getString("FACIL");
-        } else if (ordem.getDificuldade().equals("Med")) {
-            return labels.getString("MEDIA");
-        } else if (ordem.getDificuldade().equals("Var")) {
-            return labels.getString("VARIADA");
-        } else {
-            return "-";
+        switch (ordem.getDificuldade()) {
+            case "Aut":
+                return labels.getString("AUTOMATICA");
+            case "Dif":
+                return labels.getString("DIFICIL");
+            case "Fac":
+                return labels.getString("FACIL");
+            case "Med":
+                return labels.getString("MEDIA");
+            case "Var":
+                return labels.getString("VARIADA");
+            default:
+                return "-";
         }
     }
 

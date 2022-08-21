@@ -4,7 +4,6 @@
  */
 package utils;
 
-import baseLib.BaseModel;
 import java.io.Serializable;
 
 /**
