@@ -214,7 +214,7 @@ public class ImageManager implements Serializable {
                 "Pentos.png",
                 "Jofrey.png"
             };
-        } else if (getCenario().is1age()) {
+        } else if (getCenario().isFirstAge()) {
             return new String[]{"neutral.png",
                 "wdor_gundabad.png",
                 "wdor_methedras.gif",

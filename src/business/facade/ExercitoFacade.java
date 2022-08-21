@@ -331,19 +331,19 @@ public class ExercitoFacade implements Serializable {
     }
 
     public int getTransportesMinimo(Exercito exercito) {
-        return (int) Math.ceil(this.getTransportesCargoUsed(exercito.getPelotoes()) / ExercitoFacade.SHIP_CAPACITY);
+        return (int) Math.ceil(this.getTransportesBurden(exercito.getPelotoes()) / ExercitoFacade.SHIP_CAPACITY);
     }
 
     public int getTransportesMinimo(SortedMap<String, Pelotao> pelotoes) {
-        return (int) Math.ceil(this.getTransportesCargoUsed(pelotoes) / ExercitoFacade.SHIP_CAPACITY);
+        return (int) Math.ceil(this.getTransportesBurden(pelotoes) / ExercitoFacade.SHIP_CAPACITY);
     }
 
     public int getTransportesMinimo(Pelotao pelotao) {
-        return (int) Math.ceil(this.getTransportesCargoUsed(pelotao) / ExercitoFacade.SHIP_CAPACITY);
+        return (int) Math.ceil(this.getTransportesBurden(pelotao) / ExercitoFacade.SHIP_CAPACITY);
     }
 
     public int getTransportesAvailable(SortedMap<String, Pelotao> pelotoes) {
-        float capacidade = 0 - ExercitoFacade.this.getTransportesCargoUsed(pelotoes);
+        float capacidade = 0 - ExercitoFacade.this.getTransportesBurden(pelotoes);
         for (Pelotao pelotao : pelotoes.values()) {
             capacidade += getTransportesCapacity(pelotao);
         }
@@ -378,19 +378,19 @@ public class ExercitoFacade implements Serializable {
         }
     }
 
-    public float getTransportesCargoUsed(SortedMap<String, Pelotao> pelotoes) {
+    public float getTransportesBurden(SortedMap<String, Pelotao> pelotoes) {
         float carga = 0F;
         for (Pelotao pelotao : pelotoes.values()) {
-            carga += ExercitoFacade.this.getTransportesCargoUsed(pelotao);
+            carga += this.getTransportesBurden(pelotao);
         }
         return carga;
     }
 
-    public float getTransportesCargoUsed(Pelotao pelotao) {
-        return getTransportesCargoUsed(pelotao.getTipoTropa(), pelotao.getQtd());
+    public float getTransportesBurden(Pelotao pelotao) {
+        return this.getTransportesBurden(pelotao.getTipoTropa(), pelotao.getQtd());
     }
 
-    public float getTransportesCargoUsed(TipoTropa tropa, int qtd) {
+    public float getTransportesBurden(TipoTropa tropa, int qtd) {
         if (tropa.hasHabilidade(";TTT;")) {
             //conta capacidade de carga
             //capacidade += pelotao.getQtd() * SHIP_CAPACITY;
