@@ -23,7 +23,13 @@ public class Pelotao extends BaseModel implements Cloneable {
     }
 
     public void setTreino(int treino) {
-        this.treino = treino;
+        if (treino < 0) {
+            this.treino = 0;
+        } else if (treino > 100) {
+            this.treino = 100;
+        } else {
+            this.treino = treino;
+        }
     }
 
     public int getModAtaque() {
