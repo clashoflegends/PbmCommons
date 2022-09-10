@@ -595,4 +595,21 @@ public final class LocalFacade implements Serializable {
         }
         return visibleHexes;
     }
+
+    public void remDecorations(Local local) {
+        //landmarks
+        remTerrainLandmark(local);
+        //roads 
+        local.setEstrada("");
+        //rivers
+        local.setRiacho("");
+        local.setRio("");
+        //bridges
+        local.setPonte("");
+        local.setVau("");
+    }
+
+    public void setTerrenoHighSea(Local local, Terreno terreno) {
+        local.setTerreno(terreno);
+    }
 }
