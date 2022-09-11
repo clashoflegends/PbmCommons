@@ -212,6 +212,9 @@ public class NacaoFacade implements Serializable {
             if (this.hasHabilidade(nacao, ";PUC;")) {
                 //Free People: Character's upkeep cost %s%% less
                 mod = 20 * (100 - nacao.getHabilidadeValor(";PUC;")) / 100;
+            } else if (this.hasHabilidade(nacao, ";PUC5;")) {
+                //Free People: Character's upkeep cost %s%% less
+                mod = 20 * (100 - nacao.getHabilidadeValor(";PUC5;")) / 100;
             } else if (this.hasHabilidade(nacao, "0043")) {
                 //Free People: Character's upkeep cost %s%% less
                 mod = 20 * (100 - nacao.getHabilidadeNacaoValor("0043")) / 100;
