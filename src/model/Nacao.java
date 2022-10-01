@@ -42,10 +42,6 @@ public class Nacao extends BaseModel implements IActor {
         this.habilidadesNacao.put(habilidadeNacao.getCodigo(), habilidadeNacao);
     }
 
-    public Alianca getAlianca() {
-        return alianca;
-    }
-
     public SortedMap<String, HabilidadeNacao> getHabilidadesNacao() {
         return this.habilidadesNacao;
     }
@@ -60,6 +56,10 @@ public class Nacao extends BaseModel implements IActor {
         } catch (Exception ex) {
             return 0;
         }
+    }
+
+    public Alianca getAlianca() {
+        return alianca;
     }
 
     public void setAlianca(Alianca alianca) {
@@ -235,6 +235,7 @@ public class Nacao extends BaseModel implements IActor {
     public void setTeamFlag(String flAlianca) {
         this.flAlianca = flAlianca;
     }
+
     /**
      * relacionamento negativo <0
      */
