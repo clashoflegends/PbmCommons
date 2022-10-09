@@ -378,6 +378,18 @@ public class ExercitoFacade implements Serializable {
         }
     }
 
+    public int getTransportesCapacity(TipoTropa troop) {
+        if (troop.hasHabilidade(";TTT;")) {
+            //conta capacidade de carga
+            return troop.getHabilidadeValor(";TTT;");
+        } else if (troop.hasHabilidade(";TTT5;")) {
+            //conta capacidade de carga
+            return troop.getHabilidadeValor(";TTT5;");
+        } else {
+            return 0;
+        }
+    }
+
     public float getTransportesBurden(SortedMap<String, Pelotao> pelotoes) {
         float carga = 0F;
         for (Pelotao pelotao : pelotoes.values()) {
