@@ -188,6 +188,10 @@ public class NacaoFacade implements Serializable {
         float qtBaseChars = cenario.getNumMaxPersonagem();
         float qtMaxChars = qtBaseChars;
         float qtIncrease;
+        qtIncrease = this.getHabilidadeValor(nacao, ";NMC;");
+        if (qtIncrease != 0) {
+            qtMaxChars += qtIncrease;
+        }
         qtIncrease = this.getHabilidadeValor(nacao, ";NNX2;");
         if (qtIncrease != 0) {
             qtMaxChars = qtBaseChars * qtIncrease / 100f;
