@@ -356,6 +356,30 @@ public class ImageManager implements Serializable {
         big.draw(path);
     }
 
+    public void doDrawScout(Graphics2D big, Point dest) {
+        doDrawCircle(big, dest, colorMine);
+    }
+
+    public void doDrawScoutAlly(Graphics2D big, Point dest) {
+        doDrawCircle(big, dest, colorMine);
+    }
+
+    public void doDrawCircle(Graphics2D big, Point dest, Color color) {
+        big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        big.setStroke(new BasicStroke(
+                1.75f,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND,
+                5f,
+                new float[]{3f, 5f, 7f, 5f, 11f, 5f, 15f, 5f, 21f, 5f, 27f, 5f, 33f, 5f},
+                0f));
+        big.setColor(color);
+
+        //draw on graph
+        big.drawOval(dest.x, dest.y, HEX_SIZE, HEX_SIZE);
+        big.drawOval(dest.x - HEX_SIZE / 4, dest.y - HEX_SIZE / 4, HEX_SIZE * 3 / 2, HEX_SIZE * 3 / 2);
+    }
+
     public void doDrawCircle(Graphics2D big, int x, int y, Color color) {
         //setup para os rastros
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

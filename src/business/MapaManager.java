@@ -254,8 +254,8 @@ public class MapaManager implements Serializable {
             }
         }
         //imprime o fog of war
-        if (!local.isVisible() && !SettingsManager.getInstance().isWorldBuilder() && !SettingsManager.getInstance().isConfig("FogOfWarType", "0", "1")) {
-            if (SettingsManager.getInstance().isConfig("FogOfWarType", "1", "1")) {
+        if (!local.isVisible() && !SettingsManager.getInstance().isWorldBuilder() && !SettingsManager.getInstance().isConfig("fogOfWarType", "0", "1")) {
+            if (SettingsManager.getInstance().isConfig("fogOfWarType", "1", "1")) {
                 //print fog
                 big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .6f));
                 big.drawImage(this.desenhoDetalhes[dtFogofwar], x, y, form);
@@ -368,8 +368,16 @@ public class MapaManager implements Serializable {
         }
     }
 
+    /**
+     * Draw past movements
+     *
+     * @param big
+     * @param listaPers
+     * @param observer
+     */
     private void drawMapaMovPath(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
         if (!SettingsManager.getInstance().isConfig("drawPcPath", "1", "1") && !SettingsManager.getInstance().isConfig("drawPcPath", "2", "1")) {
+            //don't draw
             return;
         }
         for (Personagem pers : listaPers) {
@@ -394,18 +402,17 @@ public class MapaManager implements Serializable {
         }
     }
 
-    private void drawMapaMovPathActions(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
+    private void drawPcActionsOnMap(Graphics2D big, Collection<Personagem> listaPers, Jogador observer) {
         for (Personagem pers : listaPers) {
             if (pers.getLocal() == null) {
                 continue;
             }
             for (PersonagemOrdem po : pers.getAcoes().values()) {
-                if (!acaoFacade.isMovimento(po)) {
-                    continue;
-                }
-                if (acaoFacade.isMovimentoDirection(po)) {
+                if (acaoFacade.isScout(po)) {
+                    drawScoutOnMap(po, pers, observer, big);
+                } else if (acaoFacade.isMovimentoDirection(po)) {
                     drawMovPathArmy(po, pers, observer, big);
-                } else {
+                } else if (acaoFacade.isMovimento(po)) {
                     drawMovPathPc(po, pers, observer, big);
                 }
             }
@@ -413,12 +420,16 @@ public class MapaManager implements Serializable {
     }
 
     private void drawMovPathArmy(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
-        final List<Local> pathMov = acaoFacade.getLocalDestinationPath(pers, po, getLocais());
+        if (SettingsManager.getInstance().isConfig("drawArmyMovPath", "0", "1")) {
+            //don't draw
+            return;
+        }
+        final SortedMap<Integer, Local> pathMov = acaoFacade.getLocalDestinationPath(pers, po, getLocais());
         if (pathMov.isEmpty()) {
             return;
         }
         Local baseLocal = pers.getLocal();
-        for (Local nextLocal : pathMov) {
+        for (Local nextLocal : pathMov.values()) {
             if (nextLocal == null) {
                 break;
             }
@@ -437,7 +448,20 @@ public class MapaManager implements Serializable {
         }
     }
 
+    /**
+     * Draw future movements
+     *
+     * @param po
+     * @param pers
+     * @param observer
+     * @param big
+     */
     private void drawMovPathPc(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
+        if (!SettingsManager.getInstance().isConfig("drawPcPath", "1", "1") && !SettingsManager.getInstance().isConfig("drawPcPath", "3", "1")) {
+            //don't draw
+            return;
+        }
+
         final Local localDestination = acaoFacade.getLocalDestination(pers, po, getLocais());
         if (localDestination == null) {
             return;
@@ -452,6 +476,38 @@ public class MapaManager implements Serializable {
             imageFactory.doDrawPathPcOrder(big, ori, dest);
         } else if (jogadorFacade.isAlly(pers, observer)) {
             imageFactory.doDrawPathPcAllyOrder(big, ori, dest);
+        }
+    }
+
+    /**
+     * Draw the center of all scout actions (;ASR;) on map
+     *
+     * @param po
+     * @param pers
+     * @param observer
+     * @param big
+     */
+    private void drawScoutOnMap(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
+        if (SettingsManager.getInstance().isConfig("drawScoutOnMap", "0", "1")) {
+            //don't draw
+            return;
+        }
+
+        //find target location of order or item
+        Local localDestination = acaoFacade.getLocalDestination(pers, po, getLocais());
+        if (localDestination == null) {
+            //find location according to order sequence i.e. recon after movement
+            localDestination = personagemFacade.getLocalDestination(pers, getLocais());
+        }
+        if (localDestination == null) {
+            //can't find local, don't do anything
+            return;
+        }
+        final Point dest = ConverterFactory.localToPoint(localDestination);
+        if (jogadorFacade.isMine(pers, observer)) {
+            imageFactory.doDrawScout(big, dest);
+        } else if (jogadorFacade.isAlly(pers, observer)) {
+            imageFactory.doDrawScoutAlly(big, dest);
         }
     }
 
@@ -501,7 +557,7 @@ public class MapaManager implements Serializable {
         BufferedImage megaMap = new BufferedImage(farPoint.x, farPoint.y, BufferedImage.TRANSLUCENT);
         final Graphics2D big = megaMap.createGraphics();
         //desenhando box para o mapa
-        drawMapaMovPathActions(big, listaPers, observer);
+        drawPcActionsOnMap(big, listaPers, observer);
         big.dispose(); //libera memoria
         return megaMap;
     }
