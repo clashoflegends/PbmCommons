@@ -322,11 +322,18 @@ public class CidadeFacade implements Serializable {
                 //Epic hero presence boosts resource production by 3x
                 producao += producao * city.getNacao().getHabilidadeValor(";NTR;") / 100;
             }
+
             if (produto.isMoney() && producao <= city.getNacao().getHabilidadeNacaoValor("0039")
                     && city.getNacao().getHabilidadesNacao().containsKey("0039")
                     && city.getNacao().getRaca() == city.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
                 producao = city.getNacao().getHabilidadeNacaoValor("0039");
+            }
+            if (produto.isMoney() && city.getNacao().hasHabilidade(";NWG;")
+                    && localFacade.isTerrenoFloresta(city.getLocal().getTerreno())
+                    && localFacade.isCidadeFortificada(city.getLocal())) {
+                //fortified on woods increase prod by 50%
+                producao += producao * city.getNacao().getHabilidadeValor(";NWG;") / 100;
             }
             if (produto.isMoney() && city.getNacao().hasHabilidade(";PGH;")
                     && localFacade.isTerrenoMontanhaColina(city.getLocal().getTerreno())) {

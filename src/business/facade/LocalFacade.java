@@ -152,6 +152,13 @@ public final class LocalFacade implements Serializable {
         return (local.getCidade() != null);
     }
 
+    public boolean isCidadeFortificada(Local local) {
+        if (!isCidade(local)) {
+            return false;
+        }
+        return local.getCidade().isFortificado();
+    }
+
     public boolean isEstrada(Local local, int direcao) {
         return local.isEstrada(direcao);
     }
@@ -460,6 +467,10 @@ public final class LocalFacade implements Serializable {
 
     public boolean isTerrenoMontanhaColina(Terreno terreno) {
         return terreno.isMontanha() || terreno.isColina();
+    }
+
+    public boolean isTerrenoFloresta(Terreno terreno) {
+        return terreno.isFloresta();
     }
 
     public boolean hasTerrainLandmark(Local local) {
