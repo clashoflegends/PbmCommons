@@ -424,9 +424,6 @@ public class MapaManager implements Serializable {
             //don't draw
             return;
         }
-            if (pers.getNome().equalsIgnoreCase("aemar")) {
-                log.debug("AKI!");
-            }
         final SortedMap<Integer, Local> pathMov = acaoFacade.getLocalDestinationPath(pers, po, getLocais());
         if (pathMov.isEmpty()) {
             return;
