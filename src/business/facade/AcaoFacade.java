@@ -190,7 +190,7 @@ public class AcaoFacade implements Serializable {
             //TODO: If there's army movement, then needs to calculate final hex. 
             final String coord = localFacade.getIdentificacaoVizinho(currentBase, direction);
             currentBase = locais.get(coord);
-            pathArmyMov.put(idx, currentBase);
+            pathArmyMov.put(idx++, currentBase);
         }
         return pathArmyMov;
     }

@@ -424,6 +424,9 @@ public class MapaManager implements Serializable {
             //don't draw
             return;
         }
+            if (pers.getNome().equalsIgnoreCase("aemar")) {
+                log.debug("AKI!");
+            }
         final SortedMap<Integer, Local> pathMov = acaoFacade.getLocalDestinationPath(pers, po, getLocais());
         if (pathMov.isEmpty()) {
             return;
@@ -670,7 +673,7 @@ public class MapaManager implements Serializable {
                 1f,
                 new float[]{5f},
                 0f));
-        big.setColor(Color.RED);
+        big.setColor(Color.PINK);
         Path2D.Double path = new Path2D.Double();
         path.moveTo(x, y);
         path.lineTo(x + 10, y);
