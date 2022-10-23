@@ -127,7 +127,7 @@ public class PersonagemFacade implements Serializable {
                 return getLocalDestination(pc.getLider(), locais);
             }
         }
-        return pc.getLocalOrigem();
+        return pc.getLocal();
     }
 
     public String getNacaoNome(Personagem personagem) {

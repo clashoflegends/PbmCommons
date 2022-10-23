@@ -218,14 +218,14 @@ public class MapaManager implements Serializable {
                     cpEscondido = 9;
                 }
                 //desenha cidade
-                Image colorCp = ColorFactory.setNacaoColor(
+                Image coloredCity = ColorFactory.setNacaoColor(
                         this.desenhoCidades[cidadeFacade.getTamanho(cidade) + 6 + cpEscondido],
                         cidadeFacade.getNacaoColorFill(cidade),
                         cidadeFacade.getNacaoColorBorder(cidade),
                         form);
-                largura = colorCp.getWidth(form);
-                altura = colorCp.getHeight(form);
-                big.drawImage(colorCp, x + (ImageManager.HEX_SIZE - largura) / 2, y + 34 - altura, form);
+                largura = coloredCity.getWidth(form);
+                altura = coloredCity.getHeight(form);
+                big.drawImage(coloredCity, x + (ImageManager.HEX_SIZE - largura) / 2, y + 34 - altura, form);
 
                 //desenha docas
                 Image docas = this.desenhoCidades[cidadeFacade.getDocas(cidade) + 12];
@@ -406,6 +406,9 @@ public class MapaManager implements Serializable {
         for (Personagem pers : listaPers) {
             if (pers.getLocal() == null) {
                 continue;
+            }
+            if (pers.getNome().equalsIgnoreCase("Haleth")) {
+                log.debug("AKI!");
             }
             for (PersonagemOrdem po : pers.getAcoes().values()) {
                 if (acaoFacade.isScout(po)) {
