@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import model.Cenario;
 import model.Cidade;
@@ -474,5 +475,52 @@ public class CidadeFacade implements Serializable {
 
     public boolean isDragonpit(Cidade city) {
         return city.hasHabilidade(";CTRR;");
+    }
+
+    /* not able to improve a town to a burg if there is already a burg 2 hex away 
+     * not able to improve a burg to a metropolis if there is already a 3 hex
+     * metropolis
+     */
+    public boolean isCheckCitySizeCapToUpgrade(Cidade city, SortedMap<String, Local> listLocalCity) {
+        if (city.getTamanho() < 3 || city.getTamanho() > 4) {
+            //These sizes don't apply. Can upgrade. 
+            return true;
+        }
+        if (city.isCapital()) {
+            //Capitals are excluded, can always be upgraded.
+            return true;
+        }
+        if (city.getLocal().hasHabilidade(";LKW;") && city.getNacao().hasHabilidade(";PKW;")) {
+            //Night Watch can always upgrade the wall
+            return true;
+        }
+        //Only Towns and burghs from this point on, as candidates
+        int citySize;
+        int range;
+        if (city.getTamanho() == 3) {
+            //for towns
+            range = 2;
+            citySize = 4;
+        } else {
+            //increase if burgh
+            range = 3;
+            citySize = 5;
+        }
+        //check greyjoy bonus of reduced range
+        if (city.getNacao().hasHabilidade(";PIC;")) {
+            range -= city.getNacao().getHabilidadeValor(";PIC;");
+        }
+        //check if there's another city in range
+        final Set<Local> listLocalRange = localFacade.listLocalRange(city.getLocal(), range, listLocalCity);
+        for (Local local : listLocalRange) {
+            if (getTamanho(local) < citySize) {
+                //double check if it is ok
+                continue;
+            }
+            //at this point, it found at least one. It is enough to block.
+            return false;
+        }
+        //found no reasons to deny.
+        return true;
     }
 }
