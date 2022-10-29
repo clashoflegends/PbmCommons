@@ -452,4 +452,27 @@ public class CidadeFacade implements Serializable {
         return city.hasHabilidade(";LCP;");
     }
 
+    public boolean isPorto(Cidade city) {
+        return (city.getDocas() == 2);
+    }
+
+    public boolean isDocas(Cidade city) {
+        return (city.getDocas() == 1);
+    }
+
+    public boolean isDocasPorto(Cidade city) {
+        return (city.getDocas() > 0);
+    }
+
+    public boolean isBreeedingpit(Cidade city) {
+        return city.hasHabilidade(";CTRB;");
+    }
+
+    public boolean isEaglenest(Cidade city) {
+        return city.hasHabilidade(";CTRE;");
+    }
+
+    public boolean isDragonpit(Cidade city) {
+        return city.hasHabilidade(";CTRR;");
+    }
 }
