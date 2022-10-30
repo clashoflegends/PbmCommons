@@ -123,7 +123,6 @@ public class BattleSimFacade implements Serializable {
         * NPC AI trying to decide where to attack.
          */
         return getPlatoonAttack(pelotao, exercito, local, exercito.getTerreno());
-
     }
 
     public float getPlatoonAttack(Pelotao pelotao, IExercito exercito) {
