@@ -159,11 +159,11 @@ public class BattleSimFacade implements Serializable {
             if (exercito.getNacao().hasHabilidade(";PAB;") && !tpTropa.isBarcos()
                     && lf.getDistanciaToCapital(exercito.getNacao(), local)
                     <= exercito.getNacao().getHabilidadeValor(";PAB;")) {
-                tropasValor = tropasValor * 0.15f;
+                tropasValor += tropasValor * 0.15f;
             }
             if (exercito.getNacao().hasHabilidade(";PABN;") && tpTropa.isBarcos()
                     && lf.getDistanciaToCapital(exercito.getNacao(), local) <= exercito.getNacao().getHabilidadeValor(";PABN;")) {
-                tropasValor = tropasValor * 0.15f;
+                tropasValor += tropasValor * 0.15f;
             }
             return (tropasValor);
         } catch (NullPointerException ex) {
