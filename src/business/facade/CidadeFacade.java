@@ -481,18 +481,18 @@ public class CidadeFacade implements Serializable {
      * not able to improve a burg to a metropolis if there is already a 3 hex
      * metropolis
      */
-    public boolean isCheckCitySizeCapToUpgrade(Cidade city, SortedMap<String, Local> listLocalCity) {
+    public Local isCheckCitySizeCapToUpgrade(Cidade city, SortedMap<String, Local> listLocalCity) {
         if (city.getTamanho() < 3 || city.getTamanho() > 4) {
             //These sizes don't apply. Can upgrade. 
-            return true;
+            return null;
         }
         if (city.isCapital()) {
             //Capitals are excluded, can always be upgraded.
-            return true;
+            return null;
         }
         if (city.getLocal().hasHabilidade(";LKW;") && city.getNacao().hasHabilidade(";PKW;")) {
             //Night Watch can always upgrade the wall
-            return true;
+            return null;
         }
         //Only Towns and burghs from this point on, as candidates
         int citySize;
@@ -518,9 +518,9 @@ public class CidadeFacade implements Serializable {
                 continue;
             }
             //at this point, it found at least one. It is enough to block.
-            return false;
+            return local;
         }
         //found no reasons to deny.
-        return true;
+        return null;
     }
 }
