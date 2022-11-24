@@ -229,9 +229,7 @@ public class Ordem extends BaseModel {
     public String getParametroIde(int index) {
         try {
             return parametrosIde[index].trim();
-        } catch (ArrayIndexOutOfBoundsException exception) {
-            return "-";
-        } catch (NullPointerException ex) {
+        } catch (ArrayIndexOutOfBoundsException | NullPointerException exception) {
             return "-";
         }
     }
@@ -252,9 +250,7 @@ public class Ordem extends BaseModel {
     public String getParametroIdeDisplay(int index) {
         try {
             return parametrosIdeDisplay[index].trim();
-        } catch (ArrayIndexOutOfBoundsException exception) {
-            return "-";
-        } catch (NullPointerException ex) {
+        } catch (ArrayIndexOutOfBoundsException | NullPointerException exception) {
             return "-";
         }
     }

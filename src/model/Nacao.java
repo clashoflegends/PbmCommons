@@ -31,7 +31,7 @@ public class Nacao extends BaseModel implements IActor {
     private final List<Personagem> personagens = new ArrayList();
     private final SortedMap<String, HabilidadeNacao> habilidadesNacao = new TreeMap();
     private SortedMap<Nacao, Integer> relacionamentos = new TreeMap();
-    private SortedMap<String, List<String>> mensagensNacao = new TreeMap<String, List<String>>();
+    private SortedMap<String, List<String>> mensagensNacao = new TreeMap<>();
 
     @Override
     public Nacao getNacao() {
@@ -40,10 +40,6 @@ public class Nacao extends BaseModel implements IActor {
 
     public void addHabilidadeNacao(HabilidadeNacao habilidadeNacao) {
         this.habilidadesNacao.put(habilidadeNacao.getCodigo(), habilidadeNacao);
-    }
-
-    public Alianca getAlianca() {
-        return alianca;
     }
 
     public SortedMap<String, HabilidadeNacao> getHabilidadesNacao() {
@@ -60,6 +56,10 @@ public class Nacao extends BaseModel implements IActor {
         } catch (Exception ex) {
             return 0;
         }
+    }
+
+    public Alianca getAlianca() {
+        return alianca;
     }
 
     public void setAlianca(Alianca alianca) {
@@ -235,6 +235,7 @@ public class Nacao extends BaseModel implements IActor {
     public void setTeamFlag(String flAlianca) {
         this.flAlianca = flAlianca;
     }
+
     /**
      * relacionamento negativo <0
      */

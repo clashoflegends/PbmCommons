@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import model.Cenario;
 import model.Cidade;
@@ -79,7 +80,7 @@ public class CidadeFacade implements Serializable {
     }
 
     public String getCoordenadas(Cidade cidade) {
-        return localFacade.getCoordenadas(cidade.getLocal());
+        return LocalFacade.getCoordenadas(cidade.getLocal());
     }
 
     public int getDocas(Cidade cidade) {
@@ -322,11 +323,18 @@ public class CidadeFacade implements Serializable {
                 //Epic hero presence boosts resource production by 3x
                 producao += producao * city.getNacao().getHabilidadeValor(";NTR;") / 100;
             }
+
             if (produto.isMoney() && producao <= city.getNacao().getHabilidadeNacaoValor("0039")
                     && city.getNacao().getHabilidadesNacao().containsKey("0039")
                     && city.getNacao().getRaca() == city.getRaca()) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
                 producao = city.getNacao().getHabilidadeNacaoValor("0039");
+            }
+            if (produto.isMoney() && city.getNacao().hasHabilidade(";NWG;")
+                    && localFacade.isTerrenoFloresta(city.getLocal().getTerreno())
+                    && localFacade.isCidadeFortificada(city.getLocal())) {
+                //fortified on woods increase prod by 50%
+                producao += producao * city.getNacao().getHabilidadeValor(";NWG;") / 100;
             }
             if (produto.isMoney() && city.getNacao().hasHabilidade(";PGH;")
                     && localFacade.isTerrenoMontanhaColina(city.getLocal().getTerreno())) {
@@ -445,4 +453,74 @@ public class CidadeFacade implements Serializable {
         return city.hasHabilidade(";LCP;");
     }
 
+    public boolean isPorto(Cidade city) {
+        return (city.getDocas() == 2);
+    }
+
+    public boolean isDocas(Cidade city) {
+        return (city.getDocas() == 1);
+    }
+
+    public boolean isDocasPorto(Cidade city) {
+        return (city.getDocas() > 0);
+    }
+
+    public boolean isBreeedingpit(Cidade city) {
+        return city.hasHabilidade(";CTRB;");
+    }
+
+    public boolean isEaglenest(Cidade city) {
+        return city.hasHabilidade(";CTRE;");
+    }
+
+    public boolean isDragonpit(Cidade city) {
+        return city.hasHabilidade(";CTRR;");
+    }
+
+    /* not able to improve a town to a burg if there is already a burg 2 hex away 
+     * not able to improve a burg to a metropolis if there is already a 3 hex
+     * metropolis
+     */
+    public Local isCheckCitySizeCapToUpgrade(Cidade city, SortedMap<String, Local> listLocalCity) {
+        if (city.getTamanho() < 3 || city.getTamanho() > 4) {
+            //These sizes don't apply. Can upgrade. 
+            return null;
+        }
+        if (city.isCapital()) {
+            //Capitals are excluded, can always be upgraded.
+            return null;
+        }
+        if (city.getLocal().hasHabilidade(";LKW;") && city.getNacao().hasHabilidade(";PKW;")) {
+            //Night Watch can always upgrade the wall
+            return null;
+        }
+        //Only Towns and burghs from this point on, as candidates
+        int citySize;
+        int range;
+        if (city.getTamanho() == 3) {
+            //for towns
+            range = 2;
+            citySize = 4;
+        } else {
+            //increase if burgh
+            range = 3;
+            citySize = 5;
+        }
+        //check greyjoy bonus of reduced range
+        if (city.getNacao().hasHabilidade(";PIC;")) {
+            range -= city.getNacao().getHabilidadeValor(";PIC;");
+        }
+        //check if there's another city in range
+        final Set<Local> listLocalRange = localFacade.listLocalRange(city.getLocal(), range, listLocalCity);
+        for (Local local : listLocalRange) {
+            if (getTamanho(local) < citySize) {
+                //double check if it is ok
+                continue;
+            }
+            //at this point, it found at least one. It is enough to block.
+            return local;
+        }
+        //found no reasons to deny.
+        return null;
+    }
 }

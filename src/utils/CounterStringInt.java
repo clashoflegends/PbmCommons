@@ -19,7 +19,7 @@ import java.util.TreeMap;
  */
 public final class CounterStringInt implements Serializable {
 
-    private final SortedMap<String, Integer> counter = new TreeMap<String, Integer>();
+    private final SortedMap<String, Integer> counter = new TreeMap<>();
 
     public SortedMap<String, Integer> getCounter() {
         return counter;
@@ -51,7 +51,7 @@ public final class CounterStringInt implements Serializable {
         }
         int maxCount = 999999999;
         String maxKey = "";
-        final List<String> keySet = new ArrayList<String>(counter.keySet());
+        final List<String> keySet = new ArrayList<>(counter.keySet());
         Collections.shuffle(keySet);
         for (String key : keySet) {
             if (maxCount > counter.get(key)) {
@@ -68,7 +68,7 @@ public final class CounterStringInt implements Serializable {
         }
         int minCount = -999999999;
         String maxKey = "";
-        final List<String> keySet = new ArrayList<String>(counter.keySet());
+        final List<String> keySet = new ArrayList<>(counter.keySet());
         Collections.shuffle(keySet);
         for (String key : keySet) {
             if (counter.get(key) > minCount) {
@@ -81,6 +81,10 @@ public final class CounterStringInt implements Serializable {
 
     public void remove(String key) {
         counter.remove(key);
+    }
+
+    public void reset() {
+        counter.clear();
     }
 
     public void add(String key) {
@@ -100,7 +104,7 @@ public final class CounterStringInt implements Serializable {
         if (counter.isEmpty()) {
             return "Counter is empty";
         }
-        String ret = "";
+        String ret = String.format("Count: %s; ", getTotal());
         for (String key : counter.keySet()) {
             ret += String.format("%s: %s; ", key, counter.get(key));
         }

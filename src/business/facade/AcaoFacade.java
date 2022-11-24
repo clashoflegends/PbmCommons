@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import model.Cenario;
 import model.Cidade;
 import model.Habilidade;
@@ -92,30 +93,31 @@ public class AcaoFacade implements Serializable {
 
     public int getCusto(PersonagemOrdem order, Nacao nation, Cenario cenario, Mercado market) {
         try {
-            if (order.getOrdem().getCodigo().equals("411")) {
-                //find qt tropas
-                int qtTroops = SysApoio.parseInt(order.getParametrosId().get(0));
-                if (qtTroops == 0) {
-                    //find actor
-                    qtTroops = nacaoFacade.getCidadeRecruitingLimit(nation, order.getNome(), cenario);
-                }
-                //find cost of troops
-                TipoTropa troop = cenario.getTipoTropas().get(order.getParametrosId().get(1));
-                int vlCost = troop.getRecruitCostMoney();
-                //assume will recruit maximum allowed numbers
-                return qtTroops * vlCost;
-            } else if (order.getOrdem().getCodigo().equals("550")) {
-                return (nacaoFacade.getCidadeTamanho(nation, order.getNome()) + 1) * 2000;
-            } else if (order.getOrdem().getCodigo().equals("494")) {
-                final Cidade city = nacaoFacade.getCidade(nation, order.getNome());
-                return nacaoFacade.getCidadeFortificacaoCusto(city);
-            } else if (order.getOrdem().getCodigo().equals("315")) {
-                int productType = ConverterFactory.estoqueToInt(order.getParametrosId().get(0));
-                int qtGold = market.getProdutoVlCompra(ConverterFactory.intToProduto(productType, market.getProdutos()));
-                int qtProduct = SysApoio.parseInt(order.getParametrosId().get(1));
-                return qtProduct * qtGold;
-            } else {
-                return order.getOrdem().getCusto();
+            switch (order.getOrdem().getCodigo()) {
+                case "411":
+                    //find qt tropas
+                    int qtTroops = SysApoio.parseInt(order.getParametrosId().get(0));
+                    if (qtTroops == 0) {
+                        //find actor
+                        qtTroops = nacaoFacade.getCidadeRecruitingLimit(nation, order.getNome(), cenario);
+                    }
+                    //find cost of troops
+                    TipoTropa troop = cenario.getTipoTropas().get(order.getParametrosId().get(1));
+                    int vlCost = troop.getRecruitCostMoney();
+                    //assume will recruit maximum allowed numbers
+                    return qtTroops * vlCost;
+                case "550":
+                    return (nacaoFacade.getCidadeTamanho(nation, order.getNome()) + 1) * 2000;
+                case "494":
+                    final Cidade city = nacaoFacade.getCidade(nation, order.getNome());
+                    return nacaoFacade.getCidadeFortificacaoCusto(city);
+                case "315":
+                    int productType = ConverterFactory.estoqueToInt(order.getParametrosId().get(0));
+                    int qtGold = market.getProdutoVlCompra(ConverterFactory.intToProduto(productType, market.getProdutos()));
+                    int qtProduct = SysApoio.parseInt(order.getParametrosId().get(1));
+                    return qtProduct * qtGold;
+                default:
+                    return order.getOrdem().getCusto();
             }
         } catch (NullPointerException ex) {
             return 0;
@@ -142,6 +144,14 @@ public class AcaoFacade implements Serializable {
         return ret;
     }
 
+    public boolean isScout(PersonagemOrdem po) {
+        try {
+            return po.getOrdem().hasHabilidade(";ASR;");
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
     public boolean isMovimento(PersonagemOrdem po) {
         try {
             return po.getOrdem().isTipoMovimentacao();
@@ -166,20 +176,21 @@ public class AcaoFacade implements Serializable {
             final String coord = po.getParametrosId().get(ii);
             return locais.get(coord);
         }
-        return pers.getLocal();
+        return null;
     }
 
-    public List<Local> getLocalDestinationPath(Personagem pers, PersonagemOrdem po, SortedMap<String, Local> locais) {
+    public SortedMap<Integer, Local> getLocalDestinationPath(Personagem pers, PersonagemOrdem po, SortedMap<String, Local> locais) {
         //FIXME: Regrets not having hex list as opposed to directions list. Fixme someday?
         Local currentBase = pers.getLocal();
-        final List<Local> pathArmyMov = new ArrayList<Local>();
-        final List<String> directions = new ArrayList<String>();
+        final SortedMap<Integer, Local> pathArmyMov = new TreeMap<>();
+        int idx = 0;
+        final List<String> directions = new ArrayList<>();
         directions.addAll(ConverterFactory.armyPathToList(po.getParametrosId().get(0)));
         for (String direction : directions) {
             //TODO: If there's army movement, then needs to calculate final hex. 
             final String coord = localFacade.getIdentificacaoVizinho(currentBase, direction);
             currentBase = locais.get(coord);
-            pathArmyMov.add(currentBase);
+            pathArmyMov.put(idx++, currentBase);
         }
         return pathArmyMov;
     }

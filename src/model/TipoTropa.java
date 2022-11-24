@@ -15,9 +15,9 @@ import java.util.TreeMap;
 public class TipoTropa extends BaseModel {
 
     private int movimento, upkeepMoney, upkeepFood, recruitCostMoney, recruitCostTime;
-    private SortedMap<Terreno, Integer> ataqueTerreno = new TreeMap<Terreno, Integer>();
-    private SortedMap<Terreno, Integer> defesaTerreno = new TreeMap<Terreno, Integer>();
-    private SortedMap<Terreno, Integer> custoMovimento = new TreeMap<Terreno, Integer>();
+    private SortedMap<Terreno, Integer> ataqueTerreno = new TreeMap<>();
+    private SortedMap<Terreno, Integer> defesaTerreno = new TreeMap<>();
+    private SortedMap<Terreno, Integer> custoMovimento = new TreeMap<>();
 
     public int getMovimento() {
         return movimento;
@@ -63,9 +63,15 @@ public class TipoTropa extends BaseModel {
         if (isNewRules && this.hasHabilidade(";TCW;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCW;");
+        } else if (isNewRules && this.hasHabilidade(";TCW2;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCW2;");
         } else if (isNewRules && this.hasHabilidade(";TCW3;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCW3;");
+        } else if (isNewRules && this.hasHabilidade(";TCW5;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCW5;");
         } else if (isNewRules && this.hasHabilidade(";TCW10;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCW10;");
@@ -78,9 +84,15 @@ public class TipoTropa extends BaseModel {
         if (isNewRules && this.hasHabilidade(";TCA;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCA;");
+        } else if (isNewRules && this.hasHabilidade(";TCA2;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCA2;");
         } else if (isNewRules && this.hasHabilidade(";TCA3;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCA3;");
+        } else if (isNewRules && this.hasHabilidade(";TCA5;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCA5;");
         } else if (isNewRules && this.hasHabilidade(";TCA10;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCA10;");
@@ -89,18 +101,33 @@ public class TipoTropa extends BaseModel {
         }
     }
 
-    public int getFactorRecruits(boolean isNewRules) {
+    public float getFactorRecruits(boolean isNewRules) {
         if (isNewRules && this.hasHabilidade(";TCR;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCR;");
+        } else if (isNewRules && this.hasHabilidade(";TCR2;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCR2;");
         } else if (isNewRules && this.hasHabilidade(";TCR3;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCR3;");
+        } else if (isNewRules && this.hasHabilidade(";TCR5;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCR5;");
         } else if (isNewRules && this.hasHabilidade(";TCR10;")) {
             //NewRules: Cleanup when become standard rules
             return this.getHabilidadeValor(";TCR10;");
+        } else if (isNewRules && this.hasHabilidade(";TCR200;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCR200;");
+        } else if (isNewRules && this.hasHabilidade(";TCR500;")) {
+            //NewRules: Cleanup when become standard rules
+            return this.getHabilidadeValor(";TCR500;");
+        } else if (isNewRules && this.hasHabilidade(";TCC2;")) {
+            //NewRules: Cleanup when become standard rules
+            return 1f / this.getHabilidadeValor(";TCC2;");
         } else {
-            return 1;
+            return 1f;
         }
     }
 

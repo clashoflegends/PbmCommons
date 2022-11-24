@@ -74,11 +74,23 @@ public class Terreno extends BaseModel {
         return getCodigo().equals("P");
     }
 
+    public boolean isLitoral() {
+        return getCodigo().equals("L");
+    }
+
     public boolean isDeserto() {
         return getCodigo().equals("D");
     }
 
     public boolean isWasteland() {
         return getCodigo().equals("W");
+    }
+
+    public boolean isSea() {
+        return getCodigo().equals("E");
+    }
+
+    public boolean isCoast() {
+        return getCodigo().equals("C");
     }
 }

@@ -185,7 +185,22 @@ public class NacaoFacade implements Serializable {
     }
 
     public int getPersonagensSlot(Nacao nacao, Cenario cenario) {
-        return Math.max(cenario.getNumMaxPersonagem() - getPersonagens(nacao), 0);
+        float qtBaseChars = cenario.getNumMaxPersonagem();
+        float qtMaxChars = qtBaseChars;
+        float qtIncrease;
+        qtIncrease = this.getHabilidadeValor(nacao, ";NMC;");
+        if (qtIncrease != 0) {
+            qtMaxChars += qtIncrease;
+        }
+        qtIncrease = this.getHabilidadeValor(nacao, ";NNX2;");
+        if (qtIncrease != 0) {
+            qtMaxChars = qtBaseChars * qtIncrease / 100f;
+        }
+        qtIncrease = this.getHabilidadeValor(nacao, ";NNX3;");
+        if (qtIncrease != 0) {
+            qtMaxChars = qtBaseChars * qtIncrease / 100f;
+        }
+        return (int) Math.max(qtMaxChars - getPersonagens(nacao), 0);
     }
 
     public int getCustoPersonagens(Nacao nacao, Cenario cenario) {
@@ -201,6 +216,9 @@ public class NacaoFacade implements Serializable {
             if (this.hasHabilidade(nacao, ";PUC;")) {
                 //Free People: Character's upkeep cost %s%% less
                 mod = 20 * (100 - nacao.getHabilidadeValor(";PUC;")) / 100;
+            } else if (this.hasHabilidade(nacao, ";PUC5;")) {
+                //Free People: Character's upkeep cost %s%% less
+                mod = 20 * (100 - nacao.getHabilidadeValor(";PUC5;")) / 100;
             } else if (this.hasHabilidade(nacao, "0043")) {
                 //Free People: Character's upkeep cost %s%% less
                 mod = 20 * (100 - nacao.getHabilidadeNacaoValor("0043")) / 100;

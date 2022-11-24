@@ -20,10 +20,10 @@ public class Local extends BaseModel implements Cloneable {
     private String estrada, rio, riacho, vau, ponte, rastro, landing = "";
     private Terreno terreno;
     private Cidade cidade;
-    private final SortedMap<Produto, Integer> producao = new TreeMap<Produto, Integer>();
-    private final SortedMap<String, Personagem> indicePersonagem = new TreeMap<String, Personagem>();
-    private final SortedMap<String, Exercito> indiceExercito = new TreeMap<String, Exercito>();
-    private final SortedMap<String, Artefato> indiceArtefato = new TreeMap<String, Artefato>();
+    private final SortedMap<Produto, Integer> producao = new TreeMap<>();
+    private final SortedMap<String, Personagem> indicePersonagem = new TreeMap<>();
+    private final SortedMap<String, Exercito> indiceExercito = new TreeMap<>();
+    private final SortedMap<String, Artefato> indiceArtefato = new TreeMap<>();
     private String visibilidadeNacao;  //manter em string por causa da forma de carga, aonde cada jogador tem uma visibilidade diferente da nacao. Usar sortedMap vai quebrar...
 
     @Override

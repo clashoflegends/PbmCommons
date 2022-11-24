@@ -123,7 +123,6 @@ public class BattleSimFacade implements Serializable {
         * NPC AI trying to decide where to attack.
          */
         return getPlatoonAttack(pelotao, exercito, local, exercito.getTerreno());
-
     }
 
     public float getPlatoonAttack(Pelotao pelotao, IExercito exercito) {
@@ -160,11 +159,11 @@ public class BattleSimFacade implements Serializable {
             if (exercito.getNacao().hasHabilidade(";PAB;") && !tpTropa.isBarcos()
                     && lf.getDistanciaToCapital(exercito.getNacao(), local)
                     <= exercito.getNacao().getHabilidadeValor(";PAB;")) {
-                tropasValor = tropasValor * 0.15f;
+                tropasValor += tropasValor * 0.15f;
             }
             if (exercito.getNacao().hasHabilidade(";PABN;") && tpTropa.isBarcos()
                     && lf.getDistanciaToCapital(exercito.getNacao(), local) <= exercito.getNacao().getHabilidadeValor(";PABN;")) {
-                tropasValor = tropasValor * 0.15f;
+                tropasValor += tropasValor * 0.15f;
             }
             return (tropasValor);
         } catch (NullPointerException ex) {
