@@ -152,6 +152,13 @@ public final class LocalFacade implements Serializable {
         return (local.getCidade() != null);
     }
 
+    public boolean isCidadeFortificada(Local local) {
+        if (!isCidade(local)) {
+            return false;
+        }
+        return local.getCidade().isFortificado();
+    }
+
     public boolean isEstrada(Local local, int direcao) {
         return local.isEstrada(direcao);
     }
@@ -321,7 +328,7 @@ public final class LocalFacade implements Serializable {
             if (borderOnly && distancia == range) {
                 //no filling, border only
                 list.put(target, distancia);
-            } else if (distancia <= range) {
+            } else if (!borderOnly && distancia <= range) {
                 //with filling
                 list.put(target, distancia);
             }
@@ -462,6 +469,10 @@ public final class LocalFacade implements Serializable {
         return terreno.isMontanha() || terreno.isColina();
     }
 
+    public boolean isTerrenoFloresta(Terreno terreno) {
+        return terreno.isFloresta();
+    }
+
     public boolean hasTerrainLandmark(Local local) {
         for (String landmark : getTerrainLandmarksImage().keySet()) {
             if (local.hasHabilidade(landmark)) {
@@ -594,5 +605,22 @@ public final class LocalFacade implements Serializable {
             newBorderHexes.clear();
         }
         return visibleHexes;
+    }
+
+    public void remDecorations(Local local) {
+        //landmarks
+        remTerrainLandmark(local);
+        //roads 
+        local.setEstrada("");
+        //rivers
+        local.setRiacho("");
+        local.setRio("");
+        //bridges
+        local.setPonte("");
+        local.setVau("");
+    }
+
+    public void setTerrenoHighSea(Local local, Terreno terreno) {
+        local.setTerreno(terreno);
     }
 }

@@ -16,11 +16,13 @@ import model.Cenario;
 import model.Cidade;
 import model.Exercito;
 import model.Feitico;
+import model.Habilidade;
 import model.Local;
 import model.Nacao;
 import model.Ordem;
 import model.Personagem;
 import model.PersonagemFeitico;
+import model.PersonagemOrdem;
 import model.Raca;
 import msgs.BaseMsgs;
 import org.apache.commons.logging.Log;
@@ -40,6 +42,7 @@ public class PersonagemFacade implements Serializable {
     private static final LocalFacade localFacade = new LocalFacade();
     private final NacaoFacade nacaoFacade = new NacaoFacade();
     private final CidadeFacade cidadeFacade = new CidadeFacade();
+    private static final AcaoFacade acaoFacade = new AcaoFacade();
 
     public Collection<Artefato> getArtefatos(Personagem personagem) {
         return personagem.getArtefatos().values();
@@ -98,6 +101,35 @@ public class PersonagemFacade implements Serializable {
         return local;
     }
 
+    /**
+     * PC can be moving by himself, in an army, or with a leader
+     *
+     * @param pc
+     * @return
+     */
+    public Local getLocalDestination(Personagem pc, SortedMap<String, Local> locais) {
+        for (PersonagemOrdem po : pc.getAcoes().values()) {
+            if (acaoFacade.isMovimentoDirection(po)) {
+                //FIXME: calculate final hex based on directions
+                final SortedMap<Integer, Local> pathMov = acaoFacade.getLocalDestinationPath(pc, po, locais);
+                //return last position
+                return pathMov.get(pathMov.size() - 1);
+            }
+            if (acaoFacade.isMovimento(po)) {
+                //just get the final hex
+                final Local localDestination = acaoFacade.getLocalDestination(pc, po, locais);
+                if (localDestination != null) {
+                    return localDestination;
+                }
+            }
+            if (pc.getLider() != null) {
+                //if traveling with a leader then... BEWARE recursive code!!!
+                return getLocalDestination(pc.getLider(), locais);
+            }
+        }
+        return pc.getLocal();
+    }
+
     public String getNacaoNome(Personagem personagem) {
         try {
             return personagem.getNacao().getNome();
@@ -107,7 +139,7 @@ public class PersonagemFacade implements Serializable {
     }
 
     public String getCoordenadas(Personagem personagem) {
-        return localFacade.getCoordenadas(personagem.getLocal());
+        return LocalFacade.getCoordenadas(personagem.getLocal());
     }
 
     public String getNome(Personagem personagem) {
@@ -398,7 +430,7 @@ public class PersonagemFacade implements Serializable {
 
     public List<String[]> getPericias(Personagem personagem, Cenario cenario) {
         int aTipo = 0, aTitulo = 1, aNatural = 2, aFinal = 3;
-        List<String[]> pericias = new ArrayList<String[]>();
+        List<String[]> pericias = new ArrayList<>();
         if (isMorto(personagem)) {
             return pericias;
         }
@@ -575,7 +607,7 @@ public class PersonagemFacade implements Serializable {
             if (this.isLocalConhecido(personagem) && localAtual != localOrigem) {
                 ret += String.format(labels.getString("PERSONAGEM.ENCONTRAVA.EM"),
                         personagem.getNome(),
-                        localFacade.getCoordenadas(localOrigem),
+                        LocalFacade.getCoordenadas(localOrigem),
                         localFacade.getTerrenoNome(localOrigem));
                 ret += "\n";
             } else {
@@ -614,7 +646,7 @@ public class PersonagemFacade implements Serializable {
             if (localAtual != null) {
                 ret += String.format(labels.getString("ESTA.EM"),
                         personagem.getNome(),
-                        localFacade.getCoordenadas(localAtual),
+                        LocalFacade.getCoordenadas(localAtual),
                         localFacade.getTerrenoNome(localAtual));
                 if (localFacade.isCidade(localAtual, this.getNacao(personagem))) {
                     Cidade cidade = localFacade.getCidade(localAtual);
@@ -760,6 +792,9 @@ public class PersonagemFacade implements Serializable {
         if (personagem.getNacao().hasHabilidade(";PUC;")) {
             //Free People: Character's upkeep cost %s%% less
             ret += personagem.getPericiaNaturalTotal() * 20 * (100 - personagem.getNacao().getHabilidadeValor(";PUC;")) / 100;
+        } else if (personagem.getNacao().hasHabilidade(";PUC5;")) {
+            //Free People: Character's upkeep cost %s%% less
+            ret += personagem.getPericiaNaturalTotal() * 20 * (100 - personagem.getNacao().getHabilidadeValor(";PUC5;")) / 100;
         } else {
             ret += personagem.getPericiaNaturalTotal() * 20;
         }
@@ -801,5 +836,16 @@ public class PersonagemFacade implements Serializable {
         skills += " L" + personagem.getVida();
         skills += " C" + personagem.getDuelo();
         return skills;
+    }
+
+    public Collection<Habilidade> getHabilidades(Personagem pers) {
+        Collection<Habilidade> ret = new ArrayList<>();
+        for (Habilidade hab : pers.getHabilidades().values()) {
+            if (hab.getCodigo().equals(";-;") || hab.isHidden()) {
+                continue;
+            }
+            ret.add(hab);
+        }
+        return ret;
     }
 }

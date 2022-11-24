@@ -55,9 +55,9 @@ public class ImageManager implements Serializable {
     private int mti = 0;
     private ImageIcon combat, combatBigArmy, combatBigNavy, explosion, blueBall, yellowBall, iconApp;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
-    private final SortedMap<String, ImageIcon> landmarks = new TreeMap<String, ImageIcon>();
+    private final SortedMap<String, ImageIcon> landmarks = new TreeMap<>();
     private static ImageManager instance;
-    private final SortedMap<String, ImageIcon> portraitMap = new TreeMap<String, ImageIcon>();
+    private final SortedMap<String, ImageIcon> portraitMap = new TreeMap<>();
     private final Color colorNpc = Color.GREEN;
     private final Color colorEnemy = new Color(204, 43, 51, 169);
     private final Color colorMine = Color.BLUE;
@@ -216,6 +216,22 @@ public class ImageManager implements Serializable {
                 "Pentos.png",
                 "Jofrey.png"
             };
+        } else if (getCenario().isFirstAge()) {
+            return new String[]{"neutral.png",
+                "wdor_gundabad.png",
+                "wdor_methedras.gif",
+                "wdor_carndun.gif",
+                "wdor_morannon.png",
+                "wdob_rivendell.png",
+                "wdob_dorwinion.gif",
+                "wdob_halfling.png",
+                "wdob_lorien.gif",
+                "wdob_silvan.png",
+                "wdob_blackhammer.png",
+                "wdob_woodmen.png",
+                "wdob_beornings.png",
+                "wdon_neutral1.gif"
+            };
         } else if (getCenario().isWdo()) {
             return new String[]{"neutral.png", "wdor_carndun.gif", "wdor_gram.gif",
                 "wdor_gundabad.png", "wdor_highpass.gif", "wdor_moria.png", "wdor_methedras.gif",
@@ -296,9 +312,7 @@ public class ImageManager implements Serializable {
     public final void waitForAll() {
         try {
             mt.waitForAll();
-        } catch (NullPointerException e) {
-            log.error("problema na carga de imagens:", e);
-        } catch (InterruptedException e) {
+        } catch (NullPointerException | InterruptedException e) {
             log.error("problema na carga de imagens:", e);
         }
         log.debug("Carregados");
@@ -342,6 +356,30 @@ public class ImageManager implements Serializable {
 
         //draw on graph
         big.draw(path);
+    }
+
+    public void doDrawScout(Graphics2D big, Point dest) {
+        doDrawCircle(big, dest, colorMine);
+    }
+
+    public void doDrawScoutAlly(Graphics2D big, Point dest) {
+        doDrawCircle(big, dest, colorMine);
+    }
+
+    public void doDrawCircle(Graphics2D big, Point dest, Color color) {
+        big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        big.setStroke(new BasicStroke(
+                1.75f,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND,
+                5f,
+                new float[]{3f, 5f, 7f, 5f, 11f, 5f, 15f, 5f, 21f, 5f, 27f, 5f, 33f, 5f},
+                0f));
+        big.setColor(color);
+
+        //draw on graph
+        big.drawOval(dest.x, dest.y, HEX_SIZE, HEX_SIZE);
+        big.drawOval(dest.x - HEX_SIZE / 4, dest.y - HEX_SIZE / 4, HEX_SIZE * 3 / 2, HEX_SIZE * 3 / 2);
     }
 
     public void doDrawCircle(Graphics2D big, int x, int y, Color color) {
@@ -514,7 +552,7 @@ public class ImageManager implements Serializable {
     }
 
     public ImageIcon getTeaser() {
-        List<String> listTeaser = new ArrayList<String>();
+        List<String> listTeaser = new ArrayList<>();
         listTeaser.add("/images/teaser/Walker_image.png");
         listTeaser.add("/images/teaser/Esparta_image.png");
         listTeaser.add("/images/teaser/Hobbit_image.png");

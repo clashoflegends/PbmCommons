@@ -85,14 +85,19 @@ public class Cenario extends BaseModel {
     public int getMoneyIndex() {
         // PENDING: criar um flag de controle independente da PK (id).
         int moneyIndex;
-        if (getCodigo().equals("GRECIA01")) {
-            moneyIndex = 7;
-        } else if (getCodigo().equals("1650ER01")) {
-            moneyIndex = 7;
-        } else if (getCodigo().equals("1650GB01")) {
-            moneyIndex = 7;
-        } else {
-            moneyIndex = 7;
+        switch (getCodigo()) {
+            case "GRECIA01":
+                moneyIndex = 7;
+                break;
+            case "1650ER01":
+                moneyIndex = 7;
+                break;
+            case "1650GB01":
+                moneyIndex = 7;
+                break;
+            default:
+                moneyIndex = 7;
+                break;
         }
         return moneyIndex;
     }
@@ -140,6 +145,10 @@ public class Cenario extends BaseModel {
 
     public boolean isWdo() {
         return (this.getCodigo().contains("WDO"));
+    }
+
+    public boolean isFirstAge() {
+        return (this.getCodigo().contains("ME1A"));
     }
 
     public boolean isLom() {

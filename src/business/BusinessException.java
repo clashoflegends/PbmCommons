@@ -12,28 +12,28 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Walter
  */
-public class BussinessException extends Exception implements Serializable {
+public class BusinessException extends Exception implements Serializable {
 
     /**
      * 
      */
     private static final long serialVersionUID = -7627356893367987945L;
-    private static Log log = LogFactory.getLog(BussinessException.class);
+    private static Log log = LogFactory.getLog(BusinessException.class);
 
-    public BussinessException() {
+    public BusinessException() {
     }
 
-    public BussinessException(Throwable cause) {
+    public BusinessException(Throwable cause) {
         super("Erro na camada Bussiness", cause);
         //log.error("Erro na camada de Persistencia", cause);
     }
 
-    public BussinessException(String message, Throwable cause) {
+    public BusinessException(String message, Throwable cause) {
         super(message, cause);
         //log.error(message, cause);
     }
 
-    public BussinessException(String message) {
+    public BusinessException(String message) {
         super(message);
         //log.error(message, this);
     }

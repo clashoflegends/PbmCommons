@@ -36,7 +36,7 @@ public class Raca extends BaseModel {
     }
 
     public List<TipoTropa> getTropasElite() {
-        List<TipoTropa> list = new ArrayList<TipoTropa>();
+        List<TipoTropa> list = new ArrayList<>();
         for (TipoTropa key : tropas.keySet()) {
             if (tropas.get(key).equals(1)) {
                 list.add(key);
@@ -47,7 +47,7 @@ public class Raca extends BaseModel {
     }
 
     public List<TipoTropa> getTropasRegular() {
-        List<TipoTropa> list = new ArrayList<TipoTropa>();
+        List<TipoTropa> list = new ArrayList<>();
         for (TipoTropa key : tropas.keySet()) {
             if (tropas.get(key).equals(0)) {
                 list.add(key);
