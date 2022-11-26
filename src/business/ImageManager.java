@@ -21,6 +21,7 @@ import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.Serializable;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +67,7 @@ public class ImageManager implements Serializable {
     private final Color colorMineArmyOrdem = Color.BLUE.darker();
     private final Color colorAllyArmyOrdem = Color.CYAN.brighter().brighter();
     private final AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
+   
 
     /**
      * to be used to draw rastros. don't need cenario.
@@ -106,7 +108,7 @@ public class ImageManager implements Serializable {
         combatBigNavy = new ImageIcon(getClass().getResource("/images/combat_blue.png"));
         combatBigArmy = new ImageIcon(getClass().getResource("/images/combat_green.png"));
         explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
-        iconApp = new ImageIcon(getClass().getResource("/images/hex_wasteland.png"));
+        iconApp = new ImageIcon(getClass().getResource("/images/hex_wasteland.png"));        
         doLoadFeaturesAll();
     }
 
@@ -752,5 +754,9 @@ public class ImageManager implements Serializable {
             portrait = this.portraitMap.get("blank.jpg");
         }
         return portrait;
+    }
+    
+    public javafx.scene.image.Image getDeletePlatoonIcon() throws URISyntaxException {
+        return new javafx.scene.image.Image(getClass().getResource("/images/delete.png").toURI().toString());
     }
 }
