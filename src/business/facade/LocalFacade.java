@@ -37,6 +37,7 @@ public final class LocalFacade implements Serializable {
 
     private static final Log log = LogFactory.getLog(LocalFacade.class);
     private final SortedMap<String, String> landmarkImage = new TreeMap<>();
+    private final CidadeFacade cidadeFacade = new CidadeFacade();
 
     public LocalFacade() {
         doLoadLandmarksImage();
@@ -622,5 +623,17 @@ public final class LocalFacade implements Serializable {
 
     public void setTerrenoHighSea(Local local, Terreno terreno) {
         local.setTerreno(terreno);
+    }
+
+    public boolean isKeyLocal(Local local) {
+        try {
+            return local.hasHabilidade(";LSK;");
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+    public boolean isKeyLocalCity(Local local) {
+        return isKeyLocal(local) || cidadeFacade.isKeyCity(local.getCidade());
     }
 }

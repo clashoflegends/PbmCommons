@@ -625,6 +625,16 @@ public class NacaoFacade implements Serializable {
         return BaseMsgs.dificuldadeBonus[nationBase.getRelacionamento(nationTarget) + 3];
     }
 
+    public boolean isNacaoBarbarian(Nacao nation) {
+        //FIXME: look for hability to indicate
+        try {
+            return nation.getOwner().getId() == 1 && nation.getNome().equals("Barbarians");
+        } catch (NullPointerException e) {
+            //Jogador not loaded. Not to bleed into other players files like DM/GB
+            return false;
+        }
+    }
+
     public boolean isNpc(Personagem personagem) {
         //FIXME: look for hability to indicate
         try {
@@ -702,6 +712,14 @@ public class NacaoFacade implements Serializable {
         int ret = 0;
         for (Cidade city : nation.getCidades()) {
             ret += cidadeFacade.getPointsDomination(city);
+        }
+        return ret;
+    }
+
+    public Integer getPointsKeyCity(Nacao nation) {
+        int ret = 0;
+        for (Cidade city : nation.getCidades()) {
+            ret += cidadeFacade.getPointsKeyCity(city);
         }
         return ret;
     }

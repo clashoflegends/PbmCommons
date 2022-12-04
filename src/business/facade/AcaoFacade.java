@@ -48,7 +48,7 @@ public class AcaoFacade implements Serializable {
     }
 
     public boolean isPointsSetupUnderLimit(BaseModel actor, int nationPackagesLimit) {
-        if (actor.isNacao()) {
+        if (actor.isNacaoClass()) {
             Nacao nacao = (Nacao) actor;
             final int current = getPointsSetup(nacao);
             return current < nationPackagesLimit;
