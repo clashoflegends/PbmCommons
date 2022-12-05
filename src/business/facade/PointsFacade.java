@@ -48,6 +48,29 @@ public class PointsFacade implements Serializable {
         return counterSingle;
     }
 
+    public CounterStringInt doVictoryDominationTeam(Collection<Local> locais, Nacao barbarians) {
+        //Victory goal: Domination, game ends when one nation has more key cities (original capitals) than all opponents combined
+        final CounterStringInt counterTeam = new CounterStringInt();
+        for (Local hex : locais) {
+            if (!localFacade.isKeyLocalCity(hex)) {
+                continue;
+                /*
+                - targaryen can move city
+                - city may have been razed then re-populated
+                - city may have been razed and be empity hex
+                - city may have been captured
+                - can't double count when tragaryen moves cities (original hex and new city)
+                 */
+            }
+            if (localFacade.isCidade(hex) && hex.getCidade().getNacao() != null) {
+                counterTeam.add(hex.getCidade().getNacao().getTeamFlag(), 1);
+            } else {
+                counterTeam.add(barbarians.getTeamFlag(), 1);
+            }
+        }
+        return counterTeam;
+    }
+
     public CounterStringInt doDominationBattleRoyale(Collection<Local> locais, Nacao barbarians) {
         final CounterStringInt counterSingle = new CounterStringInt();
         for (Local hex : locais) {
