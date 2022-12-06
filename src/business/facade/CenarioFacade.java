@@ -493,9 +493,9 @@ public class CenarioFacade implements Serializable {
     public boolean hasOrdens(Partida partida, BaseModel actor) {
         if (actor.isPersonagem()) {
             return true;
-        } else if (actor.isCidade() && hasOrdensCidade(partida.getCenario())) {
+        } else if (actor.isCidadeClass() && hasOrdensCidade(partida.getCenario())) {
             return true;
-        } else if (actor.isNacao() && hasOrdensNacao(partida)) {
+        } else if (actor.isNacaoClass() && hasOrdensNacao(partida)) {
             return true;
         }
         return false;

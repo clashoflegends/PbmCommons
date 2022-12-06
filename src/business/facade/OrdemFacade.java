@@ -418,7 +418,7 @@ public class OrdemFacade implements Serializable {
 
     public int getOrdemMax(BaseModel actor, Partida game) {
         if (cenarioFacade.hasOrdens(game, actor)) {
-            if (actor.isNacao()) {
+            if (actor.isNacaoClass()) {
                 return (int) Math.ceil((float) cenarioFacade.getStartupPackagesLimit(game) / ConverterFactory.POINTS_TO_ACTION_CONVERSION);
             } else {
                 return getOrdemMax(actor);
@@ -650,7 +650,7 @@ public class OrdemFacade implements Serializable {
     }
 
     public int getActionCount(BaseModel actor) {
-        if (actor.isNacao()) {
+        if (actor.isNacaoClass()) {
             return (int) (acaoFacade.getPointsSetup(actor.getNacao()) / ConverterFactory.POINTS_TO_ACTION_CONVERSION);
         } else {
             return actor.getAcaoSize();

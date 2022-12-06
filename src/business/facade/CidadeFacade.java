@@ -435,6 +435,38 @@ public class CidadeFacade implements Serializable {
         city.setFortificacao(city.getFortificacao() - fator);
     }
 
+    public boolean isKeyCity(Cidade city) {
+        try {
+            return city.hasHabilidade(";LCO;");
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+    public boolean isKeyLocal(Cidade city) {
+        try {
+            return localFacade.isKeyLocal(city.getLocal());
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+    public int getPointsKeyCity(Cidade city) {
+        if (isKeyCity(city) || isKeyLocal(city)) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    public int getPointsDomination(Local local) {
+        try {
+            return getPointsDomination(local.getCidade());
+        } catch (NullPointerException e) {
+            return 0;
+        }
+    }
+
     public int getPointsDomination(Cidade city) {
         if (!isPointsDomination(city)) {
             return 0;
