@@ -99,6 +99,10 @@ public final class CounterStringInt implements Serializable {
         }
     }
 
+    public void sub(String key, int value) {
+        add(key, value * -1);
+    }
+
     @Override
     public String toString() {
         if (counter.isEmpty()) {
