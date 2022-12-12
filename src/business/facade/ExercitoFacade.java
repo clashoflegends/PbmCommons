@@ -126,7 +126,8 @@ public class ExercitoFacade implements Serializable {
              */
             return BaseMsgs.tituloPericiaComandante[nn];
         } catch (NullPointerException | ArrayIndexOutOfBoundsException e) {
-            return labels.getString("UM.DESCONHECIDO");
+            //return a minimum level
+            return BaseMsgs.tituloPericiaComandante[4];
         }
     }
 
