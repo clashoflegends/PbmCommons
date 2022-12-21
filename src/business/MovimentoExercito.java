@@ -30,9 +30,10 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     private int moveType = 0;
     private boolean evasivo;
     private int limiteMovimento;
-    private final List<TipoTropa> tropas = new ArrayList<TipoTropa>();
+    private final List<TipoTropa> tropas = new ArrayList<>();
     private boolean docas;
     private final ExercitoFacade ef = new ExercitoFacade();
+    private final LocalFacade localFacade = new LocalFacade();
     public static final int BY_LAND = 0;
     public static final int BY_WATER = 1;
     public static final int BY_FIXED = 2;
@@ -213,11 +214,11 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     public void setDirecaoAnterior(int anterior) {
         int oldDirection = anterior % 6;
         if (oldDirection == 0 && anterior != 0) {
-            //6%6 returns zero, but we want to keep 6.
+            //6%6 returns zero, but we want to keep 6 for a valid direction.
             oldDirection = 6;
         }
         this.direcaoAnterior = oldDirection;
-        this.direcaoAnterior = anterior % 6;
+        //this.direcaoAnterior = anterior % 6;
     }
 
     /**
@@ -248,7 +249,6 @@ public final class MovimentoExercito implements Serializable, Cloneable {
     }
 
     private boolean isNavegavel() {
-        LocalFacade localFacade = new LocalFacade();
         boolean ret = false;
         //inicio do movimento:
         if (getDirecaoAnterior() == 0 && getDestino().getTerreno().isAgua()) {
