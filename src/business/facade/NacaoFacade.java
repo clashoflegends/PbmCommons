@@ -354,7 +354,7 @@ public class NacaoFacade implements Serializable {
         }
     }
 
-    public int getPontosVitoria(Nacao nacao) {
+    public int getPointVictory(Nacao nacao) {
         return nacao.getPontosVitoria();
     }
 
