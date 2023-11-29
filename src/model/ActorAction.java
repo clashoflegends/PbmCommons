@@ -5,6 +5,7 @@
 package model;
 
 import baseLib.BaseModel;
+import persistenceCommons.SettingsManager;
 
 /**
  *
@@ -14,10 +15,12 @@ public final class ActorAction extends BaseModel {
 
     public static final String ACTION_DISABLED = "-";
     public static final String ACTION_BLANK = " ";
+    public static final String ACTION_BLANK_ALLY = "_";
     public static final int STATUS_DISABLED = 0;
     public static final int STATUS_BLANK = 1;
     public static final int STATUS_VALID = 2;
     public static final int STATUS_READONLY = 3;
+    public static final int STATUS_BLANK_ALLY = 4;
     private int status = 0;
     private PersonagemOrdem personagemOrdem;
 
@@ -28,12 +31,19 @@ public final class ActorAction extends BaseModel {
     }
 
     public ActorAction(int status) {
-        if (status == STATUS_BLANK) {
-            setStatus(STATUS_BLANK);
-            setNome(ACTION_BLANK);
-        } else {
-            setStatus(STATUS_DISABLED);
-            setNome(ACTION_DISABLED);
+        switch (status) {
+            case STATUS_BLANK:
+                setStatus(STATUS_BLANK);
+                setNome(ACTION_BLANK);
+                break;
+            case STATUS_BLANK_ALLY:
+                setStatus(STATUS_BLANK_ALLY);
+                setNome(SettingsManager.getInstance().getConfig("GuiAllyMissingOrdersChar", ACTION_BLANK_ALLY));
+                break;
+            default:
+                setStatus(STATUS_DISABLED);
+                setNome(ACTION_DISABLED);
+                break;
         }
         setCodigo(getNome());
     }
@@ -79,6 +89,10 @@ public final class ActorAction extends BaseModel {
 
     public boolean isBlank() {
         return getStatus() == STATUS_BLANK;
+    }
+
+    public boolean isBlankAlly() {
+        return getStatus() == STATUS_BLANK_ALLY;
     }
 
     public boolean isValid() {

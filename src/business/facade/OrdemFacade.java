@@ -47,7 +47,7 @@ public class OrdemFacade implements Serializable {
 
     public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, BaseModel actor, int indexOrdemAtiva, boolean isAllOrders, boolean isStartupPackages) {
         //cria vetor e garante tamanho minimo
-        List<Ordem> ordensActor = new ArrayList<Ordem>(ordens.size() + 1);
+        List<Ordem> ordensActor = new ArrayList<>(ordens.size() + 1);
         //lista as ordens que o personagem pode executar
         for (Ordem ordem : ordens.values()) {
             //se o actor tem a pericia para dar a ordem
@@ -81,17 +81,10 @@ public class OrdemFacade implements Serializable {
         if (ordem.isTipoPericia() && ordemOutra.isTipoPericia()
                 && ordem.getTipoPersonagem().equals(ordemOutra.getTipoPersonagem())) {
             //FIXME: mago pode fazer duas ordens de pericia se pelo menos uma for feitico
-            if (ordem.isMago() && ordemOutra.isMago() && ordem != ordemOutra && (ordem.isFeitico() || ordemOutra.isFeitico())) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        if (!isOrdemRequisitosMulti(ordem, ordem, ordemOutra)) {
-            return false;
+            return ordem.isMago() && ordemOutra.isMago() && ordem != ordemOutra && (ordem.isFeitico() || ordemOutra.isFeitico());
         }
         //personagem em exercito ou grupo?
-        return true;
+        return isOrdemRequisitosMulti(ordem, ordem, ordemOutra);
     }
 
     /**
@@ -239,10 +232,7 @@ public class OrdemFacade implements Serializable {
     private boolean isOrdemRequisitosNacao(Nacao nacao, Ordem ordem, boolean isStartupPackages) {
         final String requisitos = ordem.getRequisito().toLowerCase();
         //criticas por tipo de chave
-        if (requisitos.contains("setup") && !isStartupPackages) {
-            return false;
-        }
-        return true;
+        return !(requisitos.contains("setup") && !isStartupPackages);
     }
 
     private boolean isOrdemRequisitosPersonagem(Personagem personagem, Ordem ordem) {
@@ -500,18 +490,57 @@ public class OrdemFacade implements Serializable {
         if (!actor.isActorActive()) {
             return new ActorAction(ActorAction.STATUS_DISABLED);
         }
-        if (actor.getAcao(index) == null && !owner.isNacao(actor.getNacao())) {
-            return new ActorAction(ActorAction.STATUS_DISABLED);
+        if (owner.isNacao(actor.getNacao())) {
+            //owned, full visibility
+            if (actor.getAcao(index) != null) {
+                return new ActorAction(actor.getAcao(index));
+            } else {
+                //return black
+                return new ActorAction(ActorAction.STATUS_BLANK);
+            }
+//        } else if (!owner.isNacao(actor.getNacao())) {
+        } else if (nacaoFacade.isAliado(actor.getNacao(), owner.getNacoes().values())) {
+            //ally, partial visibility
+            //enemies, neutrals and others
+            if (actor.getAcao(index) == null) {
+                return new ActorAction(ActorAction.STATUS_BLANK_ALLY);
+            } else {
+                return new ActorAction(actor.getAcao(index), ActorAction.STATUS_READONLY);
+            }
+        } else {
+            //enemies, neutrals and others
+            if (actor.getAcao(index) == null) {
+                return new ActorAction(ActorAction.STATUS_DISABLED);
+            } else {
+                return new ActorAction(actor.getAcao(index), ActorAction.STATUS_READONLY);
+            }
         }
-        if (actor.getAcao(index) != null && !owner.isNacao(actor.getNacao())) {
-            return new ActorAction(actor.getAcao(index), ActorAction.STATUS_READONLY);
-        }
-        if (actor.getAcao(index) != null) {
-            return new ActorAction(actor.getAcao(index));
-        }
-        //return black
-        return new ActorAction(ActorAction.STATUS_BLANK);
     }
+//    public ActorAction getActorAction(IActor actor, int index, int acoesMax, Jogador owner) {
+//        if (SettingsManager.getInstance().isConfig("LoadActionsOtherNations", "deny", "deny") && !owner.isNacao(actor.getNacao())) {
+//            return new ActorAction(ActorAction.STATUS_DISABLED);
+//        }
+//        if (index >= acoesMax) {
+//            return new ActorAction(ActorAction.STATUS_DISABLED);
+//        }
+//        if (actor == null) {
+//            return new ActorAction(ActorAction.STATUS_DISABLED);
+//        }
+//        if (!actor.isActorActive()) {
+//            return new ActorAction(ActorAction.STATUS_DISABLED);
+//        }
+//        if (actor.getAcao(index) == null && !owner.isNacao(actor.getNacao())) {
+//            return new ActorAction(ActorAction.STATUS_DISABLED);
+//        }
+//        if (actor.getAcao(index) != null && !owner.isNacao(actor.getNacao())) {
+//            return new ActorAction(actor.getAcao(index), ActorAction.STATUS_READONLY);
+//        }
+//        if (actor.getAcao(index) != null) {
+//            return new ActorAction(actor.getAcao(index));
+//        }
+//        //return black
+//        return new ActorAction(ActorAction.STATUS_BLANK);
+//    }
 
     private boolean isAtivo(Personagem actor) {
         if (actor.isPersonagem()) {
