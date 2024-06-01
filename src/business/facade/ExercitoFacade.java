@@ -84,7 +84,7 @@ public class ExercitoFacade implements Serializable {
         }
     }
 
-    public String getTerreno(Exercito exercito) {
+    public String getTerreno(IExercito exercito) {
         return localFacade.getTerrenoNome(this.getLocal(exercito));
     }
 
@@ -206,7 +206,7 @@ public class ExercitoFacade implements Serializable {
         }
     }
 
-    public Local getLocal(Exercito exercito) {
+    public Local getLocal(IExercito exercito) {
         try {
             return exercito.getLocal();
         } catch (NullPointerException ex) {
