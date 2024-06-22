@@ -25,7 +25,7 @@ public class ColorFactory implements Serializable {
 
     private static final Log log = LogFactory.getLog(ColorFactory.class);
     public static final Color[] colorFill = {
-        new Color(180, 180, 180), //0
+        new Color(180,180,180), //0
         new Color(255, 0, 0), //1    red A
         new Color(0, 0, 255), //2    azul B
         new Color(255, 255, 0), //3  amarelo A
@@ -79,7 +79,7 @@ public class ColorFactory implements Serializable {
         new Color(Integer.parseInt("0F0F0F", 16)) ///25 Future 3
     };
     public static final Color[] colorBorder = {
-        new Color(Integer.parseInt("999999", 16)), //00 unknown
+        new Color(Integer.parseInt("FF0000", 16)), //00 unknown
         new Color(Integer.parseInt("000000", 16)), //01 KC
         new Color(Integer.parseInt("000000", 16)), //02 arryn
         new Color(Integer.parseInt("000000", 16)), //03 baratheon
