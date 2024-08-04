@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import model.Nacao;
 import model.Ordem;
@@ -40,21 +39,11 @@ public class ComparatorFactory implements Serializable {
     }
 
     public static void getComparatorNationVictoryPointsSorter(List<Nacao> nations) {
-        Collections.sort(nations, new Comparator() {
-            @Override
-            public int compare(Object a, Object b) {
-                return ((Nacao) a).compareToByPv((Nacao) b);
-            }
-        });
+        Collections.sort(nations, (Object a, Object b) -> ((Nacao) a).compareToByPv((Nacao) b));
     }
 
     public static void getComparatorNationSorter(List<Personagem> chars) {
-        Collections.sort(chars, new Comparator() {
-            @Override
-            public int compare(Object a, Object b) {
-                return ((Personagem) a).getNacao().compareTo(((Personagem) b).getNacao());
-            }
-        });
+        Collections.sort(chars, (Object a, Object b) -> ((Personagem) a).getNacao().compareTo(((Personagem) b).getNacao()));
     }
 
     /**
@@ -155,11 +144,6 @@ public class ComparatorFactory implements Serializable {
     }
 
     public static void getComparatorFileTimeSorter(File[] files) {
-        Arrays.sort(files, new Comparator<File>() {
-            @Override
-            public int compare(File f1, File f2) {
-                return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
-            }
-        });
+        Arrays.sort(files, (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(f2.lastModified()));
     }
 }
