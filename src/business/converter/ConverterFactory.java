@@ -761,6 +761,10 @@ public final class ConverterFactory implements Serializable {
             return ";GFH2;";
         } else if (flFrequency.equalsIgnoreCase("3D")) {
             return ";GF3;";
+        } else if (flFrequency.equalsIgnoreCase("4D")) {
+            return ";GF4;";
+        } else if (flFrequency.equalsIgnoreCase("4D3D")) {
+            return ";GF43;";
         } else if (flFrequency.equalsIgnoreCase("6H")) {
             return ";GFH6;";
         } else if (flFrequency.equalsIgnoreCase("7D")) {
@@ -783,8 +787,6 @@ public final class ConverterFactory implements Serializable {
             return ";GF8;";
         } else if (flFrequency.equalsIgnoreCase("S")) {
             return "";
-        } else if (flFrequency.equalsIgnoreCase("4D")) {
-            return ";GF4;";
         } else {
             return ";GF1;";
         }
