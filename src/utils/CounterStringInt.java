@@ -45,6 +45,14 @@ public final class CounterStringInt implements Serializable {
         }
     }
 
+    public float getValuePercent(String key) {
+        try {
+            return (float) counter.get(key) / (float) this.getTotal() * 100f;
+        } catch (NullPointerException ex) {
+            return 0f;
+        }
+    }
+
     public String getKeyWithMinCount() {
         if (counter.isEmpty()) {
             return "";
@@ -97,6 +105,10 @@ public final class CounterStringInt implements Serializable {
         } else {
             counter.put(key, value);
         }
+    }
+
+    public void sub(String key, int value) {
+        add(key, value * -1);
     }
 
     @Override

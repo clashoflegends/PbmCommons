@@ -33,5 +33,4 @@ public interface IActor {
     public Nacao getNacao();
 
     public int getOrdensQt();
-
 }

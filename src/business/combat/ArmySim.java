@@ -35,7 +35,7 @@ public class ArmySim extends BaseModel implements IExercito {
     private Terreno terreno;
     private Nacao nacao;
     private SortedMap<String, Pelotao> platoons = new TreeMap();
-    private List<TipoTropa> troops = new ArrayList<TipoTropa>();
+    private List<TipoTropa> troops = new ArrayList<>();
 
     public ArmySim(String name, Terreno terrain, Nacao nation) {
         this.setNome(name);

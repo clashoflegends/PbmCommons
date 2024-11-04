@@ -84,7 +84,7 @@ public class ExercitoFacade implements Serializable {
         }
     }
 
-    public String getTerreno(Exercito exercito) {
+    public String getTerreno(IExercito exercito) {
         return localFacade.getTerrenoNome(this.getLocal(exercito));
     }
 
@@ -126,7 +126,8 @@ public class ExercitoFacade implements Serializable {
              */
             return BaseMsgs.tituloPericiaComandante[nn];
         } catch (NullPointerException | ArrayIndexOutOfBoundsException e) {
-            return labels.getString("UM.DESCONHECIDO");
+            //return a minimum level
+            return BaseMsgs.tituloPericiaComandante[4];
         }
     }
 
@@ -205,7 +206,7 @@ public class ExercitoFacade implements Serializable {
         }
     }
 
-    public Local getLocal(Exercito exercito) {
+    public Local getLocal(IExercito exercito) {
         try {
             return exercito.getLocal();
         } catch (NullPointerException ex) {

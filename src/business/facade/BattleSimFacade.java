@@ -131,7 +131,7 @@ public class BattleSimFacade implements Serializable {
     }
 
     private float getPlatoonAttack(Pelotao pelotao, IExercito exercito, final Local local, final Terreno terreno) {
-        float ret = 0;
+        float ret = 0; 
         try {
             float forcaTrop = getTroopAttack(pelotao.getTipoTropa(), exercito, local, terreno)
                     * (float) pelotao.getQtd()

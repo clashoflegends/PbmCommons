@@ -86,8 +86,11 @@ public class Nacao extends BaseModel implements IActor {
         return personagens;
     }
 
-    public void addPersonagens(Personagem personagem) {
-        this.personagens.add(personagem);
+    public void addPersonagens(Personagem pers) {
+        //don't allow duplication
+        if (!this.personagens.contains(pers)) {
+            this.personagens.add(pers);
+        }
     }
 
     public void remPersonagen(Personagem personagem) {
