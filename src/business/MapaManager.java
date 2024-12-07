@@ -897,15 +897,15 @@ public class MapaManager implements Serializable {
                 for (Local locBase : listaRaio) {
                     //para cada direcao
                     for (int ii = 1; ii < 7; ii++) {
-                        String codigoVizinho = ConverterFactory.getCodigoVizinho(locBase, ii);
-                        Local vizinho = localListCache.get(codigoVizinho);
-                        if (vizinho == null) {
+                        try {
+                            String codigoVizinho = ConverterFactory.getCodigoVizinho(locBase, ii);
+                            Local vizinho = localListCache.get(codigoVizinho);
+                            locaisCityCap.put(vizinho.getCodigo(), vizinho);
+                            locaisCityReturn.put(vizinho.getCodigo(), vizinho);
+                        } catch (NullPointerException e) {
                             //off map!
                             //nao estava no cache e nao carregou
-                            continue;
                         }
-                        locaisCityCap.put(vizinho.getCodigo(), vizinho);
-                        locaisCityReturn.put(vizinho.getCodigo(), vizinho);
                     }
                     //remove o ja verificado
                     locaisCityCap.remove(locBase.getCodigo());
