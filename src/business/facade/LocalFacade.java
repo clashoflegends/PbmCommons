@@ -153,6 +153,10 @@ public final class LocalFacade implements Serializable {
         return (local.getCidade() != null);
     }
 
+    public boolean isBigCity(Local local) {
+        return (cidadeFacade.isBigCity(local.getCidade()));
+    }
+
     public boolean isCidadeFortificada(Local local) {
         if (!isCidade(local)) {
             return false;

@@ -158,7 +158,7 @@ public class MapaManager implements Serializable {
         return new Point(ret[1] * 60 + 30, ret[0] * 45 + 60);
     }
 
-    private void printHex(Graphics2D big, Local local, Jogador observer) {
+    private void printHex(Graphics2D big, Local local, Jogador observer, Collection<Local> cityProximityList) {
         //calcula coordenadas e posicao no grafico.
         final Point point = ConverterFactory.localToPoint(local);
         final int x = (int) point.getX(), y = (int) point.getY();
@@ -253,8 +253,22 @@ public class MapaManager implements Serializable {
                 big.drawImage(imgFeature, x + (ImageManager.HEX_SIZE - imgFeature.getWidth(form)) / 2, y + (ImageManager.HEX_SIZE - imgFeature.getHeight(form)) / 2, form);
             }
         }
-        //imprime o fog of war
+        //print city proximity limits
+        if (SettingsManager.getInstance().isConfig("showCityCap", "1", "1")) {
+            if (cityProximityList.contains(local)) {
+                //print fog for near cities
+                big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .6f));
+                Image coloredFog = ColorFactory.setWatermarkColor(
+                        this.desenhoDetalhes[dtFogofwar],
+                        64, 0, 0,
+                        form);
+
+                big.drawImage(coloredFog, x, y, form);
+                big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+            }
+        }
         if (!local.isVisible() && !SettingsManager.getInstance().isWorldBuilder() && !SettingsManager.getInstance().isConfig("fogOfWarType", "0", "1")) {
+            //imprime o fog of war
             if (SettingsManager.getInstance().isConfig("fogOfWarType", "1", "1")) {
                 //print fog
                 big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .6f));
@@ -544,8 +558,9 @@ public class MapaManager implements Serializable {
         big.clearRect(0, 0, farPoint.x, farPoint.y);
         big.setColor(Color.BLACK);
         big.setFont(new Font("Verdana", Font.PLAIN, 10));
+        Collection<Local> cityProximityList = setCityProximity(listaLocal);
         for (Local local : listaLocal) {
-            printHex(big, local, observer);
+            printHex(big, local, observer, cityProximityList);
         }
         drawMapaMovPath(big, listaPers, observer);
         big.dispose(); //libera memoria
@@ -848,5 +863,55 @@ public class MapaManager implements Serializable {
         }
         Local ret = locais.get(SysApoio.pointToCoord(col + 1, row + 1));
         return ret;
+    }
+
+    private Collection<Local> setCityProximity(Collection<Local> listaLocal) {
+        SortedMap<String, Local> locaisCityReturn = new TreeMap();
+        //for quicker search
+        SortedMap<String, Local> localListCache = new TreeMap();
+        // assemble a big city list for a smaller for loop. Cache.
+        List<Local> citiesList = new ArrayList<>();
+        for (Local local : listaLocal) {
+            //load cache
+            localListCache.put(local.getCodigo(), local);
+            //list cities that need verification.
+            if (localFacade.isBigCity(local)) {
+                citiesList.add(local);
+                locaisCityReturn.put(local.getCodigo(), local);
+            }
+            if (localFacade.isAgua(local)) {
+                locaisCityReturn.put(local.getCodigo(), local);
+            }
+        }
+        //now check restrictied hexes for each city
+        for (Local cityLocal : citiesList) {
+            Cidade city = cityLocal.getCidade();
+            int alcanceMax = city.getTamanho() - 1;
+            SortedMap<String, Local> locaisCityCap = new TreeMap();
+            //add self
+            locaisCityCap.put(cityLocal.getCodigo(), cityLocal);
+            //para cada hex de distancia
+            for (int raio = 1; raio < alcanceMax; raio++) {
+                //para cada local, verifica os vizinhos
+                Local[] listaRaio = locaisCityCap.values().toArray(new Local[0]);
+                for (Local locBase : listaRaio) {
+                    //para cada direcao
+                    for (int ii = 1; ii < 7; ii++) {
+                        String codigoVizinho = ConverterFactory.getCodigoVizinho(locBase, ii);
+                        Local vizinho = localListCache.get(codigoVizinho);
+                        if (vizinho == null) {
+                            //off map!
+                            //nao estava no cache e nao carregou
+                            continue;
+                        }
+                        locaisCityCap.put(vizinho.getCodigo(), vizinho);
+                        locaisCityReturn.put(vizinho.getCodigo(), vizinho);
+                    }
+                    //remove o ja verificado
+                    locaisCityCap.remove(locBase.getCodigo());
+                }
+            }
+        }
+        return locaisCityReturn.values();
     }
 }

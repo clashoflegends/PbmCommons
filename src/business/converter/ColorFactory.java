@@ -25,7 +25,7 @@ public class ColorFactory implements Serializable {
 
     private static final Log log = LogFactory.getLog(ColorFactory.class);
     public static final Color[] colorFill = {
-        new Color(180,180,180), //0
+        new Color(180, 180, 180), //0
         new Color(255, 0, 0), //1    red A
         new Color(0, 0, 255), //2    azul B
         new Color(255, 255, 0), //3  amarelo A
@@ -212,6 +212,38 @@ public class ColorFactory implements Serializable {
                         break;
                 }
                 return rgb;
+            }
+        };
+
+        ImageProducer ip = new FilteredImageSource(image.getSource(), filter);
+        image = Toolkit.getDefaultToolkit().createImage(ip);
+        MediaTracker mt = new MediaTracker(form);
+        mt.addImage(image, 0);
+        //this.desenhoCPs = desenho;
+        try {
+            mt.waitForAll();
+        } catch (InterruptedException e) {
+            log.fatal("Problem", e);
+        }
+        return image;
+    }
+
+    public static Image setWatermarkColor(Image image, int redIncrement, int greenIncrement, int blueIncrement, JPanel form) {
+        ImageFilter filter = new RGBImageFilter() {
+            @Override
+            public int filterRGB(int x,
+                    int y,
+                    int rgb) {
+                int alpha = (rgb & 0xff000000);
+                int red = (rgb & 0xff0000) >> 16;
+                int green = (rgb & 0x00ff00) >> 8;
+                int blue = (rgb & 0x0000ff);
+
+                red = Math.max(0, Math.min(0xff, red + redIncrement));
+                green = Math.max(0, Math.min(0xff, green + greenIncrement));
+                blue = Math.max(0, Math.min(0xff, blue + blueIncrement));
+
+                return alpha | (red << 16) | (green << 8) | blue;
             }
         };
 
