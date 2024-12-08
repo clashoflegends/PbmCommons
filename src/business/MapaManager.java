@@ -254,7 +254,7 @@ public class MapaManager implements Serializable {
             }
         }
         //print city proximity limits
-        if (SettingsManager.getInstance().isConfig("showCityCap", "1", "1")) {
+        if (SettingsManager.getInstance().isConfig("showCityCap", "1", "0")) {
             if (cityProximityList.contains(local)) {
                 //print fog for near cities
                 big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .6f));
