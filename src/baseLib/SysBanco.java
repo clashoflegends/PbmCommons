@@ -27,6 +27,7 @@ public class SysBanco {
 
     private static Connection conn = null;
     private static final Log log = LogFactory.getLog(SysBanco.class);
+    private static final int ERROR_CODE_DB = -1;
 
     /**
      * Creates a new instance of SysBanco
@@ -127,7 +128,7 @@ public class SysBanco {
     }
 
     public static int rodaUpdate(String sql, String par1, String par2, String par3, String par4) throws PersistenceException {
-        int ret = -1;
+        int ret = ERROR_CODE_DB;
         try {
             PreparedStatement pstm;
             pstm = getConn().prepareStatement(sql);
@@ -144,7 +145,7 @@ public class SysBanco {
     }
 
     public static int rodaUpdate(String sql, String par1, String par2, String par3) throws PersistenceException {
-        int ret = -1;
+        int ret = ERROR_CODE_DB;
         try {
             PreparedStatement pstm;
             pstm = getConn().prepareStatement(sql);
@@ -160,7 +161,7 @@ public class SysBanco {
     }
 
     public static int rodaUpdate(String sql, String par1, String par2) throws PersistenceException {
-        int ret = -1;
+        int ret = ERROR_CODE_DB;
         try {
             PreparedStatement pstm;
             pstm = getConn().prepareStatement(sql);
@@ -175,7 +176,7 @@ public class SysBanco {
     }
 
     public static int rodaUpdate(String sql, int par1, int par2) {
-        int ret = -1;
+        int ret = ERROR_CODE_DB;
         try {
             PreparedStatement pstm;
             pstm = getConn().prepareStatement(sql);
@@ -190,7 +191,7 @@ public class SysBanco {
     }
 
     public static int rodaUpdate(String sql, int par1) {
-        int ret = -1;
+        int ret = ERROR_CODE_DB;
         try {
             PreparedStatement pstm;
             pstm = getConn().prepareStatement(sql);
@@ -204,7 +205,7 @@ public class SysBanco {
     }
 
     public static int rodaUpdate(String sql, String par1) {
-        int ret = -1;
+        int ret = ERROR_CODE_DB;
         try {
             PreparedStatement pstm;
             pstm = getConn().prepareStatement(sql);
@@ -218,7 +219,7 @@ public class SysBanco {
     }
 
     public static int rodaUpdate(String sql) {
-        int ret = -1;
+        int ret = ERROR_CODE_DB;
         try {
             PreparedStatement pstm;
             pstm = getConn().prepareStatement(sql);
