@@ -153,6 +153,14 @@ public class Local extends BaseModel implements Cloneable {
         this.producao.put(produto, qtd);
     }
 
+    /**
+     * don't use this. Prefer to use LocalFacade.getProducao(local).
+     * @return 
+     */
+    public SortedMap<Produto, Integer> getProducao() {
+        return this.producao;
+    }
+
     public void clearProducao() {
         this.producao.clear();
     }
