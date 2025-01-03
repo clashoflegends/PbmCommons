@@ -45,6 +45,7 @@ public class CenarioFacade implements Serializable {
     private final SortedMap<Integer, String> taticas = new TreeMap<>();
     private String typeTatica = "-";
     private final CidadeFacade cidadeFacade = new CidadeFacade();
+    private final NacaoFacade nacaoFacade = new NacaoFacade();
 
     public static boolean isGrecia(Cenario cenario) {
         return cenario.isGrecia();
