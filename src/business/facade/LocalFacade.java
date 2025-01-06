@@ -43,6 +43,7 @@ public final class LocalFacade implements Serializable {
     private static final CenarioFacade cenarioFacade = new CenarioFacade();
     private static final CidadeFacade cidadeFacade = new CidadeFacade();
     private static final MercadoFacade mercadoFacade = new MercadoFacade();
+    private static final NacaoFacade nacaoFacade = new NacaoFacade();
 
     public LocalFacade() {
         doLoadLandmarksImage();
@@ -376,6 +377,19 @@ public final class LocalFacade implements Serializable {
             }
         }
         return false;
+    }
+
+    public boolean isCampingAllowed(Jogador player, Local local) {
+        try {
+            for (Nacao nation : player.getNacoes().values()) {
+                if (!nacaoFacade.isHexagonoRestrictedToCamping(nation, local)) {
+                    return true;
+                }
+            }
+            return (false);
+        } catch (Exception exception) {
+            return false;
+        }
     }
 
     /**

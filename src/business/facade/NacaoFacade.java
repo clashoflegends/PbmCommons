@@ -288,7 +288,7 @@ public class NacaoFacade implements Serializable {
     }
 
     public String getNomeDbClean(Nacao nation) {
-        return nation.getNome().replace("@DB.NACAO.NOME.", "").replace("#", "");
+        return nation.getNomeDbClean();
     }
 
     public Jogador getOwner(Nacao nacao) {

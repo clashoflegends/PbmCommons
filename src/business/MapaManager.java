@@ -164,6 +164,31 @@ public class MapaManager implements Serializable {
         final int x = (int) point.getX(), y = (int) point.getY();
         //terreno basico
         big.drawImage(imageFactory.getTerrainImages(localFacade.getTerrenoCodigo(local)), x, y, form);
+        //print city proximity limits
+        if (SettingsManager.getInstance().isConfig("showCityCap", "1", "0") && cityProximityList.contains(local)) {
+            //print fog for near cities
+            big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .6f));
+            Image coloredFog = ColorFactory.setWatermarkColor(
+                    this.desenhoDetalhes[dtFogofwar],
+                    64, 0, 0,
+                    form);
+
+            big.drawImage(coloredFog, x, y, form);
+            big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+
+        }
+        //Camping restrictions for battle royal
+        if (SettingsManager.getInstance().isConfig("showCampRestriction", "1", "0") && localFacade.isCampingAllowed(observer, local)) {
+            //print fog for near cities
+            big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .6f));
+            Image coloredFog = ColorFactory.setWatermarkColor(
+                    this.desenhoDetalhes[dtFogofwar],
+                    0, 255, 0,
+                    form);
+
+            big.drawImage(coloredFog, x, y, form);
+            big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+        }
         //detalhes do terreno
         for (int direcao = 1; direcao < 7; direcao++) {
             //detalhe estrada
@@ -251,20 +276,6 @@ public class MapaManager implements Serializable {
                 //imprime gold mine
                 Image imgFeature = imageFactory.getFeature(feature);
                 big.drawImage(imgFeature, x + (ImageManager.HEX_SIZE - imgFeature.getWidth(form)) / 2, y + (ImageManager.HEX_SIZE - imgFeature.getHeight(form)) / 2, form);
-            }
-        }
-        //print city proximity limits
-        if (SettingsManager.getInstance().isConfig("showCityCap", "1", "0")) {
-            if (cityProximityList.contains(local)) {
-                //print fog for near cities
-                big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .6f));
-                Image coloredFog = ColorFactory.setWatermarkColor(
-                        this.desenhoDetalhes[dtFogofwar],
-                        64, 0, 0,
-                        form);
-
-                big.drawImage(coloredFog, x, y, form);
-                big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
             }
         }
         if (!local.isVisible() && !SettingsManager.getInstance().isWorldBuilder() && !SettingsManager.getInstance().isConfig("fogOfWarType", "0", "1")) {
