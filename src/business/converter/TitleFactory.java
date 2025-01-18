@@ -31,9 +31,7 @@ public class TitleFactory implements Serializable {
         labels.getString("AGENTE"), labels.getString("EMISSARIO"), labels.getString("MAGO"),
         labels.getString("MILESTONE"), labels.getString("CIDADE"),
         labels.getString("STARTUP"), labels.getString("PERSONAGEM.NPC")};
-    private static final String[] tipoSkill = {"COMANDANTE",
-        "AGENTE", "EMISSARIO", "MAGO"
-    };
+    private static final String[] tipoSkill = {"COMANDANTE", "AGENTE", "EMISSARIO", "MAGO"};
     private static final String[] combateTaticaGrito = {
         "@COMBATE.TATICA.GRITO.CARGA#",
         "@COMBATE.TATICA.GRITO.FLANCO#",
