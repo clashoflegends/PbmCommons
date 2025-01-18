@@ -514,9 +514,19 @@ public class CenarioFacade implements Serializable {
         return isWinterArrived(cenario, turno) || isWinterComing(cenario, turno);
     }
 
+    /**
+     * Accelerates resources decay. Decay faster once winter arrives. Ensures a minimum of 1% production.
+     *
+     * @param cenario
+     * @param turno
+     * @return
+     */
     public int getResourcesWinterReduction(Cenario cenario, int turno) {
-        if (isWinter(cenario, turno)) {
-            return 100 - turno + 20;
+        if (isWinterComing(cenario, turno)) {
+            return Math.max(100 + 20 - turno, 1);
+        } else if (isWinterArrived(cenario, turno)) {
+            //accelerate decay
+            return Math.max(100 + 20 - (2 * turno), 1);
         } else {
             return 100;
         }

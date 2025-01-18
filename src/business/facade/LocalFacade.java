@@ -754,5 +754,4 @@ public final class LocalFacade implements Serializable {
     public String getTamanhoNome(Local local) {
         return cidadeFacade.getTamanhoNome(local.getCidade());
     }
-
 }

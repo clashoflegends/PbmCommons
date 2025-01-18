@@ -41,6 +41,7 @@ public class CidadeFacade implements Serializable {
     private static final MercadoFacade mercadoFacade = new MercadoFacade();
     private static final BattleSimFacade combatSimFacade = new BattleSimFacade();
     public static final int[] ForneceComida = {0, 100, 200, 1000, 2500, 5000};
+    private final int[] producaoFator = {100, 100, 80, 60, 40, 20};
 
     public int getArrecadacaoImpostos(Cidade city) {
         try {
@@ -324,58 +325,71 @@ public class CidadeFacade implements Serializable {
         return mercadoFacade.getBestSellProductionAndStorage(local, mercado, cenario, turno);
     }
 
-    public int getProducao(Cidade city, Produto produto, Cenario cenario, int turno) {
-        int producao = localFacade.getProductionBase(city.getLocal(), produto, cenario, turno);
-        try {
-            final Nacao nation = city.getNacao();
-            final Local hex = city.getLocal();
-            if (hex.getCoordenadas().equals("0961")) {
-                log.debug("AKI!");
-            }
+    public int getProducao(Cidade city, Produto product, Cenario scenario, int turn) {
+        return getProducaoAndBonus(city, product, scenario, turn)[0];
+    }
 
-            if (nation.hasHabilidade(";NWP;") && produto.isWood()) {
-                producao += producao * nation.getHabilidadeValor(";NWP;") / 100;
+    /**
+     *
+     * @param city
+     * @param product
+     * @param scenario
+     * @param turn
+     * @return {Total produced, how much of the total was a bonus}
+     */
+    public int[] getProducaoAndBonus(Cidade city, Produto product, Cenario scenario, int turn) {
+        final Local local = city.getLocal();
+        if (city.getLocal().hasHabilidade(";LIP;")) {
+            //no production on plague
+            return new int[]{0, 0};
+        }
+        int totalBonuses = 0;
+        int producao = 0;
+        final Nacao nation = city.getNacao();
+        try {
+            //base production adjusted for weather and winter
+            producao = localFacade.getProductionBase(city.getLocal(), product, scenario, turn);
+
+            if (!product.isMoney()) {
+                //first reduce according to city size for everything except gold
+                producao = producao * this.producaoFator[city.getTamanho()] / 100;
             }
-            if (nation.hasHabilidade(";NSW;") && hex.getClima() >= 5) {
+            //calculations before minimum
+            if (nation.hasHabilidade(";NSW;") && local.getClima() >= 5) {
                 //Summer Production: 50% production bonus in warm or better climate
+                totalBonuses += producao * nation.getHabilidadeValor(";NSW;") / 100;
                 producao += producao * nation.getHabilidadeValor(";NSW;") / 100;
             }
-            if (nation.hasHabilidade(";NTR;") && isHeroPresent(city)) {
-                //Epic hero presence boosts resource production by 3x
-                producao += producao * nation.getHabilidadeValor(";NTR;") / 100;
+            if (product.isWood() && nation.hasHabilidade(";NWP;")) {
+                //fortified on woods increase prod by 50%
+                producao += producao * nation.getHabilidadeValor(";NWP;") / 100;
             }
-
-            if (produto.isMoney() && producao <= nation.getHabilidadeNacaoValor("0039")
-                    && nation.getHabilidadesNacao().containsKey("0039")
-                    && nation.getRaca() == city.getRaca()) {
-                //se mesma cultura e com habilidade, entao garante minimo de 250
-                producao = nation.getHabilidadeNacaoValor("0039");
-            }
-            if (produto.isMoney() && nation.hasHabilidade(";NWG;")
-                    && localFacade.isTerrenoFloresta(hex.getTerreno())
-                    && localFacade.isCidadeFortificada(hex)) {
+            if (product.isMoney() && nation.hasHabilidade(";NWG;") && localFacade.isTerrenoFloresta(local.getTerreno()) && localFacade.isCidadeFortificada(local)) {
                 //fortified on woods increase prod by 50%
                 producao += producao * nation.getHabilidadeValor(";NWG;") / 100;
             }
-            if (produto.isMoney() && nation.hasHabilidade(";PGH;")
-                    && localFacade.isTerrenoMontanhaColina(hex.getTerreno())) {
+            //these are guaranteed minimum, do not stack
+            if (product.isMoney() && nation.hasHabilidade(";PGH;") && localFacade.isTerrenoMontanhaColina(local.getTerreno())) {
                 //se em montanha/colina e com habilidade, entao garante minimo de 500
                 producao = Math.max(producao, nation.getHabilidadeValor(";PGH;"));
-            }
-            if (produto.isMoney() && nation.hasHabilidade(";PGH2;")
-                    && localFacade.isTerrenoMontanhaColina(hex.getTerreno())) {
+            } else if (product.isMoney() && nation.hasHabilidade(";PGH2;") && localFacade.isTerrenoMontanhaColina(local.getTerreno())) {
                 //se em montanha/colina e com habilidade, entao garante minimo de 500
                 producao = Math.max(producao, nation.getHabilidadeValor(";PGH2;"));
-            }
-            if (produto.isMoney() && nation.hasHabilidade(";PGM;")
-                    && nation.getRaca() == city.getRaca()) {
+            } else if (product.isMoney() && nation.hasHabilidade(";PGM;") && nacaoFacade.isSameRaceCulture(nation, city)) {
                 //se mesma cultura e com habilidade, entao garante minimo de 250
                 producao = Math.max(producao, nation.getHabilidadeValor(";PGM;"));
             }
-            return producao;
+
+            //other powers that impact minimum
+            if (nation.hasHabilidade(";NTR;") && isHeroPresent(city)) {
+                //Epic hero presence boosts resource production by 3x
+                totalBonuses += producao * nation.getHabilidadeValor(";NTR;") / 100;
+                producao += producao * nation.getHabilidadeValor(";NTR;") / 100;
+            }
         } catch (NullPointerException ex) {
-            return producao;
+            producao = producao * this.producaoFator[city.getTamanho()] / 100;
         }
+        return new int[]{producao, totalBonuses};
     }
 
     public SortedMap<Produto, Integer> getEstoques(Cidade cidade) {

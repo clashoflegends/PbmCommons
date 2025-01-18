@@ -542,6 +542,10 @@ public class NacaoFacade implements Serializable {
         return nacao.getRaca();
     }
 
+    public boolean isSameRaceCulture(Nacao nation, Cidade city) {
+        return nation.getRaca() == city.getRaca();
+    }
+
     public Cidade getCapital(Nacao nacao) {
         //keep in sync with NacaoControl.getCidadeMain();
         if (nacao.getCapital() != null) {
