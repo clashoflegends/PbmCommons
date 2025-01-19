@@ -23,7 +23,7 @@ public class Ordem extends BaseModel {
     private String tipo;
     private String tipoPersonagem;
     private String requisito;
-    private String parametros; //kept for backwards compatibility
+    private String parametros; //kept for backwards compatibility when loading old files
     private String ajuda;
     private String[] parametrosIde;
     private String[] parametrosIdeDisplay;
@@ -108,12 +108,6 @@ public class Ordem extends BaseModel {
         return tipoPersonagem.equalsIgnoreCase("X");
     }
 
-//    public boolean isMovimento() {
-//        return getTipo().equalsIgnoreCase("Mov");
-//    }
-//    public boolean isMain() {
-//        return getTipo().equalsIgnoreCase("Per");
-//    }
     public void setComandante(boolean comandante) {
         this.comandante = comandante;
     }

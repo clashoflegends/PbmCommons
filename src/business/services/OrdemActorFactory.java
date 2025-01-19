@@ -32,7 +32,6 @@ public class OrdemActorFactory implements Serializable {
                 return new PersonagemOrdem();
             case 550:
                 return new PersonagemOrdem();
-
             default:
                 return new PersonagemOrdem();
         }

@@ -6,6 +6,7 @@ package model;
 
 import baseLib.BaseModel;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -14,26 +15,12 @@ import java.util.List;
  */
 public class ComandoDetail implements Serializable {
 
-    //nacao,personagem, ordem, parametros
     private String nacaoCodigo, personagemCodigo, ordemCodigo, ordemNome, tpActor = "P";
-    private List<String> parametroId;
-    private List<String> parametroDisplay;
+    private String updateTime;
+    final private List<String> parametroId;
+    final private List<String> parametroDisplay;
 
-    public ComandoDetail(Personagem personagem, Ordem ordem, List<String> parametrosId, List<String> parametrosDisplay) {
-        this.nacaoCodigo = personagem.getNacao().getId() + "";
-        this.personagemCodigo = personagem.getCodigo();
-        this.tpActor = personagem.getTpActor();
-        try {
-            this.ordemCodigo = ordem.getCodigo() + "";
-            this.ordemNome = ordem.getNome();
-        } catch (NullPointerException ex) {
-            //ordem vazia. just skipping
-        }
-        this.parametroId = parametrosId;
-        this.parametroDisplay = parametrosDisplay;
-    }
-
-    public ComandoDetail(BaseModel actor, Ordem ordem, List<String> parametrosId, List<String> parametrosDisplay) {
+    public ComandoDetail(BaseModel actor, Ordem ordem, List<String> parametrosId, List<String> parametrosDisplay, Instant timeLastChange) {
         this.nacaoCodigo = actor.getNacao().getId() + "";
         this.personagemCodigo = actor.getCodigo();
         this.tpActor = actor.getTpActor();
@@ -45,6 +32,7 @@ public class ComandoDetail implements Serializable {
         }
         this.parametroId = parametrosId;
         this.parametroDisplay = parametrosDisplay;
+        this.updateTime = timeLastChange.toString();
     }
 
     public String getNacaoCodigo() {
@@ -119,4 +107,13 @@ public class ComandoDetail implements Serializable {
             return false;
         }
     }
+
+    public Instant getUpdateTime() {
+        return Instant.parse(updateTime);
+    }
+
+    private void setUpdateTime(Instant updateTime) {
+        this.updateTime = updateTime.toString();
+    }
+
 }

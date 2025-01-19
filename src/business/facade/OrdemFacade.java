@@ -10,6 +10,7 @@ import business.interfaces.IActor;
 import business.services.ComparatorFactory;
 import business.converter.TitleFactory;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -575,6 +576,14 @@ public class OrdemFacade implements Serializable {
             return actor.getAcaoExecutadas();
         } catch (NullPointerException ex) {
             return null;
+        }
+    }
+
+    public Instant getTimeLastChange(BaseModel actor, int index) {
+        try {
+            return actor.getAcao(index).getUpdateTime();
+        } catch (NullPointerException ex) {
+            return Instant.now();
         }
     }
 
