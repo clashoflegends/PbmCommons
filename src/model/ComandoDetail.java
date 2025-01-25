@@ -109,7 +109,11 @@ public class ComandoDetail implements Serializable {
     }
 
     public Instant getUpdateTime() {
-        return Instant.parse(updateTime);
+        if (updateTime != null) {
+            return Instant.parse(updateTime);
+        } else {
+            return Instant.now();
+        }
     }
 
     private void setUpdateTime(Instant updateTime) {
