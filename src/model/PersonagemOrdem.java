@@ -22,7 +22,7 @@ public class PersonagemOrdem extends BaseModel {
     private BaseModel personagem; //mantem o nome por compatibilidade com turnos velhos que jogadores podem ter salvo.
     private Ordem ordem;
     private int index;
-    private Instant updateTime;
+    private String updateTime;
     private List<String> parametrosId = new ArrayList();
     private List<String> parametrosDisplay = new ArrayList();
 
@@ -103,14 +103,14 @@ public class PersonagemOrdem extends BaseModel {
     }
 
     public Instant getUpdateTime() {
-        return updateTime;
+        return Instant.parse(updateTime);
     }
 
     public void setUpdateTime(Instant updateTime) {
-        this.updateTime = updateTime;
+        this.updateTime = updateTime.toString();
     }
 
     private void setUpdateTime() {
-        this.updateTime = Instant.now();
+        this.updateTime = Instant.now().toString();
     }
 }
