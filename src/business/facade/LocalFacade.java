@@ -685,6 +685,31 @@ public final class LocalFacade implements Serializable {
     }
 
     /**
+     *
+     * @param hex
+     * @param produto
+     * @param cenario
+     * @param turno
+     * @return production modified by city but discounting bonus from powers
+     */
+    public int getProductionBonusWihtout(Local hex, Produto produto, Cenario cenario, int turno) {
+        int[] producaoAndBonus = cidadeFacade.getProducaoAndBonus(hex.getCidade(), produto, cenario, turno);
+        return producaoAndBonus[0] - producaoAndBonus[1];
+    }
+
+    /**
+     *
+     * @param hex
+     * @param produto
+     * @param cenario
+     * @param turno
+     * @return only the amount of bonus from nation powers, excluding the base production.
+     */
+    private int getProductionBonusOnly(Local hex, Produto produto, Cenario cenario, int turno) {
+        return cidadeFacade.getProducaoAndBonus(hex.getCidade(), produto, cenario, turno)[1];
+    }
+
+    /**
      * local production only. Don't consider city storages. Do consider nation and city powers.
      *
      * @param hex
