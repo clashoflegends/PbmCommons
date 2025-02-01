@@ -264,7 +264,11 @@ public class ColorFactory implements Serializable {
         if (hexadecimal.isEmpty()) {
             return null;
         } else {
-            return new Color(Integer.parseInt(hexadecimal, 16));
+            try {
+                return new Color(Integer.parseInt(hexadecimal, 16));
+            } catch (NumberFormatException numberFormatException) {
+                return Color.DARK_GRAY;
+            }
         }
     }
 

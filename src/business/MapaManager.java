@@ -19,11 +19,13 @@ import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -77,6 +79,8 @@ public class MapaManager implements Serializable {
     private final ImageManager imageFactory = ImageManager.getInstance();
     private SortedMap<String, Local> locais;
     private Point farPoint;
+    private static final Font FONT_COORDINATE_DEFAULT = new Font("Verdana", Font.PLAIN, 10);
+    private static final Font FONT_COORDINATE_MOUNTAIN = new Font("Arial", Font.BOLD, 10);
 
     public MapaManager(Cenario aCenario, JPanel form) {
         this.cenario = aCenario;
@@ -314,9 +318,25 @@ public class MapaManager implements Serializable {
             big.drawImage(imageFactory.doDrawExplosion(), x + dx, y + dy, form);
         }
         //grava numero hex
+        if (local.getTerreno().isMontanha()) {
+            //store font
+            final Font fontBefore = big.getFont();
+            //load color
+            final Color fontColor = ColorFactory.getColorBd(SettingsManager.getInstance().getConfig("MapColorCoordinate", "efefef"));
+            //switch font to mountain (BOLD)
+            big.setFont(FONT_COORDINATE_MOUNTAIN);
+            //draw a background box
+            FontMetrics fm = big.getFontMetrics();
+            Rectangle2D rect = fm.getStringBounds(LocalFacade.getCoordenadas(local), big);
+
+            //set color then draw
+            big.setColor(fontColor);
+            big.fillRect(x + 16, y - fm.getAscent() + 18, (int) rect.getWidth()+2, (int) rect.getHeight()+2);
+            //restore previous font
+            big.setFont(fontBefore);
+        }
         big.setColor(Color.BLACK);
         big.drawString(LocalFacade.getCoordenadas(local), x + 16, y + 18);
-
         //exercitos presentes
         final SortedMap<Nacao, Image> armyListNoDups = new TreeMap<>();
         final List<Image> armyList = new ArrayList<>();
@@ -568,11 +588,14 @@ public class MapaManager implements Serializable {
         big.setBackground(Color.WHITE);
         big.clearRect(0, 0, farPoint.x, farPoint.y);
         big.setColor(Color.BLACK);
-        big.setFont(new Font("Verdana", Font.PLAIN, 10));
+        big.setFont(FONT_COORDINATE_DEFAULT);
+        //set flags for proximity
         Collection<Local> cityProximityList = setCityProximity(listaLocal);
+        //print each hex
         for (Local local : listaLocal) {
             printHex(big, local, observer, cityProximityList);
         }
+        //print paths and moves
         drawMapaMovPath(big, listaPers, observer);
         big.dispose(); //libera memoria
         return megaMap;
