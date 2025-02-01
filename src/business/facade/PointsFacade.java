@@ -129,11 +129,10 @@ public class PointsFacade implements Serializable {
         String teamFlag = player.getNacoes().get(player.getNacoes().firstKey()).getTeamFlag();
         final CounterStringInt counterSingle = new CounterStringInt();
         for (Nacao nation : nations) {
-            if (nacaoFacade.isAtivaPC(nation)) {
-                counterSingle.add(getUsThem(nation.getTeamFlag(), teamFlag), 1);
-            } else {
-                counterSingle.add(getUsThem(NotUsFlag, teamFlag), 1);
+            if (!nacaoFacade.isAtivaPC(nation)) {
+                continue;
             }
+            counterSingle.add(getUsThem(nation.getTeamFlag(), teamFlag), 1);
         }
         return counterSingle;
     }
