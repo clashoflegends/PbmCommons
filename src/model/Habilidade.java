@@ -59,6 +59,10 @@ public class Habilidade extends BaseModel {
         return this.hasHabilidade(";VOL;");
     }
 
+    public boolean isNone() {
+        return this.getCodigo().equals(";-;");
+    }
+
     public boolean isFilter() {
         return tipo.equalsIgnoreCase("FILTER");
     }
