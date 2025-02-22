@@ -212,8 +212,22 @@ public class TipoTropa extends BaseModel {
         return this.hasHabilidade(";TTN;");
     }
 
+    /**
+     * Has fixed attack strength per unit
+     *
+     * @return
+     */
     public boolean isSiege() {
         return this.hasHabilidade(";TTS;");
+    }
+
+    /**
+     * Has variable attack strength per unit, function of commander, train, morale, weapons, etc
+     *
+     * @return
+     */
+    public boolean isSiegeCategory() {
+        return this.hasHabilidade(";TYTS;");
     }
 
     public boolean isGiant() {
