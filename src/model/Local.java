@@ -138,6 +138,9 @@ public class Local extends BaseModel implements Cloneable {
      * (original) deve ser utilizado o metodo getProducaoNatural()
      */
     public int getProducaoClima(Produto produto) {
+        if (getCoordenadas().equals("1145")) {
+            int aa = 1;
+        }
         try {
             return producao.get(produto) * this.getProducaoClimaFactor(produto) / 100;
         } catch (NullPointerException ex) {
@@ -146,11 +149,26 @@ public class Local extends BaseModel implements Cloneable {
     }
 
     public int getProducaoNatural(Produto produto) {
+        if (getCoordenadas().equals("1145")) {
+            int aa = 1;
+        }
         return producao.get(produto);
     }
 
     public void setProducao(Produto produto, int qtd) {
         this.producao.put(produto, qtd);
+    }
+
+    /**
+     * don't use this. Prefer to use LocalFacade.getProducao(local).
+     *
+     * @return
+     */
+    public SortedMap<Produto, Integer> getProducao() {
+        if (getCoordenadas().equals("1145")) {
+            int aa = 1;
+        }
+        return this.producao;
     }
 
     public void clearProducao() {
@@ -309,7 +327,7 @@ public class Local extends BaseModel implements Cloneable {
 //    }
     private int getProducaoClimaFactor(Produto produto) {
         // PENDING: mover para o banco de dados.
-        int[][] producaoClima = new int[8][8];
+        final int[][] producaoClima = new int[8][8];
         producaoClima[0][0] = 0;
         producaoClima[0][1] = 0;
         producaoClima[0][2] = 0;

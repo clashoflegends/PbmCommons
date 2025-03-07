@@ -8,6 +8,7 @@ import baseLib.BaseModel;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,21 +29,20 @@ public class Comando implements Serializable {
     private String partidaCod;
     private int partidaId;
     private int turno;
-//    private String timeStamp; //deprecated
     private Date creationTime;
     private final List<ComandoDetail> comandos = new ArrayList();
-    private final SortedMap<Integer, String> packages = new TreeMap<Integer, String>();
-    //nacao,personagem, ordem, parametros
+    private final SortedMap<Integer, String> packages = new TreeMap<>();
 
     public Comando() {
         setCreationTime();
     }
 
-    public void addComando(BaseModel actor, Ordem ordem, List<String> parametrosId, List<String> parametrosDisplay) {
-        if (ordem != null) {
-            ComandoDetail comDet = new ComandoDetail(actor, ordem, parametrosId, parametrosDisplay);
-            this.comandos.add(comDet);
+    public void addComando(BaseModel actor, Ordem ordem, List<String> parametrosId, List<String> parametrosDisplay, Instant timeLastChange) {
+        if (ordem == null) {
+            return;
         }
+        ComandoDetail comDet = new ComandoDetail(actor, ordem, parametrosId, parametrosDisplay, timeLastChange);
+        this.comandos.add(comDet);
     }
 
     public void addPackage(Nacao nacao, List<Habilidade> packagesList) {

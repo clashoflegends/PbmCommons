@@ -30,6 +30,10 @@ public final class StringRet implements Serializable {
         this.textRet.add(text);
     }
 
+    public void addLinebreak() {
+        this.textRet.add("\n");
+    }
+
     public void addTab(String text) {
         this.textRet.add(tab + text);
     }

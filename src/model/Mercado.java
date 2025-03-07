@@ -47,7 +47,7 @@ public class Mercado extends BaseModel implements Serializable {
         }
     }
 
-    /*
+    /**
      * todos os produtos, exceto ouro
      */
     public Collection<Produto> getProdutos() {

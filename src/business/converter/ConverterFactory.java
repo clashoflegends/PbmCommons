@@ -29,6 +29,7 @@ public final class ConverterFactory implements Serializable {
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     public static final float POINTS_TO_ACTION_CONVERSION = 30f;
     public static final int GAME_GRAVEYARD = 586;
+    private static final int ERROR_CODE_FAIL = -1;
 
     public static int taticaToInt(String tatica) {
         if (tatica.equalsIgnoreCase("CA")) {
@@ -530,7 +531,7 @@ public final class ConverterFactory implements Serializable {
     }
 
     public static int estoqueToInt(String tpEstoque) {
-        int ret = -1;
+        int ret = ERROR_CODE_FAIL;
         if (tpEstoque.equalsIgnoreCase("CR")) {
             ret = 0;
         } else if (tpEstoque.equalsIgnoreCase("BR")) {
@@ -556,7 +557,7 @@ public final class ConverterFactory implements Serializable {
     }
 
     public static float initialProductValue(Produto produto) {
-        int ret = -1;
+        int ret = ERROR_CODE_FAIL;
         final String tpEstoque = produto.getCodigo();
         if (tpEstoque.equalsIgnoreCase("CR")) {
             ret = 16;
@@ -628,7 +629,7 @@ public final class ConverterFactory implements Serializable {
     }
 
     public int estoqueToIntEnPt(String tpEstoque) {
-        int ret = -1;
+        int ret = ERROR_CODE_FAIL;
         if (tpEstoque.equalsIgnoreCase("LE")) {
             ret = 0;
         } else if (tpEstoque.equalsIgnoreCase("BR")) {

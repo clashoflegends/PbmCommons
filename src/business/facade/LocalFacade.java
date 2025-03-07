@@ -14,14 +14,17 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import model.Artefato;
+import model.Cenario;
 import model.Cidade;
 import model.Exercito;
 import model.Habilidade;
 import model.Jogador;
 import model.Local;
+import model.Mercado;
 import model.Nacao;
 import model.Partida;
 import model.Personagem;
+import model.Produto;
 import model.Terreno;
 import model.World;
 import msgs.BaseMsgs;
@@ -37,7 +40,10 @@ public final class LocalFacade implements Serializable {
 
     private static final Log log = LogFactory.getLog(LocalFacade.class);
     private final SortedMap<String, String> landmarkImage = new TreeMap<>();
-    private final CidadeFacade cidadeFacade = new CidadeFacade();
+    private static final CenarioFacade cenarioFacade = new CenarioFacade();
+    private static final CidadeFacade cidadeFacade = new CidadeFacade();
+    private static final MercadoFacade mercadoFacade = new MercadoFacade();
+    private static final NacaoFacade nacaoFacade = new NacaoFacade();
 
     public LocalFacade() {
         doLoadLandmarksImage();
@@ -151,6 +157,10 @@ public final class LocalFacade implements Serializable {
      */
     public boolean isCidade(Local local) {
         return (local.getCidade() != null);
+    }
+
+    public boolean isBigCity(Local local) {
+        return (cidadeFacade.isBigCity(local.getCidade()));
     }
 
     public boolean isCidadeFortificada(Local local) {
@@ -367,6 +377,19 @@ public final class LocalFacade implements Serializable {
             }
         }
         return false;
+    }
+
+    public boolean isCampingAllowed(Jogador player, Local local) {
+        try {
+            for (Nacao nation : player.getNacoes().values()) {
+                if (!nacaoFacade.isHexagonoRestrictedToCamping(nation, local)) {
+                    return true;
+                }
+            }
+            return (false);
+        } catch (Exception exception) {
+            return false;
+        }
     }
 
     /**
@@ -635,5 +658,125 @@ public final class LocalFacade implements Serializable {
 
     public boolean isKeyLocalCity(Local local) {
         return isKeyLocal(local) || cidadeFacade.isKeyCity(local.getCidade());
+    }
+
+    public SortedMap<Produto, Integer> getProduction(Local hex) {
+        return hex.getProducao();
+    }
+
+    public int getProductionNatural(Local hex, Produto product) {
+        return hex.getProducaoNatural(product);
+    }
+
+    public int getProductionClimate(Local hex, Produto product) {
+        return hex.getProducaoClima(product);
+    }
+
+    public int getProduction(Local hex, Produto produto, Cenario cenario, int turno) {
+        if (this.isCidade(hex)) {
+            return cidadeFacade.getProducao(hex.getCidade(), produto, cenario, turno);
+        } else {
+            return this.getProductionBase(hex, produto, cenario, turno);
+        }
+    }
+
+    public int getProductionBase(Local hex, Produto produto, Cenario cenario, int turno) {
+        return this.getProductionClimate(hex, produto) * cenarioFacade.getResourcesWinterReduction(cenario, turno) / 100;
+    }
+
+    /**
+     *
+     * @param hex
+     * @param produto
+     * @param cenario
+     * @param turno
+     * @return production modified by city but discounting bonus from powers
+     */
+    public int getProductionBonusWihtout(Local hex, Produto produto, Cenario cenario, int turno) {
+        int[] producaoAndBonus = cidadeFacade.getProducaoAndBonus(hex.getCidade(), produto, cenario, turno);
+        return producaoAndBonus[0] - producaoAndBonus[1];
+    }
+
+    /**
+     *
+     * @param hex
+     * @param produto
+     * @param cenario
+     * @param turno
+     * @return only the amount of bonus from nation powers, excluding the base production.
+     */
+    private int getProductionBonusOnly(Local hex, Produto produto, Cenario cenario, int turno) {
+        return cidadeFacade.getProducaoAndBonus(hex.getCidade(), produto, cenario, turno)[1];
+    }
+
+    /**
+     * local production only. Don't consider city storages. Do consider nation and city powers.
+     *
+     * @param hex
+     * @param product
+     * @param market
+     * @param scenario
+     * @param turn
+     * @return
+     */
+    public int getProductionSell(Local hex, Produto product, Mercado market, Cenario scenario, int turn) {
+        final int qtProduct = getProduction(hex, product, scenario, turn);
+        return mercadoFacade.getSell(product, qtProduct, market);
+    }
+
+    /**
+     * local production only. Don't consider city storages. Do consider nation and city powers.
+     *
+     * @param hex
+     * @param mercado
+     * @param cenario
+     * @param turno
+     * @return
+     */
+    public int getProductionBestSell(Local hex, Mercado mercado, Cenario cenario, int turno) {
+        return mercadoFacade.getBestSellProduction(hex, mercado, cenario, turno);
+    }
+
+    public List listaPresencas(Local hex) {
+        PersonagemFacade personagemFacade = new PersonagemFacade();
+        List listaPresencas = new ArrayList();
+        //lista personagems
+        try {
+            for (Personagem personagem : hex.getPersonagens().values()) {
+                if (personagemFacade.isComandaExercito(personagem)) {
+                    listaPresencas.add(personagem.getExercito());
+                } else {
+                    listaPresencas.add(personagem);
+                }
+            }
+        } catch (NullPointerException ex) {
+        }
+        //FIXME: lista exercitos
+        //FIXME: lista artefatos
+        return listaPresencas;
+    }
+
+    public String getNome(Local local) {
+        return local.getNome();
+    }
+
+    public String getDocasNome(Local local) {
+        return cidadeFacade.getDocasNome(local.getCidade());
+    }
+
+    public String getFortificacaoNome(Local local) {
+        return cidadeFacade.getFortificacaoNome(local.getCidade());
+    }
+
+    public String getNacaoNome(Local local) {
+        try {
+            return cidadeFacade.getNacaoNome(local.getCidade());
+        } catch (NullPointerException e) {
+            return "-";
+        }
+    }
+
+    public String getTamanhoNome(Local local) {
+        return cidadeFacade.getTamanhoNome(local.getCidade());
     }
 }

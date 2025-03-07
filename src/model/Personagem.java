@@ -37,8 +37,7 @@ public class Personagem extends BaseModel implements IActor {
     private final SortedMap<Integer, PersonagemOrdem> ordensExecutadas = new TreeMap(); //kept for backwards compatibility
 
     public int getPericiaNaturalTotal() {
-        return (periciaComandanteNatural + periciaAgenteNatural
-                + periciaEmissarioNatural + periciaMagoNatural);
+        return (periciaComandanteNatural + periciaAgenteNatural + periciaEmissarioNatural + periciaMagoNatural);
     }
 
     /**

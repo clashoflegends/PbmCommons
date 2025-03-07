@@ -68,7 +68,7 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
         String ret = ";";
         for (String cdHab : getHabilidades().keySet()) {
             if (cdHab.equals(";-;")) {
-            //skip none, it will be added later. Serves to purge NONE when another Hab is added
+                //skip none, it will be added later. Serves to purge NONE when another Hab is added
                 continue;
             }
             ret += cdHab.substring(1);
@@ -106,6 +106,7 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     }
 
     public void addHabilidade(Habilidade habilidade) {
+        remHabilidadeNone();
         this.habilidades.put(habilidade.getCodigo(), habilidade);
     }
 

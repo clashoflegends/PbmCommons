@@ -26,6 +26,7 @@ public class Nacao extends BaseModel implements IActor {
     private Raca raca;
     private Color fillColor, borderColor;
     private String flAlianca = "-";
+    private String nomeDbClean = "-";
     private final Extrato extrato = new Extrato();
     private final List<Cidade> cidades = new ArrayList();
     private final List<Personagem> personagens = new ArrayList();
@@ -280,5 +281,13 @@ public class Nacao extends BaseModel implements IActor {
     public int compareToByPv(Object o) {
         Nacao outro = (Nacao) o;
         return (this.getPontosVitoria() - outro.getPontosVitoria());
+    }
+
+    public String getNomeDbClean() {
+        return nomeDbClean;
+    }
+
+    public void setNomeDbClean(String nomeDbClean) {
+        this.nomeDbClean = nomeDbClean;
     }
 }
