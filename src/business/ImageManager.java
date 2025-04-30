@@ -21,7 +21,6 @@ import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.Serializable;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -756,7 +755,4 @@ public class ImageManager implements Serializable {
         return portrait;
     }
     
-    public javafx.scene.image.Image getDeletePlatoonIcon() throws URISyntaxException {
-        return new javafx.scene.image.Image(getClass().getResource("/images/delete.png").toURI().toString());
-    }
 }

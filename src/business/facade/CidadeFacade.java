@@ -252,26 +252,6 @@ public class CidadeFacade implements Serializable {
         }
     }
 
-    public javafx.scene.paint.Color getNacaoColorFillFx(Cidade cidade) {
-        //FIXME: move para nacaoFacade
-        try {
-            final Color fillColor = cidade.getNacao().getFillColor();
-            return javafx.scene.paint.Color.rgb(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue());
-        } catch (Exception ex) {
-            return javafx.scene.paint.Color.DARKGRAY;
-        }
-    }
-
-    public javafx.scene.paint.Color getNacaoColorBorderFx(Cidade cidade) {
-        //FIXME: move para nacaoFacade
-        try {
-            final Color borderColor = cidade.getNacao().getBorderColor();
-            return javafx.scene.paint.Color.rgb(borderColor.getRed(), borderColor.getGreen(), borderColor.getBlue());
-        } catch (Exception ex) {
-            return javafx.scene.paint.Color.DARKGRAY;
-        }
-    }
-
     public String getOculto(Cidade cidade) {
         return SysApoio.iif(cidade.isOculto(), labels.getString("SIM"), labels.getString("NAO"));
     }

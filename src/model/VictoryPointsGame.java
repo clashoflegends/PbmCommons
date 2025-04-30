@@ -13,7 +13,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Prepping and structuring data for JavaFX Graphs in Counselor.
+ * Prepping and structuring data for Java FX Graphs in Counselor.
  *
  * @author gurgel
  */
@@ -37,7 +37,7 @@ public class VictoryPointsGame implements Serializable {
     }
 
     public List<String> getTurnListAsString() {
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         for (Integer turn : turnList) {
             ret.add(turn + "");
         }
@@ -45,7 +45,7 @@ public class VictoryPointsGame implements Serializable {
     }
 
     public List<Integer> getTurnList() {
-        return new ArrayList<Integer>(turnList);
+        return new ArrayList<>(turnList);
     }
 
     public Set<Nacao> getNationsList() {
