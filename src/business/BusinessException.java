@@ -15,7 +15,7 @@ import org.apache.commons.logging.LogFactory;
 public class BusinessException extends Exception implements Serializable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -7627356893367987945L;
     private static Log log = LogFactory.getLog(BusinessException.class);
@@ -24,8 +24,8 @@ public class BusinessException extends Exception implements Serializable {
     }
 
     public BusinessException(Throwable cause) {
-        super("Erro na camada Bussiness", cause);
-        //log.error("Erro na camada de Persistencia", cause);
+        super(cause.getMessage(), cause);
+        //log.error(cause.getMessage(), cause);
     }
 
     public BusinessException(String message, Throwable cause) {
@@ -35,6 +35,15 @@ public class BusinessException extends Exception implements Serializable {
 
     public BusinessException(String message) {
         super(message);
-        //log.error(message, this);
+    }
+
+    @Override
+    public String getMessage() {
+        if (super.getMessage() != null) {
+            return super.getMessage();
+        } else {
+            //log.error(Arrays.toString(super.getStackTrace()).replaceAll("[\\[\\]]", "").replace(", ", "\n"));
+            return "no message";
+        }
     }
 }
