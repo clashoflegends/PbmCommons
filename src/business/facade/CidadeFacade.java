@@ -446,10 +446,6 @@ public class CidadeFacade implements Serializable {
         return city.getEstoque(produto);
     }
 
-    public void subFortification(Cidade city, int fator) {
-        city.setFortificacao(city.getFortificacao() - fator);
-    }
-
     public boolean isKeyCity(Cidade city) {
         try {
             return city.hasHabilidade(";LCO;");
