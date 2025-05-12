@@ -436,16 +436,6 @@ public class CidadeFacade implements Serializable {
         return (city.getTamanho() * custo + baseCost);
     }
 
-    public int subEstoque(Cidade city, Produto produto, int qtd) {
-        city.setEstoque(produto, city.getEstoque(produto) - qtd);
-        return city.getEstoque(produto);
-    }
-
-    public int sumEstoque(Cidade city, Produto produto, int qtd) {
-        city.setEstoque(produto, city.getEstoque(produto) + qtd);
-        return city.getEstoque(produto);
-    }
-
     public boolean isKeyCity(Cidade city) {
         try {
             return city.hasHabilidade(";LCO;");
