@@ -131,7 +131,7 @@ public class BattleSimFacade implements Serializable {
     }
 
     private float getPlatoonAttack(Pelotao pelotao, IExercito exercito, final Local local, final Terreno terreno) {
-        float ret = 0; 
+        float ret = 0;
         try {
             float forcaTrop = getTroopAttack(pelotao.getTipoTropa(), exercito, local, terreno)
                     * (float) pelotao.getQtd()
@@ -222,8 +222,8 @@ public class BattleSimFacade implements Serializable {
     }
 
     /**
-     * Determine o valor do Centro Populacional, pelo tamanho, e adicione o restante dos pontos de Fortificação. A Defesa do Centro Populacional é o
-     * resultado da soma, modificado pela lealdade.
+     * Determine o valor do Centro Populacional, pelo tamanho, e adicione o restante dos pontos de Fortificação. A Defesa do Centro Populacional é o resultado
+     * da soma, modificado pela lealdade.
      */
     public int getCityDefenseBase(Cidade cidade) {
         return getCityDefense(cidade.getTamanho(), cidade.getFortificacao(), cidade.getLealdade());
@@ -242,17 +242,21 @@ public class BattleSimFacade implements Serializable {
 
     public int getCityDefenseCombat(Cidade city) {
         int ret = this.getCityDefenseBase(city) + city.getDefenseBonus();
-        if (city.getNacao().hasHabilidade(";PFD;") && city.isFortificado()) {
-            ret += this.getCityFortficationDefense(city) * city.getNacao().getHabilidadeValor(";PFD;") / 100;
-        }
-        if (city.getNacao().hasHabilidade(";PCD;") && city.getLocal().getTerreno().isMontanha()) {
-            ret += ret * city.getNacao().getHabilidadeValor(";PCD;") / 100;
-        }
-        if (city.getNacao().hasHabilidade(";NWD;") && city.getLocal().getTerreno().isFloresta()) {
-            ret += ret * city.getNacao().getHabilidadeValor(";NWD;") / 100;
-        }
-        if (city.getNacao().hasHabilidade(";NWS;") && city.getLocal().getTerreno().isPantano()) {
-            ret += ret * city.getNacao().getHabilidadeValor(";NWS;") / 100;
+        try {
+            if (city.getNacao().hasHabilidade(";PFD;") && city.isFortificado()) {
+                ret += this.getCityFortficationDefense(city) * city.getNacao().getHabilidadeValor(";PFD;") / 100;
+            }
+            if (city.getNacao().hasHabilidade(";PCD;") && city.getLocal().getTerreno().isMontanha()) {
+                ret += ret * city.getNacao().getHabilidadeValor(";PCD;") / 100;
+            }
+            if (city.getNacao().hasHabilidade(";NWD;") && city.getLocal().getTerreno().isFloresta()) {
+                ret += ret * city.getNacao().getHabilidadeValor(";NWD;") / 100;
+            }
+            if (city.getNacao().hasHabilidade(";NWS;") && city.getLocal().getTerreno().isPantano()) {
+                ret += ret * city.getNacao().getHabilidadeValor(";NWS;") / 100;
+            }
+        } catch (Exception e) {
+            log.fatal(String.format("City without nation, why? %s  %s", city.getCoordenadas(), city.toString()));
         }
         return ret;
     }
