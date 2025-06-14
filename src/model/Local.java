@@ -217,6 +217,12 @@ public class Local extends BaseModel implements Cloneable {
         }
     }
 
+    public void remEstrada(int dir) {
+        if (isEstrada(dir)) {
+            setEstrada(getEstrada().replace(dir + "", ""));
+        }
+    }
+
     public void setRastro(String rastro) {
         this.rastro = rastro;
     }
