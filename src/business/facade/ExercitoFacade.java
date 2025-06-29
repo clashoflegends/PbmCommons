@@ -507,7 +507,7 @@ public class ExercitoFacade implements Serializable {
         return (int) ret;
     }
 
-    public boolean isAgua(TipoTropa tpTropa) {
+    public boolean isShips(TipoTropa tpTropa) {
         return tpTropa.isBarcos();
     }
 
