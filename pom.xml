@@ -31,28 +31,6 @@
             </resource>
         </resources>
         <plugins>
-            <!-- Increment BUILD property in src/version_commons.properties (emulates Ant -pre-jar) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>increment-build-number</id>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <target>
-                                <propertyfile file="${project.basedir}/src/version_commons.properties">
-                                    <entry key="BUILD" value="1" type="int" operation="+"/>
-                                </propertyfile>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- Use existing manifest if present -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
