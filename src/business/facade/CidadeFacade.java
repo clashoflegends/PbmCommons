@@ -341,11 +341,11 @@ public class CidadeFacade implements Serializable {
                 producao += producao * nation.getHabilidadeValor(";NSW;") / 100;
             }
             if (product.isWood() && nation.hasHabilidade(";NWP;")) {
-                //fortified on woods increase prod by 50%
+                //woods increase prod by 50%
                 producao += producao * nation.getHabilidadeValor(";NWP;") / 100;
             }
             if (product.isMoney() && nation.hasHabilidade(";NWG;") && localFacade.isTerrenoFloresta(local.getTerreno()) && localFacade.isCidadeFortificada(local)) {
-                //fortified on woods increase prod by 50%
+                //fortified on woods increase gold by 50%
                 producao += producao * nation.getHabilidadeValor(";NWG;") / 100;
             }
             //these are guaranteed minimum, do not stack
@@ -365,6 +365,10 @@ public class CidadeFacade implements Serializable {
                 //Epic hero presence boosts resource production by 3x
                 totalBonuses += producao * nation.getHabilidadeValor(";NTR;") / 100;
                 producao += producao * nation.getHabilidadeValor(";NTR;") / 100;
+            } else if (nation.hasHabilidade(";NTR5;") && isHeroPresent(city)) {
+                //Epic hero presence boosts resource production by 3x
+                totalBonuses += producao * nation.getHabilidadeValor(";NTR5;") / 100;
+                producao += producao * nation.getHabilidadeValor(";NTR5;") / 100;
             }
         } catch (NullPointerException ex) {
             producao = producao * this.producaoFator[city.getTamanho()] / 100;
