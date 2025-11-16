@@ -497,6 +497,10 @@ public final class LocalFacade implements Serializable {
         return terreno.isFloresta();
     }
 
+    public boolean isTerrenoPlains(Terreno terreno) {
+        return terreno.isPlanicie();
+    }
+
     public boolean hasTerrainLandmark(Local local) {
         for (String landmark : getTerrainLandmarksImage().keySet()) {
             if (local.hasHabilidade(landmark)) {
