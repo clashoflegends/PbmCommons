@@ -53,7 +53,7 @@ public class ImageManager implements Serializable {
     private Cenario cenario;
     private final MediaTracker mt;
     private int mti = 0;
-    private ImageIcon combat, combatBigArmy, combatBigNavy, explosion, blueBall, yellowBall, iconApp, caravanIcon;
+    private ImageIcon combat, combatBigArmy, combatBigNavy, explosion, blueBall, yellowBall, iconApp, caravanIcon, pieChart, barChart, areaChart;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
     private final SortedMap<String, ImageIcon> landmarks = new TreeMap<>();
     private static ImageManager instance;
@@ -110,6 +110,9 @@ public class ImageManager implements Serializable {
         explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
         iconApp = new ImageIcon(getClass().getResource("/images/hex_wasteland.png"));
         caravanIcon = new ImageIcon(getClass().getResource("/images/mapa/hex_goldmine.gif"));
+        pieChart = new ImageIcon(getClass().getResource("/images/pie-chart-icon.png"));
+        barChart = new ImageIcon(getClass().getResource("/images/bargraph icon.png"));
+        areaChart = new ImageIcon(getClass().getResource("/images/areagraph icon.png"));
         doLoadFeaturesAll();
     }
 
@@ -680,6 +683,18 @@ public class ImageManager implements Serializable {
 
     public Image getIconApp() {
         return this.iconApp.getImage();
+    }
+
+    public Image getPieChartIcon() {
+        return this.pieChart.getImage();
+    }
+
+    public Image getAreaChartIcon() {
+        return this.areaChart.getImage();
+    }
+
+    public Image getBarChartIcon() {
+        return this.barChart.getImage();
     }
 
     public Image getFeature(Habilidade feature) {
