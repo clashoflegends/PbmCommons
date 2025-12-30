@@ -160,6 +160,14 @@ public class AcaoFacade implements Serializable {
         }
     }
 
+    public boolean isResourceTransport(PersonagemOrdem po) {
+        try {
+            return po.getOrdem().hasHabilidade(";ART;");
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
     public boolean isMovimentoDirection(PersonagemOrdem po) {
         try {
             return po.getOrdem().isTipoMovimentacao() && po.getOrdem().getParametroIde(0).contains("Direcao");
@@ -177,6 +185,27 @@ public class AcaoFacade implements Serializable {
             return locais.get(coord);
         }
         return null;
+    }
+
+    /**
+     * Assumes that last city parameter is the destination
+     *
+     * @param pers
+     * @param po
+     * @param locais
+     * @return
+     */
+    public SortedMap<Integer, Local> getCityDestination(Personagem pers, PersonagemOrdem po, SortedMap<String, Local> locais) {
+        final SortedMap<Integer, Local> cities = new TreeMap<>();
+        int sequence = 1;
+        for (int ii = 0; ii < po.getOrdem().getParametrosIdeQtd(); ii++) {
+            if (!po.getOrdem().getParametroIde(ii).contains("Cidade") && !po.getOrdem().getParametroIde(ii).contains("Coordenada")) {
+                continue;
+            }
+            final String coord = po.getParametrosId().get(ii);
+            cities.put(sequence++, locais.get(coord));
+        }
+        return cities;
     }
 
     public SortedMap<Integer, Local> getLocalDestinationPath(Personagem pers, PersonagemOrdem po, SortedMap<String, Local> locais) {

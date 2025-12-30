@@ -17,6 +17,7 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -52,7 +53,7 @@ public class ImageManager implements Serializable {
     private Cenario cenario;
     private final MediaTracker mt;
     private int mti = 0;
-    private ImageIcon combat, combatBigArmy, combatBigNavy, explosion, blueBall, yellowBall, iconApp;
+    private ImageIcon combat, combatBigArmy, combatBigNavy, explosion, blueBall, yellowBall, iconApp, caravanIcon;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
     private final SortedMap<String, ImageIcon> landmarks = new TreeMap<>();
     private static ImageManager instance;
@@ -63,10 +64,10 @@ public class ImageManager implements Serializable {
     private final Color colorAlly = Color.CYAN;
     private final Color colorMineOrdem = Color.BLUE.brighter();
     private final Color colorAllyOrdem = Color.CYAN.brighter();
+    private final Color colorResourceTransportOrdem = new Color(255, 215, 0); //(253, 208, 23) 255, 215, 0)
     private final Color colorMineArmyOrdem = Color.BLUE.darker();
     private final Color colorAllyArmyOrdem = Color.CYAN.brighter().brighter();
     private final AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
-   
 
     /**
      * to be used to draw rastros. don't need cenario.
@@ -107,7 +108,8 @@ public class ImageManager implements Serializable {
         combatBigNavy = new ImageIcon(getClass().getResource("/images/combat_blue.png"));
         combatBigArmy = new ImageIcon(getClass().getResource("/images/combat_green.png"));
         explosion = new ImageIcon(getClass().getResource("/images/explosion.png"));
-        iconApp = new ImageIcon(getClass().getResource("/images/hex_wasteland.png"));        
+        iconApp = new ImageIcon(getClass().getResource("/images/hex_wasteland.png"));
+        caravanIcon = new ImageIcon(getClass().getResource("/images/mapa/hex_goldmine.gif"));
         doLoadFeaturesAll();
     }
 
@@ -445,6 +447,15 @@ public class ImageManager implements Serializable {
                 colorAllyOrdem);
     }
 
+    public void doDrawPathResourceTransportOrder(Graphics2D big, Point ori, Point dest, Color nationColor) {
+        final int x = 04 + 7 / 2 + 4 + 4;
+        final int y = 22 + 13 / 2 - 3 - 2;
+        doDrawLineOrdem(big,
+                new Point((int) ori.getX() + x, (int) ori.getY() + y),
+                new Point((int) dest.getX() + x, (int) dest.getY() + y),
+                colorResourceTransportOrdem, nationColor);
+    }
+
     public void doDrawPathArmyOrder(Graphics2D big, Point ori, Point dest) {
         final int x = 30;
         final int y = 30;
@@ -503,6 +514,58 @@ public class ImageManager implements Serializable {
 
         //draw on graph
         big.draw(path);
+    }
+
+    private void doDrawLineOrdem(Graphics2D big, Point ori, Point dest, Color color, Color nationColor) {
+        //setup the line pattern
+        big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        BasicStroke basicStroke = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1f);
+        big.setStroke(basicStroke);
+        big.setColor(color);
+
+        //find size of the box for a smooth s-cruve style
+        double xLength = dest.getX() - ori.getX();
+        double yLength = (dest.getY() - ori.getY());
+        //increase exageration for a nicer curve when distances are small
+        double exageration = 10d;
+        if (yLength / xLength > 5d) {
+            xLength *= exageration;
+        } else if (xLength / yLength > 5d) {
+            yLength *= exageration;
+        } else if (xLength < 50d) {
+            xLength = yLength / 5d;
+        } else if (Math.abs(yLength) < 50d) {
+            yLength = xLength / 5d;
+        }
+
+        //draw S-curve
+        // Define the points for the s-curve using a GeneralPath
+        final GeneralPath sCurve = new GeneralPath();
+
+        // Starting point of the curve
+        sCurve.moveTo(ori.getX(), ori.getY());
+
+        // Add a cubic Bézier curve segment to form an 'S' shape.
+        // The method signature is curveTo(controlPt1X, controlPt1Y, controlPt2X, controlPt2Y, endPtX, endPtY)
+        // 
+        // For a smooth S-curve:
+        // Control Point 1 pulls the curve down and right
+        // Control Point 2 pulls the curve up and right
+        // End Point is the final destination
+        sCurve.curveTo(ori.getX() + xLength / 3, ori.getY() - yLength / 3,
+                dest.getX() - xLength / 3, dest.getY() + yLength / 3,
+                dest.getX() + 30, dest.getY() + 20);
+        big.draw(sCurve);
+
+        //draw 2nd S-curve to overlay colors
+        basicStroke = new BasicStroke(5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1f, new float[]{3f, 4f, 5f}, 50f);
+        big.setStroke(basicStroke);
+        big.setColor(nationColor);
+        sCurve.moveTo(ori.getX(), ori.getY());
+        sCurve.curveTo(ori.getX() + xLength / 3, ori.getY() - yLength / 3,
+                dest.getX() - xLength / 3, dest.getY() + yLength / 3,
+                dest.getX() + 30, dest.getY() + 20);
+        big.draw(sCurve);
     }
 
     private void doDrawPath(Graphics2D big, Point ori, Point dest, Color color) {
@@ -588,12 +651,23 @@ public class ImageManager implements Serializable {
 //        tenta com o icone...angle.
     }
 
+    public void doDrawCaravanIcon(Graphics2D big, Point dest) {
+        final int x = (int) dest.getX(), y = (int) dest.getY();
+        int dx = 40;
+        int dy = 36;
+        big.drawImage(this.getCaravanIcon(), x + dx, y + dy, form);
+    }
+
     public Image doDrawCombat() {
         return this.combat.getImage();
     }
 
     public Image doDrawCombatBigNavy() {
         return this.combatBigNavy.getImage();
+    }
+
+    public Image getCaravanIcon() {
+        return this.caravanIcon.getImage();
     }
 
     public Image doDrawCombatBigArmy() {
@@ -754,5 +828,5 @@ public class ImageManager implements Serializable {
         }
         return portrait;
     }
-    
+
 }

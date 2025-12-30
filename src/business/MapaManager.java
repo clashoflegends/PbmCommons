@@ -331,7 +331,7 @@ public class MapaManager implements Serializable {
 
             //set color then draw
             big.setColor(fontColor);
-            big.fillRect(x + 16, y - fm.getAscent() + 18, (int) rect.getWidth()+2, (int) rect.getHeight()+2);
+            big.fillRect(x + 16, y - fm.getAscent() + 18, (int) rect.getWidth() + 2, (int) rect.getHeight() + 2);
             //restore previous font
             big.setFont(fontBefore);
         }
@@ -452,7 +452,7 @@ public class MapaManager implements Serializable {
             if (pers.getLocal() == null) {
                 continue;
             }
-            if (pers.getNome().equalsIgnoreCase("Haleth")) {
+            if (pers.getNome().startsWith("charles")) {
                 log.debug("AKI!");
             }
             for (PersonagemOrdem po : pers.getAcoes().values()) {
@@ -462,9 +462,55 @@ public class MapaManager implements Serializable {
                     drawMovPathArmy(po, pers, observer, big);
                 } else if (acaoFacade.isMovimento(po)) {
                     drawMovPathPc(po, pers, observer, big);
+                } else if (acaoFacade.isResourceTransport(po)) {
+                    drawResourceTransportPath(po, pers, big);
                 }
             }
         }
+    }
+
+    private void drawResourceTransportPath(PersonagemOrdem po, Personagem pers, Graphics2D big) {
+        if (SettingsManager.getInstance().isConfig("drawResourcePath", "0", "1")) {
+            //don't draw
+            return;
+        }
+
+        //get cities involved.
+        final SortedMap<Integer, Local> citiesInvolved = acaoFacade.getCityDestination(pers, po, getLocais());
+        if (citiesInvolved.isEmpty()) {
+            return;
+        }
+        //identify source and destination
+        Local destinationCity, sourceCity;
+        switch (citiesInvolved.size()) {
+            case 1:
+                //assumes destination as parameter and source as self local.
+                destinationCity = citiesInvolved.get(1);
+                sourceCity = pers.getLocal();
+                break;
+            case 2:
+                //assumes source and destination as parameters
+                sourceCity = citiesInvolved.get(1);
+                destinationCity = citiesInvolved.get(2);
+                break;
+            default:
+                //assumes source is the first and destination is the last parameters
+                sourceCity = citiesInvolved.get(1);
+                destinationCity = citiesInvolved.get(citiesInvolved.size() + 1);
+                break;
+        }
+
+        //check if source and destination are the same
+        if (sourceCity == destinationCity) {
+            //nothing is really moving, is it?
+            return;
+        }
+
+        //draw all movement paths.
+        final Point ori = ConverterFactory.localToPoint(sourceCity);
+        final Point dest = ConverterFactory.localToPoint(destinationCity);
+        imageFactory.doDrawPathResourceTransportOrder(big, ori, dest, pers.getNacao().getFillColor());
+        imageFactory.doDrawCaravanIcon(big, dest);
     }
 
     private void drawMovPathArmy(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
