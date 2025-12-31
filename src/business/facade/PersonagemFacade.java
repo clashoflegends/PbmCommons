@@ -779,9 +779,11 @@ public class PersonagemFacade implements Serializable {
         return !personagem.getArtefatos().isEmpty();
     }
 
-    public int getUpkeepMoney(Personagem personagem) {
+    public int getUpkeepMoney(Personagem personagem, Cenario scenario) {
         int ret = 0;
-        if (personagem.getNacao().hasHabilidade(";PUC;")) {
+        if (scenario.hasHabilidade(";SUP;")) {
+            return 0;
+        } else if (personagem.getNacao().hasHabilidade(";PUC;")) {
             //Free People: Character's upkeep cost %s%% less
             ret += personagem.getPericiaNaturalTotal() * 20 * (100 - personagem.getNacao().getHabilidadeValor(";PUC;")) / 100;
         } else if (personagem.getNacao().hasHabilidade(";PUC5;")) {

@@ -424,8 +424,12 @@ public class CidadeFacade implements Serializable {
         return cidade.getTamanho() >= 4;
     }
 
-    public int getUpkeepMoney(Cidade cidade) {
-        return (cidade.getDocas() * 250 + cidade.getFortificacao() * 500);
+    public int getUpkeepMoney(Cidade cidade, Cenario scenario) {
+        if (scenario.hasHabilidade(";SUC;")) {
+            return 0;
+        } else {
+            return (cidade.getDocas() * 250 + cidade.getFortificacao() * 500);
+        }
     }
 
     public int getFoodGiven(Cidade cidade) {
