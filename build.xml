@@ -12,12 +12,12 @@
     <import file="nbproject/build-impl.xml"/>
     <!-- Autoincrement version number -->
     <target name="-pre-jar" >
-        <propertyfile file="${src.dir}\version_commons.properties">
+        <propertyfile file="${src.dir}/version_commons.properties">
             <entry key="BUILD" value="1" type="int" operation="+"/>
         </propertyfile>
     </target>
     <target name="-post-jar">
-        <copy file="${dist.jar}" todir="/Clash/PbmCounselor/lib"/>
+        <copy file="${dist.jar}" todir="/Clash/PbmCounselor/lib" failonerror="false"/>
     </target>
     <!--
 
