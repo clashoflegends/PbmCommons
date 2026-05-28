@@ -131,11 +131,7 @@
             <artifactId>httpmime</artifactId>
             <version>4.5.14</version>
         </dependency>
-        <dependency>
-            <groupId>com.ibm.icu</groupId>
-            <artifactId>icu4j</artifactId>
-            <version>3.6.1</version>
-        </dependency>
+
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>
