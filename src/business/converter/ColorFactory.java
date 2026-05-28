@@ -76,7 +76,8 @@ public class ColorFactory implements Serializable {
         new Color(Integer.parseInt("53C5CF", 16)), //22 Pentos
         new Color(Integer.parseInt("0F0F0F", 16)), //23 Future 1
         new Color(Integer.parseInt("0F0F0F", 16)), //24 Future 2
-        new Color(Integer.parseInt("0F0F0F", 16)) ///25 Future 3
+        new Color(Integer.parseInt("0F0F0F", 16))
+    ///25 Future 3
     };
     public static final Color[] colorBorder = {
         new Color(Integer.parseInt("FF0000", 16)), //00 unknown
@@ -104,7 +105,8 @@ public class ColorFactory implements Serializable {
         new Color(Integer.parseInt("000000", 16)), //22 Pentos
         new Color(Integer.parseInt("000000", 16)), //23 Future 1
         new Color(Integer.parseInt("000000", 16)), //24 Future 2
-        new Color(Integer.parseInt("000000", 16)) ///25 Future 3
+        new Color(Integer.parseInt("000000", 16))
+    ///25 Future 3
     };
     public static final Color[] colorBorderNew = {
         new Color(Integer.parseInt("FFFFFF", 16)), //00 unknown
@@ -132,7 +134,9 @@ public class ColorFactory implements Serializable {
         new Color(Integer.parseInt("ED1B23", 16)), //22 Pentos
         new Color(Integer.parseInt("ED1B23", 16)), //23 Future 1
         new Color(Integer.parseInt("ED1B23", 16)), //24 Future 2
-        new Color(Integer.parseInt("ED1B23", 16)) ///25 Future 3
+        new Color(Integer.parseInt("ED1B23", 16))
+
+    ///25 Future 3
     };
 
     public static Image setNacaoColor(Image image, final Color nacaoCor, final Color nacaoBorder, JPanel form) {
