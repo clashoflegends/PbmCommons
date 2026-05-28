@@ -14,5 +14,7 @@ jobs:
         with:
           java-version: '8'
           distribution: 'temurin'
+      - name: Install local deps
+        run: mvn install:install-file -Dfile=lib/PbmPersistenceCommons.jar -DgroupId=com.clashoflegends -DartifactId=PbmPersistenceCommons -Dversion=0.1.0-SNAPSHOT -Dpackaging=jar -q
       - name: Build JAR
-        run: ant jar -Dplatforms.JDK_1.8.home=$JAVA_HOME
+        run: mvn --batch-mode package
