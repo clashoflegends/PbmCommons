@@ -73,9 +73,8 @@
                                 <echo>Copying artifact to ${post.copy.dir}</echo>
                                 <mkdir dir="${post.copy.dir}"/>
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
-                                      todir="${post.copy.dir}" verbose="true" overwrite="true">
-                                    <flattenmapper/>
-                                </copy>
+                                      tofile="${post.copy.dir}/${project.artifactId}.jar"
+                                      verbose="true" overwrite="true"/>
                             </target>
                         </configuration>
                         <goals>
