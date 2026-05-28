@@ -8,20 +8,20 @@
  */
 package persistence.reports;
 
-import com.itextpdf.text.BadElementException;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.BadElementException;
+import com.lowagie.text.Chunk;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Image;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -352,7 +352,7 @@ public final class SysPdf implements Serializable {
         celula.setHorizontalAlignment(Element.ALIGN_LEFT);
         celula.setVerticalAlignment(Element.ALIGN_BASELINE);
         //celula.setGrayFill(0.8f);
-        celula.setBorderColor(new BaseColor(255, 0, 0));
+        celula.setBorderColor(new Color(255, 0, 0));
         //celula.setBackgroundColor(new Color(255, 0, 0));
         celula.setBorder(getBorder());
         //celula.setNoWrap(true);
