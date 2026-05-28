@@ -17,7 +17,14 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <!-- Optional: set to a directory to copy the built JAR after packaging, e.g. C:/Clash/PbmCounselor/lib -->
         <post.copy.dir>dist</post.copy.dir>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
     </properties>
+
+    <scm>
+        <connection>scm:git:https://github.com/clashoflegends/PbmCommons.git</connection>
+        <developerConnection>scm:git:https://github.com/clashoflegends/PbmCommons.git</developerConnection>
+        <url>https://github.com/clashoflegends/PbmCommons</url>
+    </scm>
 
     <build>
         <!-- Preserve legacy source layout (java files directly under src) -->
@@ -27,7 +34,15 @@
                 <directory>src</directory>
                 <excludes>
                     <exclude>**/*.java</exclude>
+                    <exclude>version_commons.properties</exclude>
                 </excludes>
+            </resource>
+            <resource>
+                <directory>src</directory>
+                <includes>
+                    <include>version_commons.properties</include>
+                </includes>
+                <filtering>true</filtering>
             </resource>
         </resources>
         <plugins>
@@ -51,21 +66,6 @@
                 <version>3.1.0</version>
                 <executions>
                     <execution>
-                        <id>update-version-properties</id>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <target>
-                                <echo>Updating version_commons.properties with project version</echo>
-                                <propertyfile file="src/version_commons.properties">
-                                    <entry key="BUILD" value="${project.version}"/>
-                                </propertyfile>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                    <execution>
                         <id>post-package-copy</id>
                         <phase>package</phase>
                         <configuration>
@@ -85,27 +85,23 @@
                 </executions>
             </plugin>
 
-            <!-- Optional: emulate Ant's autoincrement of version_commons.properties using buildnumber plugin (disabled by default) -->
-            <!--
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
                 <version>3.2.0</version>
                 <executions>
                     <execution>
-                        <id>increment-build</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>create</goal>
-                        </goals>
-                        <configuration>
-                            <doCheck>false</doCheck>
-                            <doUpdate>false</doUpdate>
-                        </configuration>
+                        <phase>validate</phase>
+                        <goals><goal>create</goal></goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                    <shortRevisionLength>7</shortRevisionLength>
+                    <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+                </configuration>
             </plugin>
-            -->
         </plugins>
     </build>
 
