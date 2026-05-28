@@ -148,8 +148,8 @@
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-            <version>1.4.7</version>
+            <artifactId>jakarta.mail</artifactId>
+            <version>1.6.7</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
