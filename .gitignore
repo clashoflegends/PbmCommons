@@ -1,6 +1,7 @@
 /dist/
 *.log
 /build/
+properties.config
 /PbmCommons - Copy/build/
 /PbmCommons - Copy/dist/
 /PbmCommons - Copy/nbproject/private/

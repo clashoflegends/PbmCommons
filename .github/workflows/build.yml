@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          java-version: '8'
+          java-version: '21'
           distribution: 'temurin'
       - name: Install local deps
         run: mvn install:install-file -Dfile=lib/PbmPersistenceCommons.jar -DgroupId=com.clashoflegends -DartifactId=PbmPersistenceCommons -Dversion=0.1.0-SNAPSHOT -Dpackaging=jar -q
