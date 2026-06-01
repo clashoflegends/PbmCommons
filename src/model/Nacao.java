@@ -18,7 +18,7 @@ import java.util.TreeMap;
  */
 public class Nacao extends BaseModel implements IActor {
 
-    private int impostos, money, pontos;
+    private int impostos, money, pontos, cdToken;
     private boolean ativa = true;
     private Alianca alianca;
     private Cidade capital;
@@ -289,5 +289,19 @@ public class Nacao extends BaseModel implements IActor {
 
     public void setNomeDbClean(String nomeDbClean) {
         this.nomeDbClean = nomeDbClean;
+    }
+
+    /**
+     * @return the cdToken
+     */
+    public int getCdToken() {
+        return cdToken;
+    }
+
+    /**
+     * @param cdToken the cdToken to set
+     */
+    public void setCdToken(int cdToken) {
+        this.cdToken = cdToken;
     }
 }
