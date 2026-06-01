@@ -26,6 +26,12 @@ public class PersonagemOrdem extends BaseModel {
     private List<String> parametrosId = new ArrayList();
     private List<String> parametrosDisplay = new ArrayList();
 
+    private Object readResolve() {
+        if (parametrosId == null)      parametrosId = new ArrayList();
+        if (parametrosDisplay == null) parametrosDisplay = new ArrayList();
+        return this;
+    }
+
     public PersonagemOrdem() {
         setUpdateTime();
     }

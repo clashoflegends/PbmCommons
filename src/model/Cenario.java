@@ -23,13 +23,23 @@ public class Cenario extends BaseModel {
     private SortedMap<String, Produto> produtos = new TreeMap();
     private SortedMap<String, Terreno> terrenos = new TreeMap();
     private SortedMap<String, Ordem> ordens = new TreeMap(); //ordem.getCodigo(), ordem
-    private final SortedMap<String, TipoTropa> tipoTropa = new TreeMap(); //cd, tipoTropa
-    private final String[][] tituloPericia = new String[4][12];
+    private SortedMap<String, TipoTropa> tipoTropa = new TreeMap(); //cd, tipoTropa
+    private String[][] tituloPericia = new String[4][12];
     private int numMaxArtefatos;
     private int numMaxPersonagem;
     private int numMaxMovimento;
     private int numMaxOrdens;
     private int numOrdens;
+
+    private Object readResolve() {
+        if (feiticos == null)   feiticos = new ArrayList();
+        if (produtos == null)   produtos = new TreeMap<>();
+        if (terrenos == null)   terrenos = new TreeMap<>();
+        if (ordens == null)     ordens = new TreeMap<>();
+        if (tipoTropa == null)  tipoTropa = new TreeMap<>();
+        if (tituloPericia == null) tituloPericia = new String[4][12];
+        return this;
+    }
 
     public Cenario() {
         // PENDING: mover titulos para properties ou banco de dados

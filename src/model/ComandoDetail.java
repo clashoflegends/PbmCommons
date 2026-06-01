@@ -7,6 +7,7 @@ package model;
 import baseLib.BaseModel;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,8 +18,14 @@ public class ComandoDetail implements Serializable {
 
     private String nacaoCodigo, personagemCodigo, ordemCodigo, ordemNome, tpActor = "P";
     private String updateTime;
-    final private List<String> parametroId;
-    final private List<String> parametroDisplay;
+    private List<String> parametroId;
+    private List<String> parametroDisplay;
+
+    private Object readResolve() {
+        if (parametroId == null)      parametroId = new ArrayList<>();
+        if (parametroDisplay == null) parametroDisplay = new ArrayList<>();
+        return this;
+    }
 
     public ComandoDetail(BaseModel actor, Ordem ordem, List<String> parametrosId, List<String> parametrosDisplay, Instant timeLastChange) {
         this.nacaoCodigo = actor.getNacao().getId() + "";

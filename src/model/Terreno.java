@@ -16,6 +16,11 @@ public class Terreno extends BaseModel {
     private int producaoValor[];
     private int movimentoValor[] = {1, 2, 3, 4, 5}; //Infantry, +roads, Cavalry,+roads, navy
 
+    private Object readResolve() {
+        if (movimentoValor == null) movimentoValor = new int[]{1, 2, 3, 4, 5};
+        return this;
+    }
+
     public int[] getProducaoValor() {
         return producaoValor;
     }

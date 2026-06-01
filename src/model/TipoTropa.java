@@ -19,6 +19,13 @@ public class TipoTropa extends BaseModel {
     private SortedMap<Terreno, Integer> defesaTerreno = new TreeMap<>();
     private SortedMap<Terreno, Integer> custoMovimento = new TreeMap<>();
 
+    private Object readResolve() {
+        if (ataqueTerreno == null)    ataqueTerreno = new TreeMap<>();
+        if (defesaTerreno == null)    defesaTerreno = new TreeMap<>();
+        if (custoMovimento == null)   custoMovimento = new TreeMap<>();
+        return this;
+    }
+
     public int getMovimento() {
         return movimento;
     }

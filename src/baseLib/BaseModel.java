@@ -24,8 +24,18 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     private boolean changed = false;
     private String resultados = "";
     private SortedMap<String, Habilidade> habilidades = new TreeMap<>();
-    private final SortedMap<Integer, PersonagemOrdem> acao = new TreeMap();
-    private final SortedMap<Integer, PersonagemOrdem> acaoExecutadas = new TreeMap();
+    private SortedMap<Integer, PersonagemOrdem> acao = new TreeMap();
+    private SortedMap<Integer, PersonagemOrdem> acaoExecutadas = new TreeMap();
+
+    // Called by XmlManager's custom ReflectionConverter after XStream deserializes
+    // an object. Fields absent from old EGFs arrive as null; this restores defaults.
+    private Object readResolve() {
+        if (acao == null)           acao = new TreeMap<>();
+        if (acaoExecutadas == null) acaoExecutadas = new TreeMap<>();
+        if (habilidades == null)    habilidades = new TreeMap<>();
+        if (resultados == null)     resultados = "";
+        return this;
+    }
 
     @Override
     public int getId() {

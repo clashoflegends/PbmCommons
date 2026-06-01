@@ -24,6 +24,11 @@ public class Exercito extends BaseModel implements IExercito {
     private Local local;
     private SortedMap<String, Pelotao> tropas = new TreeMap();
 
+    private Object readResolve() {
+        if (tropas == null) tropas = new TreeMap<>();
+        return this;
+    }
+
     @Override
     public int getTatica() {
         return tatica;

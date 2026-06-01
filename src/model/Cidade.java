@@ -29,9 +29,15 @@ public class Cidade extends BaseModel implements IActor, Cloneable {
     private int lealdadeAnterior;
     private int fonteInfo;
     private boolean oculto, sitiado;
-    private final SortedMap<Produto, Integer> estoques = new TreeMap();
-    private final SortedMap<String, TipoTropa> tpTropa = new TreeMap();
+    private SortedMap<Produto, Integer> estoques = new TreeMap();
+    private SortedMap<String, TipoTropa> tpTropa = new TreeMap();
     private Raca raca;
+
+    private Object readResolve() {
+        if (estoques == null) estoques = new TreeMap<>();
+        if (tpTropa == null)  tpTropa = new TreeMap<>();
+        return this;
+    }
 
     @Override
     public String getCodigo() {

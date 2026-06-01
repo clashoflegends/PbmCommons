@@ -27,12 +27,24 @@ public class Nacao extends BaseModel implements IActor {
     private Color fillColor, borderColor;
     private String flAlianca = "-";
     private String nomeDbClean = "-";
-    private final Extrato extrato = new Extrato();
-    private final List<Cidade> cidades = new ArrayList();
-    private final List<Personagem> personagens = new ArrayList();
-    private final SortedMap<String, HabilidadeNacao> habilidadesNacao = new TreeMap();
+    private Extrato extrato = new Extrato();
+    private List<Cidade> cidades = new ArrayList();
+    private List<Personagem> personagens = new ArrayList();
+    private SortedMap<String, HabilidadeNacao> habilidadesNacao = new TreeMap();
     private SortedMap<Nacao, Integer> relacionamentos = new TreeMap();
     private SortedMap<String, List<String>> mensagensNacao = new TreeMap<>();
+
+    private Object readResolve() {
+        if (flAlianca == null)          flAlianca = "-";
+        if (nomeDbClean == null)        nomeDbClean = "-";
+        if (extrato == null)            extrato = new Extrato();
+        if (cidades == null)            cidades = new ArrayList();
+        if (personagens == null)        personagens = new ArrayList();
+        if (habilidadesNacao == null)   habilidadesNacao = new TreeMap<>();
+        if (relacionamentos == null)    relacionamentos = new TreeMap<>();
+        if (mensagensNacao == null)     mensagensNacao = new TreeMap<>();
+        return this;
+    }
 
     @Override
     public Nacao getNacao() {

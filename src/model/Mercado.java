@@ -16,7 +16,12 @@ import java.util.TreeMap;
  */
 public class Mercado extends BaseModel implements Serializable {
 
-    private final SortedMap<Produto, Integer[]> mercado = new TreeMap(); //[disponivel, compra, venda]
+    private SortedMap<Produto, Integer[]> mercado = new TreeMap(); //[disponivel, compra, venda]
+
+    private Object readResolve() {
+        if (mercado == null) mercado = new TreeMap<>();
+        return this;
+    }
 
     public void addProduto(Produto produto, int disponivel, int compra, int venda) {
         Integer[] temp = {disponivel, compra, venda};

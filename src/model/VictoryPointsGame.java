@@ -19,8 +19,14 @@ import java.util.TreeSet;
  */
 public class VictoryPointsGame implements Serializable {
 
-    private final SortedMap<Nacao, SortedMap<Integer, Integer>> nationsPoints = new TreeMap(); //<Nation, <Turn, Points>
-    private final Set<Integer> turnList = new TreeSet();
+    private SortedMap<Nacao, SortedMap<Integer, Integer>> nationsPoints = new TreeMap(); //<Nation, <Turn, Points>
+    private Set<Integer> turnList = new TreeSet();
+
+    private Object readResolve() {
+        if (nationsPoints == null) nationsPoints = new TreeMap<>();
+        if (turnList == null)      turnList = new TreeSet();
+        return this;
+    }
 
     public void addPoints(Nacao nation, int turn, int points) {
         //check if nation exists

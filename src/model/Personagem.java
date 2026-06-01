@@ -30,11 +30,21 @@ public class Personagem extends BaseModel implements IActor {
     private Nacao nacao, nacaoSubordinada;
     private Personagem lider;
     private Artefato artefatoCombateAtivo;
-    private final SortedMap<String, Artefato> artefatos = new TreeMap();
-    private final SortedMap<Integer, PersonagemFeitico> feiticos = new TreeMap();
-    private final SortedMap<String, Personagem> liderados = new TreeMap();
-    private final SortedMap<Integer, PersonagemOrdem> ordens = new TreeMap();  //kept for backwards compatibility
-    private final SortedMap<Integer, PersonagemOrdem> ordensExecutadas = new TreeMap(); //kept for backwards compatibility
+    private SortedMap<String, Artefato> artefatos = new TreeMap();
+    private SortedMap<Integer, PersonagemFeitico> feiticos = new TreeMap();
+    private SortedMap<String, Personagem> liderados = new TreeMap();
+    private SortedMap<Integer, PersonagemOrdem> ordens = new TreeMap();  //kept for backwards compatibility
+    private SortedMap<Integer, PersonagemOrdem> ordensExecutadas = new TreeMap(); //kept for backwards compatibility
+
+    private Object readResolve() {
+        if (portraiFilename == null)    portraiFilename = "blank.jpg";
+        if (artefatos == null)          artefatos = new TreeMap<>();
+        if (feiticos == null)           feiticos = new TreeMap<>();
+        if (liderados == null)          liderados = new TreeMap<>();
+        if (ordens == null)             ordens = new TreeMap<>();
+        if (ordensExecutadas == null)   ordensExecutadas = new TreeMap<>();
+        return this;
+    }
 
     public int getPericiaNaturalTotal() {
         return (periciaComandanteNatural + periciaAgenteNatural + periciaEmissarioNatural + periciaMagoNatural);

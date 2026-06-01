@@ -20,11 +20,26 @@ public class Local extends BaseModel implements Cloneable {
     private String estrada, rio, riacho, vau, ponte, rastro, landing = "";
     private Terreno terreno;
     private Cidade cidade;
-    private final SortedMap<Produto, Integer> producao = new TreeMap<>();
-    private final SortedMap<String, Personagem> indicePersonagem = new TreeMap<>();
-    private final SortedMap<String, Exercito> indiceExercito = new TreeMap<>();
-    private final SortedMap<String, Artefato> indiceArtefato = new TreeMap<>();
+    private SortedMap<Produto, Integer> producao = new TreeMap<>();
+    private SortedMap<String, Personagem> indicePersonagem = new TreeMap<>();
+    private SortedMap<String, Exercito> indiceExercito = new TreeMap<>();
+    private SortedMap<String, Artefato> indiceArtefato = new TreeMap<>();
     private String visibilidadeNacao;  //manter em string por causa da forma de carga, aonde cada jogador tem uma visibilidade diferente da nacao. Usar sortedMap vai quebrar...
+
+    private Object readResolve() {
+        if (landing == null)          landing = "";
+        if (estrada == null)          estrada = "";
+        if (rio == null)              rio = "";
+        if (riacho == null)           riacho = "";
+        if (vau == null)              vau = "";
+        if (ponte == null)            ponte = "";
+        if (rastro == null)           rastro = "";
+        if (producao == null)         producao = new TreeMap<>();
+        if (indicePersonagem == null) indicePersonagem = new TreeMap<>();
+        if (indiceExercito == null)   indiceExercito = new TreeMap<>();
+        if (indiceArtefato == null)   indiceArtefato = new TreeMap<>();
+        return this;
+    }
 
     @Override
     public Local clone() throws CloneNotSupportedException {

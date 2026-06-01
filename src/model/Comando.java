@@ -30,8 +30,14 @@ public class Comando implements Serializable {
     private int partidaId;
     private int turno;
     private Date creationTime;
-    private final List<ComandoDetail> comandos = new ArrayList();
-    private final SortedMap<Integer, String> packages = new TreeMap<>();
+    private List<ComandoDetail> comandos = new ArrayList();
+    private SortedMap<Integer, String> packages = new TreeMap<>();
+
+    private Object readResolve() {
+        if (comandos == null)  comandos = new ArrayList();
+        if (packages == null)  packages = new TreeMap<>();
+        return this;
+    }
 
     public Comando() {
         setCreationTime();

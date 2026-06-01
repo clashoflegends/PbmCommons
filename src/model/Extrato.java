@@ -16,7 +16,12 @@ import java.util.List;
 public final class Extrato implements Serializable {
 
     private int qtDetail = 0;
-    private final List<ExtratoDetail> detalhe = new ArrayList();
+    private List<ExtratoDetail> detalhe = new ArrayList();
+
+    private Object readResolve() {
+        if (detalhe == null) detalhe = new ArrayList();
+        return this;
+    }
 
     public void addDetail(String dsOperacao, int vlOperacao, int vlSaldo) {
         this.detalhe.add(new ExtratoDetail(qtDetail++, dsOperacao, vlOperacao, vlSaldo));
