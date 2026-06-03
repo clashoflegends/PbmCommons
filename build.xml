@@ -19,6 +19,35 @@
     <target name="-post-jar">
         <copy file="${dist.jar}" todir="/Clash/PbmCounselor/lib" failonerror="false"/>
     </target>
+    <!-- Re-copy test resources from test/resources/ to the classpath root.
+         NB's Ant copies from test/ so egf/ would land at resources/egf/;
+         Maven uses test/resources/ as the resource root, so /egf/... is correct.
+         This hook makes Ant match Maven's classpath layout. -->
+    <target name="-post-compile-test">
+        <copy todir="${build.test.classes.dir}">
+            <fileset dir="test/resources"/>
+        </copy>
+    </target>
+
+    <!-- Override NB-generated -do-test-run: use JUnit 5 Platform Launcher.
+         The generated version uses the Ant <junit> task which checks for
+         org.junit.Test (JUnit 4) and silently skips Jupiter tests. -->
+    <target name="-do-test-run" depends="init,compile-test,-pre-test-run">
+        <junitlauncher haltOnFailure="false" printSummary="true">
+            <classpath path="${run.test.classpath}"/>
+            <testclasses outputdir="${build.test.results.dir}">
+                <fileset dir="${build.test.classes.dir}" includes="**/*Test.class"/>
+                <fork dir="${basedir}">
+                    <jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
+                    <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+                    <jvmarg value="--add-opens=java.base/java.lang.reflect=ALL-UNNAMED"/>
+                    <jvmarg value="--add-opens=java.base/java.text=ALL-UNNAMED"/>
+                    <jvmarg value="--add-opens=java.base/java.util.concurrent=ALL-UNNAMED"/>
+                </fork>
+                <listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+            </testclasses>
+        </junitlauncher>
+    </target>
     <!--
 
     There exist several targets which are by default empty and which can be
