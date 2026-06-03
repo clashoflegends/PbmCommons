@@ -52,7 +52,7 @@ public class SysBanco {
     private static void criaConn() {
         try {
 //            Class.forName("com.mysql.jdbc.Driver");
-            final String conexao = String.format("jdbc:mysql://%s/%s", SettingsManager.getInstance().getConfig("bdServer", "localhost"), SettingsManager.getInstance().getConfig("bdDatabase"));
+            final String conexao = String.format("jdbc:mysql://%s/%s?useUnicode=true&characterEncoding=UTF-8", SettingsManager.getInstance().getConfig("bdServer", "localhost"), SettingsManager.getInstance().getConfig("bdDatabase"));
             if (SettingsManager.getInstance().isDebug()) {
                 log.info("Conectando ao banco de dados:" + conexao);
             }
