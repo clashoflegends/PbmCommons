@@ -551,6 +551,7 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
         synchronized (this) {
             this.throwable = throwable;
         }
+        persistenceCommons.CrashReporter.report(throwable, "uncaught");
         if (!SwingUtilities.isEventDispatchThread()) {
             log.fatal("Opps....", throwable);
             SwingUtilities.invokeLater(new Handler(UNCAUGHT_EXCEPTION));
