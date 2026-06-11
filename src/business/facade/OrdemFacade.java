@@ -89,7 +89,8 @@ public class OrdemFacade implements Serializable {
     }
 
     /**
-     * Verifica se o personagem pode realizar a ordem, de acordo com o tipo do actor.
+     * Verifica se o personagem pode realizar a ordem, de acordo com o tipo do
+     * actor.
      *
      * @param personagem
      * @param ordem
@@ -452,10 +453,11 @@ public class OrdemFacade implements Serializable {
             }
             Ordem ordem = actor.getAcao(index).getOrdem();
             List parametros = actor.getAcao(index).getParametrosDisplay();
-            String[] ret = new String[3];
+            String[] ret = new String[4];
             ret[0] = ordem.getDescricao();
             ret[1] = parametros.toString();
             ret[2] = TitleFactory.getTipoOrdem(ordem);
+            ret[3] = TitleFactory.getDificuldade(ordem);
             return ret;
         } catch (NullPointerException ex) {
             if (index >= acoesMax) {
