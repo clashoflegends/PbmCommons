@@ -242,6 +242,9 @@ public class TitleFactory implements Serializable {
     }
 
     public static String getDificuldade(Ordem ordem) {
+        if (ordem == null) {
+            return "-";
+        }
         switch (ordem.getDificuldade()) {
             case "Aut":
                 return labels.getString("AUTOMATICA");
