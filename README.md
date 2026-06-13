@@ -22,3 +22,9 @@
 ---
 
 PbmCommons is the shared library used by all Clash of Legends Java projects (Counselor, Judge, and the pipeline tools). It contains the game model, business logic, GUI utilities, i18n resources, and shared images.
+
+---
+
+## License
+
+PbmCommons is released under the [MIT License](LICENSE). © 2014-2026 Clash of Legends.
