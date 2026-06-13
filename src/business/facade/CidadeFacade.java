@@ -229,6 +229,10 @@ public class CidadeFacade implements Serializable {
     public Color getNacaoColorFill(Cidade cidade) {
         //FIXME: move para nacaoFacade
         try {
+            Color override = getColorBlindFillOverride(cidade.getNacao());
+            if (override != null) {
+                return override;
+            }
             if (cidade.getNacao().getFillColor() == null) {
                 return ColorFactory.colorFill[SysApoio.parseInt(cidade.getNacao().getCodigo())];
             } else {
@@ -237,6 +241,26 @@ public class CidadeFacade implements Serializable {
         } catch (Exception ex) {
             return ColorFactory.colorFill[0];
         }
+    }
+
+    /**
+     * Player colorblind aid: optional map fill-color override for the Unknown and Barbarian nations,
+     * read from properties.config as ColorUnknown / ColorBarbarian (hex, e.g. "ff8800"). Empty or
+     * unset = no override (normal palette). Returns null when no override applies, so non-barbarian
+     * non-unknown nations render byte-identically to before. Unknown (codigo 0) is checked first so a
+     * placeholder/hidden nation never reaches isNacaoBarbarian's owner access.
+     */
+    private Color getColorBlindFillOverride(Nacao nacao) {
+        if (nacao == null) {
+            return null;
+        }
+        String hex = "";
+        if (SysApoio.parseInt(nacao.getCodigo()) == 0) {
+            hex = SettingsManager.getInstance().getConfig("ColorUnknown", "");
+        } else if (nacaoFacade.isNacaoBarbarian(nacao)) {
+            hex = SettingsManager.getInstance().getConfig("ColorBarbarian", "");
+        }
+        return (hex == null || hex.isEmpty()) ? null : ColorFactory.getColorBd(hex);
     }
 
     public Color getNacaoColorBorder(Cidade cidade) {
