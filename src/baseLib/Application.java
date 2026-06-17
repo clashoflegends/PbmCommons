@@ -259,25 +259,41 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
      *
      * @see <a href="#initSequence">init sequence</a>
      */
+    /**
+     * Look-and-feel used when LookAndFeelTheme is unset. Single source of truth - the Settings theme
+     * dropdown's "unset" selection must resolve to this same value, or saving Settings would silently
+     * pin a different theme than the player was seeing.
+     */
+    public static final String DEFAULT_LAF_THEME = "FlatLight";
+
     protected void installLookAndFeel() {
-        setUIFont();
-        if (SettingsManager.getInstance().getConfig("LookAndFeelTheme", "0").equals("Cross")) {
-            setLookAndFeelCrossPlatform();
-        } else if (!SettingsManager.getInstance().getConfig("LookAndFeelTheme", "0").equals("0")) {
-            try {
-                setLookAndFeelProperties();
-            } catch (ClassNotFoundException e) {
-                setLookAndFeelPlatform();
-            } catch (IllegalAccessException e) {
-                setLookAndFeelPlatform();
-            } catch (InstantiationException e) {
-                setLookAndFeelPlatform();
-            } catch (UnsupportedLookAndFeelException e) {
-                setLookAndFeelPlatform();
+        String theme = SettingsManager.getInstance().getConfig("LookAndFeelTheme", DEFAULT_LAF_THEME);
+        try {
+            switch (theme) {
+                case "FlatLight":
+                    UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
+                    break;
+                // FlatDark deferred: the codebase hardcodes some black/light-bg-assuming text colors
+                // (e.g. setLabelMoney) that would be unreadable on a dark background. Add FlatDark once
+                // those are audited. (See EDT_AUDIT.md-style follow-up note in ROADMAP Phase 10.)
+                case "Cross":
+                    setLookAndFeelCrossPlatform();
+                    break;
+                case "0":
+                    setLookAndFeelPlatform();
+                    break;
+                default:
+                    setLookAndFeelProperties(); // Metal / Nimbus etc. matched by installed-LAF name
+                    break;
             }
-        } else {
+            log.info("Look and feel: " + theme);
+        } catch (Exception e) {
+            log.warn("Look-and-feel '" + theme + "' failed; falling back to system. " + e);
             setLookAndFeelPlatform();
         }
+        // Run after the L&F is installed so the optional font-size bump applies on top of it
+        // (setLookAndFeel replaces the UI defaults, which would discard an earlier setUIFont()).
+        setUIFont();
     }
 
     private void setLookAndFeelProperties() throws IllegalAccessException, InstantiationException, UnsupportedLookAndFeelException, ClassNotFoundException {

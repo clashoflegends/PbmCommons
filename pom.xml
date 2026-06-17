@@ -193,5 +193,10 @@
             <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.7.1</version>
+        </dependency>
     </dependencies>
 </project>
