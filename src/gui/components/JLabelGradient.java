@@ -6,6 +6,7 @@
 package gui.components;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -19,9 +20,16 @@ import javax.swing.JLabel;
 public class JLabelGradient extends JLabel implements Serializable {
 
     private final Color colorStart = Color.CYAN;
-    private final Color colorFinal = Color.RED;
+    // Translucent so the bar reads as a soft fill behind the (bold) text rather than a solid red
+    // slab - on a dark theme a solid red over a dark bg drowned the light text.
+    private final Color colorFinal = new Color(210, 60, 60, 160);
     private float percent = 0f;
     private int minBarSize = 12;
+
+    public JLabelGradient() {
+        super();
+        setFont(getFont().deriveFont(Font.BOLD)); // stronger text, legible over the gradient on any theme
+    }
 
     /**
      * @param minBarSize the minBarSize to set

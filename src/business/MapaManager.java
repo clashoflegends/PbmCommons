@@ -611,6 +611,15 @@ public class MapaManager implements Serializable {
         return printMapaGeral(listaLocal, listaPers, observer);
     }
 
+    // Base fill for the general map canvas. Defaults to white so the Judge/Distiler file output is
+    // unchanged; Counselor sets it transparent (see MainMapaGui) so the themed panel shows through
+    // the jagged margins instead of a white slab on a dark theme.
+    private static Color mapaBaseColor = Color.WHITE;
+
+    public static void setMapaBaseColor(Color c) {
+        mapaBaseColor = c;
+    }
+
     public BufferedImage printMapaGeral(Collection<Local> listaLocal, Collection<Personagem> listaPers, Jogador observer) {
         if (farPoint == null) {
             this.farPoint = getMapMaxSize(listaLocal);
@@ -631,7 +640,7 @@ public class MapaManager implements Serializable {
 //        g2d.drawImage(inputImage, 0, 0, scaledWidth, scaledHeight, null);
 //        g2d.dispose();
         //desenhando box para o mapa
-        big.setBackground(Color.WHITE);
+        big.setBackground(mapaBaseColor);
         big.clearRect(0, 0, farPoint.x, farPoint.y);
         big.setColor(Color.BLACK);
         big.setFont(FONT_COORDINATE_DEFAULT);

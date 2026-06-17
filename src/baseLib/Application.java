@@ -268,14 +268,17 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
 
     protected void installLookAndFeel() {
         String theme = SettingsManager.getInstance().getConfig("LookAndFeelTheme", DEFAULT_LAF_THEME);
+        // Apply the brand accent (#1a3c6e) to FlatLaf themes via themes/FlatLaf.properties on the
+        // classpath. Harmless for non-FlatLaf themes. Must be registered before the L&F is set up.
+        com.formdev.flatlaf.FlatLaf.registerCustomDefaultsSource("themes");
         try {
             switch (theme) {
                 case "FlatLight":
                     UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
                     break;
-                // FlatDark deferred: the codebase hardcodes some black/light-bg-assuming text colors
-                // (e.g. setLabelMoney) that would be unreadable on a dark background. Add FlatDark once
-                // those are audited. (See EDT_AUDIT.md-style follow-up note in ROADMAP Phase 10.)
+                case "FlatDark":
+                    UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarkLaf());
+                    break;
                 case "Cross":
                     setLookAndFeelCrossPlatform();
                     break;
@@ -290,6 +293,11 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
         } catch (Exception e) {
             log.warn("Look-and-feel '" + theme + "' failed; falling back to system. " + e);
             setLookAndFeelPlatform();
+        }
+        // With a FlatLaf theme the native title bar would otherwise track the theme, not Windows.
+        // Make it follow the Windows app-mode setting so Counselor matches native apps (and Judge).
+        if ("FlatLight".equals(theme) || "FlatDark".equals(theme)) {
+            WindowsTitleBar.installSystemTitleBarTracking();
         }
         // Run after the L&F is installed so the optional font-size bump applies on top of it
         // (setLookAndFeel replaces the UI defaults, which would discard an earlier setUIFont()).
