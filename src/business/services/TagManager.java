@@ -35,13 +35,19 @@ public class TagManager implements Serializable {
     }
 
     public ImageIcon drawTagStyle2(int dx, int dy) {
-        //create graphs
+        return drawTagStyle2(dx, dy, 1.0);
+    }
+
+    /** scale > 1 renders the hexagon vector-crisp at the (zoomed) size instead of raster-upscaling. */
+    public ImageIcon drawTagStyle2(int dx, int dy, double scale) {
+        //create graphs at the target scale
         BufferedImage tagImg = new BufferedImage(
-                ImageManager.HEX_SIZE + 2 * dx,
-                ImageManager.HEX_SIZE + 2 * dy,
+                Math.max(1, (int) Math.ceil((ImageManager.HEX_SIZE + 2 * dx) * scale)),
+                Math.max(1, (int) Math.ceil((ImageManager.HEX_SIZE + 2 * dy) * scale)),
                 BufferedImage.TRANSLUCENT);
         Graphics2D big = tagImg.createGraphics();
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        big.scale(scale, scale); // draw the 1x geometry under a scale transform -> crisp at any zoom
         //setup internal lines
         big.setStroke(new BasicStroke(
                 dx,
@@ -71,14 +77,20 @@ public class TagManager implements Serializable {
     }
 
     public ImageIcon drawTagStyle3(int dx, int dy) {
+        return drawTagStyle3(dx, dy, 1.0);
+    }
+
+    /** scale > 1 renders the hexagon vector-crisp at the (zoomed) size instead of raster-upscaling. */
+    public ImageIcon drawTagStyle3(int dx, int dy, double scale) {
         final int t = 6;
-        //creates graphs
+        //creates graphs at the target scale
         BufferedImage tagImg = new BufferedImage(
-                ImageManager.HEX_SIZE + dx * 2,
-                ImageManager.HEX_SIZE + dy * 2,
+                Math.max(1, (int) Math.ceil((ImageManager.HEX_SIZE + dx * 2) * scale)),
+                Math.max(1, (int) Math.ceil((ImageManager.HEX_SIZE + dy * 2) * scale)),
                 BufferedImage.TRANSLUCENT);
         Graphics2D big = tagImg.createGraphics();
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        big.scale(scale, scale); // draw the 1x geometry under a scale transform -> crisp at any zoom
         //setup internal lines
         big.setStroke(new BasicStroke(
                 2f,
