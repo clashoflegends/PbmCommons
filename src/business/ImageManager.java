@@ -833,15 +833,36 @@ public class ImageManager implements Serializable {
     }
 
     public ImageIcon getPortrait(String portraitName) {
-        if (this.portraitMap.isEmpty()) {
-            doLoadPortraits();
-        }
-        ImageIcon portrait = this.portraitMap.get(portraitName);
+        ImageIcon portrait = loadPortraitOnDemand(portraitName);
         if (portrait == null) {
             log.debug("Portrait image name " + portraitName + " not found.");
-            portrait = this.portraitMap.get("blank.jpg");
+            portrait = loadPortraitOnDemand("blank.jpg");
         }
         return portrait;
+    }
+
+    /**
+     * Loads a single portrait file from the configured PortraitsFolder on first request and caches it.
+     * The character panel only ever shows one portrait at a time, so we never bulk-load the whole folder
+     * (that cost 6+ seconds at startup even when portraits were turned off). Returns null if the folder
+     * or the file is missing.
+     */
+    private ImageIcon loadPortraitOnDemand(String portraitName) {
+        if (portraitName == null) {
+            return null;
+        }
+        ImageIcon cached = this.portraitMap.get(portraitName);
+        if (cached != null) {
+            return cached;
+        }
+        String portraitsPath = SettingsManager.getInstance().getConfig("PortraitsFolder", "");
+        File file = new File(portraitsPath, portraitName);
+        if (!file.exists()) {
+            return null;
+        }
+        ImageIcon icon = new ImageIcon(file.getAbsolutePath());
+        this.portraitMap.put(portraitName, icon);
+        return icon;
     }
 
 }
