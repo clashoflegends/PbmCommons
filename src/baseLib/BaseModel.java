@@ -26,6 +26,12 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
     private SortedMap<String, Habilidade> habilidades = new TreeMap<>();
     private SortedMap<Integer, PersonagemOrdem> acao = new TreeMap();
     private SortedMap<Integer, PersonagemOrdem> acaoExecutadas = new TreeMap();
+    // Optional per-instance extra value for an ability, keyed by ability code (e.g. plague reduction %).
+    // DELIBERATELY lazy-null (no initializer) and NOT defaulted in readResolve(): XStream omits a null
+    // field, so EGFs stay byte-identical until an ability actually needs a parameter. Do NOT eagerly
+    // instantiate it - that would emit <habilidadeParameter/> into every EGF and break old
+    // (XStream 1.3.1 / Java 8) Counselors. Accessors are null-safe; remHabilidade() nulls it when empty.
+    private SortedMap<String, String> habilidadeParameter;
 
     // Called by XmlManager's custom ReflectionConverter after XStream deserializes
     // an object. Fields absent from old EGFs arrive as null; this restores defaults.
@@ -34,6 +40,8 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
         if (acaoExecutadas == null) acaoExecutadas = new TreeMap<>();
         if (habilidades == null)    habilidades = new TreeMap<>();
         if (resultados == null)     resultados = "";
+        // habilidadeParameter is intentionally left null when absent (lazy-null / omit-when-empty). Do NOT
+        // default it here - see the field comment.
         return this;
     }
 
@@ -130,6 +138,14 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
 
     public void remHabilidade(String cdHab) {
         this.habilidades.remove(cdHab);
+        // keep any per-instance parameter in lockstep with its ability; null the map when empty so a
+        // model that no longer carries a parameter serializes WITHOUT the field (EGF stays clean).
+        if (habilidadeParameter != null) {
+            habilidadeParameter.remove(cdHab);
+            if (habilidadeParameter.isEmpty()) {
+                habilidadeParameter = null;
+            }
+        }
     }
 
     public boolean hasHabilidade(String cdHabilidade) {
@@ -146,6 +162,28 @@ public class BaseModel implements Serializable, IBaseModel, Comparable<Object> {
 
     public boolean hasHabilidades() {
         return this.habilidades.size() > 0;
+    }
+
+    /**
+     * Per-instance extra value for an ability, keyed by ability code. Null-safe: returns null when no
+     * parameter (or no map) exists. Does NOT create the map (preserves lazy-null / EGF omit-when-empty).
+     */
+    public String getHabilidadeParametro(String cdHabilidade) {
+        if (habilidadeParameter == null) {
+            return null;
+        }
+        return habilidadeParameter.get(cdHabilidade);
+    }
+
+    /**
+     * Stores a per-instance value for an ability (lazily creating the backing map). Pair it with the
+     * ability itself; remHabilidade() drops the matching parameter and nulls the map when empty.
+     */
+    public void setHabilidadeParametro(String cdHabilidade, String valor) {
+        if (habilidadeParameter == null) {
+            habilidadeParameter = new TreeMap<>();
+        }
+        habilidadeParameter.put(cdHabilidade, valor);
     }
 
     @Override

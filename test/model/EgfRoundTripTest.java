@@ -44,4 +44,32 @@ class EgfRoundTripTest {
         assertTrue(loaded.getNacoes().isEmpty());
         assertTrue(loaded.getCidades().isEmpty());
     }
+
+    /**
+     * BaseModel.habilidadeParameter must be EGF-safe: lazy-null so it is omitted from the serialized
+     * form until used (old EGFs / old clients see no new element), survive a round-trip when set, and
+     * be omitted again once removed (null-when-empty in remHabilidade). Local is the first consumer.
+     */
+    @Test
+    void habilidadeParameterIsLazyNullAndRoundTrips() {
+        XmlManager xm = XmlManager.getInstance();
+        Local local = new Local();
+
+        // (1) lazy-null: no parameter -> field absent from the XML
+        assertFalse(xm.toXml(local).contains("habilidadeParameter"),
+                "an unused habilidadeParameter must be omitted (else old EGFs/clients break)");
+
+        // (2) set -> emitted and survives a round-trip
+        local.setHabilidadeParametro(";LIP;", "40");
+        String xmlSet = xm.toXml(local);
+        assertTrue(xmlSet.contains("habilidadeParameter"), "a set parameter must serialize");
+        Local back = (Local) xm.fromXml(xmlSet);
+        assertEquals("40", back.getHabilidadeParametro(";LIP;"), "parameter must round-trip");
+
+        // (3) null-when-empty: removing the ability drops the param and re-omits the field
+        local.remHabilidade(";LIP;");
+        assertNull(local.getHabilidadeParametro(";LIP;"), "param must be gone after remHabilidade");
+        assertFalse(xm.toXml(local).contains("habilidadeParameter"),
+                "after removing the last parameter the field must be omitted again");
+    }
 }
