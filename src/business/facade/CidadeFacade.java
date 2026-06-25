@@ -343,9 +343,15 @@ public class CidadeFacade implements Serializable {
      */
     public int[] getProducaoAndBonus(Cidade city, Produto product, Cenario scenario, int turn) {
         final Local local = city.getLocal();
-        if (city.getLocal().hasHabilidade(";LIP;")) {
-            //no production on plague
-            return new int[]{0, 0};
+        int plagueReductionPct = 0;
+        if (local.hasHabilidade(";LIP;")) {
+            final String p = local.getHabilidadeParametro(";LIP;");
+            if (p == null) {
+                //legacy plague (old games / old EGFs): production fully stopped. Branch on PRESENCE.
+                return new int[]{0, 0};
+            }
+            //new-rules plague: reduce production by this percent, applied just before return.
+            plagueReductionPct = SysApoio.parseInt(p);
         }
         int totalBonuses = 0;
         int producao = 0;
@@ -396,6 +402,11 @@ public class CidadeFacade implements Serializable {
             }
         } catch (NullPointerException ex) {
             producao = producao * this.producaoFator[city.getTamanho()] / 100;
+        }
+        if (plagueReductionPct > 0) {
+            //new-rules plague: multiplicative survival, floored at 0 (>100 effective skill = full stop).
+            producao = Math.max(producao * (100 - plagueReductionPct) / 100, 0);
+            totalBonuses = Math.max(totalBonuses * (100 - plagueReductionPct) / 100, 0);
         }
         return new int[]{producao, totalBonuses};
     }
