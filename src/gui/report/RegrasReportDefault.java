@@ -210,7 +210,10 @@ public class RegrasReportDefault implements Serializable {
                     }
                 }
                 //sort array
-                ComparatorFactory.getComparatorCasualtiesTipoTropaSorter(tropas, ConverterFactory.taticaToInt(tatica[1]), terreno, partida.getId());
+                try {
+                    ComparatorFactory.getComparatorCasualtiesTipoTropaSorter(tropas, ConverterFactory.taticaToInt(tatica[1]), terreno, partida.getId());
+                } catch (NullPointerException e) {
+                }
                 int counter = 1;
                 String msg = "";
                 for (TipoTropa tpTropa : tropas) {
