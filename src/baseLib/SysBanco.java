@@ -49,6 +49,57 @@ public class SysBanco {
         conn = c;
     }
 
+    // --- Transaction control (KI-006) -----------------------------------------------------------------
+    // Wrap a multi-statement unit of work (e.g. the Judge turn save) so a mid-save failure can be rolled
+    // back instead of leaving partially-written tables. Operate on the shared connection. REQUIRES the
+    // affected tables to be InnoDB; MyISAM silently ignores transactions (no rollback). beginTransaction/
+    // commit propagate so the caller can react; rollback/restoreAutoCommit never throw because they run in
+    // catch/finally where a throw would mask the original error or wedge the shared connection.
+
+    public static void beginTransaction() throws SQLException {
+        final Connection c = getConn();
+        if (c != null) {
+            c.setAutoCommit(false);
+        }
+    }
+
+    public static void commit() throws SQLException {
+        final Connection c = getConn();
+        if (c != null) {
+            c.commit();
+        }
+    }
+
+    public static void rollback() {
+        try {
+            final Connection c = getConn();
+            if (c != null) {
+                c.rollback();
+            }
+        } catch (SQLException | RuntimeException ex) {
+            log.error("KI-006: rollback failed.", ex);
+        }
+    }
+
+    /**
+     * Return the shared connection to autocommit. MUST be called in a finally after a transaction: the
+     * connection is reused for the next game in the batch, so a left-open transaction would wedge it.
+     * Never throws. Returns {@code false} if autocommit could not be restored - the caller should treat
+     * the connection as dead and stop the batch rather than letting every later game fail its save.
+     */
+    public static boolean restoreAutoCommit() {
+        try {
+            final Connection c = getConn();
+            if (c != null) {
+                c.setAutoCommit(true);
+            }
+            return true;
+        } catch (SQLException | RuntimeException ex) {
+            log.error("KI-006: failed to restore autocommit (connection may be wedged).", ex);
+            return false;
+        }
+    }
+
     private static void criaConn() {
         try {
 //            Class.forName("com.mysql.jdbc.Driver");
