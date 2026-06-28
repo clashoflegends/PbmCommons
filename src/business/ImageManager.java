@@ -218,7 +218,8 @@ public class ImageManager implements Serializable {
                 "Hightower.gif",
                 "Volantis.png",
                 "Pentos.png",
-                "Jofrey.png"
+                "Jofrey.png",
+                "Blacks.png", "Greens.png"
             };
         } else if (getCenario().isFirstAge()) {
             return new String[]{"neutral.png",
