@@ -37,12 +37,24 @@ public class Personagem extends BaseModel implements IActor {
     private SortedMap<Integer, PersonagemOrdem> ordensExecutadas = new TreeMap(); //kept for backwards compatibility
 
     private Object readResolve() {
-        if (portraiFilename == null)    portraiFilename = "blank.jpg";
-        if (artefatos == null)          artefatos = new TreeMap<>();
-        if (feiticos == null)           feiticos = new TreeMap<>();
-        if (liderados == null)          liderados = new TreeMap<>();
-        if (ordens == null)             ordens = new TreeMap<>();
-        if (ordensExecutadas == null)   ordensExecutadas = new TreeMap<>();
+        if (portraiFilename == null) {
+            portraiFilename = "blank.jpg";
+        }
+        if (artefatos == null) {
+            artefatos = new TreeMap<>();
+        }
+        if (feiticos == null) {
+            feiticos = new TreeMap<>();
+        }
+        if (liderados == null) {
+            liderados = new TreeMap<>();
+        }
+        if (ordens == null) {
+            ordens = new TreeMap<>();
+        }
+        if (ordensExecutadas == null) {
+            ordensExecutadas = new TreeMap<>();
+        }
         return this;
     }
 
@@ -136,9 +148,6 @@ public class Personagem extends BaseModel implements IActor {
      * Vestindo define se o artefato esta sendo colocado ou retirado, ajustando as pericias de acordo
      */
     private boolean doUsaArtefato(Artefato artefato, Boolean vestindo) {
-        if (this.getCodigo().equalsIgnoreCase("storl")) {
-            int a = 0;
-        }
         int ajuste = 1;
         if (!vestindo) {
             ajuste = -1;
@@ -327,8 +336,9 @@ public class Personagem extends BaseModel implements IActor {
      */
     public void doCalculaDuelo() {
         /**
-         * calcular o duelo: definir maior duelo por pericia, com artefatos ai somar 25% dos duelos das demais pericias. ai somar bonus de duelo e bonus de
-         * artefato de combate
+         * calcular o duelo: definir maior duelo por pericia, com artefatos ai
+         * somar 25% dos duelos das demais pericias. ai somar bonus de duelo e
+         * bonus de artefato de combate
          */
         float dueloNew;
         dueloNew = this.getMaiorDuelo();
@@ -343,6 +353,8 @@ public class Personagem extends BaseModel implements IActor {
 
     /**
      * retorna pericia com maior duelo, contando atributos, que o personagem tem
+     *
+     * @return
      */
     public int getMaiorDuelo() {
         double[] duelos = new double[4];
@@ -446,7 +458,7 @@ public class Personagem extends BaseModel implements IActor {
     }
 
     public boolean isComandaGrupo() {
-        return (this.getLiderados().size() > 0 && this.getExercito() == null);
+        return (!this.getLiderados().isEmpty() && this.getExercito() == null);
     }
 
     public boolean isComandaExercito() {
