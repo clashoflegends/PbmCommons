@@ -23,6 +23,7 @@ public class Personagem extends BaseModel implements IActor {
     private int periciaEmissarioNatural = 0, periciaMagoNatural = 0;
     private int periciaFurtividade = 0, periciaFurtividadeNatural = 0;
     private boolean refem = false, npc = false;
+    private int sexo = 0; // 0=male, 1=female, 2=undefined (mirrors DB fl_sexo; serialized to EGF for Counselor display)
     private String portraiFilename = "blank.jpg";
     private Local local;
     private Local localOrigem;
@@ -372,6 +373,14 @@ public class Personagem extends BaseModel implements IActor {
 
     public void setVida(int vida) {
         this.vida = vida;
+    }
+
+    public int getSexo() {
+        return sexo;
+    }
+
+    public void setSexo(int sexo) {
+        this.sexo = sexo;
     }
 
     public int getPericiaFurtividade() {
