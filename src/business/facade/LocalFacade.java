@@ -134,7 +134,8 @@ public final class LocalFacade implements Serializable {
     }
 
     /**
-     * Deve ser utilizado quando importa o observador, no caso, se cidade é oculta.
+     * Deve ser utilizado quando importa o observador, no caso, se cidade é
+     * oculta.
      *
      * @param local
      * @param observer
@@ -150,7 +151,8 @@ public final class LocalFacade implements Serializable {
     }
 
     /**
-     * Este deve ser usado para verificar a existencia da cidade, sem importar se é oculta.
+     * Este deve ser usado para verificar a existencia da cidade, sem importar
+     * se é oculta.
      *
      * @param local
      * @return
@@ -396,10 +398,12 @@ public final class LocalFacade implements Serializable {
      * @param personagem
      * @param tipo
      * @param tipo 0 = todos - self
-     * @param tipo 1 = mesma nacao - self
+     * @param tipo 1 = mesma nacao - minha nacao
      * @param tipo 2 = outras nacoes - self
-     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao - self + Null (optional)
+     * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao -
+     * self + Null (optional)
      * @param tipo 4 = todos + self
+     * @param tipo 5 = outras nacoes - my
      * @return
      */
     public Personagem[] listPersonagemLocal(Local local, Personagem personagem, int tipo) {
@@ -434,6 +438,14 @@ public final class LocalFacade implements Serializable {
                 break;
             case 4:
                 ret.addAll(local.getPersonagens().values());
+                break;
+            case 5:
+                for (Personagem pers : local.getPersonagens().values()) {
+                    if (personagem != pers && !personagem.getNacao().isAmigo(pers.getNacao())) {
+                        ret.add(pers);
+                    }
+                }
+                ret.remove(personagem);
                 break;
             default:
                 break;
@@ -707,14 +719,16 @@ public final class LocalFacade implements Serializable {
      * @param produto
      * @param cenario
      * @param turno
-     * @return only the amount of bonus from nation powers, excluding the base production.
+     * @return only the amount of bonus from nation powers, excluding the base
+     * production.
      */
     private int getProductionBonusOnly(Local hex, Produto produto, Cenario cenario, int turno) {
         return cidadeFacade.getProducaoAndBonus(hex.getCidade(), produto, cenario, turno)[1];
     }
 
     /**
-     * local production only. Don't consider city storages. Do consider nation and city powers.
+     * local production only. Don't consider city storages. Do consider nation
+     * and city powers.
      *
      * @param hex
      * @param product
@@ -729,7 +743,8 @@ public final class LocalFacade implements Serializable {
     }
 
     /**
-     * local production only. Don't consider city storages. Do consider nation and city powers.
+     * local production only. Don't consider city storages. Do consider nation
+     * and city powers.
      *
      * @param hex
      * @param mercado
