@@ -456,14 +456,19 @@ public class MapaManager implements Serializable {
                 log.debug("AKI!");
             }
             for (PersonagemOrdem po : pers.getAcoes().values()) {
-                if (acaoFacade.isScout(po)) {
-                    drawScoutOnMap(po, pers, observer, big);
-                } else if (acaoFacade.isMovimentoDirection(po)) {
-                    drawMovPathArmy(po, pers, observer, big);
-                } else if (acaoFacade.isMovimento(po)) {
-                    drawMovPathPc(po, pers, observer, big);
-                } else if (acaoFacade.isResourceTransport(po)) {
-                    drawResourceTransportPath(po, pers, big);
+                try {
+                    if (acaoFacade.isScout(po)) {
+                        drawScoutOnMap(po, pers, observer, big);
+                    } else if (acaoFacade.isMovimentoDirection(po)) {
+                        drawMovPathArmy(po, pers, observer, big);
+                    } else if (acaoFacade.isMovimento(po)) {
+                        drawMovPathPc(po, pers, observer, big);
+                    } else if (acaoFacade.isResourceTransport(po)) {
+                        drawResourceTransportPath(po, pers, big);
+                    }
+                } catch (RuntimeException ex) {
+                    //one malformed/unresolvable action must never crash the whole map render / EGF-open
+                    log.warn(String.format("Skipping unrenderable action for %s: %s", pers.getNome(), ex));
                 }
             }
         }
@@ -500,9 +505,9 @@ public class MapaManager implements Serializable {
                 break;
         }
 
-        //check if source and destination are the same
-        if (sourceCity == destinationCity) {
-            //nothing is really moving, is it?
+        //skip if source==destination (nothing moving), or either endpoint is unresolved (e.g. a city
+        //outside the observer's visibility) - localToPoint would NPE on a null Local and crash EGF-open.
+        if (sourceCity == null || destinationCity == null || sourceCity == destinationCity) {
             return;
         }
 
