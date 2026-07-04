@@ -30,6 +30,7 @@ public class Cenario extends BaseModel {
     private int numMaxMovimento;
     private int numMaxOrdens;
     private int numOrdens;
+    private int idVariante; // server-only: the variant this per-game Cenario was loaded for. Omitted from the EGF (XmlManager.save omitField), so old/new Counselors never see it and old files still open.
 
     private Object readResolve() {
         if (feiticos == null)   feiticos = new ArrayList();
@@ -55,6 +56,14 @@ public class Cenario extends BaseModel {
 
     public void setOrdens(SortedMap<String, Ordem> list) {
         this.ordens = list;
+    }
+
+    public int getIdVariante() {
+        return idVariante;
+    }
+
+    public void setIdVariante(int idVariante) {
+        this.idVariante = idVariante;
     }
 
     public List<Feitico> getFeiticos() {
