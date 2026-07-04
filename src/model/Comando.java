@@ -32,6 +32,10 @@ public class Comando implements Serializable {
     private Date creationTime;
     private List<ComandoDetail> comandos = new ArrayList();
     private SortedMap<Integer, String> packages = new TreeMap<>();
+    // Login of the player who SENT these orders (the machine's configured player), distinct from the
+    // owner (jogadorId/jogadorNome = jogadorAtivo). Informational: lets the server show a "Sender:" line
+    // on the results email when submitted on-behalf. Null on orders written by pre-feature Counselors.
+    private String senderLogin;
 
     private Object readResolve() {
         if (comandos == null)  comandos = new ArrayList();
@@ -94,6 +98,14 @@ public class Comando implements Serializable {
 
     public String getJogadorNome() {
         return jogadorNome;
+    }
+
+    public String getSenderLogin() {
+        return senderLogin;
+    }
+
+    public void setSenderLogin(String senderLogin) {
+        this.senderLogin = senderLogin;
     }
 
     public String getPartidaCod() {

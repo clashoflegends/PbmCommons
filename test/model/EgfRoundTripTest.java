@@ -72,4 +72,32 @@ class EgfRoundTripTest {
         assertFalse(xm.toXml(local).contains("habilidadeParameter"),
                 "after removing the last parameter the field must be omitted again");
     }
+
+    /**
+     * Comando.senderLogin (Phase-2 #2, on-behalf attribution) must be EGF-safe in the orders (.rc.egf):
+     * omitted from the XML when null (so orders from pre-feature Counselors — and self-submits — are
+     * byte-identical to before the field existed, and readers that lack it are unaffected), and survive a
+     * round-trip when set. NOTE: this same-version round-trip cannot prove the "old reader throws on the new
+     * element" hazard — that's why the deploy order is server-first (ServerSync learns the field before any
+     * Counselor stamps it); this test guards the field's serialization contract.
+     */
+    @Test
+    void comandoSenderLoginRoundTripsAndOmittedWhenNull() {
+        XmlManager xm = XmlManager.getInstance();
+
+        // (1) unset -> omitted from the XML (old readers see no <senderLogin>)
+        Comando bare = new Comando();
+        assertFalse(xm.toXml(bare).contains("senderLogin"),
+                "an unset senderLogin must be omitted from the orders EGF");
+        assertNull(((Comando) xm.fromXml(xm.toXml(bare))).getSenderLogin(),
+                "an absent senderLogin must read back as null");
+
+        // (2) set -> serializes and survives a round-trip
+        Comando withSender = new Comando();
+        withSender.setSenderLogin("alice");
+        String xml = xm.toXml(withSender);
+        assertTrue(xml.contains("senderLogin"), "a set senderLogin must serialize");
+        assertEquals("alice", ((Comando) xm.fromXml(xml)).getSenderLogin(),
+                "senderLogin must round-trip");
+    }
 }
