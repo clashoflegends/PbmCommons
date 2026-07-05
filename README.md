@@ -27,4 +27,4 @@ PbmCommons is the shared library used by all Clash of Legends Java projects (Cou
 
 ## License
 
-PbmCommons is released under the [MIT License](LICENSE). © 2014-2026 Clash of Legends.
+PbmCommons is released under the [MIT License](LICENSE). © 2004-2026 Clash of Legends.
