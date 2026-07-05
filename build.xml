@@ -10,15 +10,6 @@
 <project name="PbmCommons" default="default" basedir=".">
     <description>Builds, tests, and runs the project PbmCommons.</description>
     <import file="nbproject/build-impl.xml"/>
-    <!-- Autoincrement version number -->
-    <target name="-pre-jar" >
-        <propertyfile file="${src.dir}/version_commons.properties">
-            <entry key="BUILD" value="1" type="int" operation="+"/>
-        </propertyfile>
-    </target>
-    <target name="-post-jar">
-        <copy file="${dist.jar}" todir="/Clash/PbmCounselor/lib" failonerror="false"/>
-    </target>
     <!-- Re-copy test resources from test/resources/ to the classpath root.
          NB's Ant copies from test/ so egf/ would land at resources/egf/;
          Maven uses test/resources/ as the resource root, so /egf/... is correct.
