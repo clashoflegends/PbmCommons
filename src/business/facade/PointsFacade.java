@@ -70,7 +70,10 @@ public class PointsFacade implements Serializable {
             }
             if (localFacade.isCidade(hex) && hex.getCidade().getNacao() != null) {
                 counterSingle.add(hex.getCidade().getNacao().getNome(), 1);
-            } else {
+            } else if (barbarians != null) {
+                // Razed/empty key-city hex -> attribute to the neutral (barbarian) nation. On the client the
+                // loaded EGF may not include a barbarian nation (getNacaoNeutra() -> null), so guard it:
+                // skip the unowned hex rather than NPE on barbarians.getNome() (crash, game 864).
                 counterSingle.add(barbarians.getNome(), 1);
             }
         }
@@ -93,7 +96,8 @@ public class PointsFacade implements Serializable {
             }
             if (localFacade.isCidade(hex) && hex.getCidade().getNacao() != null) {
                 counterTeam.add(hex.getCidade().getNacao().getTeamFlag(), 1);
-            } else {
+            } else if (barbarians != null) {
+                // See doVictoryDomination: guard the null neutral nation (client EGF may omit barbarians).
                 counterTeam.add(barbarians.getTeamFlag(), 1);
             }
         }
