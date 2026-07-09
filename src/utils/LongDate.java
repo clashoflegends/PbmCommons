@@ -40,6 +40,11 @@ public class LongDate {
         this.dateLong = dateLong;
     }
 
+    /** Reset this date to now (today at the standard deadline hour), matching the addDays/addWeek format. */
+    public void setNow() {
+        this.dateLong = calendarToLong(Calendar.getInstance());
+    }
+
     public long toLong() {
         return getDateLong();
     }
