@@ -620,6 +620,16 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
     }
 
     /**
+     * The uncaught throwable currently being handled, for subclasses that customize
+     * {@link #getUncaughtExceptionDialog()} (e.g. to word an OutOfMemoryError differently). May be null.
+     */
+    protected Throwable getUncaughtThrowable() {
+        synchronized (this) {
+            return this.throwable;
+        }
+    }
+
+    /**
      * Returns the dialog to show when waiting for any background threads to exit. The returned dialog must be modal.
      *
      * @return dialog to shown when waiting for background threads to exit
