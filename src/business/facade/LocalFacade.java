@@ -403,7 +403,9 @@ public final class LocalFacade implements Serializable {
      * @param tipo 3 = em exercito e com pericia de comandante, qualquer nacao -
      * self + Null (optional)
      * @param tipo 4 = todos + self
-     * @param tipo 5 = outras nacoes - my
+     * @param tipo 5 = outras nacoes nao-aliadas (inimigos + neutros de outras nacoes); sem a minha nacao nem aliados - self
+     * @param tipo 6 = a minha nacao + nacoes amigas (sem inimigos) - self
+     * @param tipo 7 = a minha nacao + nacoes amigas (sem inimigos) + o actor
      * @return
      */
     public Personagem[] listPersonagemLocal(Local local, Personagem personagem, int tipo) {
@@ -440,12 +442,38 @@ public final class LocalFacade implements Serializable {
                 ret.addAll(local.getPersonagens().values());
                 break;
             case 5:
+                // "NoNacao": other nations that are NOT allies (enemies + neutrals of other nations).
+                // Excludes self, my own nation, and allied nations. isAmigo(self)==false, so the own-nation
+                // check must be explicit or your own PCs leak in.
                 for (Personagem pers : local.getPersonagens().values()) {
-                    if (personagem != pers && !personagem.getNacao().isAmigo(pers.getNacao())) {
+                    if (personagem != pers
+                            && personagem.getNacao() != pers.getNacao()
+                            && !personagem.getNacao().isAmigo(pers.getNacao())) {
                         ret.add(pers);
                     }
                 }
                 ret.remove(personagem);
+                break;
+            case 6:
+                // mine + friendly nations, no enemies (flip of case 5). isAmigo(self) is false
+                // (getRelacionamento(this)==0), so own nation must be matched explicitly.
+                for (Personagem pers : local.getPersonagens().values()) {
+                    if (personagem != pers
+                            && (personagem.getNacao() == pers.getNacao()
+                                || personagem.getNacao().isAmigo(pers.getNacao()))) {
+                        ret.add(pers);
+                    }
+                }
+                ret.remove(personagem);
+                break;
+            case 7:
+                // case 6 + the actor: mine + friendly nations (no enemies), actor kept.
+                for (Personagem pers : local.getPersonagens().values()) {
+                    if (personagem.getNacao() == pers.getNacao()
+                            || personagem.getNacao().isAmigo(pers.getNacao())) {
+                        ret.add(pers);
+                    }
+                }
                 break;
             default:
                 break;
