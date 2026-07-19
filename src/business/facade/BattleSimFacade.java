@@ -243,32 +243,32 @@ public class BattleSimFacade implements Serializable {
 
     public int getCityDefenseCombat(Cidade city) {
         int ret = this.getCityDefenseBase(city) + city.getDefenseBonus();
-        if (city.getNacao() != null) {
-            return ret;
-        }
-        try {
-            if (city.getNacao().hasHabilidade(";PFD;") && city.isFortificado()) {
-                ret += this.getCityFortficationDefense(city) * city.getNacao().getHabilidadeValor(";PFD;") / 100;
-            }
-            if (city.getNacao().hasHabilidade(";PCD;") && city.getLocal().getTerreno().isMontanha()) {
-                ret += ret * city.getNacao().getHabilidadeValor(";PCD;") / 100;
-            }
-            if (city.getNacao().hasHabilidade(";NWD;") && city.getLocal().getTerreno().isFloresta()) {
-                ret += ret * city.getNacao().getHabilidadeValor(";NWD;") / 100;
-            }
-            if (city.getNacao().hasHabilidade(";NWS;") && city.getLocal().getTerreno().isPantano()) {
-                ret += ret * city.getNacao().getHabilidadeValor(";NWS;") / 100;
-            }
-        } catch (Exception e) {
+        if (city.getNacao() == null) {
             if (city.getTamanho() > 0) {
                 log.error(String.format("City without nation, why? %s  %s", city.getCoordenadas(), city.toString()));
             }
+            return ret;
+        }
+        if (city.getNacao().hasHabilidade(";PFD;") && city.isFortificado()) {
+            ret += this.getCityFortficationDefense(city) * city.getNacao().getHabilidadeValor(";PFD;") / 100;
+        }
+        if (city.getNacao().hasHabilidade(";PCD;") && city.getLocal().getTerreno().isMontanha()) {
+            ret += ret * city.getNacao().getHabilidadeValor(";PCD;") / 100;
+        }
+        if (city.getNacao().hasHabilidade(";NWD;") && city.getLocal().getTerreno().isFloresta()) {
+            ret += ret * city.getNacao().getHabilidadeValor(";NWD;") / 100;
+        }
+        if (city.getNacao().hasHabilidade(";NWS;") && city.getLocal().getTerreno().isPantano()) {
+            ret += ret * city.getNacao().getHabilidadeValor(";NWS;") / 100;
         }
         return ret;
     }
 
     public int getCityAttackCombat(Cidade city) {
         int ret = this.getCityDefenseBase(city);
+        if (city.getNacao() == null) {
+            return ret;
+        }
         if (city.getNacao().hasHabilidade(";NCM;") && city.getLocal().getTerreno().isMontanha()) {
             ret += ret * city.getNacao().getHabilidadeValor(";NCM;") / 100;
         }
