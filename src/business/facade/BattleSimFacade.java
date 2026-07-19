@@ -222,8 +222,9 @@ public class BattleSimFacade implements Serializable {
     }
 
     /**
-     * Determine o valor do Centro Populacional, pelo tamanho, e adicione o restante dos pontos de Fortificação. A Defesa do Centro Populacional é o resultado
-     * da soma, modificado pela lealdade.
+     * Determine o valor do Centro Populacional, pelo tamanho, e adicione o
+     * restante dos pontos de Fortificação. A Defesa do Centro Populacional é o
+     * resultado da soma, modificado pela lealdade.
      */
     public int getCityDefenseBase(Cidade cidade) {
         return getCityDefense(cidade.getTamanho(), cidade.getFortificacao(), cidade.getLealdade());
@@ -242,6 +243,9 @@ public class BattleSimFacade implements Serializable {
 
     public int getCityDefenseCombat(Cidade city) {
         int ret = this.getCityDefenseBase(city) + city.getDefenseBonus();
+        if (city.getNacao() != null) {
+            return ret;
+        }
         try {
             if (city.getNacao().hasHabilidade(";PFD;") && city.isFortificado()) {
                 ret += this.getCityFortficationDefense(city) * city.getNacao().getHabilidadeValor(";PFD;") / 100;
@@ -256,7 +260,9 @@ public class BattleSimFacade implements Serializable {
                 ret += ret * city.getNacao().getHabilidadeValor(";NWS;") / 100;
             }
         } catch (Exception e) {
-            log.fatal(String.format("City without nation, why? %s  %s", city.getCoordenadas(), city.toString()));
+            if (city.getTamanho() > 0) {
+                log.error(String.format("City without nation, why? %s  %s", city.getCoordenadas(), city.toString()));
+            }
         }
         return ret;
     }
