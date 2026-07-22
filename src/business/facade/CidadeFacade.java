@@ -114,6 +114,48 @@ public class CidadeFacade implements Serializable {
         return (cidade.getLealdade() - cidade.getLealdadeAnterior());
     }
 
+    // --- City loyalty-driven size reduction ("flip") rule. Single source of truth, shared by the Judge
+    //     (MilestoneProducaoBase.doCidadeTestFlip) and the client, so the rule can never drift. ---
+
+    /**
+     * Loyalty target below which a city risks a size reduction, before the nation loyalty bonus. Bigger
+     * cities are less stable (higher target); fortification and a character on the hex make them steadier;
+     * the floor is 10 so any city can eventually reduce.
+     *
+     * @param characterPresent whether a character is on the city's hex (server: hex presence; client:
+     * visible characters, so it is fog-limited).
+     */
+    public int getLoyaltyFlipTarget(int tamanho, int fortificacao, boolean characterPresent) {
+        int target = tamanho * 10 - fortificacao * 10;
+        if (characterPresent) {
+            target -= 10;
+        }
+        return Math.max(10, target);
+    }
+
+    /**
+     * Nation loyalty bonus added to a city's loyalty for the reduction check (;PLB;). Returns 0 when the
+     * nation has no such bonus (or is null).
+     */
+    public int getLoyaltyBonus(Nacao nacao) {
+        if (nacao != null && nacao.hasHabilidade(";PLB;")) {
+            return nacao.getHabilidadeValor(";PLB;");
+        }
+        return 0;
+    }
+
+    /**
+     * Raw-loyalty value below which the city risks a size reduction: the flip target net of the nation
+     * loyalty bonus. The city is at risk when {@link #getLealdade(Cidade)} is strictly below this. The
+     * bonus is folded into the threshold rather than the loyalty so callers can compare the real loyalty.
+     *
+     * @param characterPresent whether a character is on the city's hex (see {@link #getLoyaltyFlipTarget}).
+     */
+    public int getLoyaltyReductionThreshold(Cidade cidade, boolean characterPresent) {
+        return getLoyaltyFlipTarget(cidade.getTamanho(), cidade.getFortificacao(), characterPresent)
+                - getLoyaltyBonus(cidade.getNacao());
+    }
+
     public Local getLocal(Cidade cidade) {
         return cidade.getLocal();
     }
