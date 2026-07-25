@@ -1,0 +1,40 @@
+name: Label-change reminder
+
+# Fires when a player-facing label/message file changes on master. NON-BLOCKING: it only posts a
+# reminder (an Actions job summary + a warning annotation) so the downstream re-tag / bundled-jar
+# resync is not forgotten - a source change here does NOT reach players on its own; the consumers
+# must be rebuilt. Intentionally generic (this repo is public): it names no private components.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "src/labels*.properties"
+      - "src/messagesmailsender*.properties"
+      - "src/lomrules*.properties"
+      - "src/rulesandhelp*.properties"
+
+permissions:
+  contents: read
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Post re-tag reminder
+        run: |
+          MSG="Player-facing label/message files changed. To actually ship these strings: (1) resync the bundled PbmCommons.jar into the Counselor client and cut a Counselor release (client-side labels); (2) re-tag the downstream server components so the new strings reach turn output and player emails. A source change alone does NOT deploy - the consumers must be rebuilt."
+          echo "::warning title=Re-tag downstream after label change::$MSG"
+          {
+            echo "## :warning: Label / message files changed"
+            echo ""
+            echo "$MSG"
+            echo ""
+            echo "Changed \`.properties\` in this push:"
+            echo '```'
+            git diff --name-only HEAD^ HEAD 2>/dev/null | grep -E '\.properties$' || echo "(diff unavailable)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
