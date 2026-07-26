@@ -81,6 +81,12 @@ public class PathFactory implements Serializable {
         return String.format(SettingsManager.getInstance().getSaveStatsDir() + label.getString("XLS.STATS.FILENAME"), idGame, nmGame);
     }
 
+    /** The self-contained Chronicle HTML for a game (Chronicle P2). Lives in the stats folder (reuses saveStatsDir,
+     *  no new config key); the Distiler writes it here and ServerSync reads THIS same path to publish it. */
+    public String getChronicleFileName(int idGame) {
+        return SettingsManager.getInstance().getSaveStatsDir() + "chronicle_" + idGame + ".html";
+    }
+
     public static ExtensionFileFilter getFilterAcoes() {
         return new ExtensionFileFilter(label.getString("FILTRO.ACOES"), "rc.egf", "");
     }
