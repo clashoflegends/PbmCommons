@@ -431,81 +431,126 @@ public class SysReport implements Serializable {
         System.out.println(linha);
     }
 
-    private String ascToHtml(String original) {
-        String ret = original;
-        //s = s.replaceAll("[ÀÂ]","A");
-        //s = s.replaceAll("Ô","O");
-        ret = ret.replaceAll("À", "&Agrave;");
-        ret = ret.replaceAll("Á", "&Aacute;");
-        ret = ret.replaceAll("Â", "&Acirc;");
-        ret = ret.replaceAll("Ã", "&Atilde;");
-        ret = ret.replaceAll("Ä", "&Auml;");
-        ret = ret.replaceAll("Å", "&Aring;");
-        ret = ret.replaceAll("Æ", "&AElig;");
-        ret = ret.replaceAll("Ç", "&Ccedil;");
-        ret = ret.replaceAll("È", "&Egrave;");
-        ret = ret.replaceAll("É", "&Eacute;");
-        ret = ret.replaceAll("Ê", "&Ecirc;");
-        ret = ret.replaceAll("Ë", "&Euml;");
-        ret = ret.replaceAll("Ì", "&Igrave;");
-        ret = ret.replaceAll("Í", "&Iacute;");
-        ret = ret.replaceAll("Î", "&Icirc;");
-        ret = ret.replaceAll("Ï", "&Iuml;");
-        ret = ret.replaceAll("Ð", "&ETH;");
-        ret = ret.replaceAll("Ñ", "&Ntilde;");
-        ret = ret.replaceAll("Œ", "&OElig;");
-        ret = ret.replaceAll("Ò", "&Ograve;");
-        ret = ret.replaceAll("Ó", "&Oacute;");
-        ret = ret.replaceAll("Ô", "&Ocirc;");
-        ret = ret.replaceAll("Õ", "&Otilde;");
-        ret = ret.replaceAll("Ö", "&Ouml;");
-        ret = ret.replaceAll("Ø", "&Oslash;");
-        ret = ret.replaceAll("Š", "&Scaron;");
-        ret = ret.replaceAll("Ù", "&Ugrave;");
-        ret = ret.replaceAll("Ú", "&Uacute;");
-        ret = ret.replaceAll("Û", "&Ucirc;");
-        ret = ret.replaceAll("Ü", "&Uuml;");
-        ret = ret.replaceAll("Ý", "&Yacute;");
-        ret = ret.replaceAll("Þ", "&THORN;");
-        ret = ret.replaceAll("Ÿ", "&Yuml;");
-        ret = ret.replaceAll("à", "&agrave;");
-        ret = ret.replaceAll("á", "&aacute;");
-        ret = ret.replaceAll("â", "&acirc;");
-        ret = ret.replaceAll("ã", "&atilde;");
-        ret = ret.replaceAll("ä", "&auml;");
-        ret = ret.replaceAll("å", "&aring;");
-        ret = ret.replaceAll("æ", "&aelig;");
-        ret = ret.replaceAll("ç", "&ccedil;");
-        ret = ret.replaceAll("è", "&egrave;");
-        ret = ret.replaceAll("é", "&eacute;");
-        ret = ret.replaceAll("ê", "&ecirc;");
-        ret = ret.replaceAll("ë", "&euml;");
-        ret = ret.replaceAll("ì", "&igrave;");
-        ret = ret.replaceAll("í", "&iacute;");
-        ret = ret.replaceAll("î", "&icirc;");
-        ret = ret.replaceAll("ï", "&iuml;");
-        ret = ret.replaceAll("ð", "&eth;");
-        ret = ret.replaceAll("ñ", "&ntilde;");
-        ret = ret.replaceAll("œ", "&oelig;");
-        ret = ret.replaceAll("ò", "&ograve;");
-        ret = ret.replaceAll("ó", "&oacute;");
-        ret = ret.replaceAll("ô", "&ocirc;");
-        ret = ret.replaceAll("õ", "&otilde;");
-        ret = ret.replaceAll("ö", "&ouml;");
-        ret = ret.replaceAll("ø", "&oslash;");
-        ret = ret.replaceAll("š", "&scaron;");
-        ret = ret.replaceAll("ù", "&ugrave;");
-        ret = ret.replaceAll("ú", "&uacute;");
-        ret = ret.replaceAll("û", "&ucirc;");
-        ret = ret.replaceAll("ü", "&uuml;");
-        ret = ret.replaceAll("ý", "&yacute;");
-        ret = ret.replaceAll("þ", "&thorn;");
-        ret = ret.replaceAll("ÿ", "&yuml;");
-        ret = ret.replaceAll("\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-        if (isConvertNewLine()) {
-            ret = ret.replaceAll("\n", "<br>");
+    /**
+     * HTML entity per character, indexed by code point (all mapped characters are &lt; 0x180).
+     * Replaces a chain of 68 {@code String.replaceAll} calls, each of which compiled a fresh regex
+     * Pattern and rescanned the whole string - about 70 Pattern.compile + 70 scans PER REPORT CELL,
+     * for every character, city and army of every nation. Profiling the Judge (3 jstack samples,
+     * 2026-08-09) put the "Escrevendo ROs" phase squarely in Pattern.compile/Matcher.find here.
+     *
+     * Byte-identical to the old chain by construction: every source is a single character, no source
+     * character appears in any replacement, so sequential replacement and one left-to-right pass
+     * cannot differ. SysReportEscapeTest pins that against a copy of the original chain.
+     */
+    private static final String[] ESCAPE = new String[0x180];
+    private static final String TAB_SPACES = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+
+    static {
+        ESCAPE[0x00C0] = "&Agrave;";   // Agrave
+        ESCAPE[0x00C1] = "&Aacute;";   // Aacute
+        ESCAPE[0x00C2] = "&Acirc;";   // Acirc
+        ESCAPE[0x00C3] = "&Atilde;";   // Atilde
+        ESCAPE[0x00C4] = "&Auml;";   // Auml
+        ESCAPE[0x00C5] = "&Aring;";   // Aring
+        ESCAPE[0x00C6] = "&AElig;";   // AElig
+        ESCAPE[0x00C7] = "&Ccedil;";   // Ccedil
+        ESCAPE[0x00C8] = "&Egrave;";   // Egrave
+        ESCAPE[0x00C9] = "&Eacute;";   // Eacute
+        ESCAPE[0x00CA] = "&Ecirc;";   // Ecirc
+        ESCAPE[0x00CB] = "&Euml;";   // Euml
+        ESCAPE[0x00CC] = "&Igrave;";   // Igrave
+        ESCAPE[0x00CD] = "&Iacute;";   // Iacute
+        ESCAPE[0x00CE] = "&Icirc;";   // Icirc
+        ESCAPE[0x00CF] = "&Iuml;";   // Iuml
+        ESCAPE[0x00D0] = "&ETH;";   // ETH
+        ESCAPE[0x00D1] = "&Ntilde;";   // Ntilde
+        ESCAPE[0x0152] = "&OElig;";   // OElig
+        ESCAPE[0x00D2] = "&Ograve;";   // Ograve
+        ESCAPE[0x00D3] = "&Oacute;";   // Oacute
+        ESCAPE[0x00D4] = "&Ocirc;";   // Ocirc
+        ESCAPE[0x00D5] = "&Otilde;";   // Otilde
+        ESCAPE[0x00D6] = "&Ouml;";   // Ouml
+        ESCAPE[0x00D8] = "&Oslash;";   // Oslash
+        ESCAPE[0x0160] = "&Scaron;";   // Scaron
+        ESCAPE[0x00D9] = "&Ugrave;";   // Ugrave
+        ESCAPE[0x00DA] = "&Uacute;";   // Uacute
+        ESCAPE[0x00DB] = "&Ucirc;";   // Ucirc
+        ESCAPE[0x00DC] = "&Uuml;";   // Uuml
+        ESCAPE[0x00DD] = "&Yacute;";   // Yacute
+        ESCAPE[0x00DE] = "&THORN;";   // THORN
+        ESCAPE[0x0178] = "&Yuml;";   // Yuml
+        ESCAPE[0x00E0] = "&agrave;";   // agrave
+        ESCAPE[0x00E1] = "&aacute;";   // aacute
+        ESCAPE[0x00E2] = "&acirc;";   // acirc
+        ESCAPE[0x00E3] = "&atilde;";   // atilde
+        ESCAPE[0x00E4] = "&auml;";   // auml
+        ESCAPE[0x00E5] = "&aring;";   // aring
+        ESCAPE[0x00E6] = "&aelig;";   // aelig
+        ESCAPE[0x00E7] = "&ccedil;";   // ccedil
+        ESCAPE[0x00E8] = "&egrave;";   // egrave
+        ESCAPE[0x00E9] = "&eacute;";   // eacute
+        ESCAPE[0x00EA] = "&ecirc;";   // ecirc
+        ESCAPE[0x00EB] = "&euml;";   // euml
+        ESCAPE[0x00EC] = "&igrave;";   // igrave
+        ESCAPE[0x00ED] = "&iacute;";   // iacute
+        ESCAPE[0x00EE] = "&icirc;";   // icirc
+        ESCAPE[0x00EF] = "&iuml;";   // iuml
+        ESCAPE[0x00F0] = "&eth;";   // eth
+        ESCAPE[0x00F1] = "&ntilde;";   // ntilde
+        ESCAPE[0x0153] = "&oelig;";   // oelig
+        ESCAPE[0x00F2] = "&ograve;";   // ograve
+        ESCAPE[0x00F3] = "&oacute;";   // oacute
+        ESCAPE[0x00F4] = "&ocirc;";   // ocirc
+        ESCAPE[0x00F5] = "&otilde;";   // otilde
+        ESCAPE[0x00F6] = "&ouml;";   // ouml
+        ESCAPE[0x00F8] = "&oslash;";   // oslash
+        ESCAPE[0x0161] = "&scaron;";   // scaron
+        ESCAPE[0x00F9] = "&ugrave;";   // ugrave
+        ESCAPE[0x00FA] = "&uacute;";   // uacute
+        ESCAPE[0x00FB] = "&ucirc;";   // ucirc
+        ESCAPE[0x00FC] = "&uuml;";   // uuml
+        ESCAPE[0x00FD] = "&yacute;";   // yacute
+        ESCAPE[0x00FE] = "&thorn;";   // thorn
+        ESCAPE[0x00FF] = "&yuml;";   // yuml
+    }
+
+    /**
+     * Escape accented characters to HTML entities so player/character names render correctly instead
+     * of as diamonds. Single pass, and allocates nothing when the text has no mapped character (the
+     * common case for a report cell).
+     *
+     * @param original text to escape (NPEs on null, as the previous implementation did)
+     * @param convertNewLine when true, newlines become &lt;br&gt;
+     */
+    static String escapeHtml(String original, boolean convertNewLine) {
+        final int len = original.length();
+        StringBuilder sb = null;                      // stays null while nothing needs escaping
+        for (int ii = 0; ii < len; ii++) {
+            final char cc = original.charAt(ii);
+            final String replacement;
+            if (cc == '\n') {
+                replacement = convertNewLine ? "<br>" : null;
+            } else if (cc == '\t') {
+                replacement = TAB_SPACES;
+            } else {
+                replacement = (cc < ESCAPE.length) ? ESCAPE[cc] : null;
+            }
+            if (replacement == null) {
+                if (sb != null) {
+                    sb.append(cc);
+                }
+                continue;
+            }
+            if (sb == null) {
+                sb = new StringBuilder(len + 32).append(original, 0, ii);
+            }
+            sb.append(replacement);
         }
-        return ret;
+        return (sb == null) ? original : sb.toString();
+    }
+
+    private String ascToHtml(String original) {
+        return escapeHtml(original, isConvertNewLine());
     }
 
     /**
