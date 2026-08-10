@@ -24,7 +24,10 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.swing.Icon;
@@ -56,6 +59,11 @@ public class ImageManager implements Serializable {
     private ImageIcon combat, combatBigArmy, combatBigNavy, explosion, blueBall, yellowBall, iconApp, caravanIcon, pieChart, barChart, areaChart;
     private final int[][] coordRastros = {{8, 12}, {53, 12}, {60, 30}, {39, 59}, {23, 59}, {0, 30}};
     private final SortedMap<String, ImageIcon> landmarks = new TreeMap<>();
+    /** Fallback glyph drawn for a landmark code this build does not know (see {@link #getFeature}). */
+    private static final String FEATURE_UNKNOWN_IMAGE = "/images/mapa/feature_unknown.gif";
+    private ImageIcon featureUnknown;
+    private final Set<String> unknownFeatures = new LinkedHashSet<>();
+    private Consumer<String> unknownFeatureListener;
     private static ImageManager instance;
     private final SortedMap<String, ImageIcon> portraitMap = new TreeMap<>();
     private final Color colorNpc = Color.GREEN;
@@ -122,6 +130,9 @@ public class ImageManager implements Serializable {
             //todo: link feature to image vector
             landmarks.put(cdFeature, new ImageIcon(getClass().getResource(featuresImage.get(cdFeature))));
         }
+        //NOT registered as a landmark code: this is the fallback glyph for a landmark THIS BUILD does not
+        //know, so it must never appear in the landmark registry (which also feeds naming + the respawn pool).
+        featureUnknown = new ImageIcon(getClass().getResource(FEATURE_UNKNOWN_IMAGE));
     }
 
     public Image[] getTerrainImages() {
@@ -698,13 +709,47 @@ public class ImageManager implements Serializable {
         return this.barChart.getImage();
     }
 
+    /**
+     * The map glyph for a terrain landmark. An UNKNOWN code draws the generic "unknown landmark" marker
+     * instead of throwing: a landmark added server-side would otherwise break the map render of every
+     * client that predates it - i.e. an EGF-open crash for every player who has not upgraded, and the
+     * Distiler's own turn map if it were ever a step behind. Players see that something is there, the
+     * code is logged once, and {@link #setUnknownFeatureListener} lets the Counselor tell them their
+     * build is out of date. Callers that render headless (Judge, Distiler) simply register no listener.
+     */
     public Image getFeature(Habilidade feature) {
-        try {
-            return this.landmarks.get(feature.getCodigo()).getImage();
-        } catch (NullPointerException ex) {
-            log.error("Feature not found, add it to LocalFacade: " + feature.getCodigo());
-            throw new UnsupportedOperationException(ex);
+        final String codigo = feature.getCodigo();
+        final ImageIcon icon = this.landmarks.get(codigo);
+        if (icon != null) {
+            return icon.getImage();
         }
+        if (unknownFeatures.add(codigo)) {                       // once per code per run
+            log.error("Unknown terrain landmark '" + codigo + "' - drawing the generic marker. This build "
+                    + "predates it; add it to LocalFacade.doLoadLandmarksImage to render it properly.");
+            final Consumer<String> listener = unknownFeatureListener;
+            if (listener != null) {
+                try {
+                    listener.accept(codigo);
+                } catch (RuntimeException ex) {
+                    log.error("Unknown-landmark listener failed for " + codigo, ex);   // never break the render
+                }
+            }
+        }
+        return featureUnknown.getImage();
+    }
+
+    /**
+     * Called once per never-seen-before landmark code, from the render thread. PbmCommons is shared with the
+     * headless server components, so this is a plain {@link Consumer} and not a Swing hook - the Counselor
+     * registers one that toasts the player; Judge/Distiler leave it null.
+     */
+    public void setUnknownFeatureListener(Consumer<String> listener) {
+        this.unknownFeatureListener = listener;
+    }
+
+    /** Landmark codes this build did not recognise, in encounter order. Empty on an up-to-date build. */
+    public Set<String> getUnknownFeatures() {
+        return Collections.unmodifiableSet(unknownFeatures);
     }
 
     public final Image[] doLoadTerrainImages() {

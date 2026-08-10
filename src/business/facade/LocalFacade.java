@@ -7,10 +7,13 @@ package business.facade;
 import business.converter.ConverterFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import model.Artefato;
@@ -58,7 +61,23 @@ public final class LocalFacade implements Serializable {
         landmarkImage.put(";LFE;", "/images/mapa/feature_temple.gif");
         landmarkImage.put(";LFR;", "/images/mapa/feature_ruins.gif");
         landmarkImage.put(";LFT;", "/images/mapa/feature_tower.gif");
+        landmarkImage.put(";LFW;", "/images/mapa/feature_weirwood.gif");
     }
+
+    /**
+     * Landmarks that must NOT be handed out by the random respawn
+     * ({@code MilestoneCalculos.executaLandmarkRespawn}).
+     *
+     * The registry above is shared by every scenario - it drives rendering AND, until this split, the
+     * respawn pool - so simply registering a GoT-flavoured landmark would have started spawning it in
+     * LOTR and First Age games too. Anything listed here is hand-seeded on the map only
+     * ({@code hexagono.habilidades}), which is how the weirwoods are placed.
+     *
+     * If a landmark here should later respawn, gate it on a scenario/variante habilidade rather than
+     * deleting it from this set (mirroring {@code ;STS;} for scenario special troops).
+     */
+    private static final Set<String> LANDMARKS_NO_RESPAWN = Collections.unmodifiableSet(
+            new TreeSet<>(Arrays.asList(";LFW;")));
 
     public SortedMap<String, Artefato> getArtefatos(Local local) {
         return local.getArtefatos();
@@ -595,6 +614,11 @@ public final class LocalFacade implements Serializable {
         return local.hasHabilidade(";LFE;");
     }
 
+    /** Weirwood (GoT): hand-seeded only, never part of the random respawn pool. */
+    public boolean isTerrainLandmarkWeirwood(Local local) {
+        return local.hasHabilidade(";LFW;");
+    }
+
     public boolean isTerrainLandmarkSpent(Local local) {
         return local.hasHabilidade(";LFX;");
     }
@@ -613,8 +637,14 @@ public final class LocalFacade implements Serializable {
         return landmarkImage;
     }
 
+    /**
+     * The landmark codes the Judge may place at random (see {@link #LANDMARKS_NO_RESPAWN}). This is NOT the
+     * full registry: use {@link #getTerrainLandmarksImage} for rendering/naming, which must know every code.
+     */
     public Set<String> getTerrainLandmarksCodigo() {
-        return landmarkImage.keySet();
+        final SortedSet<String> ret = new TreeSet<>(landmarkImage.keySet());
+        ret.removeAll(LANDMARKS_NO_RESPAWN);
+        return ret;
     }
 
     public boolean remTerrainLandmark(Local local) {
