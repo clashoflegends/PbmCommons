@@ -853,6 +853,42 @@ public final class LocalFacade implements Serializable {
         }
     }
 
+    /**
+     * Strips padding from a hex's six direction sets (river, brook, ford, road, bridge, landing).
+     * <p>
+     * Each is one digit per hex side, read back with {@code contains()}, so surrounding whitespace
+     * carries no meaning - but it is not free: the columns are {@code varchar(6)}, exactly the six
+     * sides, and the map editor concatenates onto whatever it loaded (most stored rows are a single
+     * space). A hex that ends up using all six sides then needs 7 characters and the world import dies
+     * on a MysqlDataTruncation, aborting the whole run. Applied where a world file is written and where
+     * one is read back, so neither a new file nor an existing one can carry the padding.
+     */
+    public static void normalizeDirections(Local local) {
+        if (local == null) {
+            return;
+        }
+        local.setRio(trimDirections(local.getRio()));
+        local.setRiacho(trimDirections(local.getRiacho()));
+        local.setVau(trimDirections(local.getVau()));
+        local.setEstrada(trimDirections(local.getEstrada()));
+        local.setPonte(trimDirections(local.getPonte()));
+        local.setLanding(trimDirections(local.getLanding()));
+    }
+
+    /** Normalizes every hex of a world. */
+    public static void normalizeDirections(java.util.Collection<Local> locais) {
+        if (locais == null) {
+            return;
+        }
+        for (Local local : locais) {
+            normalizeDirections(local);
+        }
+    }
+
+    private static String trimDirections(String direcoes) {
+        return direcoes == null ? "" : direcoes.trim();
+    }
+
     public String getTamanhoNome(Local local) {
         return cidadeFacade.getTamanhoNome(local.getCidade());
     }
