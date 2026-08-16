@@ -17,6 +17,7 @@ import java.util.SortedMap;
 import model.ActorAction;
 import model.Cenario;
 import model.Cidade;
+import model.Habilidade;
 import model.Jogador;
 import model.Nacao;
 import model.Ordem;
@@ -46,9 +47,12 @@ public class OrdemFacade implements Serializable {
     private static final String[] ACTIONDISABLEDARRAY = new String[]{ActorAction.ACTION_DISABLED, "", ""};
     private static final String[] ACTIONBLANK = new String[]{ActorAction.ACTION_BLANK, "", ""};
 
-    public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, BaseModel actor, int indexOrdemAtiva, boolean isAllOrders, boolean isStartupPackages) {
+    public Ordem[] getOrdensDisponiveis(SortedMap<String, Ordem> ordens, BaseModel actor, int indexOrdemAtiva, boolean isAllOrders, boolean isStartupPackages, Cenario cenario) {
         //cria vetor e garante tamanho minimo
         List<Ordem> ordensActor = new ArrayList<>(ordens.size() + 1);
+        //whatever is already saved in the slot being edited stays listed, so a package bought before
+        //this filter existed (or under a rule that has since changed) never vanishes from the combo.
+        final Ordem ordemGravada = getOrdemGravada(actor, indexOrdemAtiva);
         //lista as ordens que o personagem pode executar
         for (Ordem ordem : ordens.values()) {
             //se o actor tem a pericia para dar a ordem
@@ -57,7 +61,9 @@ public class OrdemFacade implements Serializable {
                 if (isAllOrders) {
                     ordensActor.add(ordem);
                 } else if (isOrdemRequisitos(actor, ordem, isStartupPackages)) {
-                    if (isOrdemAllowed(actor, indexOrdemAtiva, ordem)) {
+                    if (isOrdemAllowed(actor, indexOrdemAtiva, ordem)
+                            && (isMesmaOrdem(ordem, ordemGravada)
+                            || isPacoteNacaoOk(actor, ordem, isStartupPackages, cenario))) {
                         ordensActor.add(ordem);
                     }
                 } else {
@@ -235,6 +241,78 @@ public class OrdemFacade implements Serializable {
         final String requisitos = ordem.getRequisito().toLowerCase();
         //criticas por tipo de chave
         return !(requisitos.contains("setup") && !isStartupPackages);
+    }
+
+    /**
+     * A turn-0 startup package (SNA) can be gated to a scenario or to particular nations: the PACKAGE
+     * habilidade attached to the order carries FILTER sub-habilidades (";FGOT;" = GoT only, ";FN001;" =
+     * Targaryen only, ...) and the Judge only runs the package when the nation carries EVERY one of them
+     * (PbmJudge Ordem105StartupPackage.criticaRequisitos). Mirrored here so the order combo offers a
+     * nation only the packages it can actually buy: otherwise a Stark player spends turn-0 points on
+     * "Targaryen only" and the Judge silently refuses it. Ticking ALL still lists every package.
+     *
+     * Fails OPEN on anything unreadable: a Habilidade whose tipo is null (XStream builds models without
+     * running the constructor, so old EGFs do produce them) is treated as neither package nor filter and
+     * the order stays listed. A wrong hide costs the player a legal purchase; a wrong show only
+     * reproduces what the client does today.
+     *
+     * @param isStartupPackages nation-packages mode AND turn 0 - outside it this is a no-op
+     * @param cenario the game scenario, may be null; only read for the First Age exception
+     */
+    public boolean isPacoteNacaoOk(BaseModel actor, Ordem ordem, boolean isStartupPackages, Cenario cenario) {
+        if (!isStartupPackages || ordem == null || !(actor instanceof Nacao)) {
+            return true;
+        }
+        final Nacao nacao = (Nacao) actor;
+        for (Habilidade pacote : ordem.getHabilidades().values()) {
+            if (!isPackageSafe(pacote)) {
+                continue;
+            }
+            for (Habilidade filtro : pacote.getHabilidades().values()) {
+                if (!isFilterSafe(filtro)) {
+                    continue;
+                }
+                if (";FGOT;".equalsIgnoreCase(filtro.getCodigo()) && cenario != null && cenario.isFirstAge()) {
+                    //the Judge ignores the GoT gate on First Age scenarios (ME1A offers GoT-tagged packages)
+                    continue;
+                }
+                if (!nacao.hasHabilidade(filtro.getCodigo())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isPackageSafe(Habilidade habilidade) {
+        try {
+            return habilidade.isPackage();
+        } catch (NullPointerException ex) {
+            return false;
+        }
+    }
+
+    private boolean isFilterSafe(Habilidade habilidade) {
+        try {
+            return habilidade.isFilter();
+        } catch (NullPointerException ex) {
+            return false;
+        }
+    }
+
+    private Ordem getOrdemGravada(BaseModel actor, int indexOrdemAtiva) {
+        try {
+            return actor.getAcao(indexOrdemAtiva).getOrdem();
+        } catch (RuntimeException ex) {
+            return null;
+        }
+    }
+
+    private boolean isMesmaOrdem(Ordem ordem, Ordem outra) {
+        if (ordem == null || outra == null) {
+            return false;
+        }
+        return ordem == outra || ordem.getCodigo().equals(outra.getCodigo());
     }
 
     private boolean isOrdemRequisitosPersonagem(Personagem personagem, Ordem ordem) {
