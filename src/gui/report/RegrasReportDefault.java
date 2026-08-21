@@ -118,7 +118,7 @@ public class RegrasReportDefault implements Serializable {
         getReport().writeBold(labels.getString("RULES.TITLE.ORDENS.SUB"));
         getReport().write("\n");
         for (Ordem ordem : partida.getCenario().getOrdens().values()) {
-            getReport().writeBoldFirstLine(TitleFactory.getOrdemDisplay(ordem));
+            getReport().writeBoldFirstLine(TitleFactory.getOrdemDisplay(ordem, partida));
             getReport().write("\n");
         }
     }

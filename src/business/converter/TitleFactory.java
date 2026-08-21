@@ -13,7 +13,9 @@ import java.io.Serializable;
 import model.Exercito;
 import model.Feitico;
 import model.Habilidade;
+import business.facade.OrdemFacade;
 import model.Ordem;
+import model.Partida;
 import msgs.BaseMsgs;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
@@ -105,7 +107,21 @@ public class TitleFactory implements Serializable {
         return ret;
     }
 
+    /**
+     * @param game the game whose rules apply, or null - see OrdemFacade.getAjuda(Ordem, Partida).
+     * The guard orders read differently in a game flying ;GAG;, so the help has to be composed per
+     * game rather than taken straight off the order.
+     */
+    public static String getOrdemDisplay(Ordem ordem, Partida game) {
+        return getOrdemDisplay(ordem, game, new OrdemFacade());
+    }
+
     public static String getOrdemDisplay(Ordem ordem) {
+        return getOrdemDisplay(ordem, null);
+    }
+
+    private static String getOrdemDisplay(Ordem ordem, Partida game, OrdemFacade facade) {
+        final String ajuda = facade.getAjuda(ordem, game);
         String ret = ordem.getDescricao() + "\n";
         ret += String.format("%s: %s\n", labels.getString("PARAMETROS"), ordem.getParametros());
         ret += String.format("%s: %s\n", labels.getString("WHO.CAN"), getTipoPersonagem(ordem));
@@ -134,11 +150,11 @@ public class TitleFactory implements Serializable {
             }
         }
         ret += String.format("%s: %s\n", labels.getString("REQUISITO"), getAjudaRequisito(ordem));
-        ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ordem.getAjuda());
+        ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ajuda);
 //        if (acaoFacade.isSetup(ordem)) {
 //            ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), acaoFacade.getSetupDescription(ordem));
 //        } else {
-//            ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ordem.getAjuda());
+//            ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ajuda);
 //        }
         return ret;
     }

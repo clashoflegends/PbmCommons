@@ -774,4 +774,73 @@ public class OrdemFacade implements Serializable {
             return actor.getAcaoSize();
         }
     }
+    /** Guard a location (605) and guard a character (610) - the two orders the guard gate governs. */
+    private static final int ORDEM_GUARDA_LOCAL = 605;
+    private static final int ORDEM_GUARDA_PERSONAGEM = 610;
+
+    /**
+     * Order help, with the guard rules folded in when the game carries them.
+     *
+     * The guard mechanic is secret dice in most games and a published formula in games flying
+     * ;GAG;, so the same order needs two different help texts and the right one has to be chosen
+     * per game. The scenario text in {@code ordem_cenario.ds_ajuda} is left exactly as it is and the
+     * new block is appended, so a game WITHOUT the flag renders byte-identical to before.
+     *
+     * ;GGF; and ;GAF; are independent of ;GAG; and of each other (SPEC.6), so each floor sentence
+     * appears only when its own flag is set, and it carries that game's actual value rather than the
+     * default - a test game can be set to anything.
+     *
+     * @param ordem the order being described
+     * @param game the game, or null when there is none loaded (Battle Simulator, Actions tab before
+     * a turn is open) - a null game returns the base text untouched
+     */
+    public String getAjuda(Ordem ordem, Partida game) {
+        final String base = ordem.getAjuda();
+        if (game == null || !isGuardOrdem(ordem) || !hasFlag(game, ";GAG;")) {
+            return base;
+        }
+        final StringBuilder ret = new StringBuilder(base);
+        ret.append("\n").append(labels.getString("GUARD.RULES.GAG"));
+        if (hasFlag(game, ";GGF;")) {
+            ret.append("\n").append(String.format(labels.getString("GUARD.RULES.GGF"),
+                    getFlagValor(game, ";GGF;")));
+        }
+        if (hasFlag(game, ";GAF;")) {
+            ret.append("\n").append(String.format(labels.getString("GUARD.RULES.GAF"),
+                    getFlagValor(game, ";GAF;")));
+        }
+        return ret.toString();
+    }
+
+    private boolean isGuardOrdem(Ordem ordem) {
+        //by number, not by the help token: rulesandhelpothers.properties carries a second
+        //GUARPER.CENARIO6 variant, so matching on the token would miss games
+        return ordem.getNumero() == ORDEM_GUARDA_LOCAL || ordem.getNumero() == ORDEM_GUARDA_PERSONAGEM;
+    }
+
+    /**
+     * A game habilidade can be set on the game or inherited from the variant, and the Judge's
+     * PartidaControl.hasHabilidade ORs the two. Help that disagreed with the Judge would be worse
+     * than no help at all, so this mirrors it exactly - including game-before-scenario priority on
+     * the value.
+     */
+    private boolean hasFlag(Partida game, String cdHabilidade) {
+        try {
+            return game.hasHabilidade(cdHabilidade)
+                    || game.getCenario().hasHabilidade(cdHabilidade);
+        } catch (NullPointerException ex) {
+            return false;
+        }
+    }
+
+    private int getFlagValor(Partida game, String cdHabilidade) {
+        try {
+            if (game.hasHabilidade(cdHabilidade)) {
+                return game.getHabilidadeValor(cdHabilidade);
+            }
+            return game.getCenario().getHabilidadeValor(cdHabilidade);
+        } catch (NullPointerException ex) {
+            return 0;
+        }
+    }
 }
