@@ -774,9 +774,15 @@ public class OrdemFacade implements Serializable {
             return actor.getAcaoSize();
         }
     }
-    /** Guard a location (605) and guard a character (610) - the two orders the guard gate governs. */
-    private static final int ORDEM_GUARDA_LOCAL = 605;
-    private static final int ORDEM_GUARDA_PERSONAGEM = 610;
+    /**
+     * Guard a location and guard a character - the two orders the guard gate governs.
+     *
+     * These are `cd_ordem`, which is what {@code Ordem.getCodigo()} carries and is stable across
+     * every scenario. NOT {@code getNumero()}, which is `nu_ordem` and is 1605/4605 for GuarLoc and
+     * 1220/1610/4015 for GuarPer depending on the scenario.
+     */
+    private static final String ORDEM_GUARDA_LOCAL = "605";
+    private static final String ORDEM_GUARDA_PERSONAGEM = "610";
 
     /**
      * Order help, with the guard rules folded in when the game carries them.
@@ -793,6 +799,7 @@ public class OrdemFacade implements Serializable {
      * @param ordem the order being described
      * @param game the game, or null when there is none loaded (Battle Simulator, Actions tab before
      * a turn is open) - a null game returns the base text untouched
+     * @return 
      */
     public String getAjuda(Ordem ordem, Partida game) {
         final String base = ordem.getAjuda();
@@ -813,9 +820,11 @@ public class OrdemFacade implements Serializable {
     }
 
     private boolean isGuardOrdem(Ordem ordem) {
-        //by number, not by the help token: rulesandhelpothers.properties carries a second
-        //GUARPER.CENARIO6 variant, so matching on the token would miss games
-        return ordem.getNumero() == ORDEM_GUARDA_LOCAL || ordem.getNumero() == ORDEM_GUARDA_PERSONAGEM;
+        //by cd_ordem, not by the help token (rulesandhelpothers.properties carries a second
+        //GUARPER.CENARIO6 variant that token-matching would miss) and not by nu_ordem (which
+        //differs per scenario)
+        final String codigo = ordem.getCodigo();
+        return ORDEM_GUARDA_LOCAL.equals(codigo) || ORDEM_GUARDA_PERSONAGEM.equals(codigo);
     }
 
     /**
