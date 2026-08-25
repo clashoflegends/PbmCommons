@@ -809,12 +809,11 @@ public class ImageManager implements Serializable {
             return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".png"));
         } else if (SettingsManager.getInstance().isConfig("MapTiles", "flat", "2b")) {
             //flat colour only, palette lifted from the Chronicle replay map so the two read alike.
-            //The set deliberately has no fog tile (John, 2026-08-24) - but fogofwar is routed through
-            //here by MapaManager, and a missing resource means getResource() returns null and
-            //Toolkit.getImage(null) throws. So fog borrows the standard grey veil.
-            if ("fogofwar".equals(filename)) {
-                return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_fogofwar.gif"));
-            }
+            //Fog is DARK here, not the shared light grey: MapaManager washes the fog tile over the
+            //terrain at 0.6 alpha, and a light wash over this dark palette lifts every terrain to
+            //nearly the same mid-grey - fogged sea and fogged forest become indistinguishable, and
+            //the fogged region still does not read as clearly separate. Darkening at the same alpha
+            //separates known from unknown AND keeps the terrain legible underneath.
             return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_flat_" + filename + ".png"));
         } else {
             //bordless meppa
