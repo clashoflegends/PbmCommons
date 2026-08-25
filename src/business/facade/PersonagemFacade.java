@@ -37,12 +37,65 @@ import persistenceCommons.SysApoio;
  */
 public class PersonagemFacade implements Serializable {
 
+    /** The historical single fallback portrait: a hooded rogue. Still the last resort. */
+    public static final String PORTRAIT_BLANK = "blank.jpg";
+
     private static final Log log = LogFactory.getLog(PersonagemFacade.class);
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final LocalFacade localFacade = new LocalFacade();
     private final NacaoFacade nacaoFacade = new NacaoFacade();
     private final CidadeFacade cidadeFacade = new CidadeFacade();
     private static final AcaoFacade acaoFacade = new AcaoFacade();
+
+    /**
+     * Default portrait filename for a character who has none of their own: one per class per gender.
+     * <p>
+     * A character is not a single class - {@code isComandante()}, {@code isAgente()},
+     * {@code isEmissario()} and {@code isMago()} are independent and derived from the NATURAL skill
+     * being above zero - so a commander who also studies magic matches two. The class shown is the
+     * one with the HIGHEST natural skill, and on a tie the order is
+     * <b>Comandante &gt; Mago &gt; Agente &gt; Emissario</b> (John, 2026-08-24).
+     * <p>
+     * Returns {@link #PORTRAIT_BLANK} when no natural skill is above zero, so a character with no
+     * class at all keeps the historical behaviour. The caller must still cope with the file being
+     * absent - {@code ImageManager} falls back to blank.jpg - because the art ships in portraits.zip
+     * and a player may not have downloaded the current pack yet.
+     *
+     * @param personagem the character
+     * @return a filename such as {@code default_comandante_f.jpg}, never null
+     */
+    public String getDefaultPortraitFilename(Personagem personagem) {
+        if (personagem == null) {
+            return PORTRAIT_BLANK;
+        }
+        //ordered by the tie-break priority, so the first strict maximum wins
+        final String[] classe = {"comandante", "mago", "agente", "emissario"};
+        final int[] pericia = {
+            personagem.getPericiaComandanteNatural(),
+            personagem.getPericiaMagoNatural(),
+            personagem.getPericiaAgenteNatural(),
+            personagem.getPericiaEmissarioNatural()};
+        int best = 0;
+        for (int ii = 1; ii < pericia.length; ii++) {
+            if (pericia[ii] > pericia[best]) {
+                best = ii;
+            }
+        }
+        if (pericia[best] <= 0) {
+            //no class at all: keep what it has always shown
+            return PORTRAIT_BLANK;
+        }
+        return String.format("default_%s_%s.jpg", classe[best], getPortraitGenderSuffix(personagem));
+    }
+
+    /**
+     * "f" for a woman, "m" otherwise. Personagem.sexo is 0=male, 1=female, 2=undefined; undefined
+     * takes the male art rather than dropping to blank.jpg, because showing the right CLASS matters
+     * more than the gender and a handful of old rows are still undefined.
+     */
+    private String getPortraitGenderSuffix(Personagem personagem) {
+        return (personagem.getSexo() == 1) ? "f" : "m";
+    }
 
     public Collection<Artefato> getArtefatos(Personagem personagem) {
         return personagem.getArtefatos().values();

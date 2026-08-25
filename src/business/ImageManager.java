@@ -33,6 +33,8 @@ import java.util.TreeMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import business.facade.PersonagemFacade;
+import model.Personagem;
 import model.Cenario;
 import model.Exercito;
 import model.Habilidade;
@@ -52,6 +54,7 @@ public class ImageManager implements Serializable {
     private Image[] terrainImages;
     private final ExercitoFacade exercitoFacade = new ExercitoFacade();
     private final LocalFacade localFacade = new LocalFacade();
+    private final PersonagemFacade personagemFacade = new PersonagemFacade();
     private JPanel form;
     private Cenario cenario;
     private final MediaTracker mt;
@@ -882,9 +885,40 @@ public class ImageManager implements Serializable {
         ImageIcon portrait = loadPortraitOnDemand(portraitName);
         if (portrait == null) {
             log.debug("Portrait image name " + portraitName + " not found.");
-            portrait = loadPortraitOnDemand("blank.jpg");
+            portrait = loadPortraitOnDemand(PersonagemFacade.PORTRAIT_BLANK);
         }
         return portrait;
+    }
+
+    /**
+     * Portrait for a character, in three steps: their own portrait, then the default for their class
+     * and gender, then blank.jpg.
+     * <p>
+     * Until 2026-08-24 there was only the last step, so every character without art of their own was
+     * drawn as the same hooded rogue - whatever their class or gender. The class defaults ship in
+     * portraits.zip like any other portrait, so each step degrades on its own: a player who has not
+     * downloaded the current pack simply falls through to the next one.
+     *
+     * @param personagem the character being shown
+     * @return an icon, never null unless even blank.jpg is missing from the folder
+     */
+    public ImageIcon getPortrait(Personagem personagem) {
+        if (personagem == null) {
+            return loadPortraitOnDemand(PersonagemFacade.PORTRAIT_BLANK);
+        }
+        final String own = personagem.getPortraitFilename();
+        if (own != null && !PersonagemFacade.PORTRAIT_BLANK.equalsIgnoreCase(own)) {
+            ImageIcon portrait = loadPortraitOnDemand(own);
+            if (portrait != null) {
+                return portrait;
+            }
+            log.debug("Portrait image name " + own + " not found, falling back to the class default.");
+        }
+        ImageIcon fallback = loadPortraitOnDemand(personagemFacade.getDefaultPortraitFilename(personagem));
+        if (fallback == null) {
+            fallback = loadPortraitOnDemand(PersonagemFacade.PORTRAIT_BLANK);
+        }
+        return fallback;
     }
 
     /**
