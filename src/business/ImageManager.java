@@ -807,6 +807,15 @@ public class ImageManager implements Serializable {
         } else if (SettingsManager.getInstance().isConfig("MapTiles", "3d", "2b")) {
             //3d from joao bordless
             return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_" + filename + ".png"));
+        } else if (SettingsManager.getInstance().isConfig("MapTiles", "flat", "2b")) {
+            //flat colour only, palette lifted from the Chronicle replay map so the two read alike.
+            //The set deliberately has no fog tile (John, 2026-08-24) - but fogofwar is routed through
+            //here by MapaManager, and a missing resource means getResource() returns null and
+            //Toolkit.getImage(null) throws. So fog borrows the standard grey veil.
+            if ("fogofwar".equals(filename)) {
+                return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_fogofwar.gif"));
+            }
+            return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_flat_" + filename + ".png"));
         } else {
             //bordless meppa
             return getForm().getToolkit().getImage(getClass().getResource("/images/mapa/hex_2b_" + filename + ".gif"));
