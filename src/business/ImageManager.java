@@ -911,6 +911,29 @@ public class ImageManager implements Serializable {
      * @return an icon, never null unless even blank.jpg is missing from the folder
      */
     public ImageIcon getPortrait(Personagem personagem) {
+        return getPortrait(personagem, null);
+    }
+
+    /**
+     * Portrait for a character, in four steps, each degrading on its own:
+     * <ol>
+     * <li>the character's own portrait</li>
+     * <li>the scenario's default for their class and gender, when the variante declares a set</li>
+     * <li>the generic navy default for their class and gender</li>
+     * <li>blank.jpg</li>
+     * </ol>
+     * Step 2 must fall through to step 3 rather than to the floor: the scenario art ships in
+     * portraits.zip, so a player on an older pack would otherwise REGRESS to blank.jpg from the
+     * class default they see today.
+     * <p>
+     * Until 2026-08-24 only the last step existed, so every character without art of their own was
+     * drawn as the same hooded rogue, whatever their class or gender.
+     *
+     * @param personagem the character being shown
+     * @param cenario the game's scenario, may be null (then step 2 is skipped)
+     * @return an icon, never null unless even blank.jpg is missing from the folder
+     */
+    public ImageIcon getPortrait(Personagem personagem, Cenario cenario) {
         if (personagem == null) {
             return loadPortraitOnDemand(PersonagemFacade.PORTRAIT_BLANK);
         }
@@ -921,6 +944,14 @@ public class ImageManager implements Serializable {
                 return portrait;
             }
             log.debug("Portrait image name " + own + " not found, falling back to the class default.");
+        }
+        final String portraitSet = personagemFacade.getPortraitSet(cenario);
+        if (portraitSet != null) {
+            ImageIcon scenario = loadPortraitOnDemand(personagemFacade.getDefaultPortraitFilename(personagem, portraitSet));
+            if (scenario != null) {
+                return scenario;
+            }
+            log.debug("Scenario portrait set " + portraitSet + " has no art for this class yet; using the generic default.");
         }
         ImageIcon fallback = loadPortraitOnDemand(personagemFacade.getDefaultPortraitFilename(personagem));
         if (fallback == null) {

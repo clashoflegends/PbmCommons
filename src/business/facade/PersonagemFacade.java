@@ -40,6 +40,16 @@ public class PersonagemFacade implements Serializable {
     /** The historical single fallback portrait: a hooded rogue. Still the last resort. */
     public static final String PORTRAIT_BLANK = "blank.jpg";
 
+    /**
+     * Variante-level habilidade -> portrait set name. First match wins, so a variante carrying two
+     * flags gets the earlier one. Add a row plus 8 images named default_&lt;set&gt;_&lt;classe&gt;_&lt;m|f&gt;.jpg
+     * to introduce a new style; no other code changes.
+     */
+    private static final String[][] PORTRAIT_SETS = {
+        {";SJG;", "greek"},
+        {";SJD;", "dance"},
+        {";SJT;", "got"}};
+
     private static final Log log = LogFactory.getLog(PersonagemFacade.class);
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final LocalFacade localFacade = new LocalFacade();
@@ -65,8 +75,70 @@ public class PersonagemFacade implements Serializable {
      * @return a filename such as {@code default_comandante_f.jpg}, never null
      */
     public String getDefaultPortraitFilename(Personagem personagem) {
-        if (personagem == null) {
+        final String classe = getPortraitClasse(personagem);
+        if (classe == null) {
+            //no class at all: keep what it has always shown
             return PORTRAIT_BLANK;
+        }
+        return String.format("default_%s_%s.jpg", classe, getPortraitGenderSuffix(personagem));
+    }
+
+    /**
+     * Default portrait for a character in a scenario that ships its own art style, e.g.
+     * {@code default_greek_comandante_m.jpg}. Same class and gender rule as the generic set.
+     * <p>
+     * Returns <b>null</b> rather than blank.jpg when there is no set or no class, so the caller
+     * falls through to the generic default instead of dropping straight to the floor. That matters:
+     * the scenario art ships in portraits.zip like everything else, and a player who has not
+     * downloaded the current pack must degrade to the navy class default, not to blank.jpg.
+     *
+     * @param personagem the character
+     * @param portraitSet the set name from {@link #getPortraitSet(Cenario)}, may be null
+     * @return a filename, or null when this character has no scenario-specific default
+     */
+    public String getDefaultPortraitFilename(Personagem personagem, String portraitSet) {
+        if (portraitSet == null) {
+            return null;
+        }
+        final String classe = getPortraitClasse(personagem);
+        if (classe == null) {
+            return null;
+        }
+        return String.format("default_%s_%s_%s.jpg", portraitSet, classe, getPortraitGenderSuffix(personagem));
+    }
+
+    /**
+     * The scenario's portrait set, declared by a variante-level habilidade under the {@code ;SJ_;}
+     * mask, or null when the scenario ships no art of its own.
+     * <p>
+     * The flag lives on the VARIANTE ({@code variante.habilidades}, surfacing as
+     * {@code cenario.habilidades}) rather than the game, so every game of a variante looks the same
+     * and no per-game data entry is needed. Reading it off the Cenario is only safe because the
+     * Cenario cache is keyed per game - variantes 11 and 16 share id_cenario 11, and before that fix
+     * a GoT game could have been handed F&D's flags. Requires Distiler 2.88 or newer to write the EGF.
+     *
+     * @param cenario the game's scenario, may be null
+     * @return "greek", "dance", "got", or null
+     */
+    public String getPortraitSet(Cenario cenario) {
+        if (cenario == null) {
+            return null;
+        }
+        for (String[] set : PORTRAIT_SETS) {
+            if (cenario.hasHabilidade(set[0])) {
+                return set[1];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The class whose art a character should wear: the one with the HIGHEST natural skill, tie-break
+     * Comandante &gt; Mago &gt; Agente &gt; Emissario. Null when no natural skill is above zero.
+     */
+    private String getPortraitClasse(Personagem personagem) {
+        if (personagem == null) {
+            return null;
         }
         //ordered by the tie-break priority, so the first strict maximum wins
         final String[] classe = {"comandante", "mago", "agente", "emissario"};
@@ -81,11 +153,7 @@ public class PersonagemFacade implements Serializable {
                 best = ii;
             }
         }
-        if (pericia[best] <= 0) {
-            //no class at all: keep what it has always shown
-            return PORTRAIT_BLANK;
-        }
-        return String.format("default_%s_%s.jpg", classe[best], getPortraitGenderSuffix(personagem));
+        return (pericia[best] > 0) ? classe[best] : null;
     }
 
     /**
