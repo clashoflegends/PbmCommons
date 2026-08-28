@@ -403,6 +403,11 @@ public class OrdemFacade implements Serializable {
             //ALVO considera PERSONAGEM amigo !this.criticaCpInimiga(false)
             return false;
         }
+        if (requisitos.contains("exi") && !personagemFacade.isInHexInimigo(personagem)) {
+            //nothing here to attack: no enemy army and no enemy city garrison. Bypassable via ALL,
+            //which is what covers attacking a force the player cannot currently see.
+            return false;
+        }
         if (requisitos.contains("artefato") && !personagemFacade.isPersonagemHasItem(personagem, "Any")) {
             return false;
         }

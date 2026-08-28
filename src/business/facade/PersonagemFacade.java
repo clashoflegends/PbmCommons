@@ -508,6 +508,43 @@ public class PersonagemFacade implements Serializable {
         }
     }
 
+    /**
+     * Is there something in this character's hex that an attack order could actually engage: an enemy
+     * ARMY, or an enemy CITY whose garrison would defend it. Used to keep "Attack Enemy" out of the
+     * order combo when there is nothing to attack, after a player reported a beginner picking it in
+     * an empty hex.
+     * <p>
+     * Enemy means {@code Nacao.isInimigo}, a negative relationship - NOT {@code isInCidadeAlheio},
+     * which counts any city that is not your own and so would treat an ALLIED city as a target.
+     * <p>
+     * Deliberately reads only what the client can see: an army at visibility 0 is dropped on export
+     * ({@code ServerExercitoDao}) and is simply absent here, so a hidden force makes this return
+     * false. That is why the requisito it backs must stay bypassable - the ALL checkbox skips
+     * requisitos entirely, which is the escape hatch for attacking a force you know about but cannot
+     * see.
+     *
+     * @param personagem the character
+     * @return true when an enemy army or an enemy city shares the hex
+     */
+    public boolean isInHexInimigo(Personagem personagem) {
+        try {
+            final Nacao minha = personagem.getNacao();
+            final Cidade cidade = personagem.getLocal().getCidade();
+            if (cidade != null && cidade.getTamanho() >= 1 && cidade.getNacao() != null
+                    && cidade.getNacao().isInimigo(minha)) {
+                return true;   //an enemy city defends itself with its garrison
+            }
+            for (Exercito exercito : personagem.getLocal().getExercitos().values()) {
+                if (exercito.getNacao() != null && exercito.getNacao().isInimigo(minha)) {
+                    return true;
+                }
+            }
+        } catch (NullPointerException ex) {
+            return false;
+        }
+        return false;
+    }
+
     public boolean isInCidadeAlheio(Personagem personagem) {
         try {
             return (this.isInCidade(personagem)

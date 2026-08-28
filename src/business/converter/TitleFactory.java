@@ -373,6 +373,9 @@ public class TitleFactory implements Serializable {
             //PERSONAGEM considera CIDADE amigo !this.criticaCpInimiga(false)
             ret += separator + labels.getString("REQUISITO.AJUDA.CPB");
         }
+        if (requisitos.contains("exi")) {
+            ret += separator + labels.getString("REQUISITO.AJUDA.EXI");
+        }
         if (requisitos.contains("cpi")) {
             //ALVO considera PERSONAGEM amigo !this.criticaCpInimiga(false)
             ret += separator + labels.getString("REQUISITO.AJUDA.CPI");
