@@ -82,4 +82,49 @@ public class ColorFactoryPortraitTest {
                 ColorFactory.recolorPortrait(portrait(), mask(255), null, null, 0).getRGB(0, 0),
                 "no house colour means no recolour");
     }
+
+    /** A distinguishable 4x2 portrait: left half red, right half blue, so a flip is detectable. */
+    private BufferedImage sided() {
+        BufferedImage img = new BufferedImage(4, 2, BufferedImage.TYPE_INT_RGB);
+        for (int y = 0; y < 2; y++) {
+            for (int x = 0; x < 4; x++) {
+                img.setRGB(x, y, (x < 2 ? Color.RED : Color.BLUE).getRGB());
+            }
+        }
+        return img;
+    }
+
+    @Test
+    public void variantZeroLeavesTheFramingAlone() {
+        BufferedImage in = sided();
+        BufferedImage out = ColorFactory.recolorPortrait(in, null, null, null, 0, 0);
+        for (int y = 0; y < 2; y++) {
+            for (int x = 0; x < 4; x++) {
+                assertEquals(in.getRGB(x, y), out.getRGB(x, y), "variant 0 must be a no-op");
+            }
+        }
+    }
+
+    @Test
+    public void aFlipVariantMirrorsTheArt() {
+        //variant 1 is {zoom 1.0, flip} - the only difference from variant 0 is the mirror
+        BufferedImage out = ColorFactory.recolorPortrait(sided(), null, null, null, 0, 1);
+        assertEquals(Color.BLUE.getRGB(), out.getRGB(0, 0), "the right half must end up on the left");
+        assertEquals(Color.RED.getRGB(), out.getRGB(3, 0), "and the left half on the right");
+    }
+
+    @Test
+    public void everyVariantKeepsTheOriginalSize() {
+        for (int v = 0; v < ColorFactory.PORTRAIT_VARIANT_COUNT; v++) {
+            BufferedImage out = ColorFactory.recolorPortrait(portrait(), mask(255), Color.GREEN, null, 0, v);
+            assertEquals(2, out.getWidth(), "variant " + v + " changed the width");
+            assertEquals(2, out.getHeight(), "variant " + v + " changed the height");
+        }
+    }
+
+    @Test
+    public void outOfRangeVariantDegradesToNoOp() {
+        BufferedImage out = ColorFactory.recolorPortrait(sided(), null, null, null, 0, 999);
+        assertEquals(Color.RED.getRGB(), out.getRGB(0, 0), "an unknown variant must not throw or mirror");
+    }
 }

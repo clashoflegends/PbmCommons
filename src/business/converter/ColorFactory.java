@@ -7,6 +7,7 @@ package business.converter;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
@@ -219,6 +220,56 @@ public class ColorFactory implements Serializable {
     private static final Color PORTRAIT_FRAME_SEPARATOR = new Color(255, 255, 255, 90);
 
     /**
+     * Deterministic framing variants for the default portraits. Two characters of the same class,
+     * gender and nation would otherwise be pixel-identical; this gives each a stable reframing so a
+     * court of ten reads as ten people rather than one person repeated.
+     * <p>
+     * Each row is {zoom, cropAnchor, flip}. The anchor is where the crop sits vertically, biased
+     * ABOVE centre because a centred crop cuts foreheads. Zoom 1.0 ignores the anchor, so the two
+     * unzoomed rows differ only by flip and the table has no duplicate entries.
+     * <p>
+     * Applied AFTER recolouring and BEFORE the frame, which matters: the house mask is aligned to the
+     * untransformed art, so cropping first would paint the wrong pixels, and framing first would
+     * scale the frame with the zoom.
+     */
+    private static final float[][] PORTRAIT_VARIANTS = {
+        {1.00f, 0.42f, 0f}, {1.00f, 0.42f, 1f},
+        {1.15f, 0.42f, 0f}, {1.15f, 0.42f, 1f}, {1.15f, 0.25f, 0f}, {1.15f, 0.25f, 1f},
+        {1.30f, 0.42f, 0f}, {1.30f, 0.42f, 1f}, {1.30f, 0.25f, 0f}, {1.30f, 0.25f, 1f}};
+
+    /** How many distinct framing variants exist; callers pick one with a stable per-character hash. */
+    public static final int PORTRAIT_VARIANT_COUNT = PORTRAIT_VARIANTS.length;
+
+    /** Zooms, crops and/or mirrors a portrait per {@link #PORTRAIT_VARIANTS}. Variant 0 is a no-op. */
+    private static BufferedImage applyPortraitVariant(BufferedImage img, int variant) {
+        if (variant <= 0 || variant >= PORTRAIT_VARIANTS.length) {
+            return img;
+        }
+        final float zoom = PORTRAIT_VARIANTS[variant][0];
+        final float anchor = PORTRAIT_VARIANTS[variant][1];
+        final boolean flip = PORTRAIT_VARIANTS[variant][2] > 0f;
+        final int w = img.getWidth(), h = img.getHeight();
+        BufferedImage out = img;
+        if (zoom > 1.0f) {
+            final int cw = Math.max(1, Math.round(w / zoom)), ch = Math.max(1, Math.round(h / zoom));
+            final BufferedImage crop = img.getSubimage((w - cw) / 2, Math.round((h - ch) * anchor), cw, ch);
+            out = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = out.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.drawImage(crop, 0, 0, w, h, null);
+            g.dispose();
+        }
+        if (flip) {
+            final BufferedImage mirrored = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = mirrored.createGraphics();
+            g.drawImage(out, w, 0, 0, h, 0, 0, w, h, null);
+            g.dispose();
+            out = mirrored;
+        }
+        return out;
+    }
+
+    /**
      * Recolours a default portrait to a nation's colours: the house {@code fill} drives the cloak and
      * background through the portrait's grayscale mask, and the {@code border} is drawn as a frame,
      * the same split the map uses (fill = house, border = team).
@@ -246,6 +297,15 @@ public class ColorFactory implements Serializable {
      */
     public static BufferedImage recolorPortrait(BufferedImage portrait, BufferedImage mask,
             Color fill, Color border, int frameWidth) {
+        return recolorPortrait(portrait, mask, fill, border, frameWidth, 0);
+    }
+
+    /**
+     * As {@link #recolorPortrait(BufferedImage, BufferedImage, Color, Color, int)} plus a framing
+     * variant, applied between the recolour and the frame. See {@link #PORTRAIT_VARIANTS}.
+     */
+    public static BufferedImage recolorPortrait(BufferedImage portrait, BufferedImage mask,
+            Color fill, Color border, int frameWidth, int variant) {
         final int w = portrait.getWidth(), h = portrait.getHeight();
         BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         final boolean canRecolor = mask != null && fill != null
@@ -285,6 +345,7 @@ public class ColorFactory implements Serializable {
         } else {
             out.getGraphics().drawImage(portrait, 0, 0, null);
         }
+        out = applyPortraitVariant(out, variant);
         if (border != null && frameWidth > 0) {
             Graphics2D g = out.createGraphics();
             g.setColor(border);

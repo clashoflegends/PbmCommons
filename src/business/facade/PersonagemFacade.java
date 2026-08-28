@@ -4,6 +4,7 @@
  */
 package business.facade;
 
+import business.converter.ColorFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,6 +106,28 @@ public class PersonagemFacade implements Serializable {
             return null;
         }
         return String.format("default_%s_%s_%s.jpg", portraitSet, classe, getPortraitGenderSuffix(personagem));
+    }
+
+    /**
+     * Which framing variant this character's DEFAULT portrait uses, so two characters of the same
+     * class, gender and nation are not drawn pixel-identically. Stable for the life of the character
+     * and identical on every client, because it is derived from {@code identificacao} - the 5-char
+     * code the Judge assigns at creation and never changes afterwards.
+     * <p>
+     * Keyed on a hash rather than a letter of the code: second letters are heavily vowel-weighted
+     * (a, o and e alone are 55% of all characters), so slicing the alphabet directly splits the
+     * population about 24/32/43, while the hash lands within a point or two of even.
+     *
+     * @param personagem the character
+     * @return an index into the variant table, 0 when there is nothing to hash
+     */
+    public int getDefaultPortraitVariant(Personagem personagem) {
+        final String seed = (personagem == null) ? null : personagem.getCodigo();
+        if (seed == null || seed.isEmpty()) {
+            return 0;
+        }
+        //String.hashCode is specified by the JLS, so this is identical on every JVM and every client.
+        return Math.floorMod(seed.hashCode(), ColorFactory.PORTRAIT_VARIANT_COUNT);
     }
 
     /**

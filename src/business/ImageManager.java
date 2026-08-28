@@ -993,8 +993,9 @@ public class ImageManager implements Serializable {
         if (fill != null || border != null) {
             //cache per COLOUR as well as per file: the same art serves every nation, and the plain
             //filename key would hand the second nation the first one's colours.
+            final int variant = personagemFacade.getDefaultPortraitVariant(personagem);
             final String key = base + "|" + (fill == null ? "-" : fill.getRGB())
-                    + "|" + (border == null ? "-" : border.getRGB());
+                    + "|" + (border == null ? "-" : border.getRGB()) + "|" + variant;
             final ImageIcon cached = this.portraitMap.get(key);
             if (cached != null) {
                 return cached;
@@ -1002,7 +1003,7 @@ public class ImageManager implements Serializable {
             final BufferedImage art = readPortraitImage(base + ".png");
             if (art != null) {
                 final ImageIcon icon = new ImageIcon(ColorFactory.recolorPortrait(
-                        art, readPortraitImage(base + "_mask.png"), fill, border, PORTRAIT_FRAME_WIDTH));
+                        art, readPortraitImage(base + "_mask.png"), fill, border, PORTRAIT_FRAME_WIDTH, variant));
                 this.portraitMap.put(key, icon);
                 return icon;
             }
