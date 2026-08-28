@@ -48,8 +48,11 @@ public class PersonagemFacade implements Serializable {
      */
     private static final String[][] PORTRAIT_SETS = {
         {";SJG;", "greek"},
-        {";SJD;", "dance"},
-        {";SJT;", "got"}};
+        {";SJD;", "dance"}};
+    //;SJT; (Westeros) deliberately has NO row. The generic default set IS the Westeros art, so a
+    //GoT game reaches it by falling through; giving ;SJT; its own copy would mean two files to keep
+    //in sync and a stale one the moment either moves. The flag stays in the DB, inert, ready for the
+    //day GoT needs art that differs from the default - then it gets a row and its own files.
 
     private static final Log log = LogFactory.getLog(PersonagemFacade.class);
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();

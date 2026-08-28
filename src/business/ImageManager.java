@@ -990,25 +990,30 @@ public class ImageManager implements Serializable {
         final Nacao nacao = (personagem == null) ? null : personagem.getNacao();
         final Color fill = (nacao == null) ? null : nacao.getFillColor();
         final Color border = (nacao == null) ? null : nacao.getBorderColor();
-        if (fill != null || border != null) {
-            //cache per COLOUR as well as per file: the same art serves every nation, and the plain
-            //filename key would hand the second nation the first one's colours.
-            final int variant = personagemFacade.getDefaultPortraitVariant(personagem);
-            final String key = base + "|" + (fill == null ? "-" : fill.getRGB())
-                    + "|" + (border == null ? "-" : border.getRGB()) + "|" + variant;
-            final ImageIcon cached = this.portraitMap.get(key);
-            if (cached != null) {
-                return cached;
-            }
-            final BufferedImage art = readPortraitImage(base + ".png");
-            if (art != null) {
-                final ImageIcon icon = new ImageIcon(ColorFactory.recolorPortrait(
-                        art, readPortraitImage(base + "_mask.png"), fill, border, PORTRAIT_FRAME_WIDTH, variant));
-                this.portraitMap.put(key, icon);
-                return icon;
-            }
+        final int variant = personagemFacade.getDefaultPortraitVariant(personagem);
+        //cache per COLOUR and VARIANT as well as per file: one art file serves every nation and
+        //every character, so a filename-only key would hand the second one the first one's image.
+        final String key = base + "|" + (fill == null ? "-" : fill.getRGB())
+                + "|" + (border == null ? "-" : border.getRGB()) + "|" + variant;
+        final ImageIcon cached = this.portraitMap.get(key);
+        if (cached != null) {
+            return cached;
         }
-        return loadPortraitOnDemand(filename);
+        //prefer the lossless PNG (the recolourable art); fall back to the flat JPG sets
+        BufferedImage art = readPortraitImage(base + ".png");
+        if (art == null) {
+            art = readPortraitImage(base + ".jpg");
+        }
+        if (art == null) {
+            return loadPortraitOnDemand(filename);
+        }
+        //recolour only where the art ships a mask. The flat scenario sets have none, so they keep
+        //their own colour and still get the nation frame and the framing variant.
+        final BufferedImage mask = readPortraitImage(base + "_mask.png");
+        final ImageIcon icon = new ImageIcon(ColorFactory.recolorPortrait(
+                art, mask, mask == null ? null : fill, border, PORTRAIT_FRAME_WIDTH, variant));
+        this.portraitMap.put(key, icon);
+        return icon;
     }
 
     /** Reads a portrait-folder file as a BufferedImage, or null when it is missing or unreadable. */

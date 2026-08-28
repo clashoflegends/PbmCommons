@@ -75,7 +75,9 @@ public class PersonagemPortraitDefaultTest {
     public void scenarioFlagPicksItsOwnSet() {
         assertEquals("greek", facade.getPortraitSet(cenario(";SJG;")));
         assertEquals("dance", facade.getPortraitSet(cenario(";SJD;")));
-        assertEquals("got", facade.getPortraitSet(cenario(";SJT;")));
+        //;SJT; deliberately has no set: the generic default IS the Westeros art, so a GoT game
+        //falls through to it rather than diverting to a second copy that could go stale.
+        assertNull(facade.getPortraitSet(cenario(";SJT;")));
     }
 
     @Test
@@ -90,6 +92,7 @@ public class PersonagemPortraitDefaultTest {
         assertEquals("default_greek_comandante_m.jpg", facade.getDefaultPortraitFilename(pc(50, 10, 20, 30, 0), "greek"));
         assertEquals("default_dance_mago_f.jpg", facade.getDefaultPortraitFilename(pc(10, 50, 20, 30, 1), "dance"));
         assertEquals("default_got_emissario_m.jpg", facade.getDefaultPortraitFilename(pc(10, 20, 30, 50, 2), "got"));
+        //the helper still composes any set name it is handed; only the ;SJT; MAPPING was removed
     }
 
     /**
