@@ -215,6 +215,9 @@ public class ColorFactory implements Serializable {
     /** Below this HSB saturation a house colour carries no usable hue (pure black, white, grey). */
     private static final float PORTRAIT_ACHROMATIC = 0.08f;
 
+    /** Translucent hairline drawn inside the nation frame so a dark border still reads on dark art. */
+    private static final Color PORTRAIT_FRAME_SEPARATOR = new Color(255, 255, 255, 90);
+
     /**
      * Recolours a default portrait to a nation's colours: the house {@code fill} drives the cloak and
      * background through the portrait's grayscale mask, and the {@code border} is drawn as a frame,
@@ -288,6 +291,13 @@ public class ColorFactory implements Serializable {
             for (int i = 0; i < frameWidth; i++) {
                 g.drawRect(i, i, w - 1 - 2 * i, h - 1 - 2 * i);
             }
+            //A dark border on dark art is invisible - black is the most common border colour there is,
+            //and 13 nations pair it with a black or white fill. One translucent light hairline just
+            //inside the frame separates it from the portrait, so the team colour always reads without
+            //repainting it into something it is not.
+            g.setColor(PORTRAIT_FRAME_SEPARATOR);
+            g.drawRect(frameWidth, frameWidth,
+                    w - 1 - 2 * frameWidth, h - 1 - 2 * frameWidth);
             g.dispose();
         }
         return out;
