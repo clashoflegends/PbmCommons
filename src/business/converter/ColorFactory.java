@@ -5,6 +5,8 @@
 package business.converter;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
@@ -208,6 +210,87 @@ public class ColorFactory implements Serializable {
             log.fatal("Problem", e);
         }
         return image;
+    }
+
+    /** Below this HSB saturation a house colour carries no usable hue (pure black, white, grey). */
+    private static final float PORTRAIT_ACHROMATIC = 0.08f;
+
+    /**
+     * Recolours a default portrait to a nation's colours: the house {@code fill} drives the cloak and
+     * background through the portrait's grayscale mask, and the {@code border} is drawn as a frame,
+     * the same split the map uses (fill = house, border = team).
+     * <p>
+     * Mask contract, from the art set's README: black preserves the source pixel, white recolours it
+     * completely, and intermediate grey blends the two so antialiased edges stay clean. Skin, hair,
+     * eyes, armour and weapons are black in the mask and never move.
+     * <p>
+     * Two colour paths, because <b>the two most common house colours in live games are pure black and
+     * pure white</b> and neither has a hue to borrow - swapping hue on them lands on red and makes
+     * every black and every white house look identically crimson:
+     * <ul>
+     * <li><b>Chromatic house</b> - replace the hue, keep the source saturation (scaled, with a floor
+     * so dark cloth still reads as coloured) and darken slightly.</li>
+     * <li><b>Achromatic house</b> - there is no hue, so drive BRIGHTNESS instead and drop almost all
+     * saturation: a black house gets near-black cloth, a white house pale grey. Keeps them apart.</li>
+     * </ul>
+     *
+     * @param portrait the source portrait
+     * @param mask the aligned grayscale house mask, or null to skip recolouring entirely
+     * @param fill the nation's fill colour, or null to skip recolouring
+     * @param border the nation's border colour, or null to draw no frame
+     * @param frameWidth border thickness in pixels; 0 or less draws no frame
+     * @return a new image; the source is never modified
+     */
+    public static BufferedImage recolorPortrait(BufferedImage portrait, BufferedImage mask,
+            Color fill, Color border, int frameWidth) {
+        final int w = portrait.getWidth(), h = portrait.getHeight();
+        BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        final boolean canRecolor = mask != null && fill != null
+                && mask.getWidth() == w && mask.getHeight() == h;
+        if (canRecolor) {
+            final float[] house = Color.RGBtoHSB(fill.getRed(), fill.getGreen(), fill.getBlue(), null);
+            final boolean chromatic = house[1] >= PORTRAIT_ACHROMATIC;
+            //an achromatic house has only lightness to offer: 0.45x at pure black, ~2.05x at pure white
+            final float valueScale = 0.45f + 1.6f * house[2];
+            final float[] hsb = new float[3];
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    final int src = portrait.getRGB(x, y);
+                    final float amount = (mask.getRGB(x, y) & 0xFF) / 255f;
+                    if (amount <= 0f) {
+                        out.setRGB(x, y, src);
+                        continue;
+                    }
+                    final int sr = (src >> 16) & 0xFF, sg = (src >> 8) & 0xFF, sb = src & 0xFF;
+                    Color.RGBtoHSB(sr, sg, sb, hsb);
+                    final int tinted;
+                    if (chromatic) {
+                        tinted = Color.HSBtoRGB(house[0],
+                                Math.min(1f, Math.max(0.42f, hsb[1] * 0.95f)),
+                                Math.max(0.02f, hsb[2] * 0.72f));
+                    } else {
+                        tinted = Color.HSBtoRGB(hsb[0], hsb[1] * 0.15f,
+                                Math.min(1f, Math.max(0.02f, hsb[2] * valueScale)));
+                    }
+                    final int tr = (tinted >> 16) & 0xFF, tg = (tinted >> 8) & 0xFF, tb = tinted & 0xFF;
+                    out.setRGB(x, y,
+                            (Math.round(sr + (tr - sr) * amount) << 16)
+                            | (Math.round(sg + (tg - sg) * amount) << 8)
+                            | Math.round(sb + (tb - sb) * amount));
+                }
+            }
+        } else {
+            out.getGraphics().drawImage(portrait, 0, 0, null);
+        }
+        if (border != null && frameWidth > 0) {
+            Graphics2D g = out.createGraphics();
+            g.setColor(border);
+            for (int i = 0; i < frameWidth; i++) {
+                g.drawRect(i, i, w - 1 - 2 * i, h - 1 - 2 * i);
+            }
+            g.dispose();
+        }
+        return out;
     }
 
     public static Color getColorBd(String hexadecimal) {

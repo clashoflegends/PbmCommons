@@ -5,6 +5,7 @@
  */
 package business;
 
+import business.converter.ColorFactory;
 import business.facade.ExercitoFacade;
 import business.facade.LocalFacade;
 import java.awt.AlphaComposite;
@@ -34,6 +35,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import business.facade.PersonagemFacade;
+import model.Nacao;
 import model.Personagem;
 import model.Cenario;
 import model.Exercito;
@@ -947,17 +949,79 @@ public class ImageManager implements Serializable {
         }
         final String portraitSet = personagemFacade.getPortraitSet(cenario);
         if (portraitSet != null) {
-            ImageIcon scenario = loadPortraitOnDemand(personagemFacade.getDefaultPortraitFilename(personagem, portraitSet));
+            ImageIcon scenario = loadDefaultPortrait(personagemFacade.getDefaultPortraitFilename(personagem, portraitSet), personagem);
             if (scenario != null) {
                 return scenario;
             }
             log.debug("Scenario portrait set " + portraitSet + " has no art for this class yet; using the generic default.");
         }
-        ImageIcon fallback = loadPortraitOnDemand(personagemFacade.getDefaultPortraitFilename(personagem));
+        ImageIcon fallback = loadDefaultPortrait(personagemFacade.getDefaultPortraitFilename(personagem), personagem);
         if (fallback == null) {
             fallback = loadPortraitOnDemand(PersonagemFacade.PORTRAIT_BLANK);
         }
         return fallback;
+    }
+
+    /** Border thickness, in pixels, of the nation frame drawn round a recoloured default portrait. */
+    private static final int PORTRAIT_FRAME_WIDTH = 3;
+
+    /**
+     * A DEFAULT portrait, recoloured to the character's nation when the art supports it: the house
+     * fill colour drives the cloak and background through the portrait's mask, and the border colour
+     * is drawn as a frame. Same split the map uses - fill is the house, border is usually the team.
+     * <p>
+     * Only the default sets carry masks, so this is where recolouring belongs; a character's OWN
+     * portrait is hand-drawn art and is never touched. A set that ships only {@code .jpg} (the flat
+     * Greek and Dance sets) simply falls through to the flat file unrecoloured and unframed.
+     * <p>
+     * Recolouring is skipped when the nation has no colours at all, which leaves the previous
+     * behaviour exactly intact.
+     *
+     * @param filename the default portrait filename, e.g. {@code default_comandante_m.jpg}
+     * @param personagem the character, for its nation's colours
+     * @return the icon, or null when neither the recolourable nor the flat file exists
+     */
+    private ImageIcon loadDefaultPortrait(String filename, Personagem personagem) {
+        if (filename == null) {
+            return null;
+        }
+        final String base = filename.toLowerCase().endsWith(".jpg")
+                ? filename.substring(0, filename.length() - 4) : filename;
+        final Nacao nacao = (personagem == null) ? null : personagem.getNacao();
+        final Color fill = (nacao == null) ? null : nacao.getFillColor();
+        final Color border = (nacao == null) ? null : nacao.getBorderColor();
+        if (fill != null || border != null) {
+            //cache per COLOUR as well as per file: the same art serves every nation, and the plain
+            //filename key would hand the second nation the first one's colours.
+            final String key = base + "|" + (fill == null ? "-" : fill.getRGB())
+                    + "|" + (border == null ? "-" : border.getRGB());
+            final ImageIcon cached = this.portraitMap.get(key);
+            if (cached != null) {
+                return cached;
+            }
+            final BufferedImage art = readPortraitImage(base + ".png");
+            if (art != null) {
+                final ImageIcon icon = new ImageIcon(ColorFactory.recolorPortrait(
+                        art, readPortraitImage(base + "_mask.png"), fill, border, PORTRAIT_FRAME_WIDTH));
+                this.portraitMap.put(key, icon);
+                return icon;
+            }
+        }
+        return loadPortraitOnDemand(filename);
+    }
+
+    /** Reads a portrait-folder file as a BufferedImage, or null when it is missing or unreadable. */
+    private BufferedImage readPortraitImage(String name) {
+        final File file = new File(SettingsManager.getInstance().getConfig("PortraitsFolder", ""), name);
+        if (!file.exists()) {
+            return null;
+        }
+        try {
+            return javax.imageio.ImageIO.read(file);
+        } catch (java.io.IOException ex) {
+            log.debug("Could not read portrait image " + name, ex);
+            return null;
+        }
     }
 
     /**
