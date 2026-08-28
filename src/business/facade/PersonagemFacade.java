@@ -42,6 +42,15 @@ public class PersonagemFacade implements Serializable {
     public static final String PORTRAIT_BLANK = "blank.jpg";
 
     /**
+     * Shown when no class can be derived: a deliberately anonymous hooded figure. Two cases reach it,
+     * and anonymity is right for both. A DEAD character has had every skill zeroed by the Judge, so
+     * the class is destroyed rather than hidden; an ENEMY seen at low visibility has had its skills
+     * stripped on export. Falling back to blank.jpg instead would show David Ble's hooded ASSASSIN,
+     * which both breaks the new art style and quietly asserts a class the viewer is not entitled to.
+     */
+    public static final String PORTRAIT_UNKNOWN = "default_unknown.jpg";
+
+    /**
      * Variante-level habilidade -> portrait set name. First match wins, so a variante carrying two
      * flags gets the earlier one. Add a row plus 8 images named default_&lt;set&gt;_&lt;classe&gt;_&lt;m|f&gt;.jpg
      * to introduce a new style; no other code changes.
@@ -81,8 +90,8 @@ public class PersonagemFacade implements Serializable {
     public String getDefaultPortraitFilename(Personagem personagem) {
         final String classe = getPortraitClasse(personagem);
         if (classe == null) {
-            //no class at all: keep what it has always shown
-            return PORTRAIT_BLANK;
+            //no class we are allowed to see: the anonymous figure, not a class-bearing placeholder
+            return PORTRAIT_UNKNOWN;
         }
         return String.format("default_%s_%s.jpg", classe, getPortraitGenderSuffix(personagem));
     }

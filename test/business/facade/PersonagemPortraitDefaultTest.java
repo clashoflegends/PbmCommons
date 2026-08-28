@@ -6,6 +6,7 @@ import model.Personagem;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
@@ -54,10 +55,17 @@ public class PersonagemPortraitDefaultTest {
         assertEquals("default_comandante_m.jpg", facade.getDefaultPortraitFilename(pc(50, 0, 0, 0, 2)));
     }
 
+    /**
+     * Changed 2026-08-27: no derivable class now yields the ANONYMOUS figure, not blank.jpg. Two real
+     * cases land here - a dead character, whose skills the Judge zeroes outright, and an enemy seen at
+     * low visibility, whose skills are stripped on export - and blank.jpg is David Ble's hooded
+     * ASSASSIN, so falling back to it both broke the new art style and asserted a class the viewer had
+     * no right to see. blank.jpg remains the last resort for a MISSING FILE, not for a missing class.
+     */
     @Test
-    public void noClassAtAllKeepsTheHistoricalBlank() {
-        assertEquals("blank.jpg", facade.getDefaultPortraitFilename(pc(0, 0, 0, 0, 1)));
-        assertEquals("blank.jpg", facade.getDefaultPortraitFilename(null));
+    public void noClassAtAllIsAnonymous() {
+        assertEquals(PersonagemFacade.PORTRAIT_UNKNOWN, facade.getDefaultPortraitFilename(pc(0, 0, 0, 0, 1)));
+        assertEquals(PersonagemFacade.PORTRAIT_UNKNOWN, facade.getDefaultPortraitFilename(null));
     }
 
     /** A Cenario carrying one variante-level portrait-set flag. */
@@ -104,7 +112,20 @@ public class PersonagemPortraitDefaultTest {
     public void noSetOrNoClassFallsThroughRatherThanToBlank() {
         assertNull(facade.getDefaultPortraitFilename(pc(50, 10, 20, 30, 0), null));
         assertNull(facade.getDefaultPortraitFilename(pc(0, 0, 0, 0, 0), "greek"));
-        //and the generic resolver still answers blank.jpg for a character with no class at all
-        assertEquals("blank.jpg", facade.getDefaultPortraitFilename(pc(0, 0, 0, 0, 0)));
+        //and a character with no derivable class gets the ANONYMOUS figure, not blank.jpg - blank is
+        //David Ble's hooded assassin, which would assert a class the viewer is not entitled to see
+        assertEquals("default_unknown.jpg", facade.getDefaultPortraitFilename(pc(0, 0, 0, 0, 0)));
+    }
+
+    /**
+     * A dead character has had every skill zeroed by the Judge, and an enemy seen at low visibility
+     * has had them stripped on export. Both arrive here as all-zero and must come out anonymous.
+     */
+    @Test
+    public void noDerivableClassIsAnonymousNotARogue() {
+        assertEquals(PersonagemFacade.PORTRAIT_UNKNOWN, facade.getDefaultPortraitFilename(pc(0, 0, 0, 0, 0)));
+        assertEquals(PersonagemFacade.PORTRAIT_UNKNOWN, facade.getDefaultPortraitFilename(pc(0, 0, 0, 0, 1)));
+        assertNotEquals(PersonagemFacade.PORTRAIT_BLANK,
+                facade.getDefaultPortraitFilename(pc(0, 0, 0, 0, 0)));
     }
 }

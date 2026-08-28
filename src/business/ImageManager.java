@@ -941,6 +941,16 @@ public class ImageManager implements Serializable {
         }
         final String own = personagem.getPortraitFilename();
         if (own != null && !PersonagemFacade.PORTRAIT_BLANK.equalsIgnoreCase(own)) {
+            //A PINNED default - the Judge stamps one of these onto a character when it dies, so the
+            //face it wore in life survives the skill wipe. It is still DEFAULT art, so it has to take
+            //the default treatment (recolour, frame, variant) or a dead character would suddenly look
+            //unlike the living ones sharing the same image.
+            if (own.toLowerCase().startsWith("default_")) {
+                final ImageIcon pinned = loadDefaultPortrait(own, personagem);
+                if (pinned != null) {
+                    return pinned;
+                }
+            }
             ImageIcon portrait = loadPortraitOnDemand(own);
             if (portrait != null) {
                 return portrait;
