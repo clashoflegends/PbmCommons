@@ -15,6 +15,8 @@ import model.Local;
 import model.Ordem;
 import model.Produto;
 import msgs.BaseMsgs;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import persistenceCommons.BundleManager;
 import persistenceCommons.SettingsManager;
 import persistenceCommons.SysApoio;
@@ -27,6 +29,7 @@ import utils.StringIntSortedCell;
 public final class ConverterFactory implements Serializable {
 
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
+    private static final Log log = LogFactory.getLog(ConverterFactory.class);
     public static final float POINTS_TO_ACTION_CONVERSION = 30f;
     public static final int GAME_GRAVEYARD = 586;
     private static final int ERROR_CODE_FAIL = -1;
@@ -764,7 +767,12 @@ public final class ConverterFactory implements Serializable {
             return ";GF3;";
         } else if (flFrequency.equalsIgnoreCase("4D")) {
             return ";GF4;";
-        } else if (flFrequency.equalsIgnoreCase("4D3D")) {
+        } else if (flFrequency.equalsIgnoreCase("4D3D") || flFrequency.equalsIgnoreCase("43D")) {
+            //"43D" is the spelling the Site actually sends for the alternating 4-then-3-day
+            //cadence. Only "4D3D" was ever accepted here, so a game requested
+            //with it fell through to the terminal else below and was silently created as a plain
+            //7-day game - game 908 was created that way. Both spellings are honoured rather than
+            //picking one, so any older payload keeps working.
             return ";GF43;";
         } else if (flFrequency.equalsIgnoreCase("6H")) {
             return ";GFH6;";
@@ -789,6 +797,10 @@ public final class ConverterFactory implements Serializable {
         } else if (flFrequency.equalsIgnoreCase("S")) {
             return "";
         } else {
+            //An unrecognised cadence silently becomes a WEEKLY game, which looks plausible and is
+            //wrong - that is exactly how the 43D mismatch went unnoticed for as long as it did.
+            //Say so, so the next one surfaces in the log instead of in a deadline.
+            log.warn("Unknown game frequency '" + flFrequency + "', defaulting to weekly (;GF1;)");
             return ";GF1;";
         }
     }
