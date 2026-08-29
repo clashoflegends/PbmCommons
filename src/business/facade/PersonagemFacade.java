@@ -509,10 +509,16 @@ public class PersonagemFacade implements Serializable {
     }
 
     /**
-     * Is there something in this character's hex that an attack order could actually engage: an enemy
-     * ARMY, or an enemy CITY whose garrison would defend it. Used to keep "Attack Enemy" out of the
-     * order combo when there is nothing to attack, after a player reported a beginner picking it in
-     * an empty hex.
+     * Is there an enemy ARMY in this character's hex. Used to keep "Attack Enemy" out of the order
+     * combo when there is nothing to attack, after a player reported a beginner picking it in an
+     * empty hex.
+     * <p>
+     * "Army" is the superset (John, 2026-08-28): a GARRISON is simply an Exercito with no commander
+     * ({@code Exercito.isGarrison} is derived from {@code getComandante() == null}) and a NAVY is an
+     * Exercito carrying {@code tamanhoEsquadra}, so one pass over the hex's armies covers all three.
+     * An earlier version also tested the CITY, which was both redundant - a garrison is already in
+     * this list - and wrong, because an enemy city with no garrison left would have passed with
+     * nothing there to fight.
      * <p>
      * Enemy means {@code Nacao.isInimigo}, a negative relationship - NOT {@code isInCidadeAlheio},
      * which counts any city that is not your own and so would treat an ALLIED city as a target.
@@ -524,16 +530,11 @@ public class PersonagemFacade implements Serializable {
      * see.
      *
      * @param personagem the character
-     * @return true when an enemy army or an enemy city shares the hex
+     * @return true when an enemy army, garrison or navy shares the hex
      */
     public boolean isInHexInimigo(Personagem personagem) {
         try {
             final Nacao minha = personagem.getNacao();
-            final Cidade cidade = personagem.getLocal().getCidade();
-            if (cidade != null && cidade.getTamanho() >= 1 && cidade.getNacao() != null
-                    && cidade.getNacao().isInimigo(minha)) {
-                return true;   //an enemy city defends itself with its garrison
-            }
             for (Exercito exercito : personagem.getLocal().getExercitos().values()) {
                 if (exercito.getNacao() != null && exercito.getNacao().isInimigo(minha)) {
                     return true;
