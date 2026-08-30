@@ -173,6 +173,21 @@ public class Partida extends BaseModel {
         return this.hasHabilidade(";GBR;");
     }
 
+    /**
+     * Is this game scored on city domination points rather than victory points?
+     *
+     * Separate from {@link #isBattleRoyal()} on purpose. ;GBR; is a game TYPE: everyone starts
+     * neutral and diplomacy is capped at friend. The city-points VICTORY is a rule a game can want
+     * WITHOUT being a battle royale, which is what the FAB08 family is: locked teams, scored on
+     * domination. ;VCP; is that rule ("Victory goal: Battle Royale ... Or 3:1 for teams"), and it
+     * already existed; only the game-over printout was reading it, so nothing else could opt in.
+     *
+     * ;GBR; still implies it, so every existing battle royale is unchanged.
+     */
+    public boolean isVictoryByCityPoints() {
+        return this.isBattleRoyal() || this.hasHabilidade(";VCP;");
+    }
+
     public boolean isInformationNetwork() {
         return this.hasHabilidade(";GIN;");
     }

@@ -82,38 +82,33 @@ public class GameTypeTest {
     }
 
     /**
-     * Every flag this converter emits must either be tagged removable by the ;FGT; migration, or be
-     * a deliberate add-only exception. Otherwise setting a type leaves the previous type's flags in
-     * place and the game ends up being two types at once. Keep in step with
-     * Temp/2026-08-29_game_type_filter.sql.
-     *
-     * ;GBR; is the one exception. It composes with a base instead of replacing one (FAB08a is a
-     * Locked Teams game with battle royale scoring), and the type list has no "Locked Teams +
-     * Battle Royale" entry, so a player choosing Locked Teams is not saying "not battle royale".
-     * Stripping it would silently swap the victory condition. Requesting GBR still adds it.
+     * Every flag this converter emits must be one the ;FGT; migration tags as removable, or setting
+     * a type would leave the previous type's flags in place and the game would be two types at once.
+     * Keep in step with Temp/2026-08-29_game_type_filter.sql.
      */
     @Test
-    public void everyEmittedFlagIsRemovableOrDeliberatelyAddOnly() {
-        final String removable = ";FFA;;GDM;;GLA;;GND;;GAP;;GAI;";
-        final String addOnly = ";GBR;";
+    public void everyEmittedFlagIsRemovable() {
+        final String removable = ";FFA;;GDM;;GLA;;GBR;;GND;;GAP;;GAI;";
         for (String tp : new String[]{"FFA", "DM", "TEAM", "GBR", "GB", "HIDDEN", "IRON"}) {
             for (String flag : ConverterFactory.getGameType(tp).split(";")) {
                 if (!flag.isEmpty()) {
-                    assertTrue(removable.contains(";" + flag + ";") || addOnly.contains(";" + flag + ";"),
-                            tp + " emits " + flag + ", which is neither removable nor add-only");
+                    assertTrue(removable.contains(";" + flag + ";"), tp + " emits untagged " + flag);
                 }
             }
         }
     }
 
     /**
-     * A team game scored on city domination (;GLA;;GND; plus ;GBR;) must survive a TEAM request.
-     * Guards the FAB08a shape: ;GBR; is not in the removable set, so requesting Locked Teams from
-     * such a template keeps battle royale scoring rather than reverting it to victory points.
+     * The victory rules must not ride on the type. ;GBR; is removable, so a TEAM request strips it;
+     * that is only safe because the city-domination victory now lives on ;VCP;, which no type
+     * emits and the migration does not tag. If a type ever started emitting ;VCP; then requesting a
+     * different type would silently change how the game is won, which is what the FAB08 family got
+     * bitten by in the first place.
      */
     @Test
-    public void requestingTeamDoesNotClaimBattleRoyale() {
-        assertTrue(!ConverterFactory.getGameType("TEAM").contains(";GBR;"));
-        assertTrue(!ConverterFactory.getGameType("DM").contains(";GBR;"));
+    public void noTypeClaimsTheVictoryRule() {
+        for (String tp : new String[]{"FFA", "DM", "TEAM", "GBR", "GB", "HIDDEN", "IRON"}) {
+            assertTrue(!ConverterFactory.getGameType(tp).contains(";VCP;"), tp + " must not emit ;VCP;");
+        }
     }
 }
