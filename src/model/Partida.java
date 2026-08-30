@@ -196,6 +196,17 @@ public class Partida extends BaseModel {
         return this.hasHabilidade(";GNR;");
     }
 
+    /**
+     * Largest city size whose ownership may still be transferred, or 0 when there is no such limit.
+     *
+     * The soft half of the city-transfer rule. ;STC; is the hard half and forbids the order outright;
+     * this one leaves it available and caps what it may move, so a team can still pass a village to
+     * an ally without being able to hand over a capital.
+     */
+    public int getCityTransferMaxSize() {
+        return this.getHabilidadeValor(";STM;");
+    }
+
     public boolean isNationPackages() {
         return this.hasHabilidade(";GSP;");
     }

@@ -26,6 +26,9 @@ import persistenceCommons.SettingsManager;
  */
 public class TitleFactory implements Serializable {
 
+    /** Transfer Ownership of City. The only order the ;STM; size cap applies to. */
+    private static final String ORDEM_TRANSFER_CITY = "949";
+
     private static final BundleManager labels = SettingsManager.getInstance().getBundleManager();
     private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
     private static final AcaoFacade acaoFacade = new AcaoFacade();
@@ -149,6 +152,7 @@ public class TitleFactory implements Serializable {
                 }
             }
         }
+        ret += getAjudaCityTransfer(ordem, game);
         ret += String.format("%s: %s\n", labels.getString("REQUISITO"), getAjudaRequisito(ordem));
         ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ajuda);
 //        if (acaoFacade.isSetup(ordem)) {
@@ -157,6 +161,25 @@ public class TitleFactory implements Serializable {
 //            ret += String.format("%s:\n%s\n", labels.getString("AJUDA"), ajuda);
 //        }
         return ret;
+    }
+
+    /**
+     * The city-transfer cap, spelled out on the one order it applies to.
+     *
+     * Without this the player is told nothing: the order looks available, and the refusal only
+     * arrives in the turn results after the action is spent. The hard ;STC; case needs no line
+     * because the order is removed from the list entirely before the player ever sees it.
+     */
+    private static String getAjudaCityTransfer(Ordem ordem, Partida game) {
+        if (game == null || !ordem.getCodigo().equals(ORDEM_TRANSFER_CITY)) {
+            return "";
+        }
+        final int max = game.getCityTransferMaxSize();
+        if (max <= 0) {
+            return "";
+        }
+        return String.format("%s: %s\n", labels.getString("ORDEM.FEATURE"),
+                String.format(labels.getString("AJUDA.CITY.TRANSFER.MAX"), max));
     }
 
     public static String getTipoOrdem(Ordem ordem) {
