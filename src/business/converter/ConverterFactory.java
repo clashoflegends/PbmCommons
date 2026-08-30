@@ -736,6 +736,60 @@ public final class ConverterFactory implements Serializable {
         return 0;
     }
 
+    /**
+     * The Site's game type to the Judge flags that define it.
+     *
+     * A type is a COMBINATION, never a single flag: "Locked Teams" is ;GLA; plus ;GND;, and the
+     * hidden and iron variants add one more on top of a base. The full table, with the player-facing
+     * wording, is in PbmOps/Meta/GAME_TYPE_DEFINITIONS.md.
+     *
+     * ;GND; (diplomatic actions disabled) is what separates the closed types from the open ones. It
+     * is carried by every base except FFA and GBR, so leaving it out of a team game would hand the
+     * players a diplomacy they are not supposed to have, and putting it into an FFA game would take
+     * away the one thing that makes FFA different from a Death Match.
+     *
+     * Returns "" for a type this method does not know, which tells the caller to leave the game
+     * exactly as the template built it. That is deliberately the old behaviour: a wrong-but-plausible
+     * type is far worse than no change, and it is the same trap that let "43D" create weekly games
+     * for nine years.
+     *
+     * @param tpTeam the Site's game.tp_team value
+     * @return a ';'-delimited flag string, or "" if the type is unknown
+     */
+    public static String getGameType(String tpTeam) {
+        if (tpTeam == null) {
+            log.warn("Null game type, leaving the game as the template built it");
+            return "";
+        }
+        final String tp = tpTeam.trim();
+        if (tp.equalsIgnoreCase("FFA")) {
+            return ";FFA;";
+        } else if (tp.equalsIgnoreCase("DM")) {
+            return ";GDM;;GND;";
+        } else if (tp.equalsIgnoreCase("TEAM") || tp.equalsIgnoreCase("FACTION")) {
+            //FACTION was merged into TEAM on 2026-08-29: on this side the two were always identical,
+            //the difference being nation and capital selection at sign-up, which is the Site's own
+            //business. Kept as an alias because a payload queued before the merge can still arrive.
+            return ";GLA;;GND;";
+        } else if (tp.equalsIgnoreCase("GBR")) {
+            return ";FFA;;GBR;";
+        } else if (tp.equalsIgnoreCase("GB")) {
+            //Gun Boat: a Death Match with the player identities hidden.
+            return ";GDM;;GND;;GAP;";
+        } else if (tp.equalsIgnoreCase("HIDDEN")) {
+            //Hidden Team: Locked Teams with the player identities hidden. Until 2026-08-29 this had
+            //no value of its own and was requested as GB, which is why old GB games are a mix of the
+            //two and why nothing here tries to guess from history.
+            return ";GLA;;GND;;GAP;";
+        } else if (tp.equalsIgnoreCase("IRON")) {
+            //Iron Price: Locked Teams with the character shortcuts forbidden (see ;AGI;).
+            return ";GLA;;GND;;GAI;";
+        } else {
+            log.warn("Unknown game type '" + tpTeam + "', leaving the game as the template built it");
+            return "";
+        }
+    }
+
     public static String getGameFrequency(String flFrequency) {
         if (flFrequency.equalsIgnoreCase("12H")) {
             return ";GFH12;";
