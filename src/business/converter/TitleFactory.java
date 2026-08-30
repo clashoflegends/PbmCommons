@@ -174,6 +174,12 @@ public class TitleFactory implements Serializable {
         if (game == null || !ordem.getCodigo().equals(ORDEM_TRANSFER_CITY)) {
             return "";
         }
+        if (game.hasHabilidade(";STC;")) {
+            //;STC; supersedes ;STM;. It also removes the order from the scenario, so this line would
+            //normally be unreachable, but stating the precedence here keeps the help honest even if
+            //the two ever meet through a hand-edited game.
+            return "";
+        }
         final int max = game.getCityTransferMaxSize();
         if (max <= 0) {
             return "";
