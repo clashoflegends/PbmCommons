@@ -523,6 +523,17 @@ public class PersonagemFacade implements Serializable {
      * Enemy means {@code Nacao.isInimigo}, a negative relationship - NOT {@code isInCidadeAlheio},
      * which counts any city that is not your own and so would treat an ALLIED city as a target.
      * <p>
+     * The test reads the BASE nation's opinion of the other one ({@code minha.isInimigo(theirs)}),
+     * never the reverse. That is the house convention for every ally/enemy requisito - the base
+     * nation in relation to the others, reciprocated in practice - and here it is also the only
+     * form that has data. The EGF carries a FOREIGN nation's relationship only when it is POSITIVE
+     * and aimed at the player, so a hostile nation arrives with an EMPTY {@code relacionamentos}
+     * map: the reversed form was structurally always false off {@code ;SPD;} (public diplomacy) and
+     * hid this order from every player in every game (v2.1.924, caught in game 901 turn 6). It
+     * failed SILENTLY, because {@code Nacao.getRelacionamento} swallows the null unboxing and
+     * answers 0 = neutral. Own-nation maps always arrive in full, for every nation the player owns.
+     * This is also the direction the Judge fights on.
+     * <p>
      * Deliberately reads only what the client can see: an army at visibility 0 is dropped on export
      * ({@code ServerExercitoDao}) and is simply absent here, so a hidden force makes this return
      * false. That is why the requisito it backs must stay bypassable - the ALL checkbox skips
@@ -536,7 +547,7 @@ public class PersonagemFacade implements Serializable {
         try {
             final Nacao minha = personagem.getNacao();
             for (Exercito exercito : personagem.getLocal().getExercitos().values()) {
-                if (exercito.getNacao() != null && exercito.getNacao().isInimigo(minha)) {
+                if (exercito.getNacao() != null && minha.isInimigo(exercito.getNacao())) {
                     return true;
                 }
             }
