@@ -379,14 +379,6 @@ public class ImageManager implements Serializable {
         big.draw(path);
     }
 
-    public void doDrawScout(Graphics2D big, Point dest) {
-        doDrawCircle(big, dest, colorMine);
-    }
-
-    public void doDrawScoutAlly(Graphics2D big, Point dest) {
-        doDrawCircle(big, dest, colorMine);
-    }
-
     public void doDrawCircle(Graphics2D big, Point dest, Color color) {
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         big.setStroke(new BasicStroke(

@@ -452,13 +452,15 @@ public class MapaManager implements Serializable {
             if (pers.getLocal() == null) {
                 continue;
             }
-            if (pers.getNome().startsWith("charles")) {
-                log.debug("AKI!");
-            }
             for (PersonagemOrdem po : pers.getAcoes().values()) {
                 try {
                     if (acaoFacade.isScout(po)) {
-                        drawScoutOnMap(po, pers, observer, big);
+                        // Scout footprints moved to the Counselor's vector overlay (ScoutFootprint +
+                        // ScaledMapIcon): this bitmap is built at 1x and upscaled bicubically, which
+                        // smears a thin outline, and the old marker drew a decorative oval at the
+                        // target rather than the 7 hexes the order actually uncovers - so overlap
+                        // between two scouts could not be judged by eye. Nothing to draw here.
+                        continue;
                     } else if (acaoFacade.isMovimentoDirection(po)) {
                         drawMovPathArmy(po, pers, observer, big);
                     } else if (acaoFacade.isMovimento(po)) {
@@ -586,29 +588,6 @@ public class MapaManager implements Serializable {
      * @param observer
      * @param big
      */
-    private void drawScoutOnMap(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
-        if (SettingsManager.getInstance().isConfig("drawScoutOnMap", "0", "1")) {
-            //don't draw
-            return;
-        }
-
-        //find target location of order or item
-        Local localDestination = acaoFacade.getLocalDestination(pers, po, getLocais());
-        if (localDestination == null) {
-            //find location according to order sequence i.e. recon after movement
-            localDestination = personagemFacade.getLocalDestination(pers, getLocais());
-        }
-        if (localDestination == null) {
-            //can't find local, don't do anything
-            return;
-        }
-        final Point dest = ConverterFactory.localToPoint(localDestination);
-        if (jogadorFacade.isMine(pers, observer)) {
-            imageFactory.doDrawScout(big, dest);
-        } else if (jogadorFacade.isAlly(pers, observer)) {
-            imageFactory.doDrawScoutAlly(big, dest);
-        }
-    }
 
     public BufferedImage redrawMapaGeral(Collection<Local> listaLocal, Collection<Personagem> listaPers, Jogador observer) {
         ImageManager.getInstance().doLoadTerrainImages();
