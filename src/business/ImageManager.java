@@ -442,21 +442,37 @@ public class ImageManager implements Serializable {
     }
 
     public void doDrawPathPcOrder(Graphics2D big, Point ori, Point dest) {
-        final int x = 04 + 7 / 2 - 4;
-        final int y = 22 + 13 / 2 + 2;
-        doDrawPathOrdem(big,
-                new Point((int) ori.getX() + x, (int) ori.getY() + y),
-                new Point((int) dest.getX() + x, (int) dest.getY() + y),
-                colorMineOrdem);
+        doDrawPathOrdem(big, getPathPcShape(ori, dest, true), colorMineOrdem);
     }
 
     public void doDrawPathPcAllyOrder(Graphics2D big, Point ori, Point dest) {
-        final int x = 04 + 7 / 2 + 4 + 4;
-        final int y = 22 + 13 / 2 - 3 - 2;
-        doDrawPathOrdem(big,
-                new Point((int) ori.getX() + x, (int) ori.getY() + y),
-                new Point((int) dest.getX() + x, (int) dest.getY() + y),
-                colorAllyOrdem);
+        doDrawPathOrdem(big, getPathPcShape(ori, dest, false), colorAllyOrdem);
+    }
+
+    /**
+     * The curve a character's movement order is drawn along, as geometry rather than ink.
+     * <p>
+     * Exposed because the Counselor rides markers along this exact curve to flag two players walking
+     * into the same hex. If it re-derived the shape from its own copy of these offsets, the marker
+     * would slide off the line the first time anyone adjusted the path style here - so there is one
+     * definition and both the drawing above and the overlay use it.
+     * <p>
+     * The offsets nudge an ally's curve clear of your own so two paths to the same hex stay legible as
+     * two. They are kept as the original arithmetic rather than folded to constants so this stays
+     * provably the same geometry that shipped ({@code 04} is an octal literal that equals 4; own works
+     * out to +3/+30, allied to +15/+23).
+     */
+    public static Shape getPathPcShape(Point ori, Point dest, boolean mine) {
+        final int x = mine ? (04 + 7 / 2 - 4) : (04 + 7 / 2 + 4 + 4);
+        final int y = mine ? (22 + 13 / 2 + 2) : (22 + 13 / 2 - 3 - 2);
+        final Path2D.Double path = new Path2D.Double();
+        final double ox = ori.getX() + x, oy = ori.getY() + y;
+        final double dx = dest.getX() + x, dy = dest.getY() + y;
+        path.moveTo(ox, oy);
+        // NB the curve deliberately overshoots the hex and ends at dx + 12, so the far end of this
+        // shape is not the hex centre.
+        path.curveTo(dx - 20, dy + 20, dx + 20, dy - 20, dx + 12, dy);
+        return path;
     }
 
     public void doDrawPathResourceTransportOrder(Graphics2D big, Point ori, Point dest, Color nationColor) {
@@ -507,7 +523,7 @@ public class ImageManager implements Serializable {
         big.draw(path);
     }
 
-    private void doDrawPathOrdem(Graphics2D big, Point ori, Point dest, Color color) {
+    private void doDrawPathOrdem(Graphics2D big, Shape path, Color color) {
         //setup para os rastros
         big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         big.setStroke(new BasicStroke(
@@ -518,12 +534,6 @@ public class ImageManager implements Serializable {
                 new float[]{3f, 5f, 7f, 5f, 11f, 5f, 15f, 5f, 21f, 5f, 27f, 5f, 33f, 5f},
                 0f));
         big.setColor(color);
-        //draw path
-        Path2D.Double path = new Path2D.Double();
-        path.moveTo(ori.getX(), ori.getY());
-        path.curveTo(dest.getX() - 20, dest.getY() + 20, dest.getX() + 20, dest.getY() - 20, dest.getX() + 12, dest.getY());
-        //path.lineTo(dest.getX(), dest.getY());
-
         //draw on graph
         big.draw(path);
     }
