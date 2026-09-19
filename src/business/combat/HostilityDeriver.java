@@ -137,8 +137,13 @@ public class HostilityDeriver {
     }
 
     /**
-     * Death Match and Gun Boat: every nation is hostile to every other by construction, diplomacy is
-     * disabled, and the answer needs no relationship row at all.
+     * Death Match: every nation is hostile to every other by construction, diplomacy is disabled,
+     * and the answer needs no relationship row at all.
+     *
+     * DEATH MATCH ONLY. This said "Death Match and Gun Boat", and the code has never consulted a
+     * Gun Boat flag - in Gun Boat the nations simply cannot TALK to each other, which says nothing
+     * about who is at war with whom, so there is no rule to consult. The sentence was describing a
+     * rule that does not exist.
      *
      * Through {@link PartidaFacade}, not {@code Partida.isDeathMatch()}: a flag declared by the
      * SCENARIO counts as the game's, which is how the Judge reads it, and the model's own accessor

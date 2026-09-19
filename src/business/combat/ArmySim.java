@@ -69,7 +69,6 @@ public class ArmySim extends BaseModel implements IExercito {
     private Terreno terreno;
     private Nacao nacao;
     private SortedMap<String, Pelotao> platoons = new TreeMap();
-    private List<TipoTropa> troops = new ArrayList<>();
 
     public ArmySim(String name, Terreno terrain, Nacao nation) {
         this.setNome(name);
@@ -88,13 +87,19 @@ public class ArmySim extends BaseModel implements IExercito {
         this.setCodigo(exercito.getCodigo());
         this.nacao = exercito.getNacao();
         this.sizeBand = new ExercitoFacade().getDescricaoTamanho(exercito);
-        try {
-            this.comandante = exercito.getComandante().getPericiaComandante();
-            this.comandanteNome = exercito.getComandante().getNome();
-            this.setNome(exercito.getComandante().getNome());
-        } catch (NullPointerException ex) {
-            this.setNome(SettingsManager.getInstance().getBundleManager().getString("GUARNICAO"));
-        }
+        // A GARRISON IS AN ARMY WITHOUT A COMMANDER, and that is all it is. Reading the skill off
+        // getComandante() threw for exactly those armies, and the catch set only the name - so the
+        // field initializer stood and every garrison entered the simulator with a commander of
+        // skill 10. Three things went wrong at once: BattleSimFacade overstated the army (the
+        // skill is a quarter of its combat value), isGarrison() - which is comandante <= 0 -
+        // answered FALSE for every garrison, and the spinner showed the player a 10 as though it
+        // had been read from somewhere. Exercito's own accessors answer 0 and "" here, so there is
+        // nothing to catch.
+        this.comandante = exercito.getComandantePericia();
+        this.comandanteNome = exercito.getComandanteNome();
+        this.setNome(exercito.isGarrison()
+                ? SettingsManager.getInstance().getBundleManager().getString("GUARNICAO")
+                : exercito.getComandanteNome());
     }
 
     public ArmySim(ArmySim exercito) {
@@ -106,13 +111,18 @@ public class ArmySim extends BaseModel implements IExercito {
         this.setCodigo(exercito.getCodigo());
         this.nacao = exercito.getNacao();
         this.sizeBand = exercito.getSizeBand();
-        try {
-            this.comandante = exercito.getComandantePericia();
-            this.comandanteNome = exercito.getNome();
-            this.setNome(exercito.getNome());
-        } catch (NullPointerException ex) {
-            this.setNome(SettingsManager.getInstance().getBundleManager().getString("GUARNICAO"));
-        }
+        // Clone army has to mean CLONE. These four were dropped, so a clone silently reverted to
+        // the field defaults: an army the player had set to "Defend only" came back as
+        // ATTACK_ARMY - reported as initiating combat and entering a layer the original does not
+        // enter - a target-nation restriction became "attack everyone", and hand-entered attack
+        // and defense bonuses reset to zero. Nothing announced any of it.
+        this.combatLevel = exercito.getCombatLevel();
+        this.targetNacao = exercito.getTargetNacao();
+        this.bonusAttack = exercito.getAttackBonus();
+        this.bonusDefense = exercito.getArmyDefenseBonus();
+        this.comandante = exercito.getComandantePericia();
+        this.comandanteNome = exercito.getComandanteNome();
+        this.setNome(exercito.getNome());
     }
 
     /**
@@ -256,13 +266,24 @@ public class ArmySim extends BaseModel implements IExercito {
         this.bonusDefense = bonusDefense;
     }
 
+    /**
+     * The troop types present, rebuilt on every call.
+     *
+     * It used to fill a {@code troops} field once and never look again, which was a trap sitting on
+     * the one class the engine is going to consume: this simulator exists so the player can add,
+     * remove and retype platoons, and every one of those left the cached list describing an army
+     * that no longer exists. Nothing calls this yet, so it never fired - which is precisely why it
+     * had to go now rather than after something depends on it. The list is a handful of entries
+     * over a map this object owns; there was nothing here worth caching.
+     */
     public Collection<TipoTropa> getTipoTropa() {
-        if (this.troops.isEmpty() && this.platoons.size() > 0) {
-            for (Pelotao platoon : platoons.values()) {
-                this.troops.add(platoon.getTipoTropa());
+        final List<TipoTropa> ret = new ArrayList<>();
+        for (Pelotao platoon : platoons.values()) {
+            if (platoon.getTipoTropa() != null && !ret.contains(platoon.getTipoTropa())) {
+                ret.add(platoon.getTipoTropa());
             }
         }
-        return this.troops;
+        return ret;
     }
 
     @Override

@@ -200,4 +200,31 @@ public class CombatScenarioTest {
         assertEquals(CombatScenario.Provenance.MANUAL, s.getProvenance(pelotao),
                 "a forgotten platoon must not keep claiming it came from an EGF");
     }
+
+    /**
+     * A removed army stays removed, even when the player had edited a pair it was in.
+     *
+     * remArmy used to leave the hostility edits alone, and getMatrix replays every edited pair onto
+     * the freshly derived matrix - and setHostile ADDS an army the matrix does not know. So a
+     * surviving army whose edited row still named the deleted one put the deleted one straight back
+     * into the matrix, where hasCombat counted it. Latent until the T-418 diplomacy editor calls
+     * setHostile, which is the point of pinning it before that editor exists.
+     */
+    @Test
+    public void removingAnArmyAlsoForgetsThePlayersHostilityEditsAboutIt() {
+        final ArmySim ourArmy = army("ours", nacao("m"), platoon(troopType("inf", false), 900));
+        final ArmySim doomed = army("theirs", nacao("t"), platoon(troopType("inf", false), 500));
+        final CombatScenario s = new CombatScenario(deathMatch(), local(terreno("plain"), null));
+        s.addArmy(ourArmy, CombatScenario.Provenance.EXACT);
+        s.addArmy(doomed, CombatScenario.Provenance.ESTIMATED);
+        s.setHostile(ourArmy, doomed, false);
+        assertEquals(1, s.getEditedCount());
+
+        s.remArmy(doomed);
+
+        assertEquals(0, s.getEditedCount(), "an edit about a deleted army is not an edit");
+        assertEquals(1, s.getArmies().size());
+        assertFalse(s.getMatrix().getArmies().contains(doomed),
+                "replaying a stale edit must not resurrect the army into the matrix");
+    }
 }

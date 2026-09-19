@@ -335,11 +335,25 @@ public class CombatScenario {
         }
     }
 
+    /**
+     * Removes an army and every trace of it, the hostility edits included.
+     *
+     * Forgetting the edits was enough to RESURRECT the army. {@link #getMatrix} replays each edited
+     * pair onto the freshly derived matrix, and {@code HostilityMatrix.setHostile} adds whichever
+     * army it does not already know - so a surviving army's row still naming the deleted one put
+     * the deleted one back into the matrix, where {@code hasCombat} counted it and the status bar
+     * went on reporting its pair as a player edit. Latent today only because the diplomacy editor
+     * is T-418 and nothing calls {@link #setHostile} yet; it would have shipped with that editor.
+     */
     public void remArmy(ArmySim army) {
         armies.remove(army);
         armyProvenance.remove(army);
         for (Pelotao pelotao : army.getPelotoes().values()) {
             platoonProvenance.remove(pelotao);
+        }
+        hostilityEdits.remove(army);
+        for (Map<ArmySim, Boolean> row : hostilityEdits.values()) {
+            row.remove(army);
         }
     }
 
