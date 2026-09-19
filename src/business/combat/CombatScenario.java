@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import model.Cidade;
+import model.Jogador;
 import model.Local;
 import model.Nacao;
 import model.Partida;
@@ -50,8 +51,21 @@ public class CombatScenario {
     public enum Provenance {
         /** Read from the player's own EGF, exact. */
         EXACT,
-        /** The EGF's best estimate of something the player cannot see precisely. */
+        /** Real platoons seen from outside: the numbers are right, they may be a turn stale. */
         ESTIMATED,
+        /**
+         * The server replaced this army's platoons with placeholders, so its COMPOSITION is not
+         * merely imprecise, it is absent.
+         *
+         * The head count is exact; everything that decides a fight is gone. The two stand-in
+         * catalogue entries attack and defend at 1 on every terrain, so simulating such an army
+         * unchanged reports a crushing win every time - an error that always favours the player,
+         * which is the one direction this tool must never be wrong in. Kept distinct from
+         * {@link #ESTIMATED} so the UI can say "you are guessing" instead of quietly pretending.
+         *
+         * See {@code ScenarioLoader} for how it is detected and why it cannot be avoided.
+         */
+        UNKNOWN_COMPOSITION,
         /** The player typed it. */
         MANUAL
     }
@@ -59,11 +73,12 @@ public class CombatScenario {
     private final List<ArmySim> armies = new ArrayList<>();
     private final Map<ArmySim, Provenance> armyProvenance = new IdentityHashMap<>();
     private final Map<Pelotao, Provenance> platoonProvenance = new IdentityHashMap<>();
-    private final Set<Nacao> loadedNacoes = new LinkedHashSet<>();
+    private final Set<Nacao> mergedNacoes = new LinkedHashSet<>();
     private final HostilityDeriver deriver = new HostilityDeriver();
     private final ExercitoFacade exercitoFacade = new ExercitoFacade();
 
     private Partida partida;
+    private Jogador observer;
     private Local local;
     private Terreno terreno;
     private Cidade cidade;
@@ -141,17 +156,33 @@ public class CombatScenario {
     }
 
     /**
-     * Nations whose relationship rows may be trusted: the observer's own, plus any ally whose EGF has
-     * been merged. Known rows scale with EGFs loaded, not with one point of view.
+     * The player at the keyboard. His own nations carry complete relationship rows, and that is the
+     * only thing this is used for.
      */
-    public void addLoadedNacao(Nacao nacao) {
+    public Jogador getObserver() {
+        return observer;
+    }
+
+    public void setObserver(Jogador observer) {
+        this.observer = observer;
+    }
+
+    /**
+     * Declares that a nation's OWN EGF was merged into this world, so its relationship row is the
+     * complete set rather than the fragment the server exports about foreigners.
+     *
+     * Deciding WHICH nations those are is Counselor knowledge (it reads whether an actor carries
+     * loaded orders), so it is injected here rather than re-derived in this library. Known rows
+     * scale with EGFs merged, not with one point of view.
+     */
+    public void addMergedNacao(Nacao nacao) {
         if (nacao != null) {
-            loadedNacoes.add(nacao);
+            mergedNacoes.add(nacao);
         }
     }
 
-    public Collection<Nacao> getLoadedNacoes() {
-        return Collections.unmodifiableSet(loadedNacoes);
+    public Collection<Nacao> getMergedNacoes() {
+        return Collections.unmodifiableSet(mergedNacoes);
     }
 
     public List<ArmySim> getArmies() {
@@ -183,15 +214,53 @@ public class CombatScenario {
         }
     }
 
+    /**
+     * How much to trust this army.
+     *
+     * {@link Provenance#UNKNOWN_COMPOSITION} is DERIVED from the platoons rather than remembered,
+     * so it cannot contradict {@link #getArmiesWithUnknownComposition()}. An army loads as unknown
+     * and stops being unknown the moment the player has replaced every placeholder platoon with a
+     * number of his own - including by deleting them and typing real ones, which a remembered flag
+     * would have missed. Anything else is reported as recorded.
+     */
     public Provenance getProvenance(ArmySim army) {
         final Provenance ret = armyProvenance.get(army);
-        return ret == null ? Provenance.MANUAL : ret;
+        if (ret == null) {
+            return Provenance.MANUAL;
+        }
+        if (ret != Provenance.UNKNOWN_COMPOSITION) {
+            return ret;
+        }
+        for (Pelotao pelotao : army.getPelotoes().values()) {
+            if (getProvenance(pelotao) == Provenance.UNKNOWN_COMPOSITION) {
+                return Provenance.UNKNOWN_COMPOSITION;
+            }
+        }
+        return Provenance.ESTIMATED;
     }
 
     /** An untracked platoon is one the player added himself, so its numbers are his. */
     public Provenance getProvenance(Pelotao pelotao) {
         final Provenance ret = platoonProvenance.get(pelotao);
         return ret == null ? Provenance.MANUAL : ret;
+    }
+
+    /**
+     * Armies whose composition the EGF never carried, so whose numbers mean nothing until the
+     * player replaces them with a guess of his own.
+     *
+     * Exposed as a list rather than a boolean because the answer the player needs is WHICH armies,
+     * not merely whether. Editing a placeholder platoon retags it {@link Provenance#MANUAL}
+     * per-platoon, so an army drops off this list once its composition has been supplied.
+     */
+    public List<ArmySim> getArmiesWithUnknownComposition() {
+        final List<ArmySim> ret = new ArrayList<>();
+        for (ArmySim army : armies) {
+            if (getProvenance(army) == Provenance.UNKNOWN_COMPOSITION) {
+                ret.add(army);
+            }
+        }
+        return ret;
     }
 
     /** Call when the player edits a value: what he typed is his, whatever it was before. */
@@ -211,7 +280,7 @@ public class CombatScenario {
      * is nothing next to being quietly wrong about who is fighting whom.
      */
     public HostilityMatrix getMatrix() {
-        return deriver.derive(partida, armies, loadedNacoes);
+        return deriver.derive(partida, armies, observer, mergedNacoes);
     }
 
     /**
@@ -226,9 +295,11 @@ public class CombatScenario {
         final Map<ArmySim, Boolean> hostileToCity = new IdentityHashMap<>();
         for (ArmySim army : armies) {
             hostileToCity.put(army, active != null
-                    && deriver.isHostileToCity(partida, army, active.getNacao(), loadedNacoes));
+                    && deriver.isHostileToCity(partida, army, active.getNacao(), observer,
+                            mergedNacoes));
         }
-        return LayerParticipation.forRoster(armies, terreno, active, getMatrix(), hostileToCity);
+        return LayerParticipation.forRoster(armies, terreno, active, getMatrix(), hostileToCity,
+                getArmiesWithUnknownComposition());
     }
 
     /** Where this one army fights. Prefer {@link #getParticipation()} when asking about several. */

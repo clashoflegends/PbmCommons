@@ -4,6 +4,7 @@ import business.facade.CidadeFacade;
 import business.facade.ExercitoFacade;
 import business.interfaces.IExercito;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -66,6 +67,19 @@ public class LayerParticipation {
         NO_LAND_ENEMY,
         /** Troops are still aboard and the hex has neither anchorable ground nor a port. */
         CANNOT_LAND_HERE,
+        /**
+         * It is a fleet carrying land troops at a hex with nowhere to put them ashore, and the
+         * server withheld its composition, so whether the troops are still aboard CANNOT be
+         * answered.
+         *
+         * This is not pedantry. Transport capacity comes from {@code ;TTT;}, and the placeholder
+         * troop type a foreign army collapses into carries {@code ;TTN;} but NOT {@code ;TTT;}. So
+         * a placeholder fleet reads as capacity zero, which reads as "the troops are not aboard",
+         * which reads as "they are ashore and will fight" - a battle reported that very likely will
+         * not happen. Over-promising a fight is the one direction this class must never be wrong
+         * in, so the uncertainty is named rather than resolved, and the army sits the layer out.
+         */
+        LANDING_UNKNOWN,
         /** Ordered to defend only, or to attack armies but not the city. */
         WILL_NOT_ASSAULT_CITY,
         /** There is no city here to assault. */
@@ -99,21 +113,33 @@ public class LayerParticipation {
      * @param hostileToCityOwner per army, whether it is hostile to the city's owner. Supplied by the
      *                           caller because reading a relationship safely needs the loaded-EGF
      *                           context, which belongs to {@link HostilityDeriver}.
+     * @param unknownComposition armies whose platoons the server replaced with placeholders. Also
+     *                           supplied rather than derived, for the same reason: provenance is
+     *                           {@code CombatScenario}'s to know. See {@link Reason#LANDING_UNKNOWN}.
      * @return one participation per army, keyed by identity
      */
     public static Map<ArmySim, LayerParticipation> forRoster(List<ArmySim> armies, Terreno terreno,
-            Cidade cidade, HostilityMatrix matrix, Map<ArmySim, Boolean> hostileToCityOwner) {
+            Cidade cidade, HostilityMatrix matrix, Map<ArmySim, Boolean> hostileToCityOwner,
+            Collection<ArmySim> unknownComposition) {
         final Map<ArmySim, LayerParticipation> ret = new IdentityHashMap<>();
         for (ArmySim army : armies) {
             final LayerParticipation p = new LayerParticipation();
             final List<ArmySim> enemies = enemiesOf(army, armies, matrix);
             p.reasons.put(CombatLayer.NAVY, navy(army, enemies));
-            p.reasons.put(CombatLayer.ARMY, land(army, enemies, terreno, cidade));
+            p.reasons.put(CombatLayer.ARMY,
+                    land(army, enemies, terreno, cidade, unknownComposition));
             p.reasons.put(CombatLayer.CITY, city(army, terreno, cidade,
-                    hostileToCityOwner != null && Boolean.TRUE.equals(hostileToCityOwner.get(army))));
+                    hostileToCityOwner != null && Boolean.TRUE.equals(hostileToCityOwner.get(army)),
+                    unknownComposition));
             ret.put(army, p);
         }
         return ret;
+    }
+
+    /** Every army's composition is known. */
+    public static Map<ArmySim, LayerParticipation> forRoster(List<ArmySim> armies, Terreno terreno,
+            Cidade cidade, HostilityMatrix matrix, Map<ArmySim, Boolean> hostileToCityOwner) {
+        return forRoster(armies, terreno, cidade, matrix, hostileToCityOwner, null);
     }
 
     /** Convenience for one army. It still needs the roster, because pairing does. */
@@ -121,7 +147,7 @@ public class LayerParticipation {
             Cidade cidade, HostilityMatrix matrix, boolean hostileToCityOwner) {
         final Map<ArmySim, Boolean> city = new IdentityHashMap<>();
         city.put(army, hostileToCityOwner);
-        return forRoster(armies, terreno, cidade, matrix, city).get(army);
+        return forRoster(armies, terreno, cidade, matrix, city, null).get(army);
     }
 
     /**
@@ -180,21 +206,29 @@ public class LayerParticipation {
         return Reason.NO_NAVAL_ENEMY;
     }
 
-    private static Reason land(ArmySim army, List<ArmySim> enemies, Terreno terreno, Cidade cidade) {
+    private static Reason land(ArmySim army, List<ArmySim> enemies, Terreno terreno, Cidade cidade,
+            Collection<ArmySim> unknownComposition) {
         if (isDestroyed(army)) {
             return Reason.DESTROYED_EARLIER;
         }
         if (exercitoFacade.isBarcoOnly(army)) {
             return Reason.CARRIES_NO_TROOPS;
         }
-        if (cannotLand(army, terreno, cidade)) {
+        final Landing landing = landing(army, terreno, cidade, unknownComposition);
+        if (landing == Landing.UNKNOWN) {
+            return Reason.LANDING_UNKNOWN;
+        }
+        if (landing == Landing.ABOARD) {
             return Reason.CANNOT_LAND_HERE;
         }
         if (enemies.isEmpty()) {
             return Reason.NO_ENEMY_PRESENT;
         }
         for (ArmySim enemy : enemies) {
-            if (!exercitoFacade.isBarcoOnly(enemy) && !cannotLand(enemy, terreno, cidade)) {
+            // an enemy whose landing is UNKNOWN is not counted as present ashore, for the same
+            // reason: claiming a battle we cannot show will happen is the forbidden direction
+            if (!exercitoFacade.isBarcoOnly(enemy)
+                    && landing(enemy, terreno, cidade, unknownComposition) == Landing.ASHORE) {
                 return Reason.FIGHTS;
             }
         }
@@ -207,7 +241,7 @@ public class LayerParticipation {
      * else.
      */
     private static Reason city(ArmySim army, Terreno terreno, Cidade cidade,
-            boolean hostileToCityOwner) {
+            boolean hostileToCityOwner, Collection<ArmySim> unknownComposition) {
         if (isDestroyed(army)) {
             return Reason.DESTROYED_EARLIER;
         }
@@ -220,7 +254,11 @@ public class LayerParticipation {
         if (exercitoFacade.isBarcoOnly(army)) {
             return Reason.CARRIES_NO_TROOPS;
         }
-        if (cannotLand(army, terreno, cidade)) {
+        final Landing landing = landing(army, terreno, cidade, unknownComposition);
+        if (landing == Landing.UNKNOWN) {
+            return Reason.LANDING_UNKNOWN;
+        }
+        if (landing == Landing.ABOARD) {
             return Reason.CANNOT_LAND_HERE;
         }
         if (!hostileToCityOwner) {
@@ -229,17 +267,52 @@ public class LayerParticipation {
         return Reason.FIGHTS;
     }
 
+    /** Whether this army's troops can reach the ground here. */
+    private enum Landing {
+        /** They are on it, or can step onto it. */
+        ASHORE,
+        /** A loaded fleet with nowhere to put them. */
+        ABOARD,
+        /** Cannot be answered from the data in hand. See {@link Reason#LANDING_UNKNOWN}. */
+        UNKNOWN
+    }
+
     /**
      * A loaded fleet with nowhere to put its troops.
      *
      * Gates BOTH the land layer and the city assault, because the Judge applies it in both places:
      * {@code temCombateTerra} refuses the landing, and {@code CombatCity.addArmies} drops the army
      * with a "cannot anchor" message rather than letting it storm the walls from the water.
+     *
+     * The UNKNOWN case exists because {@code isEsquadraEmbarcada} compares transport CAPACITY
+     * against burden, and capacity comes from {@code ;TTT;} - a habilidade the placeholder troop
+     * types do not carry. A withheld composition therefore cannot answer this question, and reading
+     * capacity zero as "the troops are ashore" would invent a battle. Only a fleet that is actually
+     * carrying land troops at an unanchorable hex is affected; anywhere a fleet can anchor, the
+     * question does not arise.
      */
-    private static boolean cannotLand(IExercito army, Terreno terreno, Cidade cidade) {
-        return exercitoFacade.isEsquadra(army)
-                && exercitoFacade.isEsquadraEmbarcada(army)
-                && !isAncoravel(terreno, cidade);
+    private static Landing landing(IExercito army, Terreno terreno, Cidade cidade,
+            Collection<ArmySim> unknownComposition) {
+        if (!exercitoFacade.isEsquadra(army) || isAncoravel(terreno, cidade)) {
+            return Landing.ASHORE;
+        }
+        if (contains(unknownComposition, army)) {
+            return Landing.UNKNOWN;
+        }
+        return exercitoFacade.isEsquadraEmbarcada(army) ? Landing.ABOARD : Landing.ASHORE;
+    }
+
+    /** By identity: these are simulator-owned objects, and equals() is not defined for them. */
+    private static boolean contains(Collection<ArmySim> armies, IExercito army) {
+        if (armies == null) {
+            return false;
+        }
+        for (ArmySim one : armies) {
+            if (one == army) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

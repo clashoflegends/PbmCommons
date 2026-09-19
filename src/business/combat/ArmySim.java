@@ -66,6 +66,8 @@ public class ArmySim extends BaseModel implements IExercito {
         doClonePelotoes(exercito.getPelotoes());
         this.local = exercito.getLocal();
         this.terreno = exercito.getLocal().getTerreno();
+        this.tatica = exercito.getTatica();
+        this.setCodigo(exercito.getCodigo());
         this.nacao = exercito.getNacao();
         try {
             this.comandante = exercito.getComandante().getPericiaComandante();
@@ -81,6 +83,8 @@ public class ArmySim extends BaseModel implements IExercito {
         doClonePelotoes(exercito.getPelotoes());
         this.local = exercito.getLocal();
         this.terreno = exercito.getTerreno();
+        this.tatica = exercito.getTatica();
+        this.setCodigo(exercito.getCodigo());
         this.nacao = exercito.getNacao();
         try {
             this.comandante = exercito.getComandantePericia();
