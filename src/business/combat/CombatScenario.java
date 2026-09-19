@@ -4,13 +4,10 @@ import business.facade.BattleSimFacade;
 import business.facade.ExercitoFacade;
 import business.interfaces.IExercito;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import model.Cidade;
 import model.Jogador;
 import model.Local;
@@ -155,6 +152,30 @@ public class CombatScenario {
     }
 
     /**
+     * Gives an ownerless city an owner, because every city has one and the shared combat code
+     * assumes it.
+     *
+     * 27 of the 207 cities in a live GoT12c EGF arrive with no {@code nacao} and a size above zero:
+     * the player simply cannot see who holds them. {@code getCityDefenseCombat} reads the owner for
+     * its four nation powers and {@code log.error}s when there is none - a fair question on the
+     * server, a false alarm on the client.
+     *
+     * The fix is to supply the missing INPUT, not to route around the shared method. Recomposing
+     * the minimum data the Judge's code needs is the whole path to sharing it; branching away from
+     * it on the client would have been a second implementation, which is the thing this design is
+     * trying to avoid. The caller decides what to stand in - the Barbarians nation, today - because
+     * finding it is Counselor knowledge.
+     *
+     * Post-MVP this is one more cell for the same gap-filling pass as the relationship matrix: an
+     * assumed owner is a guess, and the player should be able to correct it.
+     */
+    public void setCityOwnerIfUnknown(Nacao fallback) {
+        if (fallback != null && cidade != null && cidade.getNacao() == null) {
+            cidade.setNacao(fallback);
+        }
+    }
+
+    /**
      * The city's loyalty, 0 to 100. The player may state a different one.
      *
      * Loyalty is not a flavour field here: it multiplies the whole defense, and a city at zero
@@ -201,19 +222,7 @@ public class CombatScenario {
      */
     public int getCityDefense() {
         final Cidade active = getCidadeAtiva();
-        if (active == null) {
-            return 0;
-        }
-        if (active.getNacao() == null) {
-            // getCityDefenseCombat log.error()s a city with no nation and a size above zero - a
-            // server-shaped alarm that would fire from the client every time a player opened
-            // BattleSim on one. 27 of the 207 cities in a live GoT12c EGF are exactly that: no
-            // owner visible, size above zero. The combat method returns the base for them anyway
-            // (there is no nation to carry a power), so taking the base directly is the SAME number
-            // without the false alarm, and without touching a method the Judge shares.
-            return battleSimFacade.getCityDefenseBase(active);
-        }
-        return battleSimFacade.getCityDefenseCombat(active);
+        return active == null ? 0 : battleSimFacade.getCityDefenseCombat(active);
     }
 
     /**

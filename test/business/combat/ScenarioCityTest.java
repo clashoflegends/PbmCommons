@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -204,21 +205,38 @@ public class ScenarioCityTest {
     }
 
     /**
-     * A city whose owner the player cannot see still has a defence, and asking for it must not
-     * raise a server-shaped alarm.
+     * A city whose owner the player cannot see is given a stand-in owner, rather than the combat
+     * code being routed around.
      *
-     * {@code getCityDefenseCombat} log.error()s "City without nation, why?" for a city with no
-     * nation and a size above zero. That is a fair question on the server and a false alarm on the
-     * client: 27 of the 207 cities in a live GoT12c EGF are exactly that shape. The scenario takes
-     * the base directly for them, which is the same number the combat method would return anyway.
+     * 27 of the 207 cities in a live GoT12c EGF have no nation and a size above zero, and
+     * {@code getCityDefenseCombat} reads the owner for its four nation powers. Supplying the
+     * missing INPUT keeps the shared method in play; branching away from it on the client would
+     * have been a second implementation of the thing we are trying to share.
      */
     @Test
-    public void aCityWithNoVisibleOwnerStillDefendsAndDoesNotRaiseAnAlarm() {
-        final Cidade city = cidade(null, 3, 3, 100);
-        final CombatScenario s = new CombatScenario(deathMatch(), hex(city));
+    public void aCityWithNoVisibleOwnerIsGivenAStandInOwner() {
+        final Nacao barbarians = nacao("barb", null);
+        final Local local = hex(cidade(null, 3, 3, 100));
 
-        assertEquals(new BattleSimFacade().getCityDefense(3, 3, 100), s.getCityDefense());
-        assertTrue(s.getCityDefense() > 0);
+        final CombatScenario s = new ScenarioLoader()
+                .load(deathMatch(), local, null, barbarians);
+
+        assertSame(barbarians, s.getCidade().getNacao(), "every city has an owner");
+        assertEquals(new BattleSimFacade().getCityDefense(3, 3, 100), s.getCityDefense(),
+                "a stand-in with no powers defends exactly as the base says");
+        assertEquals(null, local.getCidade().getNacao(),
+                "and the world's own city is not given an owner it does not have");
+    }
+
+    /** A city whose owner IS visible keeps it; the stand-in only fills a gap. */
+    @Test
+    public void aCityWithAVisibleOwnerKeepsIt() {
+        final Nacao owner = nacao("o", null), barbarians = nacao("barb", null);
+
+        final CombatScenario s = new ScenarioLoader()
+                .load(deathMatch(), hex(cidade(owner, 3, 3, 100)), null, barbarians);
+
+        assertSame(owner, s.getCidade().getNacao());
     }
 
     @Test

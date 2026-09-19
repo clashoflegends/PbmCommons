@@ -58,8 +58,20 @@ public class ScenarioLoader {
      * @param observer the player at the keyboard
      */
     public CombatScenario load(Partida partida, Local local, Jogador observer) {
+        return load(partida, local, observer, null);
+    }
+
+    /**
+     * @param unknownCityOwner stand-in owner for a city whose real one the player cannot see. Every
+     *                         city has an owner and the shared combat code assumes it; supplying the
+     *                         missing input is how that code stays shared. See
+     *                         {@link CombatScenario#setCityOwnerIfUnknown}.
+     */
+    public CombatScenario load(Partida partida, Local local, Jogador observer,
+            Nacao unknownCityOwner) {
         final CombatScenario ret = new CombatScenario(partida, local);
         ret.setObserver(observer);
+        ret.setCityOwnerIfUnknown(unknownCityOwner);
         if (local == null) {
             return ret;
         }
