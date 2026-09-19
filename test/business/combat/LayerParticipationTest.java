@@ -140,7 +140,7 @@ public class LayerParticipationTest {
         final LayerParticipation p = partOf(fleet, CombatLevel.ATTACK_CITY,
                 terreno("sea", false), cidade(foe, 0), true, enemy);
 
-        assertEquals("N..", p.getBadge());
+        assertEquals("N \u00b7 \u00b7", p.getBadge());
         assertTrue(p.isIn(CombatLayer.NAVY));
         assertEquals(LayerParticipation.Reason.CARRIES_NO_TROOPS, p.getReason(CombatLayer.ARMY));
         assertEquals(LayerParticipation.Reason.CARRIES_NO_TROOPS, p.getReason(CombatLayer.CITY),
@@ -159,7 +159,7 @@ public class LayerParticipationTest {
         final LayerParticipation p = partOf(fleet, CombatLevel.ATTACK_ARMY,
                 terreno("coast", true), null, false, enemy);
 
-        assertEquals("NA.", p.getBadge());
+        assertEquals("N A \u00b7", p.getBadge());
         assertEquals(LayerParticipation.Reason.NO_CITY, p.getReason(CombatLayer.CITY));
     }
 
@@ -178,7 +178,7 @@ public class LayerParticipationTest {
                 terreno("deep", false), null, false, enemy);
 
         assertEquals(LayerParticipation.Reason.CANNOT_LAND_HERE, p.getReason(CombatLayer.ARMY));
-        assertEquals("N..", p.getBadge());
+        assertEquals("N \u00b7 \u00b7", p.getBadge());
     }
 
     /** A city with docks is anchorage even when the ground is not. */
@@ -212,7 +212,7 @@ public class LayerParticipationTest {
                 terreno("deep", false), cidade(foe, 0), true, enemy);
 
         assertEquals(LayerParticipation.Reason.CANNOT_LAND_HERE, p.getReason(CombatLayer.CITY));
-        assertEquals("N..", p.getBadge());
+        assertEquals("N \u00b7 \u00b7", p.getBadge());
     }
 
     /**
@@ -231,7 +231,7 @@ public class LayerParticipationTest {
                 terreno("coast", true), null, false, landEnemy);
 
         assertEquals(LayerParticipation.Reason.NO_NAVAL_ENEMY, p.getReason(CombatLayer.NAVY));
-        assertEquals(".A.", p.getBadge(), "it still fights ashore, just not at sea");
+        assertEquals("\u00b7 A \u00b7", p.getBadge(), "it still fights ashore, just not at sea");
     }
 
     /**
@@ -313,7 +313,7 @@ public class LayerParticipationTest {
         final LayerParticipation p = partOf(land, CombatLevel.ATTACK_CITY,
                 terreno("plain", false), cidade(foe, 0), true, enemy);
 
-        assertEquals(".AC", p.getBadge());
+        assertEquals("\u00b7 A C", p.getBadge());
         assertEquals(LayerParticipation.Reason.NO_SHIPS, p.getReason(CombatLayer.NAVY));
     }
 
@@ -371,7 +371,7 @@ public class LayerParticipationTest {
         final LayerParticipation p = partOf(wiped, CombatLevel.RAZE_CITY,
                 terreno("plain", false), cidade(foe, 0), true, enemy);
 
-        assertEquals("...", p.getBadge());
+        assertEquals("\u00b7 \u00b7 \u00b7", p.getBadge());
         assertEquals(LayerParticipation.Reason.DESTROYED_EARLIER, p.getReason(CombatLayer.CITY));
     }
 }

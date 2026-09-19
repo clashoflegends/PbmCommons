@@ -78,6 +78,15 @@ public class LayerParticipation {
         DESTROYED_EARLIER
     }
 
+    /**
+     * What an unfilled badge slot looks like: a middle dot, as in {@code N \u00b7 C}.
+     *
+     * A full stop was the obvious choice and it was wrong on screen - an army in no layer reads as
+     * "Ser Loras ..." and every reader sees an ellipsis, i.e. a truncated name, rather than three
+     * empty slots. Written as an escape so the file's encoding cannot change what ships.
+     */
+    private static final String EMPTY_SLOT = "\u00b7";
+
     private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
     private static final CidadeFacade cidadeFacade = new CidadeFacade();
 
@@ -275,7 +284,10 @@ public class LayerParticipation {
     public String getBadge() {
         final StringBuilder ret = new StringBuilder();
         for (CombatLayer layer : CombatLayer.values()) {
-            ret.append(isIn(layer) ? layer.getBadge() : ".");
+            if (ret.length() > 0) {
+                ret.append(' ');
+            }
+            ret.append(isIn(layer) ? layer.getBadge() : EMPTY_SLOT);
         }
         return ret.toString();
     }

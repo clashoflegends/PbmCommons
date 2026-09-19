@@ -342,7 +342,7 @@ public class ScenarioRosterTest {
 
         final LayerParticipation p = s.getParticipation().get(fleet);
 
-        assertEquals("NA.", p.getBadge());
+        assertEquals("N A \u00b7", p.getBadge());
         assertEquals(Arrays.asList(CombatLayer.NAVY, CombatLayer.ARMY), p.getLayers());
     }
 }
