@@ -6,8 +6,6 @@ import model.Jogador;
 import model.Local;
 import model.Nacao;
 import model.Partida;
-import model.Pelotao;
-import model.TipoTropa;
 
 /**
  * Turns a hex into a {@link CombatScenario}: every army standing on it, each one tagged with how
@@ -16,27 +14,26 @@ import model.TipoTropa;
  * <h3>Why loading needs a class of its own</h3>
  *
  * Reading {@code local.getExercitos()} is one line. Deciding what those armies MEAN is not, and the
- * two facts below are invisible from the client code - both were found by reading the server's
- * export path, and each one silently produces a confident, wrong simulation if missed.
+ * two facts below are invisible from the client code.
  *
- * <h3>1. A foreign army's composition is usually DESTROYED on export</h3>
+ * <h3>1. An unscouted foreign army arrives with placeholder platoons, and that is BY DESIGN</h3>
  *
  * At visibility level 4, {@code ServerExercitoDao.setVisPlatoonsUnknown} collapses every land
  * platoon into ONE synthetic platoon of troop type {@code none} and every ship into one of type
- * {@code ship}. The head COUNT survives exactly; the composition does not. Those two catalogue
- * entries carry attack and defense of <b>1 on every terrain</b>, so an army loaded as-is simulates
- * as very nearly harmless, and any battle involving it reports a crushing win. That is not
- * imprecision, it is a systematic error in the player's favour, so it is flagged as
- * {@link CombatScenario.Provenance#UNKNOWN_COMPOSITION} rather than passed off as an estimate.
+ * {@code ship}. The head COUNT survives exactly; the composition does not, and those two catalogue
+ * entries carry attack and defense of 1 on every terrain. At visibility level 2 - a scouted or
+ * reconned army, which is generally the one that matters - the real platoons come across.
  *
- * Detection is by troop-type CODIGO. It is tempting to look for the {@code ;TTR;} habilidade the
- * two entries carry, but nearly every real troop type carries it too - it is not a placeholder
- * marker. {@code ship} does correctly carry {@code ;TTN;}, so naval detection still works on a
- * placeholder fleet: it will be seen as a fleet, with unknown ships in it.
+ * <b>The loader does not special-case any of this, and must not start.</b> Not knowing what is in
+ * an enemy stack IS the game: that is what scouting orders are for, and what a player who has not
+ * scouted is expected to guess at. The placeholder pair is the intelligence the player actually
+ * holds, so it is what the simulator runs on, loaded like any other outside view. A player who
+ * wants a better answer scouts the army or types what he thinks is in it, and editing retags those
+ * platoons as his own.
  *
- * At visibility level 2 the real platoons come across, which is why an outside view is not
- * automatically unknown. The client cannot ask which level it got; the placeholder types ARE the
- * signal.
+ * This note exists to stop a future reader "fixing" it. Two plausible-looking features were built
+ * on the opposite assumption and removed: a distinct unknown-composition provenance, and a
+ * cannot-tell state in {@link LayerParticipation} for a placeholder fleet's landing.
  *
  * <h3>2. Combat intent does not ride the EGF at all</h3>
  *
@@ -55,11 +52,6 @@ import model.TipoTropa;
  * cannot see it.
  */
 public class ScenarioLoader {
-
-    /** The catalogue entry a foreign army's land platoons collapse into. Attack/defense 1. */
-    public static final String TROOP_UNKNOWN_LAND = "none";
-    /** The catalogue entry a foreign army's ships collapse into. Attack/defense 1, carries ;TTN;. */
-    public static final String TROOP_UNKNOWN_SHIP = "ship";
 
     /**
      * Loads every army standing on a hex, garrisons included.
@@ -95,48 +87,17 @@ public class ScenarioLoader {
     }
 
     /**
-     * How much of this army the player really knows.
+     * How much of this army the player really knows: what his own EGF carried, or what he can see
+     * from outside.
      *
-     * Order matters. The placeholder check comes FIRST, because it is a statement about the data in
-     * hand rather than about whose army it is: if the platoons are synthetic then the numbers are
-     * unusable no matter who owns it. Ownership only decides between an exact read and an outside
-     * view of real platoons, which may still be a turn stale.
+     * Two values, not three. Whether an outside view arrived as real platoons or as the placeholder
+     * pair is not a distinction the loader draws - see the class note.
      */
     public CombatScenario.Provenance provenanceOf(Exercito exercito, Jogador observer,
             Collection<Nacao> mergedNacoes) {
-        if (hasUnknownComposition(exercito)) {
-            return CombatScenario.Provenance.UNKNOWN_COMPOSITION;
-        }
         return isFullyVisible(exercito.getNacao(), observer, mergedNacoes)
                 ? CombatScenario.Provenance.EXACT
                 : CombatScenario.Provenance.ESTIMATED;
-    }
-
-    /** Does this army hold at least one platoon the server replaced with a placeholder? */
-    public boolean hasUnknownComposition(Exercito exercito) {
-        if (exercito == null) {
-            return false;
-        }
-        for (Pelotao pelotao : exercito.getPelotoes().values()) {
-            if (isUnknownTroopType(pelotao == null ? null : pelotao.getTipoTropa())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Is this the catalogue's stand-in for a troop type the player may not see?
-     *
-     * By codigo, never by habilidade. See the class note: {@code ;TTR;} is on almost every real
-     * troop type and identifies nothing.
-     */
-    public static boolean isUnknownTroopType(TipoTropa tipoTropa) {
-        if (tipoTropa == null) {
-            return false;
-        }
-        final String codigo = tipoTropa.getCodigo();
-        return TROOP_UNKNOWN_LAND.equals(codigo) || TROOP_UNKNOWN_SHIP.equals(codigo);
     }
 
     /**

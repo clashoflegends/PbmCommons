@@ -51,21 +51,15 @@ public class CombatScenario {
     public enum Provenance {
         /** Read from the player's own EGF, exact. */
         EXACT,
-        /** Real platoons seen from outside: the numbers are right, they may be a turn stale. */
-        ESTIMATED,
         /**
-         * The server replaced this army's platoons with placeholders, so its COMPOSITION is not
-         * merely imprecise, it is absent.
+         * Anything the player did not read from his own EGF: an ally he has not merged, or an enemy.
          *
-         * The head count is exact; everything that decides a fight is gone. The two stand-in
-         * catalogue entries attack and defend at 1 on every terrain, so simulating such an army
-         * unchanged reports a crushing win every time - an error that always favours the player,
-         * which is the one direction this tool must never be wrong in. Kept distinct from
-         * {@link #ESTIMATED} so the UI can say "you are guessing" instead of quietly pretending.
-         *
-         * See {@code ScenarioLoader} for how it is detected and why it cannot be avoided.
+         * Covers both a real platoon list seen from outside and the placeholder pair the server
+         * sends for an army the player has not scouted. Deliberately ONE value for both: what the
+         * EGF carries about a foreign army is the player's intelligence problem, which is the game,
+         * not a data-quality problem for the tool to editorialise about. See {@code ScenarioLoader}.
          */
-        UNKNOWN_COMPOSITION,
+        ESTIMATED,
         /** The player typed it. */
         MANUAL
     }
@@ -214,53 +208,15 @@ public class CombatScenario {
         }
     }
 
-    /**
-     * How much to trust this army.
-     *
-     * {@link Provenance#UNKNOWN_COMPOSITION} is DERIVED from the platoons rather than remembered,
-     * so it cannot contradict {@link #getArmiesWithUnknownComposition()}. An army loads as unknown
-     * and stops being unknown the moment the player has replaced every placeholder platoon with a
-     * number of his own - including by deleting them and typing real ones, which a remembered flag
-     * would have missed. Anything else is reported as recorded.
-     */
     public Provenance getProvenance(ArmySim army) {
         final Provenance ret = armyProvenance.get(army);
-        if (ret == null) {
-            return Provenance.MANUAL;
-        }
-        if (ret != Provenance.UNKNOWN_COMPOSITION) {
-            return ret;
-        }
-        for (Pelotao pelotao : army.getPelotoes().values()) {
-            if (getProvenance(pelotao) == Provenance.UNKNOWN_COMPOSITION) {
-                return Provenance.UNKNOWN_COMPOSITION;
-            }
-        }
-        return Provenance.ESTIMATED;
+        return ret == null ? Provenance.MANUAL : ret;
     }
 
     /** An untracked platoon is one the player added himself, so its numbers are his. */
     public Provenance getProvenance(Pelotao pelotao) {
         final Provenance ret = platoonProvenance.get(pelotao);
         return ret == null ? Provenance.MANUAL : ret;
-    }
-
-    /**
-     * Armies whose composition the EGF never carried, so whose numbers mean nothing until the
-     * player replaces them with a guess of his own.
-     *
-     * Exposed as a list rather than a boolean because the answer the player needs is WHICH armies,
-     * not merely whether. Editing a placeholder platoon retags it {@link Provenance#MANUAL}
-     * per-platoon, so an army drops off this list once its composition has been supplied.
-     */
-    public List<ArmySim> getArmiesWithUnknownComposition() {
-        final List<ArmySim> ret = new ArrayList<>();
-        for (ArmySim army : armies) {
-            if (getProvenance(army) == Provenance.UNKNOWN_COMPOSITION) {
-                ret.add(army);
-            }
-        }
-        return ret;
     }
 
     /** Call when the player edits a value: what he typed is his, whatever it was before. */
@@ -298,8 +254,7 @@ public class CombatScenario {
                     && deriver.isHostileToCity(partida, army, active.getNacao(), observer,
                             mergedNacoes));
         }
-        return LayerParticipation.forRoster(armies, terreno, active, getMatrix(), hostileToCity,
-                getArmiesWithUnknownComposition());
+        return LayerParticipation.forRoster(armies, terreno, active, getMatrix(), hostileToCity);
     }
 
     /** Where this one army fights. Prefer {@link #getParticipation()} when asking about several. */
