@@ -27,7 +27,17 @@ public enum CombatLayer {
     NAVY,
     /** Army against army ashore. A fleet with no land troops never reaches this layer. */
     ARMY,
-    /** The assault on the hex's city, by whoever survived the land layer and intends to attack it. */
+    /**
+     * The assault on the hex's city, by whoever survived the land layer and intends to attack it.
+     *
+     * TWO rounds, not one. Round 0 is siege engines against the FORTIFICATION and is fought only
+     * when an attacker carries them; round 1 is the single army-versus-city exchange. Round 0 comes
+     * first and can reduce the fortification, lowering the defense round 1 then computes - the
+     * city's equivalent of the army layer's first-strike round.
+     *
+     * The city itself is passive throughout: it is attacked, it damages the attackers in proportion
+     * to their troop counts, and it takes the result. It never chooses anything.
+     */
     CITY;
 
     /** Short marker for the roster badge, as in {@code N A C}. */

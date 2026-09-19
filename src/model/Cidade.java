@@ -278,10 +278,22 @@ public class Cidade extends BaseModel implements IActor, Cloneable {
         //do nothing here. 
     }
 
+    /**
+     * A SHALLOW copy, and that is the contract rather than an omission.
+     *
+     * BattleSim clones a city so the player can retype its loyalty, size and fortification without
+     * touching the one loaded from the EGF - the same ownership boundary as {@code Pelotao}, and for
+     * the same reason. Those three are primitives and come across by value. Everything else it holds
+     * ({@code Nacao}, {@code Local}, {@code Terreno}) stays a SHARED read-only reference on purpose:
+     * the simulator reads them and never edits them, and copying would break identity comparisons
+     * against the world.
+     *
+     * Callers that depend on this: {@code CombatScenario.setLocal} and
+     * {@code BattleCasualtySimulatorNew.setCidade}.
+     */
     @Override
     @SuppressWarnings("CloneDeclaresCloneNotSupported")
     public Cidade clone() {
-        //attention: no deep copy implemented
         try {
             return (Cidade) super.clone();
         } catch (CloneNotSupportedException ex) {

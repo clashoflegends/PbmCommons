@@ -35,7 +35,12 @@ import org.apache.commons.logging.LogFactory;
  *   <tr><td>{@link TipoTropa}</td><td>shared, read only</td>
  *       <td>The scenario's troop catalogue. The simulator repoints a platoon at a different entry but
  *           never edits an entry, and copying it would break identity comparisons.</td></tr>
- *   <tr><td>{@link Nacao}, {@link Terreno}, {@link Local}, {@link Cidade}</td><td>shared, read only</td>
+ *   <tr><td>{@link Cidade}</td><td>OWNED</td>
+ *       <td>Holds loyalty, size and fortification, all editable and all three inputs to
+ *           {@link #getCityDefenseCombat}. Cloned by {@code CombatScenario.setLocal}, shallowly, so
+ *           its own {@code Nacao} / {@code Local} / {@code Terreno} stay shared. Moved here from
+ *           "shared" when the city became a participant rather than scenery.</td></tr>
+ *   <tr><td>{@link Nacao}, {@link Terreno}, {@link Local}</td><td>shared, read only</td>
  *       <td>Context, not content. Selected, never mutated.</td></tr>
  * </table>
  *

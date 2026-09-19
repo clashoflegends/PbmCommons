@@ -746,8 +746,17 @@ public class ExercitoFacade implements Serializable {
         return false;
     }
 
+    /**
+     * Does this army carry siege engines, i.e. will it fight the city's round 0?
+     *
+     * Mirrors {@code ExercitoControlFacade.isSiege} EXACTLY, which is ;TTS; OR ;TYTS;. This copy
+     * tested only ;TTS; and so under-reported a siege, which in a simulator means quietly promising
+     * that a fortification will not be attacked when it will. It had no callers at all when this was
+     * found, so nothing changed behaviour; the point of fixing it is that it is about to acquire
+     * one, and T-902 plans to have the Judge delegate here.
+     */
     public boolean isSiege(IExercito army) {
-        return isTropaHabilidadeUma(army, ";TTS;");
+        return isTropaHabilidadeUma(army, ";TTS;") || isTropaHabilidadeUma(army, ";TYTS;");
     }
 
     public boolean isHero(IExercito army) {

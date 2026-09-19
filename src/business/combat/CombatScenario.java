@@ -1,5 +1,6 @@
 package business.combat;
 
+import business.facade.BattleSimFacade;
 import business.facade.ExercitoFacade;
 import business.interfaces.IExercito;
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public class CombatScenario {
     private final Map<Pelotao, Provenance> platoonProvenance = new IdentityHashMap<>();
     private final Map<ArmySim, Map<ArmySim, Boolean>> hostilityEdits = new IdentityHashMap<>();
     private final HostilityDeriver deriver = new HostilityDeriver();
+    private final BattleSimFacade battleSimFacade = new BattleSimFacade();
     private final ExercitoFacade exercitoFacade = new ExercitoFacade();
 
     private Partida partida;
@@ -101,7 +103,10 @@ public class CombatScenario {
         this.local = local;
         if (local != null) {
             this.terreno = local.getTerreno();
-            this.cidade = local.getCidade();
+            // CLONED, not borrowed: loyalty, size and fortification are all editable here, and the
+            // same sharing bug that let a retyped platoon reach the loaded world would let a
+            // retyped city do it. Cidade.clone() is shallow and that is the contract.
+            this.cidade = local.getCidade() == null ? null : local.getCidade().clone();
         }
         this.cityParticipates = this.cidade != null;
     }
@@ -147,6 +152,90 @@ public class CombatScenario {
     /** The city as a combat participant, or null when it takes no part. */
     public Cidade getCidadeAtiva() {
         return isCityParticipates() ? cidade : null;
+    }
+
+    /**
+     * The city's loyalty, 0 to 100. The player may state a different one.
+     *
+     * Loyalty is not a flavour field here: it multiplies the whole defense, and a city at zero
+     * loyalty defends at DOUBLE rather than at nothing - see {@code BattleSimFacade.getCityDefense}.
+     * That is the sort of thing a player is most likely to have backwards.
+     */
+    public void setCityLealdade(int lealdade) {
+        if (cidade != null) {
+            cidade.setLealdade(clamp(lealdade, 0, 100));
+        }
+    }
+
+    /** The city's size, 0 (ruins) to 5 (metropolis). */
+    public void setCityTamanho(int tamanho) {
+        if (cidade != null) {
+            cidade.setTamanho(clamp(tamanho, 0, 5));
+        }
+    }
+
+    /** The city's fortification, 0 (none) to 5 (fortress). */
+    public void setCityFortificacao(int fortificacao) {
+        if (cidade != null) {
+            cidade.setFortificacao(clamp(fortificacao, 0, 5));
+        }
+    }
+
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    /**
+     * What the attackers are actually up against in round 1, and what comes back at them.
+     *
+     * <b>{@code getCityDefenseCombat}, deliberately not {@code getCityDefense}.</b> The two differ
+     * by {@code defenseBonus} and four nation powers - {@code ;PFD;} when fortified, {@code ;PCD;}
+     * in mountains, {@code ;NWD;} in forest, {@code ;NWS;} in swamp - and the Judge's
+     * {@code CombateTmpbm} uses the combat one via {@code CidadeControl.getDefesaPlusBonusCombate}.
+     * The old BattleSim displayed the BASE figure, so it has always shown a number the battle does
+     * not use, wrong in the attacker's favour whenever the defender holds any of those powers.
+     *
+     * This single number is the city's whole contribution: the Judge distributes it back at the
+     * attackers in proportion to troop count. A city is passive - it is attacked, it damages the
+     * attackers, and it takes the result.
+     */
+    public int getCityDefense() {
+        final Cidade active = getCidadeAtiva();
+        return active == null ? 0 : battleSimFacade.getCityDefenseCombat(active);
+    }
+
+    /**
+     * What round 0 attacks: the fortification, separately from the city's own defense.
+     *
+     * The city layer is TWO rounds, not one. Round 0 is siege engines against the fortification and
+     * it happens FIRST, so a fortification it reduces lowers the defense that round 1 then computes
+     * - the city equivalent of the army layer's first-strike round. Only fought when at least one
+     * attacker carries siege engines.
+     */
+    public int getCityFortificationDefense() {
+        final Cidade active = getCidadeAtiva();
+        return active == null ? 0 : battleSimFacade.getCityFortficationDefense(active);
+    }
+
+    /**
+     * Will there be a round 0 at all?
+     *
+     * True when any army that will actually assault the city carries siege engines. Asking the
+     * whole roster would be wrong: an army that is not attacking the city does not bring its
+     * engines to the walls.
+     */
+    public boolean isSiegeExpected() {
+        if (getCidadeAtiva() == null) {
+            return false;
+        }
+        final Map<ArmySim, LayerParticipation> participation = getParticipation();
+        for (ArmySim army : armies) {
+            final LayerParticipation one = participation.get(army);
+            if (one != null && one.isIn(CombatLayer.CITY) && exercitoFacade.isSiege(army)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
