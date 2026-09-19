@@ -1,5 +1,8 @@
 package business.combat;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import model.Cidade;
 import model.Habilidade;
 import model.Nacao;
@@ -103,14 +106,39 @@ public class LayerParticipationTest {
         return ret;
     }
 
+    /**
+     * Participation for one army, with the roster it is standing in.
+     *
+     * The roster is not optional: naval and land membership are decided by PAIRING, so an army
+     * cannot answer either question alone.
+     */
+    private static LayerParticipation partOf(ArmySim army, CombatLevel level, Terreno terreno,
+            Cidade cidade, boolean hostileToCity, ArmySim... roster) {
+        army.setCombatLevel(level);
+        final List<ArmySim> all = new ArrayList<>(Arrays.asList(roster));
+        if (!all.contains(army)) {
+            all.add(0, army);
+        }
+        final HostilityMatrix matrix = new HostilityMatrix();
+        for (ArmySim a : all) {
+            matrix.addArmy(a);
+            for (ArmySim b : all) {
+                if (a != b && a.getNacao() != b.getNacao()) {
+                    matrix.setHostile(a, b, HostilityMatrix.Origin.READ_FROM_EGF);
+                }
+            }
+        }
+        return LayerParticipation.of(army, all, terreno, cidade, matrix, hostileToCity);
+    }
+
     @Test
     public void aFleetCarryingNoTroopsFightsAtSeaAndStops() {
         final Nacao mine = nacao("m"), foe = nacao("f");
         final ArmySim fleet = army("fleet", mine, platoon(troopType("sh", true), 40));
         final ArmySim enemy = army("enemy", foe, platoon(troopType("sh", true), 30));
 
-        final LayerParticipation p = LayerParticipation.of(fleet, CombatLevel.ATTACK_CITY,
-                terreno("sea", false), cidade(foe, 0), atWar(fleet, enemy), true);
+        final LayerParticipation p = partOf(fleet, CombatLevel.ATTACK_CITY,
+                terreno("sea", false), cidade(foe, 0), true, enemy);
 
         assertEquals("N..", p.getBadge());
         assertTrue(p.isIn(CombatLayer.NAVY));
@@ -124,10 +152,12 @@ public class LayerParticipationTest {
         final Nacao mine = nacao("m"), foe = nacao("f");
         final ArmySim fleet = army("fleet", mine,
                 platoon(troopType("sh", true), 40), platoon(troopType("inf", false), 600));
-        final ArmySim enemy = army("enemy", foe, platoon(troopType("inf", false), 500));
+        // the enemy must ALSO be a fleet, or there is no battle at sea to join
+        final ArmySim enemy = army("enemy", foe,
+                platoon(troopType("esh", true), 30), platoon(troopType("einf", false), 500));
 
-        final LayerParticipation p = LayerParticipation.of(fleet, CombatLevel.ATTACK_ARMY,
-                terreno("coast", true), null, atWar(fleet, enemy), false);
+        final LayerParticipation p = partOf(fleet, CombatLevel.ATTACK_ARMY,
+                terreno("coast", true), null, false, enemy);
 
         assertEquals("NA.", p.getBadge());
         assertEquals(LayerParticipation.Reason.NO_CITY, p.getReason(CombatLayer.CITY));
@@ -142,10 +172,10 @@ public class LayerParticipationTest {
         final Nacao mine = nacao("m"), foe = nacao("f");
         final ArmySim fleet = army("fleet", mine,
                 platoon(transportType("sh", 100), 400), platoon(troopType("inf", false), 10));
-        final ArmySim enemy = army("enemy", foe, platoon(troopType("inf", false), 500));
+        final ArmySim enemy = army("enemy", foe, platoon(troopType("esh", true), 500));
 
-        final LayerParticipation p = LayerParticipation.of(fleet, CombatLevel.ATTACK_ARMY,
-                terreno("deep", false), null, atWar(fleet, enemy), false);
+        final LayerParticipation p = partOf(fleet, CombatLevel.ATTACK_ARMY,
+                terreno("deep", false), null, false, enemy);
 
         assertEquals(LayerParticipation.Reason.CANNOT_LAND_HERE, p.getReason(CombatLayer.ARMY));
         assertEquals("N..", p.getBadge());
@@ -159,8 +189,8 @@ public class LayerParticipationTest {
                 platoon(transportType("sh", 100), 400), platoon(troopType("inf", false), 10));
         final ArmySim enemy = army("enemy", foe, platoon(troopType("inf", false), 500));
 
-        final LayerParticipation p = LayerParticipation.of(fleet, CombatLevel.ATTACK_ARMY,
-                terreno("deep", false), cidade(foe, 2), atWar(fleet, enemy), true);
+        final LayerParticipation p = partOf(fleet, CombatLevel.ATTACK_ARMY,
+                terreno("deep", false), cidade(foe, 2), true, enemy);
 
         assertTrue(p.isIn(CombatLayer.ARMY), "docks are anchorage");
     }
@@ -175,14 +205,103 @@ public class LayerParticipationTest {
         final Nacao mine = nacao("m"), foe = nacao("f");
         final ArmySim fleet = army("fleet", mine,
                 platoon(transportType("sh", 100), 400), platoon(troopType("inf", false), 10));
-        final ArmySim enemy = army("enemy", foe, platoon(troopType("inf", false), 500));
+        final ArmySim enemy = army("enemy", foe, platoon(troopType("esh", true), 500));
 
         // a city with no docks, on ground that is not anchorable
-        final LayerParticipation p = LayerParticipation.of(fleet, CombatLevel.RAZE_CITY,
-                terreno("deep", false), cidade(foe, 0), atWar(fleet, enemy), true);
+        final LayerParticipation p = partOf(fleet, CombatLevel.RAZE_CITY,
+                terreno("deep", false), cidade(foe, 0), true, enemy);
 
         assertEquals(LayerParticipation.Reason.CANNOT_LAND_HERE, p.getReason(CombatLayer.CITY));
         assertEquals("N..", p.getBadge());
+    }
+
+    /**
+     * PAIRING, and the bug an antagonist pass caught. Holding ships does not put an army at sea;
+     * holding ships AND facing a fleet does. The Judge's naval loop requires
+     * exercito.isEsquadra() AND inimigo.isEsquadra().
+     */
+    @Test
+    public void aFleetWhoseOnlyEnemyIsOnLandFightsNoNavalBattle() {
+        final Nacao mine = nacao("m"), foe = nacao("f");
+        final ArmySim fleet = army("fleet", mine,
+                platoon(troopType("sh", true), 40), platoon(troopType("inf", false), 600));
+        final ArmySim landEnemy = army("enemy", foe, platoon(troopType("einf", false), 500));
+
+        final LayerParticipation p = partOf(fleet, CombatLevel.ATTACK_ARMY,
+                terreno("coast", true), null, false, landEnemy);
+
+        assertEquals(LayerParticipation.Reason.NO_NAVAL_ENEMY, p.getReason(CombatLayer.NAVY));
+        assertEquals(".A.", p.getBadge(), "it still fights ashore, just not at sea");
+    }
+
+    /**
+     * The mirror image: temCombateTerra requires NEITHER side to be ships-only, so a land army whose
+     * only enemy is a bare fleet has nothing to fight ashore.
+     */
+    @Test
+    public void aLandArmyWhoseOnlyEnemyIsABareFleetFightsNothingAshore() {
+        final Nacao mine = nacao("m"), foe = nacao("f");
+        final ArmySim land = army("land", mine, platoon(troopType("inf", false), 900));
+        final ArmySim fleet = army("fleet", foe, platoon(troopType("sh", true), 40));
+
+        final LayerParticipation p = partOf(land, CombatLevel.ATTACK_ARMY,
+                terreno("coast", true), null, false, fleet);
+
+        assertEquals(LayerParticipation.Reason.NO_LAND_ENEMY, p.getReason(CombatLayer.ARMY));
+        assertFalse(p.isInAnyLayer());
+    }
+
+    /**
+     * The target filter, the Judge's getCombateNacaoNumero(). An army told to attack one nation does
+     * not start on another - but is still dragged in by anyone who starts on IT.
+     */
+    @Test
+    public void aTargetedArmyOnlyStartsOnTheNationItNamed() {
+        final Nacao mine = nacao("m"), x = nacao("x"), y = nacao("y");
+        final ArmySim me = army("me", mine, platoon(troopType("inf", false), 900));
+        final ArmySim targetX = army("x1", x, platoon(troopType("xinf", false), 500));
+        final ArmySim bystanderY = army("y1", y, platoon(troopType("yinf", false), 500));
+        targetX.setCombatLevel(CombatLevel.DEFEND_ONLY);
+        bystanderY.setCombatLevel(CombatLevel.DEFEND_ONLY);
+
+        me.setTargetNacao(x);
+        assertTrue(partOf(me, CombatLevel.ATTACK_ARMY, terreno("plain", false), null, false,
+                targetX, bystanderY).isIn(CombatLayer.ARMY),
+                "it does engage the nation it named");
+
+        me.setTargetNacao(nacao("zzz"));
+        assertEquals(LayerParticipation.Reason.NO_ENEMY_PRESENT,
+                partOf(me, CombatLevel.ATTACK_ARMY, terreno("plain", false), null, false,
+                        targetX, bystanderY).getReason(CombatLayer.ARMY),
+                "nobody here is the nation it named, and nobody here is attacking it");
+    }
+
+    /** Defend-only does not initiate, but is still pulled into a fight someone else starts. */
+    @Test
+    public void defendOnlyStillFightsWhenAttacked() {
+        final Nacao mine = nacao("m"), foe = nacao("f");
+        final ArmySim defender = army("def", mine, platoon(troopType("inf", false), 900));
+        final ArmySim attacker = army("att", foe, platoon(troopType("einf", false), 500));
+        attacker.setCombatLevel(CombatLevel.ATTACK_ARMY);
+
+        final LayerParticipation p = partOf(defender, CombatLevel.DEFEND_ONLY,
+                terreno("plain", false), null, false, attacker);
+
+        assertTrue(p.isIn(CombatLayer.ARMY), "being attacked is not optional");
+    }
+
+    /** Two defend-only armies stare at each other and nothing happens. */
+    @Test
+    public void twoDefendersNeverStartAnything() {
+        final Nacao mine = nacao("m"), foe = nacao("f");
+        final ArmySim one = army("one", mine, platoon(troopType("inf", false), 900));
+        final ArmySim two = army("two", foe, platoon(troopType("einf", false), 500));
+        two.setCombatLevel(CombatLevel.DEFEND_ONLY);
+
+        final LayerParticipation p = partOf(one, CombatLevel.DEFEND_ONLY,
+                terreno("plain", false), null, false, two);
+
+        assertEquals(LayerParticipation.Reason.NO_ENEMY_PRESENT, p.getReason(CombatLayer.ARMY));
     }
 
     @Test
@@ -191,8 +310,8 @@ public class LayerParticipationTest {
         final ArmySim land = army("land", mine, platoon(troopType("inf", false), 900));
         final ArmySim enemy = army("enemy", foe, platoon(troopType("inf", false), 500));
 
-        final LayerParticipation p = LayerParticipation.of(land, CombatLevel.ATTACK_CITY,
-                terreno("plain", false), cidade(foe, 0), atWar(land, enemy), true);
+        final LayerParticipation p = partOf(land, CombatLevel.ATTACK_CITY,
+                terreno("plain", false), cidade(foe, 0), true, enemy);
 
         assertEquals(".AC", p.getBadge());
         assertEquals(LayerParticipation.Reason.NO_SHIPS, p.getReason(CombatLayer.NAVY));
@@ -206,17 +325,16 @@ public class LayerParticipationTest {
         final ArmySim enemy = army("enemy", foe, platoon(troopType("inf", false), 500));
         final Terreno plain = terreno("plain", false);
         final Cidade city = cidade(foe, 0);
-        final HostilityMatrix war = atWar(land, enemy);
 
         assertEquals(LayerParticipation.Reason.WILL_NOT_ASSAULT_CITY,
-                LayerParticipation.of(land, CombatLevel.DEFEND_ONLY, plain, city, war, true)
+                partOf(land, CombatLevel.DEFEND_ONLY, plain, city, true, enemy)
                         .getReason(CombatLayer.CITY));
         assertEquals(LayerParticipation.Reason.WILL_NOT_ASSAULT_CITY,
-                LayerParticipation.of(land, CombatLevel.ATTACK_ARMY, plain, city, war, true)
+                partOf(land, CombatLevel.ATTACK_ARMY, plain, city, true, enemy)
                         .getReason(CombatLayer.CITY));
-        assertTrue(LayerParticipation.of(land, CombatLevel.ATTACK_CITY, plain, city, war, true)
+        assertTrue(partOf(land, CombatLevel.ATTACK_CITY, plain, city, true, enemy)
                 .isIn(CombatLayer.CITY));
-        assertTrue(LayerParticipation.of(land, CombatLevel.RAZE_CITY, plain, city, war, true)
+        assertTrue(partOf(land, CombatLevel.RAZE_CITY, plain, city, true, enemy)
                 .isIn(CombatLayer.CITY));
     }
 
@@ -226,8 +344,8 @@ public class LayerParticipationTest {
         final ArmySim land = army("land", mine, platoon(troopType("inf", false), 900));
         final ArmySim enemy = army("enemy", foe, platoon(troopType("inf", false), 500));
 
-        final LayerParticipation p = LayerParticipation.of(land, CombatLevel.RAZE_CITY,
-                terreno("plain", false), cidade(nacao("neutral"), 0), atWar(land, enemy), false);
+        final LayerParticipation p = partOf(land, CombatLevel.RAZE_CITY,
+                terreno("plain", false), cidade(nacao("neutral"), 0), false, enemy);
 
         assertEquals(LayerParticipation.Reason.NOT_HOSTILE_TO_CITY, p.getReason(CombatLayer.CITY));
     }
@@ -236,8 +354,8 @@ public class LayerParticipationTest {
     public void anArmyWithNobodyToFightSitsOutTheFightingLayers() {
         final ArmySim lonely = army("lonely", nacao("m"), platoon(troopType("inf", false), 900));
 
-        final LayerParticipation p = LayerParticipation.of(lonely, CombatLevel.ATTACK_ARMY,
-                terreno("plain", false), null, new HostilityMatrix(), false);
+        final LayerParticipation p = partOf(lonely, CombatLevel.ATTACK_ARMY,
+                terreno("plain", false), null, false);
 
         assertEquals(LayerParticipation.Reason.NO_ENEMY_PRESENT, p.getReason(CombatLayer.ARMY));
         assertFalse(p.isInAnyLayer());
@@ -250,8 +368,8 @@ public class LayerParticipationTest {
         final ArmySim wiped = army("wiped", mine, platoon(troopType("inf", false), 0));
         final ArmySim enemy = army("enemy", foe, platoon(troopType("inf", false), 500));
 
-        final LayerParticipation p = LayerParticipation.of(wiped, CombatLevel.RAZE_CITY,
-                terreno("plain", false), cidade(foe, 0), atWar(wiped, enemy), true);
+        final LayerParticipation p = partOf(wiped, CombatLevel.RAZE_CITY,
+                terreno("plain", false), cidade(foe, 0), true, enemy);
 
         assertEquals("...", p.getBadge());
         assertEquals(LayerParticipation.Reason.DESTROYED_EARLIER, p.getReason(CombatLayer.CITY));

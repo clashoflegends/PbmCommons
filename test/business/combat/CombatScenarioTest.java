@@ -169,18 +169,22 @@ public class CombatScenarioTest {
     @Test
     public void layerMembershipIsReportedPerLayer() {
         final Nacao mine = nacao("m"), foe = nacao("f");
+        // an enemy fleet, so there is a battle at sea; plus a land army that is nobody's naval enemy
         final ArmySim fleet = army("fleet", mine, platoon(troopType("sh", true), 40));
+        final ArmySim enemyFleet = army("efleet", foe, platoon(troopType("esh", true), 30));
         final ArmySim land = army("land", foe, platoon(troopType("inf", false), 500));
 
         final CombatScenario s = new CombatScenario(deathMatch(), local(terreno("plain"), null));
         s.addArmy(fleet, CombatScenario.Provenance.EXACT);
+        s.addArmy(enemyFleet, CombatScenario.Provenance.ESTIMATED);
         s.addArmy(land, CombatScenario.Provenance.ESTIMATED);
 
-        assertEquals(1, s.getArmies(CombatLayer.NAVY).size());
+        assertEquals(2, s.getArmies(CombatLayer.NAVY).size(), "both fleets, and only the fleets");
         assertTrue(s.getArmies(CombatLayer.NAVY).contains(fleet));
+        assertFalse(s.getArmies(CombatLayer.NAVY).contains(land));
         assertFalse(s.getArmies(CombatLayer.ARMY).contains(fleet),
                 "a fleet with no troops does not fight ashore");
-        assertEquals(540, s.getQtTropasTotal());
+        assertEquals(570, s.getQtTropasTotal());
     }
 
     @Test

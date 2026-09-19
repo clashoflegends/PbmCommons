@@ -349,20 +349,26 @@ public class ExercitoFacade implements Serializable {
      * take part in the fight ashore or the assault on a city, whatever its orders say. It is also the
      * commonest "why didn't my fleet defend the city?" answer.
      *
-     * An EMPTY army is not barco-only; it is simply empty.
+     * An EMPTY army counts as barco-only, because {@code 0 == 0}. That is the Judge's behaviour and
+     * it is kept deliberately: this method is documented as a mirror, and a mirror that quietly
+     * "improves" one case is worse than no mirror at all. Adding a {@code total > 0} guard here would
+     * let an empty army into the land layer the moment the Judge delegates to this method. Callers
+     * that care about emptiness should test it themselves, which is what the simulator does before it
+     * ever asks this question.
      *
      * Mirrors the Judge's {@code ExercitoControl.isBarcoOnly()}
-     * ({@code getTropaQtTotal() == getTropaQtBarco()}).
+     * ({@code getTropaQtTotal() == getTropaQtBarco()}), whose barco count also skips zero-quantity
+     * platoons - which changes nothing, since they contribute zero to both sides.
      */
     public boolean isBarcoOnly(IExercito exercito) {
         int total = 0, barcos = 0;
         for (Pelotao pelotao : exercito.getPelotoes().values()) {
             total += pelotao.getQtd();
-            if (pelotao.getTipoTropa() != null && pelotao.getTipoTropa().isBarcos()) {
+            if (isShips(pelotao.getTipoTropa())) {
                 barcos += pelotao.getQtd();
             }
         }
-        return total > 0 && total == barcos;
+        return total == barcos;
     }
 
     public int getEsquadra(Exercito exercito) {

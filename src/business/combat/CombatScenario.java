@@ -1,5 +1,6 @@
 package business.combat;
 
+import business.facade.ExercitoFacade;
 import business.interfaces.IExercito;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,13 +61,13 @@ public class CombatScenario {
     private final Map<Pelotao, Provenance> platoonProvenance = new IdentityHashMap<>();
     private final Set<Nacao> loadedNacoes = new LinkedHashSet<>();
     private final HostilityDeriver deriver = new HostilityDeriver();
+    private final ExercitoFacade exercitoFacade = new ExercitoFacade();
 
     private Partida partida;
     private Local local;
     private Terreno terreno;
     private Cidade cidade;
     private boolean cityParticipates;
-    private HostilityMatrix matrix = new HostilityMatrix();
 
     public CombatScenario() {
     }
@@ -172,7 +173,6 @@ public class CombatScenario {
         for (Pelotao pelotao : army.getPelotoes().values()) {
             platoonProvenance.put(pelotao, provenance == null ? Provenance.ESTIMATED : provenance);
         }
-        invalidate();
     }
 
     public void remArmy(ArmySim army) {
@@ -181,7 +181,6 @@ public class CombatScenario {
         for (Pelotao pelotao : army.getPelotoes().values()) {
             platoonProvenance.remove(pelotao);
         }
-        invalidate();
     }
 
     public Provenance getProvenance(ArmySim army) {
@@ -203,46 +202,46 @@ public class CombatScenario {
     }
 
     /**
-     * Rebuilds the hostility matrix from the game type and the loaded relationship rows.
+     * The hostility matrix, rebuilt on every call.
      *
-     * Cheap, and deliberately not cached across edits: adding an army or changing its nation changes
-     * the answer, and a stale matrix is the kind of wrong that looks right.
+     * NOT cached, on purpose. The inputs change from several directions - a new army, a removed one,
+     * an edited nation, a newly merged ally EGF - and only some of those pass through this class, so
+     * any cache would need an invalidation rule that callers could forget. A stale matrix is the kind
+     * of wrong that looks right. The cost is a pairwise pass over at most a few dozen armies, which
+     * is nothing next to being quietly wrong about who is fighting whom.
      */
     public HostilityMatrix getMatrix() {
-        if (matrix == null) {
-            matrix = deriver.derive(partida, armies, loadedNacoes);
-        }
-        return matrix;
-    }
-
-    private void invalidate() {
-        this.matrix = null;
-    }
-
-    /** Force a rebuild after editing an army's nation or adding a loaded EGF. */
-    public void doRefreshMatrix() {
-        invalidate();
+        return deriver.derive(partida, armies, loadedNacoes);
     }
 
     /**
-     * Where this army fights, and why it sits out what it sits out.
+     * Where every army fights, and why each sits out what it sits out.
      *
-     * Derived on demand rather than stored, because the Judge re-evaluates between layers and a
-     * cached answer from load time would be wrong for exactly the battles worth simulating.
+     * Roster-level because naval and land participation are decided by PAIRING: holding ships does
+     * not put an army at sea unless an enemy also holds ships. Derived on demand rather than stored,
+     * because the Judge re-evaluates between layers.
      */
-    public LayerParticipation getParticipation(ArmySim army) {
+    public Map<ArmySim, LayerParticipation> getParticipation() {
         final Cidade active = getCidadeAtiva();
-        final boolean hostileToCity = active != null
-                && deriver.isHostileToCity(partida, army, active.getNacao(), loadedNacoes);
-        return LayerParticipation.of(army, army.getCombatLevel(), terreno, active, getMatrix(),
-                hostileToCity);
+        final Map<ArmySim, Boolean> hostileToCity = new IdentityHashMap<>();
+        for (ArmySim army : armies) {
+            hostileToCity.put(army, active != null
+                    && deriver.isHostileToCity(partida, army, active.getNacao(), loadedNacoes));
+        }
+        return LayerParticipation.forRoster(armies, terreno, active, getMatrix(), hostileToCity);
+    }
+
+    /** Where this one army fights. Prefer {@link #getParticipation()} when asking about several. */
+    public LayerParticipation getParticipation(ArmySim army) {
+        return getParticipation().get(army);
     }
 
     /** Which armies take part in a given layer. */
     public List<ArmySim> getArmies(CombatLayer layer) {
         final List<ArmySim> ret = new ArrayList<>();
+        final Map<ArmySim, LayerParticipation> all = getParticipation();
         for (ArmySim army : armies) {
-            if (getParticipation(army).isIn(layer)) {
+            if (all.get(army).isIn(layer)) {
                 ret.add(army);
             }
         }
@@ -263,9 +262,7 @@ public class CombatScenario {
     public int getQtTropasTotal() {
         int ret = 0;
         for (IExercito army : armies) {
-            for (Pelotao pelotao : army.getPelotoes().values()) {
-                ret += pelotao.getQtd();
-            }
+            ret += exercitoFacade.getQtTropasTotal(army);
         }
         return ret;
     }

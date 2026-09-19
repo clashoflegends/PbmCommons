@@ -38,17 +38,25 @@ public enum CombatLevel {
         return nivel;
     }
 
+    /** Will this army start a fight with another army? Anything above defend-only initiates. */
+    public boolean isAttackArmy() {
+        return this.nivel >= ATTACK_ARMY.nivel;
+    }
+
     /** Does this level reach the city layer? Mirrors the Judge's {@code getCombateNivel() >= 2} gate. */
     public boolean isAttackCity() {
         return this.nivel >= ATTACK_CITY.nivel;
     }
 
     /**
+     * Deliberately NOT called {@code valueOf}: that would overload {@code Enum.valueOf(String)},
+     * and a reader seeing {@code CombatLevel.valueOf(x)} could not tell at a glance which one runs.
+     *
      * @param nivel the Judge's integer
      * @return the matching level, or {@link #DEFEND_ONLY} for anything out of range - the safe end,
      *         because over-stating intent would invent an assault the player never ordered.
      */
-    public static CombatLevel valueOf(int nivel) {
+    public static CombatLevel fromNivel(int nivel) {
         for (CombatLevel ret : values()) {
             if (ret.nivel == nivel) {
                 return ret;
