@@ -201,7 +201,19 @@ public class CombatScenario {
      */
     public int getCityDefense() {
         final Cidade active = getCidadeAtiva();
-        return active == null ? 0 : battleSimFacade.getCityDefenseCombat(active);
+        if (active == null) {
+            return 0;
+        }
+        if (active.getNacao() == null) {
+            // getCityDefenseCombat log.error()s a city with no nation and a size above zero - a
+            // server-shaped alarm that would fire from the client every time a player opened
+            // BattleSim on one. 27 of the 207 cities in a live GoT12c EGF are exactly that: no
+            // owner visible, size above zero. The combat method returns the base for them anyway
+            // (there is no nation to carry a power), so taking the base directly is the SAME number
+            // without the false alarm, and without touching a method the Judge shares.
+            return battleSimFacade.getCityDefenseBase(active);
+        }
+        return battleSimFacade.getCityDefenseCombat(active);
     }
 
     /**

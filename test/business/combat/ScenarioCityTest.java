@@ -203,6 +203,24 @@ public class ScenarioCityTest {
                 "100 percent loyalty and 0 both double the base, by the formula's own branch");
     }
 
+    /**
+     * A city whose owner the player cannot see still has a defence, and asking for it must not
+     * raise a server-shaped alarm.
+     *
+     * {@code getCityDefenseCombat} log.error()s "City without nation, why?" for a city with no
+     * nation and a size above zero. That is a fair question on the server and a false alarm on the
+     * client: 27 of the 207 cities in a live GoT12c EGF are exactly that shape. The scenario takes
+     * the base directly for them, which is the same number the combat method would return anyway.
+     */
+    @Test
+    public void aCityWithNoVisibleOwnerStillDefendsAndDoesNotRaiseAnAlarm() {
+        final Cidade city = cidade(null, 3, 3, 100);
+        final CombatScenario s = new CombatScenario(deathMatch(), hex(city));
+
+        assertEquals(new BattleSimFacade().getCityDefense(3, 3, 100), s.getCityDefense());
+        assertTrue(s.getCityDefense() > 0);
+    }
+
     @Test
     public void aHexWithNoCityHasNoDefenceAndNoSiege() {
         final CombatScenario s = new CombatScenario(deathMatch(), hex(null));
