@@ -142,34 +142,28 @@ public class ScenarioLoaderTest {
         army("a1", mine, local, 0, platoon(troopType("inf", false), 900));
         army("a2", foe, local, 0, platoon(troopType("einf", false), 500));
 
-        final CombatScenario s = new ScenarioLoader().load(partida(";FFA;"), local, me, null);
+        final CombatScenario s = new ScenarioLoader().load(partida(";FFA;"), local, me);
 
         assertEquals(2, s.getArmies().size());
         assertEquals(1400, s.getQtTropasTotal());
     }
 
     /**
-     * A merged ally's armies are exact, and the caller is the one who says which allies those are.
-     * Deciding it here would duplicate Counselor knowledge this library cannot see.
+     * Only the observer's own armies are exact. There is no second EGF to make anyone else's so.
+     *
+     * An ally's armies are an outside view like any other: what the server chose to put in the
+     * observer's single results file. Friendly diplomacy does not change that.
      */
     @Test
-    public void aMergedAllysArmiesAreExact() {
+    public void onlyMyOwnArmiesAreExact() {
         final Jogador me = jogador("j1");
         final Nacao ally = nacao("a", jogador("j2"));
         final Local local = hex(null);
         army("a3", ally, local, 0, platoon(troopType("ainf", false), 300));
 
-        final CombatScenario notMerged = new ScenarioLoader()
-                .load(partida(";FFA;"), local, me, null);
-        assertEquals(CombatScenario.Provenance.ESTIMATED,
-                notMerged.getProvenance(notMerged.getArmies().get(0)));
+        final CombatScenario s = new ScenarioLoader().load(partida(";FFA;"), local, me);
 
-        final CombatScenario merged = new ScenarioLoader()
-                .load(partida(";FFA;"), local, me, Arrays.asList(ally));
-        assertEquals(CombatScenario.Provenance.EXACT,
-                merged.getProvenance(merged.getArmies().get(0)));
-        assertTrue(merged.getMergedNacoes().contains(ally),
-                "and the scenario keeps it, so the hostility matrix reads that ally's row too");
+        assertEquals(CombatScenario.Provenance.ESTIMATED, s.getProvenance(s.getArmies().get(0)));
     }
 
     /**
@@ -186,7 +180,7 @@ public class ScenarioLoaderTest {
         final Local local = hex(cidade);
         army("g1", owner, local, 0, platoon(troopType("mil", false), 200));
 
-        final CombatScenario s = new ScenarioLoader().load(partida(";FFA;"), local, jogador("j1"), null);
+        final CombatScenario s = new ScenarioLoader().load(partida(";FFA;"), local, jogador("j1"));
 
         assertEquals(1, s.getArmies().size());
         assertEquals(200, s.getQtTropasTotal());
@@ -204,7 +198,7 @@ public class ScenarioLoaderTest {
         army("a1", nacao("m", null), local, 3, platoon(troopType("inf", false), 900));
 
         final ArmySim loaded = new ScenarioLoader()
-                .load(partida(";FFA;"), local, null, null).getArmies().get(0);
+                .load(partida(";FFA;"), local, null).getArmies().get(0);
 
         assertEquals(3, loaded.getTatica());
         assertEquals(CombatLevel.ATTACK_ARMY, loaded.getCombatLevel());
@@ -219,7 +213,7 @@ public class ScenarioLoaderTest {
         army("a1", nacao("m", null), local, 0, real);
 
         final ArmySim loaded = new ScenarioLoader()
-                .load(partida(";FFA;"), local, null, null).getArmies().get(0);
+                .load(partida(";FFA;"), local, null).getArmies().get(0);
         final Pelotao simulated = loaded.getPelotoes().values().iterator().next();
 
         assertNotSame(real, simulated);
@@ -230,7 +224,7 @@ public class ScenarioLoaderTest {
     @Test
     public void anEmptyHexLoadsAnEmptyScenario() {
         final CombatScenario s = new ScenarioLoader()
-                .load(partida(";FFA;"), hex(null), jogador("j1"), null);
+                .load(partida(";FFA;"), hex(null), jogador("j1"));
 
         assertEquals(0, s.getArmies().size());
         assertFalse(s.hasCombat());
@@ -257,7 +251,7 @@ public class ScenarioLoaderTest {
                 platoon(troopType("none", false), 500),
                 platoon(troopType("ship", true), 20));
 
-        final CombatScenario s = new ScenarioLoader().load(deathMatch(), local, me, null);
+        final CombatScenario s = new ScenarioLoader().load(deathMatch(), local, me);
 
         assertEquals(2, s.getArmies().size());
         assertEquals(1420, s.getQtTropasTotal(), "the head count is exact even when the mix is not");
@@ -288,7 +282,7 @@ public class ScenarioLoaderTest {
                 platoon(troopType("none", false), 500),
                 platoon(troopType("ship", true), 20));
 
-        final CombatScenario s = new ScenarioLoader().load(deathMatch(), local, me, null);
+        final CombatScenario s = new ScenarioLoader().load(deathMatch(), local, me);
         for (ArmySim army : s.getArmies()) {
             if ("a2".equals(army.getCodigo())) {
                 assertTrue(s.getParticipation().get(army).isIn(CombatLayer.ARMY));

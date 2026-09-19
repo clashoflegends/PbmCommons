@@ -18,9 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * What the roster tree and the status bar say, derived rather than assigned.
  *
- * The rules under test all bend the same way: the tree must never claim more than the hostility
- * matrix knows. Filing an unresolved third party under ALLIED would tell the player someone is on
- * his side, which is exactly the claim the matrix refused to make when it marked the pair assumed.
+ * The matrix is the only input. Not teams, not alliances, not whose file is loaded, not any notion
+ * of a "side" - the Judge does not model sides either, it gives each army a list of enemies it takes
+ * damage from and that is the whole of it. So every assertion here reduces to a matrix lookup.
  */
 public class ScenarioRosterTest {
 
@@ -121,68 +121,71 @@ public class ScenarioRosterTest {
         final ScenarioRoster roster = ScenarioRoster.of(s);
 
         assertEquals(ScenarioRoster.Group.MINE, roster.getGroup(ours));
-        assertEquals(ScenarioRoster.Group.HOSTILE, roster.getGroup(theirs));
-        assertEquals(Arrays.asList(ScenarioRoster.Group.MINE, ScenarioRoster.Group.HOSTILE),
+        assertEquals(ScenarioRoster.Group.FIGHTING_AGAINST_ME, roster.getGroup(theirs));
+        assertEquals(Arrays.asList(ScenarioRoster.Group.MINE,
+                ScenarioRoster.Group.FIGHTING_AGAINST_ME),
                 roster.getGroups(), "empty groups are not tree nodes");
         assertEquals(900, roster.getQtTropas(ScenarioRoster.Group.MINE));
-        assertEquals(500, roster.getQtTropas(ScenarioRoster.Group.HOSTILE));
+        assertEquals(500, roster.getQtTropas(ScenarioRoster.Group.FIGHTING_AGAINST_ME));
     }
 
     /**
-     * The reason there are four groups. An unresolved third party is NOT an ally, and saying so was
-     * the whole point of marking the pair assumed one layer down.
+     * Fighting WITH me is read off the matrix like everything else: it is not hostile to me, and it
+     * is hostile to something that is. No alliance, no team, no loaded file comes into it.
      */
     @Test
-    public void anUnresolvedThirdPartyIsNeutralNotAllied() {
+    public void anArmyFightingMyEnemyIsFightingWithMe() {
         final Jogador me = jogador("j1");
-        final Nacao mine = nacao("m", me), other = nacao("x", null);
-        // my EGF says nothing about x either way, so the pair is assumed not hostile
+        final Nacao mine = nacao("m", me), foe = nacao("f", null), friend = nacao("a", null);
+        relate(mine, foe, -2);
+        relate(mine, friend, 2);
 
         final CombatScenario s = new CombatScenario(partida(";FFA;"), local());
         s.setObserver(me);
         final ArmySim ours = army("ours", mine, platoon(troopType("inf", false), 900));
-        final ArmySim stranger = army("stranger", other, platoon(troopType("xinf", false), 500));
+        final ArmySim enemy = army("enemy", foe, platoon(troopType("einf", false), 500));
+        final ArmySim other = army("other", friend, platoon(troopType("ainf", false), 300));
         s.addArmy(ours, CombatScenario.Provenance.EXACT);
-        s.addArmy(stranger, CombatScenario.Provenance.ESTIMATED);
+        s.addArmy(enemy, CombatScenario.Provenance.ESTIMATED);
+        s.addArmy(other, CombatScenario.Provenance.ESTIMATED);
 
-        assertEquals(ScenarioRoster.Group.NEUTRAL, ScenarioRoster.of(s).getGroup(stranger));
-        assertTrue(s.getMatrix().isAssumed(ours, stranger), "and the matrix still says it guessed");
+        // nothing in my EGF says the third nation fights my enemy, so it does not - yet
+        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(other));
+
+        // the matrix is the law, and the player may state it
+        s.setHostile(other, enemy, true);
+
+        assertEquals(ScenarioRoster.Group.FIGHTING_WITH_ME, ScenarioRoster.of(s).getGroup(other));
+        assertEquals(300, ScenarioRoster.of(s).getQtTropas(ScenarioRoster.Group.FIGHTING_WITH_ME));
     }
 
-    /** A merged EGF is the one positive signal the client actually holds. */
+    /** A friendly relationship on its own puts nobody in the battle. */
     @Test
-    public void anAllyIsOneWhoseOwnEgfIsHere() {
+    public void beingOnGoodTermsWithMeIsNotFightingWithMe() {
         final Jogador me = jogador("j1");
-        final Nacao mine = nacao("m", me), ally = nacao("a", jogador("j2"));
-        relate(mine, ally, 2);
+        final Nacao mine = nacao("m", me), friend = nacao("a", null);
+        relate(mine, friend, 2);
 
         final CombatScenario s = new CombatScenario(partida(";FFA;"), local());
         s.setObserver(me);
-        final ArmySim ours = army("ours", mine, platoon(troopType("inf", false), 900));
-        final ArmySim friend = army("friend", ally, platoon(troopType("ainf", false), 300));
-        s.addArmy(ours, CombatScenario.Provenance.EXACT);
-        s.addArmy(friend, CombatScenario.Provenance.ESTIMATED);
+        s.addArmy(army("ours", mine, platoon(troopType("inf", false), 900)),
+                CombatScenario.Provenance.EXACT);
+        final ArmySim other = army("other", friend, platoon(troopType("ainf", false), 300));
+        s.addArmy(other, CombatScenario.Provenance.ESTIMATED);
 
-        assertEquals(ScenarioRoster.Group.NEUTRAL, ScenarioRoster.of(s).getGroup(friend),
-                "a friendly relationship alone does not make its EGF present");
-
-        s.addMergedNacao(ally);
-
-        assertEquals(ScenarioRoster.Group.ALLIED, ScenarioRoster.of(s).getGroup(friend));
-        assertEquals(300, ScenarioRoster.of(s).getQtTropas(ScenarioRoster.Group.ALLIED));
+        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(other));
     }
 
     /**
-     * Watching someone else's battle. With no army of the observer's own present, "not hostile to
-     * mine" is vacuously true of everybody, so nobody may be called an ally on the strength of it.
+     * Watching someone else's battle. With no army of the observer's own there is no "me" to be with
+     * or against, so everyone is outside his battle - and the fight between them is still reported.
      */
     @Test
-    public void withNoArmyOfMyOwnNobodyIsAnAlly() {
+    public void withNoArmyOfMyOwnNobodyIsWithOrAgainstMe() {
         final Jogador me = jogador("j1");
         final Nacao x = nacao("x", null), y = nacao("y", null);
         final CombatScenario s = new CombatScenario(partida(";GDM;"), local());
         s.setObserver(me);
-        s.addMergedNacao(x);
         final ArmySim one = army("one", x, platoon(troopType("xinf", false), 900));
         final ArmySim two = army("two", y, platoon(troopType("yinf", false), 500));
         s.addArmy(one, CombatScenario.Provenance.ESTIMATED);
@@ -190,9 +193,61 @@ public class ScenarioRosterTest {
 
         final ScenarioRoster roster = ScenarioRoster.of(s);
 
-        assertEquals(ScenarioRoster.Group.NEUTRAL, roster.getGroup(one));
-        assertEquals(ScenarioRoster.Group.NEUTRAL, roster.getGroup(two));
+        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, roster.getGroup(one));
+        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, roster.getGroup(two));
         assertTrue(s.hasCombat(), "they are still fighting each other, just not me");
+        assertTrue(s.getMatrix().isInimigo(one, two));
+    }
+
+    /**
+     * The player outranks the derivation. "Suppose he declares on me this turn" is a legitimate
+     * what-if, and the edit has to survive the matrix being rebuilt - which it is, on every call.
+     */
+    @Test
+    public void aPlayerEditOutranksTheDerivationAndSurvivesRebuilds() {
+        final Jogador me = jogador("j1");
+        final Nacao mine = nacao("m", me), other = nacao("x", null);
+
+        final CombatScenario s = new CombatScenario(partida(";FFA;"), local());
+        s.setObserver(me);
+        final ArmySim ours = army("ours", mine, platoon(troopType("inf", false), 900));
+        final ArmySim theirs = army("theirs", other, platoon(troopType("xinf", false), 500));
+        s.addArmy(ours, CombatScenario.Provenance.EXACT);
+        s.addArmy(theirs, CombatScenario.Provenance.ESTIMATED);
+
+        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(theirs));
+
+        s.setHostile(ours, theirs, true);
+
+        assertEquals(ScenarioRoster.Group.FIGHTING_AGAINST_ME, ScenarioRoster.of(s).getGroup(theirs));
+        assertEquals(HostilityMatrix.Origin.PLAYER_EDITED, s.getMatrix().getOrigin(ours, theirs));
+        assertEquals(1, s.getEditedCount());
+        assertTrue(s.getMatrix().isInimigo(ours, theirs), "still there on a second rebuild");
+
+        s.clearHostilityEdits();
+
+        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(theirs));
+        assertEquals(0, s.getEditedCount());
+    }
+
+    /** An edit can also call off a fight the rules would impose. */
+    @Test
+    public void aPlayerEditCanMakePeaceInADeathMatch() {
+        final Jogador me = jogador("j1");
+        final CombatScenario s = new CombatScenario(partida(";GDM;"), local());
+        s.setObserver(me);
+        final ArmySim ours = army("ours", nacao("m", me), platoon(troopType("inf", false), 900));
+        final ArmySim theirs = army("theirs", nacao("f", null), platoon(troopType("einf", false), 500));
+        s.addArmy(ours, CombatScenario.Provenance.EXACT);
+        s.addArmy(theirs, CombatScenario.Provenance.ESTIMATED);
+
+        assertTrue(s.getMatrix().isInimigo(ours, theirs));
+
+        s.setHostile(ours, theirs, false);
+
+        assertFalse(s.getMatrix().isInimigo(ours, theirs));
+        assertFalse(s.hasCombat(), "nobody left to fight");
+        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(theirs));
     }
 
     @Test

@@ -1,65 +1,63 @@
 package business.combat;
 
+import business.facade.ExercitoFacade;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import business.facade.ExercitoFacade;
 import model.Nacao;
 
 /**
- * The roster tree's shape: which side each army is on, from the observer's point of view.
+ * The roster tree's shape: my armies, the ones fighting with me, the ones fighting against me, and
+ * the ones not fighting me.
  *
- * <h3>Why this is not a TreeModel</h3>
+ * <h3>The matrix is the only input</h3>
  *
- * It is the structure a {@code JTree} renders, not the tree itself. Keeping it as plain objects here
- * means the grouping rules are unit-tested without a window, and means the Counselor's wrapper is a
- * dumb adapter. It also keeps the whole thing on the right side of the eventual
- * combat-code-into-PbmCommons move.
+ * Every answer here comes from {@link HostilityMatrix} and nothing else. Not from teams, not from
+ * alliances, not from whose file is loaded, not from any notion of a "side". Those are constructs
+ * that exist outside a battle and are irrelevant inside one: the Judge itself does not model sides,
+ * it gives each army a list of enemies it takes damage from, and that list is the whole of it. A hex
+ * with thirteen mutually hostile nations has thirteen armies that each fight twelve others, and
+ * naming that "thirteen sides" adds nothing.
  *
- * <h3>Four groups, not three</h3>
+ * So this class does not partition anything. It answers one question per army, against the matrix,
+ * from the observer's point of view, and the observer's point of view is the only thing that makes
+ * "with" and "against" mean anything at all.
  *
- * The design sketched MINE / ALLIED / HOSTILE. Implementing it turned up a fourth case that has to
- * exist: in a free-for-all most foreign armies are neither known allies nor known enemies, and
- * {@link HostilityMatrix} deliberately marks those pairs as ASSUMED rather than resolved. Filing
- * them under ALLIED would tell the player they are on his side, which is precisely the claim the
- * matrix refused to make. So they get {@link Group#NEUTRAL}, and the status bar says how many pairs
- * that rests on.
+ * <h3>Why the fourth group is "not fighting ME"</h3>
  *
- * <h3>Why "allied" means a merged EGF</h3>
+ * The four categories are the player's own: mine, with me, against me, not fighting. The last is
+ * written as NOT_FIGHTING_ME because that is what it can actually test. An army with no enemies at
+ * all and an army busy with a private war against a third party are both outside the player's
+ * battle, and the roster has no basis for separating them - the second one IS fighting, so calling
+ * it "not fighting" would be false. Its enemies are listed on its own row, which is where that
+ * information belongs.
  *
- * Not-hostile is not the same as allied, and the matrix only tracks hostility. The one positive
- * signal the client actually holds is that an ally's EGF was merged into this world: the Counselor
- * autoloads an ally's file and nobody else's. So ALLIED is "its own EGF is here and it is not
- * hostile to me", which is conservative in the right direction - a real ally whose file was not
- * loaded shows up as NEUTRAL rather than being claimed as a friend.
+ * <h3>With no army of the observer's own present</h3>
  *
- * <h3>What this deliberately does NOT do</h3>
- *
- * It does not partition a free-for-all into sides. "Side" is only well defined when not-hostile is
- * transitive, which is exactly what a free-for-all breaks: A and B may both be at peace with C and
- * at war with each other. Any grouping that tried would be inventing structure. A multi-side team
- * game is the case where sides ARE well defined, and that is a later task, not an MVP one.
+ * Nothing special happens, deliberately. "With me" and "against me" are empty because there is no
+ * "me", so every army lands in NOT_FIGHTING_ME and its own enemy list carries the battle. Watching
+ * two other nations fight over a hex is a legitimate use and it reports the fight correctly.
  */
 public class ScenarioRoster {
 
-    /** Where an army sits relative to the player at the keyboard. */
+    /** Where an army sits relative to the player at the keyboard. Derived, never assigned. */
     public enum Group {
         /** The observer's own. */
         MINE,
-        /** Its own EGF was merged in and it is not hostile to the observer. */
-        ALLIED,
+        /** Not hostile to the observer, and hostile to something that IS hostile to the observer. */
+        FIGHTING_WITH_ME,
         /** Hostile to at least one of the observer's armies here. */
-        HOSTILE,
+        FIGHTING_AGAINST_ME,
         /**
-         * Everyone else: no read relationship, or a read peace that is not an alliance.
+         * Everyone else: outside the observer's battle.
          *
-         * Not an error state. In a free-for-all this is where most of the hex lives, and saying so
-         * is the honest answer.
+         * Not an error state, and not a claim that the army is idle. In a free-for-all this is where
+         * most of a crowded hex lives.
          */
-        NEUTRAL
+        NOT_FIGHTING_ME
     }
 
     private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
@@ -86,51 +84,56 @@ public class ScenarioRoster {
             return ret;
         }
         final List<ArmySim> armies = scenario.getArmies();
+        final HostilityMatrix matrix = scenario.getMatrix();
         final List<ArmySim> mine = new ArrayList<>();
         for (ArmySim army : armies) {
             if (isMine(army, scenario)) {
                 mine.add(army);
             }
         }
-        final HostilityMatrix matrix = scenario.getMatrix();
+        final List<ArmySim> againstMe = new ArrayList<>();
         for (ArmySim army : armies) {
-            ret.put(army, groupOf(army, scenario, mine, matrix));
+            if (!isMine(army, scenario) && isHostileToAny(matrix, army, mine)) {
+                againstMe.add(army);
+            }
+        }
+        for (ArmySim army : armies) {
+            ret.put(army, groupOf(army, scenario, mine, againstMe, matrix));
         }
         return ret;
     }
 
     private static Group groupOf(ArmySim army, CombatScenario scenario, List<ArmySim> mine,
-            HostilityMatrix matrix) {
+            List<ArmySim> againstMe, HostilityMatrix matrix) {
         if (isMine(army, scenario)) {
             return Group.MINE;
         }
-        for (ArmySim ours : mine) {
-            if (matrix.isInimigo(ours, army)) {
-                return Group.HOSTILE;
+        if (isHostileToAny(matrix, army, mine)) {
+            return Group.FIGHTING_AGAINST_ME;
+        }
+        // It fights someone who is fighting me, and it is not fighting me. That is the whole of
+        // what "with me" can mean, and it is read off the matrix like everything else. With no
+        // army of my own present againstMe is empty, so this cannot fire, which is correct.
+        if (isHostileToAny(matrix, army, againstMe)) {
+            return Group.FIGHTING_WITH_ME;
+        }
+        return Group.NOT_FIGHTING_ME;
+    }
+
+    private static boolean isHostileToAny(HostilityMatrix matrix, ArmySim army,
+            List<ArmySim> others) {
+        for (ArmySim other : others) {
+            if (matrix.isInimigo(army, other)) {
+                return true;
             }
         }
-        // Not hostile to anything of mine - but with no army of my own present that is vacuously
-        // true, so it is not evidence of friendship and must not be read as any.
-        return isMerged(army, scenario) && !mine.isEmpty() ? Group.ALLIED : Group.NEUTRAL;
+        return false;
     }
 
     private static boolean isMine(ArmySim army, CombatScenario scenario) {
         final Nacao nacao = army.getNacao();
         return nacao != null && scenario.getObserver() != null
                 && nacao.getOwner() == scenario.getObserver();
-    }
-
-    private static boolean isMerged(ArmySim army, CombatScenario scenario) {
-        final Nacao nacao = army.getNacao();
-        if (nacao == null) {
-            return false;
-        }
-        for (Nacao merged : scenario.getMergedNacoes()) {
-            if (merged == nacao) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void put(ArmySim army, Group group) {
@@ -153,10 +156,10 @@ public class ScenarioRoster {
         return Collections.unmodifiableList(byGroup.get(group));
     }
 
-    /** An army the roster never saw is NEUTRAL, the group that claims least. */
+    /** An army the roster never saw is outside the battle, the group that claims least. */
     public Group getGroup(ArmySim army) {
         final Group ret = ofArmy.get(army);
-        return ret == null ? Group.NEUTRAL : ret;
+        return ret == null ? Group.NOT_FIGHTING_ME : ret;
     }
 
     /** Running troop total for a group node, as in the wireframe's right-hand column. */

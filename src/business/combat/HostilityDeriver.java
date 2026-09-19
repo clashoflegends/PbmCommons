@@ -26,14 +26,17 @@ import model.Partida;
  * Nothing else. Not nation colour, not "hostile to my enemy", not transitive alliance. An inference
  * that looks like intelligence is the one most likely to be confidently wrong.
  *
- * <h3>Why a row is only trusted when its EGF was loaded</h3>
+ * <h3>Only the observer's own rows are complete</h3>
  *
- * The server exports a foreign nation's relationships only when they are positive and aimed at the
- * player. So a hostile nation arrives with an EMPTY map, a friendly one with a map of exactly ONE
- * entry, and {@code Nacao.getRelacionamento} catches the resulting miss and answers 0 = neutral,
- * silently. Asking such a nation about its enemies therefore returns "none" whatever the truth is.
- * Known rows scale with EGFs LOADED, not with one point of view: a merged ally contributes a
- * complete row of its own.
+ * The Counselor loads exactly ONE results EGF. There is no merging of an ally's file into it, so
+ * the only complete relationship rows in the world are the observer's own nations' - plus every row
+ * when the game runs public diplomacy.
+ *
+ * Everything else is a fragment. The server exports a foreign nation's relationships only when they
+ * are positive and aimed at the player, so a hostile nation arrives with an EMPTY map and a friendly
+ * one with a map of exactly ONE entry, and {@code Nacao.getRelacionamento} catches the resulting
+ * miss and answers 0 = neutral, silently. Asking such a nation about its enemies returns "none"
+ * whatever the truth is.
  *
  * Completeness is therefore PROVEN inside this class rather than promised by the caller - see
  * {@link #isComplete}. A caller cannot be asked to carry a server-side export rule in its head, and
@@ -52,13 +55,12 @@ public class HostilityDeriver {
     /**
      * @param partida      the game, for its type flags
      * @param armies       every army in the scenario
-     * @param observer     the player at the keyboard, whose own nations carry complete rows
-     * @param mergedNacoes the nations whose OWN EGF was merged into this world, so whose rows are
-     *                     complete too. Nothing else is read; see {@link #isComplete}.
+     * @param observer the player at the keyboard, whose own nations carry complete rows. Nothing
+     *                 else is read unless the game runs public diplomacy; see {@link #isComplete}.
      * @return a populated matrix, every hostile cell tagged with where its answer came from
      */
     public HostilityMatrix derive(Partida partida, Collection<? extends IExercito> armies,
-            Jogador observer, Collection<Nacao> mergedNacoes) {
+            Jogador observer) {
         final HostilityMatrix ret = new HostilityMatrix();
         for (IExercito army : armies) {
             ret.addArmy(army);
@@ -68,8 +70,7 @@ public class HostilityDeriver {
         for (IExercito army : list) {
             candidates.add(army.getNacao());
         }
-        final Map<Nacao, Map<Nacao, Integer>> known =
-                readRows(partida, observer, candidates, mergedNacoes);
+        final Map<Nacao, Map<Nacao, Integer>> known = readRows(partida, observer, candidates);
 
         for (int ii = 0; ii < list.size(); ii++) {
             for (int jj = ii + 1; jj < list.size(); jj++) {
@@ -116,7 +117,7 @@ public class HostilityDeriver {
      *         an army that cannot be shown to be hostile does not assault
      */
     public boolean isHostileToCity(Partida partida, IExercito army, Nacao cityOwner,
-            Jogador observer, Collection<Nacao> mergedNacoes) {
+            Jogador observer) {
         if (army == null || cityOwner == null) {
             return false;
         }
@@ -125,8 +126,7 @@ public class HostilityDeriver {
             return false;
         }
         final Integer read = lookup(
-                readRows(partida, observer, Arrays.asList(mine, cityOwner), mergedNacoes),
-                mine, cityOwner);
+                readRows(partida, observer, Arrays.asList(mine, cityOwner)), mine, cityOwner);
         if (read != null) {
             return read < 0;
         }
@@ -150,12 +150,12 @@ public class HostilityDeriver {
      * asked to remember a server-side export rule. See {@link #isComplete}.
      */
     private Map<Nacao, Map<Nacao, Integer>> readRows(Partida partida, Jogador observer,
-            Collection<Nacao> candidates, Collection<Nacao> mergedNacoes) {
+            Collection<Nacao> candidates) {
         final Map<Nacao, Map<Nacao, Integer>> ret = new IdentityHashMap<>();
         final boolean everythingExported = partida != null && partida.hasHabilidade(";SPD;");
         for (Nacao nacao : candidates) {
             if (nacao == null || ret.containsKey(nacao)
-                    || !isComplete(nacao, everythingExported, observer, mergedNacoes)) {
+                    || !isComplete(nacao, everythingExported, observer)) {
                 continue;
             }
             final Map<Nacao, Integer> row = new IdentityHashMap<>();
@@ -170,13 +170,12 @@ public class HostilityDeriver {
     }
 
     /**
-     * Can this nation's relationship row be trusted as its COMPLETE set? Exactly three ways, and
+     * Can this nation's relationship row be trusted as its COMPLETE set? Exactly two ways, and
      * they mirror the server's export rule one for one:
      *
      * <ol>
      *   <li>the game runs with public diplomacy, so every row is exported in full;</li>
-     *   <li>the nation is the observer's own, so his own EGF carries all of it;</li>
-     *   <li>the nation's own EGF was merged in, and the caller says which ones those were.</li>
+     *   <li>the nation is the observer's own, so his own EGF carries all of it.</li>
      * </ol>
      *
      * <b>Every other row is a fragment, and a fragment is worse than nothing.</b> The server also
@@ -187,28 +186,16 @@ public class HostilityDeriver {
      * That is the silent-neutral trap one layer up, which is why completeness is PROVEN here
      * instead of being a promise the caller makes.
      *
+     * There is no third way, and in particular an ally's file is not one: the Counselor loads a
+     * single results EGF and never merges another, so no foreign nation's own row is ever present.
+     *
      * {@code getOwner()} is set on the observer's own nations only. The server does set an owner on
      * an ally's nation in a team-locked game, but it sets the ALLY's owner, not the observer's, so
      * identity against the observer stays the right test. Compared by identity, never
-     * {@code Jogador.isNacao}, which leaks once allied EGFs merge.
+     * {@code Jogador.isNacao}, which can answer for a nation that is not the observer's.
      */
-    private boolean isComplete(Nacao nacao, boolean everythingExported, Jogador observer,
-            Collection<Nacao> mergedNacoes) {
-        if (everythingExported) {
-            return true;
-        }
-        if (observer != null && nacao.getOwner() == observer) {
-            return true;
-        }
-        if (mergedNacoes == null) {
-            return false;
-        }
-        for (Nacao merged : mergedNacoes) {
-            if (merged == nacao) {
-                return true;
-            }
-        }
-        return false;
+    private boolean isComplete(Nacao nacao, boolean everythingExported, Jogador observer) {
+        return everythingExported || (observer != null && nacao.getOwner() == observer);
     }
 
     /**

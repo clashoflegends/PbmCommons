@@ -67,7 +67,7 @@ public class CombatScenario {
     private final List<ArmySim> armies = new ArrayList<>();
     private final Map<ArmySim, Provenance> armyProvenance = new IdentityHashMap<>();
     private final Map<Pelotao, Provenance> platoonProvenance = new IdentityHashMap<>();
-    private final Set<Nacao> mergedNacoes = new LinkedHashSet<>();
+    private final Map<ArmySim, Map<ArmySim, Boolean>> hostilityEdits = new IdentityHashMap<>();
     private final HostilityDeriver deriver = new HostilityDeriver();
     private final ExercitoFacade exercitoFacade = new ExercitoFacade();
 
@@ -162,21 +162,46 @@ public class CombatScenario {
     }
 
     /**
-     * Declares that a nation's OWN EGF was merged into this world, so its relationship row is the
-     * complete set rather than the fragment the server exports about foreigners.
+     * The player's own answer for one pair, overriding whatever was derived.
      *
-     * Deciding WHICH nations those are is Counselor knowledge (it reads whether an actor carries
-     * loaded orders), so it is injected here rather than re-derived in this library. Known rows
-     * scale with EGFs merged, not with one point of view.
+     * The matrix is the law for a simulation, so the player has to be able to state a different
+     * diplomatic situation and see what falls out of it: "suppose he declares on me this turn". The
+     * edit is symmetric, because hostility is.
      */
-    public void addMergedNacao(Nacao nacao) {
-        if (nacao != null) {
-            mergedNacoes.add(nacao);
+    public void setHostile(ArmySim one, ArmySim other, boolean hostile) {
+        if (one == null || other == null || one == other) {
+            return;
         }
+        putEdit(one, other, hostile);
+        putEdit(other, one, hostile);
     }
 
-    public Collection<Nacao> getMergedNacoes() {
-        return Collections.unmodifiableSet(mergedNacoes);
+    private void putEdit(ArmySim from, ArmySim to, boolean hostile) {
+        Map<ArmySim, Boolean> row = hostilityEdits.get(from);
+        if (row == null) {
+            row = new IdentityHashMap<>();
+            hostilityEdits.put(from, row);
+        }
+        row.put(to, hostile);
+    }
+
+    /** Has the player overruled the derivation for this pair? */
+    public boolean isEdited(ArmySim one, ArmySim other) {
+        final Map<ArmySim, Boolean> row = hostilityEdits.get(one);
+        return row != null && row.containsKey(other);
+    }
+
+    public int getEditedCount() {
+        int ret = 0;
+        for (Map<ArmySim, Boolean> row : hostilityEdits.values()) {
+            ret += row.size();
+        }
+        return ret / 2;
+    }
+
+    /** Back to what the EGF and the game type say. The matrix dialog's "Reset to assumed". */
+    public void clearHostilityEdits() {
+        hostilityEdits.clear();
     }
 
     public List<ArmySim> getArmies() {
@@ -227,16 +252,31 @@ public class CombatScenario {
     }
 
     /**
-     * The hostility matrix, rebuilt on every call.
+     * The hostility matrix: derived from the EGF and the game type, then the player's edits on top.
      *
-     * NOT cached, on purpose. The inputs change from several directions - a new army, a removed one,
-     * an edited nation, a newly merged ally EGF - and only some of those pass through this class, so
-     * any cache would need an invalidation rule that callers could forget. A stale matrix is the kind
-     * of wrong that looks right. The cost is a pairwise pass over at most a few dozen armies, which
-     * is nothing next to being quietly wrong about who is fighting whom.
+     * <b>Rebuilt on every call, and the edits are what persist.</b> Caching the matrix itself would
+     * need an invalidation rule for every input that can move - a new army, a removed one, an army
+     * retyped to a different nation - and callers would forget one. A stale matrix is the kind of
+     * wrong that looks right. Keeping the player's overrides as the durable state and re-deriving
+     * around them gets persistence without the cache. The cost is a pairwise pass over at most a few
+     * dozen armies.
      */
     public HostilityMatrix getMatrix() {
-        return deriver.derive(partida, armies, observer, mergedNacoes);
+        final HostilityMatrix ret = deriver.derive(partida, armies, observer);
+        for (ArmySim one : armies) {
+            final Map<ArmySim, Boolean> row = hostilityEdits.get(one);
+            if (row == null) {
+                continue;
+            }
+            for (Map.Entry<ArmySim, Boolean> entry : row.entrySet()) {
+                if (Boolean.TRUE.equals(entry.getValue())) {
+                    ret.setHostile(one, entry.getKey(), HostilityMatrix.Origin.PLAYER_EDITED);
+                } else {
+                    ret.setNotHostile(one, entry.getKey());
+                }
+            }
+        }
+        return ret;
     }
 
     /**
@@ -251,8 +291,7 @@ public class CombatScenario {
         final Map<ArmySim, Boolean> hostileToCity = new IdentityHashMap<>();
         for (ArmySim army : armies) {
             hostileToCity.put(army, active != null
-                    && deriver.isHostileToCity(partida, army, active.getNacao(), observer,
-                            mergedNacoes));
+                    && deriver.isHostileToCity(partida, army, active.getNacao(), observer));
         }
         return LayerParticipation.forRoster(armies, terreno, active, getMatrix(), hostileToCity);
     }

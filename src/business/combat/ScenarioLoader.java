@@ -1,6 +1,5 @@
 package business.combat;
 
-import java.util.Collection;
 import model.Exercito;
 import model.Jogador;
 import model.Local;
@@ -44,12 +43,6 @@ import model.Partida;
  * game (intent is exactly the sort of thing a player spends orders to learn), not a gap to fill in
  * with a guess.
  *
- * <h3>What this class deliberately does NOT do</h3>
- *
- * It does not work out which allies' EGFs were merged. That test is Counselor knowledge - an
- * autoloaded ally's actors carry loaded orders, and fogged actors do not - so the caller passes the
- * answer in. Re-deriving it here would duplicate {@code WorldControler} inside a library that
- * cannot see it.
  */
 public class ScenarioLoader {
 
@@ -60,20 +53,13 @@ public class ScenarioLoader {
      * arrives through the same door. It has to: leaving it out understates a city assault, which is
      * the direction a simulator must never be wrong in.
      *
-     * @param partida      the game, for its type flags
-     * @param local        the hex
-     * @param observer     the player at the keyboard
-     * @param mergedNacoes nations whose own EGF was merged in, decided by the caller
+     * @param partida  the game, for its type flags
+     * @param local    the hex
+     * @param observer the player at the keyboard
      */
-    public CombatScenario load(Partida partida, Local local, Jogador observer,
-            Collection<Nacao> mergedNacoes) {
+    public CombatScenario load(Partida partida, Local local, Jogador observer) {
         final CombatScenario ret = new CombatScenario(partida, local);
         ret.setObserver(observer);
-        if (mergedNacoes != null) {
-            for (Nacao nacao : mergedNacoes) {
-                ret.addMergedNacao(nacao);
-            }
-        }
         if (local == null) {
             return ret;
         }
@@ -81,7 +67,7 @@ public class ScenarioLoader {
             if (exercito == null) {
                 continue;
             }
-            ret.addArmy(new ArmySim(exercito), provenanceOf(exercito, observer, mergedNacoes));
+            ret.addArmy(new ArmySim(exercito), provenanceOf(exercito, observer));
         }
         return ret;
     }
@@ -93,36 +79,21 @@ public class ScenarioLoader {
      * Two values, not three. Whether an outside view arrived as real platoons or as the placeholder
      * pair is not a distinction the loader draws - see the class note.
      */
-    public CombatScenario.Provenance provenanceOf(Exercito exercito, Jogador observer,
-            Collection<Nacao> mergedNacoes) {
-        return isFullyVisible(exercito.getNacao(), observer, mergedNacoes)
+    public CombatScenario.Provenance provenanceOf(Exercito exercito, Jogador observer) {
+        return isMine(exercito.getNacao(), observer)
                 ? CombatScenario.Provenance.EXACT
                 : CombatScenario.Provenance.ESTIMATED;
     }
 
     /**
-     * Was this nation's own EGF the source of what we hold about it?
+     * Is this one of the observer's own nations, the only kind his EGF describes exactly?
      *
-     * {@code getOwner()} identifies the observer's OWN nations and nothing else. The server does set
-     * an owner on an ally's nation in a team-locked game, but it sets the ally's own owner, so
-     * comparing against the observer stays the right test. Compared by identity rather than
-     * {@code Jogador.isNacao}, which leaks once allied EGFs merge.
+     * {@code getOwner()} identifies those and nothing else. The server does set an owner on an
+     * ally's nation in a team-locked game, but it sets the ally's own owner, so comparing against
+     * the observer stays the right test. Compared by identity rather than {@code Jogador.isNacao},
+     * which can answer for a nation that is not the observer's.
      */
-    private boolean isFullyVisible(Nacao nacao, Jogador observer, Collection<Nacao> mergedNacoes) {
-        if (nacao == null) {
-            return false;
-        }
-        if (observer != null && nacao.getOwner() == observer) {
-            return true;
-        }
-        if (mergedNacoes == null) {
-            return false;
-        }
-        for (Nacao merged : mergedNacoes) {
-            if (merged == nacao) {
-                return true;
-            }
-        }
-        return false;
+    private boolean isMine(Nacao nacao, Jogador observer) {
+        return nacao != null && observer != null && nacao.getOwner() == observer;
     }
 }

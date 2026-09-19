@@ -43,7 +43,15 @@ public class HostilityMatrix {
         /** Implied by the game type, e.g. everyone is hostile in a Death Match. Reliable. */
         FROM_GAME_TYPE,
         /** Neither of the above could answer it, so a default was applied. Must be disclosed. */
-        ASSUMED
+        ASSUMED,
+        /**
+         * The player said so, and the player outranks every derivation.
+         *
+         * The matrix is the law for a simulation, and stating a different diplomatic situation is a
+         * legitimate what-if: "suppose he declares on me this turn". An edited cell is marked so the
+         * status bar can say the scenario is no longer the one the EGF describes.
+         */
+        PLAYER_EDITED
     }
 
     private final Map<IExercito, Map<IExercito, Origin>> hostile = new IdentityHashMap<>();
@@ -86,6 +94,30 @@ public class HostilityMatrix {
         addArmy(other);
         put(one, other, origin);
         put(other, one, origin);
+    }
+
+    /**
+     * Records that two armies will NOT fight, in both directions.
+     *
+     * The counterpart to {@link #setHostile}, and needed only because a player edit can contradict a
+     * derived answer. Clearing rather than storing a "not hostile" marker keeps
+     * {@link #isInimigo} reading exactly as it did: anything not recorded is not hostile.
+     */
+    public void setNotHostile(IExercito one, IExercito other) {
+        if (one == other) {
+            return;
+        }
+        addArmy(one);
+        addArmy(other);
+        remove(one, other);
+        remove(other, one);
+    }
+
+    private void remove(IExercito from, IExercito to) {
+        final Map<IExercito, Origin> row = hostile.get(from);
+        if (row != null) {
+            row.remove(to);
+        }
     }
 
     private void put(IExercito from, IExercito to, Origin origin) {
