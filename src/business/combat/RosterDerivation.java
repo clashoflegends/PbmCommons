@@ -110,6 +110,7 @@ public class RosterDerivation {
     }
 
     private static boolean isDiplomacyEditable(Partida partida) {
-        return partida != null && (partida.isFreeForAll() || partida.isBattleRoyal());
+        final business.facade.PartidaFacade facade = new business.facade.PartidaFacade();
+        return facade.isFreeForAll(partida) || facade.isBattleRoyal(partida);
     }
 }

@@ -1,5 +1,6 @@
 package business.combat;
 
+import business.facade.PartidaFacade;
 import business.interfaces.IExercito;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +52,8 @@ import model.Partida;
  * {@code isInimigo}/{@code getRelacionamento} from here.
  */
 public class HostilityDeriver {
+
+    private final PartidaFacade partidaFacade = new PartidaFacade();
 
     /**
      * @param partida      the game, for its type flags
@@ -136,9 +139,13 @@ public class HostilityDeriver {
     /**
      * Death Match and Gun Boat: every nation is hostile to every other by construction, diplomacy is
      * disabled, and the answer needs no relationship row at all.
+     *
+     * Through {@link PartidaFacade}, not {@code Partida.isDeathMatch()}: a flag declared by the
+     * SCENARIO counts as the game's, which is how the Judge reads it, and the model's own accessor
+     * would silently answer "no" for such a game.
      */
     private boolean isEveryoneHostile(Partida partida) {
-        return partida != null && partida.isDeathMatch();
+        return partidaFacade.isDeathMatch(partida);
     }
 
     /**
