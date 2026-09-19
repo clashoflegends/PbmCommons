@@ -372,6 +372,6 @@ public class LayerParticipationTest {
                 terreno("plain", false), cidade(foe, 0), true, enemy);
 
         assertEquals("\u00b7 \u00b7 \u00b7", p.getBadge());
-        assertEquals(LayerParticipation.Reason.DESTROYED_EARLIER, p.getReason(CombatLayer.CITY));
+        assertEquals(LayerParticipation.Reason.NO_TROOPS, p.getReason(CombatLayer.CITY));
     }
 }

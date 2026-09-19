@@ -289,4 +289,37 @@ public class ScenarioLoaderTest {
             }
         }
     }
+
+    /**
+     * An enemy seen at low visibility carries NO platoons, and must not be reported as destroyed.
+     *
+     * At visibility level 1 the server sends a name, a nation and a SIZE BAND
+     * ({@code tamanhoExercito} / {@code tamanhoEsquadra}) and no platoons at all - the player is
+     * told an army is there and roughly how big, not what is in it. The simulator therefore counts
+     * zero troops, and the old {@code DESTROYED_EARLIER} reason turned that into "already
+     * destroyed": a claim about a battle that has not happened, about an army that is very much
+     * alive. Nothing can be destroyed before the engine exists.
+     */
+    @Test
+    public void anEnemyWithNoVisiblePlatoonsIsNotReportedAsDestroyed() {
+        final Jogador me = jogador("j1");
+        final Nacao mine = nacao("m", me), foe = nacao("f", null);
+        final Local local = hex(null);
+        army("a1", mine, local, 0, platoon(troopType("inf", false), 900));
+        // exactly what visibility level 1 sends: no platoons whatsoever
+        army("a2", foe, local, 0).setTamanhoExercito(4);
+
+        final CombatScenario s = new ScenarioLoader().load(deathMatch(), local, me);
+        ArmySim loaded = null;
+        for (ArmySim one : s.getArmies()) {
+            if ("a2".equals(one.getCodigo())) {
+                loaded = one;
+            }
+        }
+
+        final LayerParticipation p = s.getParticipation().get(loaded);
+        assertEquals(LayerParticipation.Reason.NO_TROOPS, p.getReason(CombatLayer.ARMY),
+                "it has nothing the player can see, which is not the same as being dead");
+        assertFalse(p.isInAnyLayer());
+    }
 }

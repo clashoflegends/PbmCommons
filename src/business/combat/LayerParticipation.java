@@ -74,8 +74,20 @@ public class LayerParticipation {
         NOT_HOSTILE_TO_CITY,
         /** Nobody here it is willing to fight at all. */
         NO_ENEMY_PRESENT,
-        /** It had already been destroyed before this layer began. */
-        DESTROYED_EARLIER
+        /**
+         * It has no troops in the scenario, so there is nothing to fight with.
+         *
+         * NOT "destroyed". This used to say DESTROYED_EARLIER, which was a lie in every case it
+         * could actually fire: nothing has been destroyed, because no combat has run. An enemy seen
+         * at low visibility arrives with NO platoons at all - the server sends only a size band
+         * (`tamanhoExercito` / `tamanhoEsquadra`) - so the count reads zero and the army was being
+         * reported to the player as already dead.
+         *
+         * When the engine exists an army CAN be destroyed between layers, and it will reach this
+         * same test with zero troops. Splitting the two then is a refinement; claiming the
+         * distinction now, with no engine, was simply false.
+         */
+        NO_TROOPS
     }
 
     /**
@@ -138,15 +150,15 @@ public class LayerParticipation {
      *
      * Hostility is necessary but not sufficient: a pair only engages if at least one of them is
      * willing to start it, mirroring the Judge iterating attacking armies and registering both sides.
-     * A destroyed army neither starts nor receives.
+     * An army with no troops neither starts nor receives.
      */
     private static List<ArmySim> enemiesOf(ArmySim army, List<ArmySim> armies, HostilityMatrix matrix) {
         final List<ArmySim> ret = new ArrayList<>();
-        if (matrix == null || isDestroyed(army)) {
+        if (matrix == null || hasNoTroops(army)) {
             return ret;
         }
         for (ArmySim other : armies) {
-            if (other == army || isDestroyed(other) || !matrix.isInimigo(army, other)) {
+            if (other == army || hasNoTroops(other) || !matrix.isInimigo(army, other)) {
                 continue;
             }
             if (initiates(army, other) || initiates(other, army)) {
@@ -167,13 +179,16 @@ public class LayerParticipation {
         return attacker.getTargetNacao() == null || attacker.getTargetNacao() == target.getNacao();
     }
 
-    private static boolean isDestroyed(IExercito army) {
+    /**
+     * Nothing to fight with. See {@link Reason#NO_TROOPS} for why this is not called "destroyed".
+     */
+    private static boolean hasNoTroops(IExercito army) {
         return exercitoFacade.getQtTropasTotal(army) <= 0;
     }
 
     private static Reason navy(ArmySim army, List<ArmySim> enemies) {
-        if (isDestroyed(army)) {
-            return Reason.DESTROYED_EARLIER;
+        if (hasNoTroops(army)) {
+            return Reason.NO_TROOPS;
         }
         if (!exercitoFacade.isEsquadra(army)) {
             return Reason.NO_SHIPS;
@@ -190,8 +205,8 @@ public class LayerParticipation {
     }
 
     private static Reason land(ArmySim army, List<ArmySim> enemies, Terreno terreno, Cidade cidade) {
-        if (isDestroyed(army)) {
-            return Reason.DESTROYED_EARLIER;
+        if (hasNoTroops(army)) {
+            return Reason.NO_TROOPS;
         }
         if (exercitoFacade.isBarcoOnly(army)) {
             return Reason.CARRIES_NO_TROOPS;
@@ -217,8 +232,8 @@ public class LayerParticipation {
      */
     private static Reason city(ArmySim army, Terreno terreno, Cidade cidade,
             boolean hostileToCityOwner) {
-        if (isDestroyed(army)) {
-            return Reason.DESTROYED_EARLIER;
+        if (hasNoTroops(army)) {
+            return Reason.NO_TROOPS;
         }
         if (cidade == null) {
             return Reason.NO_CITY;
