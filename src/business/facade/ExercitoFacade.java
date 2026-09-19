@@ -323,6 +323,48 @@ public class ExercitoFacade implements Serializable {
         return isHabilidade(exercito, ";TTN;");
     }
 
+    /**
+     * Are this army's troops still aboard its ships?
+     *
+     * The test is whether the fleet can carry everything it has: capacity at or above burden means
+     * the whole force is at sea, and that is what decides whether it needs somewhere to land before
+     * it can fight ashore or assault a city. Below burden, part of the force is already on the ground.
+     *
+     * Capacity comes from {@code ;TTT;}, NOT from {@code ;TTN;} - a warship is a ship without being a
+     * transport, so a fleet of pure warships carrying infantry has capacity 0 and is NOT embarked.
+     *
+     * Mirrors the Judge's {@code ExercitoControl.isEsquadraEmbarcada()} exactly. It lives here so the
+     * naval rules have ONE home: the BattleSim reads it through this facade, and when the combat
+     * engine is shared the Judge's copy should delegate here rather than the two drifting apart.
+     */
+    public boolean isEsquadraEmbarcada(IExercito exercito) {
+        return getTransportesCapacity(exercito.getPelotoes())
+                >= getTransportesBurden(exercito.getPelotoes());
+    }
+
+    /**
+     * A fleet carrying nothing but ships.
+     *
+     * This is the army that fights the naval battle and then stops: with no land troops it cannot
+     * take part in the fight ashore or the assault on a city, whatever its orders say. It is also the
+     * commonest "why didn't my fleet defend the city?" answer.
+     *
+     * An EMPTY army is not barco-only; it is simply empty.
+     *
+     * Mirrors the Judge's {@code ExercitoControl.isBarcoOnly()}
+     * ({@code getTropaQtTotal() == getTropaQtBarco()}).
+     */
+    public boolean isBarcoOnly(IExercito exercito) {
+        int total = 0, barcos = 0;
+        for (Pelotao pelotao : exercito.getPelotoes().values()) {
+            total += pelotao.getQtd();
+            if (pelotao.getTipoTropa() != null && pelotao.getTipoTropa().isBarcos()) {
+                barcos += pelotao.getQtd();
+            }
+        }
+        return total > 0 && total == barcos;
+    }
+
     public int getEsquadra(Exercito exercito) {
         return getQtHabilidade(exercito, ";TTN;");
     }

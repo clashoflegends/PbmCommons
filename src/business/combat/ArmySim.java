@@ -31,6 +31,21 @@ public class ArmySim extends BaseModel implements IExercito {
     private int comandante = 10;
     private int tatica = 0;
     private int bonusAttack = 0, bonusDefense = 0;
+    /**
+     * Combat intent, the Judge's {@code ExercitoControl.combateNivel}. Editable, because without it
+     * the simulator cannot tell "defend in place" from "storm the city".
+     *
+     * Defaults to {@link CombatLevel#ATTACK_ARMY}: an army loaded into the simulator is there to be
+     * fought over, so defaulting to defend-only would silently answer a different question than the
+     * one the player asked. It stops short of the city, which is the half that needs an explicit
+     * order.
+     */
+    private CombatLevel combatLevel = CombatLevel.ATTACK_ARMY;
+    /**
+     * Whom to attack, mirroring {@code ExercitoControl.getCombateNacaoNumero()}: null means every
+     * enemy, anything else singles out one nation.
+     */
+    private Nacao targetNacao = null;
     private String comandanteNome;
     private Local local;
     private Terreno terreno;
@@ -170,6 +185,24 @@ public class ArmySim extends BaseModel implements IExercito {
 
     public void setTerreno(Terreno terreno) {
         this.terreno = terreno;
+    }
+
+    /** Combat intent. Never null. */
+    public CombatLevel getCombatLevel() {
+        return combatLevel;
+    }
+
+    public void setCombatLevel(CombatLevel combatLevel) {
+        this.combatLevel = combatLevel == null ? CombatLevel.DEFEND_ONLY : combatLevel;
+    }
+
+    /** The single nation this army will attack, or null for every enemy. */
+    public Nacao getTargetNacao() {
+        return targetNacao;
+    }
+
+    public void setTargetNacao(Nacao targetNacao) {
+        this.targetNacao = targetNacao;
     }
 
     @Override
