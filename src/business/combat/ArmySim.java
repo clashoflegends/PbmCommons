@@ -4,6 +4,8 @@
  */
 package business.combat;
 
+import business.facade.ExercitoFacade;
+
 import baseLib.BaseModel;
 import business.interfaces.IExercito;
 import java.util.ArrayList;
@@ -46,6 +48,22 @@ public class ArmySim extends BaseModel implements IExercito {
      * enemy, anything else singles out one nation.
      */
     private Nacao targetNacao = null;
+    /**
+     * The server's own description of how big this army is, when that is all the player was told.
+     *
+     * At visibility level 1 an enemy arrives with a name, a nation and a SIZE BAND
+     * ({@code tamanhoExercito} / {@code tamanhoEsquadra}) and NO platoons at all, so the troop count
+     * reads zero. The band is the only thing the player actually knows about its strength, and
+     * dropping it - which this class used to do - left him with a blank where his real information
+     * should be.
+     *
+     * Captured as the finished STRING rather than the two numbers, because turning them into a
+     * description means picking between the army, fleet and garrison wordings, and
+     * {@code ExercitoFacade.getDescricaoTamanho} already does that. Calling it once at load reuses
+     * the shared branching instead of copying it, and it needs the real {@code Exercito}, which only
+     * exists here.
+     */
+    private String sizeBand = "";
     private String comandanteNome;
     private Local local;
     private Terreno terreno;
@@ -69,6 +87,7 @@ public class ArmySim extends BaseModel implements IExercito {
         this.tatica = exercito.getTatica();
         this.setCodigo(exercito.getCodigo());
         this.nacao = exercito.getNacao();
+        this.sizeBand = new ExercitoFacade().getDescricaoTamanho(exercito);
         try {
             this.comandante = exercito.getComandante().getPericiaComandante();
             this.comandanteNome = exercito.getComandante().getNome();
@@ -86,6 +105,7 @@ public class ArmySim extends BaseModel implements IExercito {
         this.tatica = exercito.getTatica();
         this.setCodigo(exercito.getCodigo());
         this.nacao = exercito.getNacao();
+        this.sizeBand = exercito.getSizeBand();
         try {
             this.comandante = exercito.getComandantePericia();
             this.comandanteNome = exercito.getNome();
@@ -115,6 +135,15 @@ public class ArmySim extends BaseModel implements IExercito {
         for (Map.Entry<String, Pelotao> entry : source.entrySet()) {
             this.platoons.put(entry.getKey(), entry.getValue().clone());
         }
+    }
+
+    /** How big the player was told this army is, or empty when he can count it himself. */
+    public String getSizeBand() {
+        return sizeBand == null ? "" : sizeBand;
+    }
+
+    public void setSizeBand(String sizeBand) {
+        this.sizeBand = sizeBand;
     }
 
     @Override
