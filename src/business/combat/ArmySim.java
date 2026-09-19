@@ -9,6 +9,7 @@ import business.interfaces.IExercito;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import model.Exercito;
@@ -47,7 +48,7 @@ public class ArmySim extends BaseModel implements IExercito {
 
     public ArmySim(Exercito exercito) {
         this.moral = exercito.getMoral();
-        this.platoons.putAll(exercito.getPelotoes());
+        doClonePelotoes(exercito.getPelotoes());
         this.local = exercito.getLocal();
         this.terreno = exercito.getLocal().getTerreno();
         this.nacao = exercito.getNacao();
@@ -58,12 +59,11 @@ public class ArmySim extends BaseModel implements IExercito {
         } catch (NullPointerException ex) {
             this.setNome(SettingsManager.getInstance().getBundleManager().getString("GUARNICAO"));
         }
-        //TODO: clone pelotoes para poder mudar valores sem afetar original
     }
 
     public ArmySim(ArmySim exercito) {
         this.moral = exercito.getMoral();
-        this.platoons.putAll(exercito.getPelotoes());
+        doClonePelotoes(exercito.getPelotoes());
         this.local = exercito.getLocal();
         this.terreno = exercito.getTerreno();
         this.nacao = exercito.getNacao();
@@ -74,7 +74,28 @@ public class ArmySim extends BaseModel implements IExercito {
         } catch (NullPointerException ex) {
             this.setNome(SettingsManager.getInstance().getBundleManager().getString("GUARNICAO"));
         }
-        //TODO: clone pelotoes para poder mudar valores sem afetar original
+    }
+
+    /**
+     * Gives this simulated army its OWN {@link Pelotao} objects.
+     *
+     * The simulator lets the player retype a platoon's quantity, training, weapon, armour and troop
+     * type. Before this existed both copy constructors did {@code platoons.putAll(source)}, which
+     * copies the MAP and shares the Pelotao instances - so editing a platoon in the simulator edited
+     * the real army loaded from the EGF, for the rest of the session, everywhere in the Counselor.
+     *
+     * {@link Pelotao#clone()} is a shallow copy and that is exactly right here: the four editable
+     * fields are primitives and come across by value, while {@code TipoTropa} stays a SHARED
+     * reference on purpose. TipoTropa is the scenario's read-only troop catalogue; the simulator
+     * points platoons at different entries but never edits an entry, and copying it would waste
+     * memory and break identity comparisons against the catalogue.
+     *
+     * @param source the platoons to copy, left untouched
+     */
+    private void doClonePelotoes(SortedMap<String, Pelotao> source) {
+        for (Map.Entry<String, Pelotao> entry : source.entrySet()) {
+            this.platoons.put(entry.getKey(), entry.getValue().clone());
+        }
     }
 
     @Override

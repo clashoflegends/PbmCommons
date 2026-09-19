@@ -18,6 +18,40 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * The BattleSim's view of combat, and the one place its ownership boundary is defined.
+ *
+ * <h3>What the simulator owns, and what it borrows</h3>
+ *
+ * The player can retype anything in the BattleSim, so the rule is that every object he can edit must
+ * belong to the simulator and nothing he edits may reach the world loaded from the EGF.
+ *
+ * <table>
+ *   <tr><th>Type</th><th>Owned or shared</th><th>Why</th></tr>
+ *   <tr><td>{@link ArmySim}</td><td>OWNED</td>
+ *       <td>Created per simulation. Never a live {@link Exercito}.</td></tr>
+ *   <tr><td>{@link Pelotao}</td><td>OWNED</td>
+ *       <td>Holds quantity, training, weapon and armour, all editable. Cloned by
+ *           {@code ArmySim.doClonePelotoes}.</td></tr>
+ *   <tr><td>{@link TipoTropa}</td><td>shared, read only</td>
+ *       <td>The scenario's troop catalogue. The simulator repoints a platoon at a different entry but
+ *           never edits an entry, and copying it would break identity comparisons.</td></tr>
+ *   <tr><td>{@link Nacao}, {@link Terreno}, {@link Local}, {@link Cidade}</td><td>shared, read only</td>
+ *       <td>Context, not content. Selected, never mutated.</td></tr>
+ * </table>
+ *
+ * <h3>Moving the line</h3>
+ *
+ * When the catalogue itself becomes editable (magic items, NPCs and powers as what-if data),
+ * {@code TipoTropa} moves to OWNED and gets cloned here like {@code Pelotao} is today. That is the
+ * only change needed: the boundary is stated once, in this table, and enforced by
+ * {@code ArmySimOwnershipTest} and {@code ArmySimWorldUnchangedTest}.
+ *
+ * <h3>Why this is written down</h3>
+ *
+ * Both {@code ArmySim} copy constructors used to do {@code platoons.putAll(source)}, which copies the
+ * map and shares the platoons. Editing a platoon in the simulator therefore edited the real army for
+ * the rest of the session, silently, on the one screen where a player expects to be able to try
+ * anything. The fix is small; not noticing it for years was the expensive part.
  *
  * @author jmoura
  */
