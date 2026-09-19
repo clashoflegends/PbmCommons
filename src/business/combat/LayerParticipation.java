@@ -280,6 +280,23 @@ public class LayerParticipation {
         return ret.toString();
     }
 
+    /**
+     * The layers it is actually in, for the army editor's "Fights in:" line.
+     *
+     * The badge answers the same question in three characters for the roster; this answers it in a
+     * form the Counselor can turn into words, because the badge is unreadable until someone tells
+     * the player what the slots mean.
+     */
+    public List<CombatLayer> getLayers() {
+        final List<CombatLayer> ret = new ArrayList<>();
+        for (CombatLayer layer : CombatLayer.values()) {
+            if (isIn(layer)) {
+                ret.add(layer);
+            }
+        }
+        return ret;
+    }
+
     /** Does it fight at all? */
     public boolean isInAnyLayer() {
         for (CombatLayer layer : CombatLayer.values()) {
