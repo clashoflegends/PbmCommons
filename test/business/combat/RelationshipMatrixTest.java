@@ -199,6 +199,54 @@ public class RelationshipMatrixTest {
     }
 
     /**
+     * An NPC is everyone's sworn enemy, in any game type, outranking whatever a row says.
+     *
+     * The Judge's rule is unconditional: {@code this.isNpc() || nacaoAlvo.isNpc() ||
+     * getPartida().isDeathMatch()} all land on SWORNENEMY. John, 2026-09-19: "for the NPC, just
+     * assume sworn enemy and aggressive" - aggression is assumed rather than inferred, because
+     * {@code npcAggresive} comes from a DB column that is not in the EGF.
+     */
+    @Test
+    public void anNpcNationIsEveryonesSwornEnemy() {
+        final Jogador me = jogador("j1");
+        final Nacao mine = myNacao("m", "Mine", me), npc = nacao("n", "Wildlings");
+        relate(mine, npc, RelationshipMatrix.ALLY);        // a treaty, on paper
+        final model.Habilidade aiw = new model.Habilidade();
+        aiw.setCodigo(";AIW;");
+        aiw.setNome(";AIW;");
+        npc.addHabilidade(aiw);
+
+        final RelationshipMatrix m = new HostilityDeriver()
+                .deriveNations(partida(";FFA;"), Arrays.asList(mine, npc), me);
+
+        assertTrue(m.isHostile(mine, npc), "you do not sign treaties with an NPC");
+        assertEquals(RelationshipMatrix.Origin.FROM_GAME_TYPE, m.getOrigin(mine, npc));
+        assertEquals(RelationshipMatrix.Origin.FROM_GAME_TYPE, m.getOrigin(npc, mine),
+                "and it holds in both directions, by construction");
+    }
+
+    /**
+     * A nation with no visible Jogador is NOT an NPC, and this is the case that had to be refused.
+     *
+     * {@code Jogador} is gated on export and {@code ;GAP;} hides it ON PURPOSE, so "no player means
+     * NPC" would declare a secret human player the sworn enemy of everyone on the hex - a war
+     * invented by a rule. Under-reporting an NPC costs a guess the player can fix in the diplomacy
+     * panel; that costs him a wrong answer dressed as a fact.
+     */
+    @Test
+    public void aNationWithNoVisiblePlayerIsNotTreatedAsAnNpc() {
+        final Jogador me = jogador("j1");
+        final Nacao mine = myNacao("m", "Mine", me), hidden = nacao("h", "House Hidden");
+
+        final RelationshipMatrix m = new HostilityDeriver()
+                .deriveNations(partida(";FFA;"), Arrays.asList(mine, hidden), me);
+
+        assertFalse(m.isHostile(mine, hidden));
+        assertEquals(RelationshipMatrix.Origin.ASSUMED, m.getPairOrigin(mine, hidden),
+                "unknown, and marked as unknown - not promoted to a rule");
+    }
+
+    /**
      * The gaps are NOT filled by mirroring. That is a second-pass rule and it stays unwritten.
      *
      * John put extrapolation - Locked Teams, Death Match, bidirectional symmetry - in a second pass

@@ -29,7 +29,8 @@ import model.Partida;
  *
  * <ol>
  *   <li><b>Read</b> a relationship row from a loaded EGF. Authoritative, and always preferred.</li>
- *   <li><b>Derive</b> from the game type: in a Death Match every pair fights, and that is complete.</li>
+ *   <li><b>Derive</b> by construction: in a Death Match every pair fights, and an NPC nation is
+ *       everyone's sworn enemy. Both are complete answers needing no row - see {@link #isNpc}.</li>
  *   <li><b>Assume</b>, and say so.</li>
  * </ol>
  *
@@ -63,6 +64,7 @@ import model.Partida;
 public class HostilityDeriver {
 
     private final PartidaFacade partidaFacade = new PartidaFacade();
+    private final business.facade.NacaoFacade nacaoFacade = new business.facade.NacaoFacade();
 
     /**
      * @param partida      the game, for its type flags
@@ -117,7 +119,7 @@ public class HostilityDeriver {
                 if (from == to) {
                     continue;
                 }
-                if (everyoneHostile) {
+                if (everyoneHostile || isNpc(from) || isNpc(to)) {
                     ret.set(from, to, RelationshipMatrix.SWORN_ENEMY,
                             RelationshipMatrix.Origin.FROM_GAME_TYPE);
                     continue;
@@ -248,6 +250,43 @@ public class HostilityDeriver {
      */
     private boolean isEveryoneHostile(Partida partida) {
         return partidaFacade.isDeathMatch(partida);
+    }
+
+    /**
+     * An NPC nation is everybody's sworn enemy, whatever the game type says.
+     *
+     * The Judge's rule, and it is unconditional:
+     * {@code this.isNpc() || nacaoAlvo.isNpc() || getPartida().isDeathMatch()} all land on
+     * {@code RELATIONSHIP_SWORNENEMY} in {@code NacaoControl.doCarregaRelacionamentosFresh}.
+     *
+     * <b>What the client can actually see, and what it cannot.</b> The Judge's own test is
+     * {@code isNpcAggresive() || isDead() || (isAtiva() && hasHabilidade(";AIW;"))}, and
+     * {@code npcAggresive} comes from the DB column {@code tp_nacao = 'AI'} - a field on
+     * {@code NacaoControl} that is NOT in the EGF and has no counterpart on {@code model.Nacao}. So
+     * the deciding datum is simply absent here and no amount of care recovers it.
+     *
+     * John, 2026-09-19: "for the NPC, just assume sworn enemy and aggressive." So aggression is not
+     * inferred, it is assumed - any nation this can identify as an NPC at all is treated as an
+     * active one. What is left is the identification, and it deliberately uses only signals that
+     * cannot mistake a human player for an NPC:
+     *
+     * <ul>
+     *   <li>the Barbarians, via the same test that already supplies a stand-in city owner;</li>
+     *   <li>{@code ;AIW;} or {@code ;PAI;} on the nation, the two habilidades the Judge's own
+     *       {@code isNpc}/{@code isNpcDefault} read. They reach the client only under
+     *       {@code loadAll} or {@code ;SNAI;}, so they fire rarely - but when they are there they
+     *       are authoritative and cost nothing to ask.</li>
+     * </ul>
+     *
+     * Rejected: "any nation with no human player". {@code Jogador} is itself gated on export, and
+     * {@code ;GAP;} hides it ON PURPOSE - so that test would declare a secret human player the
+     * sworn enemy of everyone on the hex and invent a war that does not exist. Under-reporting an
+     * NPC costs a guess the player can correct in the diplomacy panel; inventing a war between two
+     * humans is a wrong answer presented as a rule.
+     */
+    private boolean isNpc(Nacao nacao) {
+        return nacao != null && (nacao.hasHabilidade(";AIW;") || nacao.hasHabilidade(";PAI;")
+                || nacaoFacade.isNacaoBarbarian(nacao));
     }
 
     /**

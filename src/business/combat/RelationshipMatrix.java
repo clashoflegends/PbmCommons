@@ -55,7 +55,11 @@ public class RelationshipMatrix {
         /** Read from a relationship row this scenario could PROVE complete. Authoritative. */
         READ_FROM_EGF,
         /**
-         * True by construction of the game type, e.g. everyone is a sworn enemy in a Death Match.
+         * True by CONSTRUCTION: the game type, or an NPC.
+         *
+         * Everyone is a sworn enemy in a Death Match, and an NPC nation is everyone's sworn enemy
+         * in any game type at all. Both are rules the game cannot violate, so neither needs a
+         * relationship row and neither can be overturned by one.
          *
          * Outranks a read, which is the opposite of what the army-pair derivation used to do. A
          * populated row that simply lacks the other nation answers "neutral", and that DERIVED zero
