@@ -65,7 +65,16 @@ public class CombatScenario {
     private final List<ArmySim> armies = new ArrayList<>();
     private final Map<ArmySim, Provenance> armyProvenance = new IdentityHashMap<>();
     private final Map<Pelotao, Provenance> platoonProvenance = new IdentityHashMap<>();
-    private final Map<ArmySim, Map<ArmySim, Boolean>> hostilityEdits = new IdentityHashMap<>();
+    /**
+     * The player's diplomacy overrides, keyed by NATION and directional, as the model stores them.
+     *
+     * Keyed by nation because that is what diplomacy is. It used to be keyed by army pair, which
+     * made "he declares war on me" an edit about two ArmySim objects - so the same declaration had
+     * to be repeated for every army of his on the hex, and adding one more army silently escaped
+     * it. Army hostility is not an army property at all: the Judge reads
+     * {@code getNacaoControl().isInimigo(...)} and nothing else.
+     */
+    private final Map<Nacao, Map<Nacao, Integer>> relationshipEdits = new IdentityHashMap<>();
     private final HostilityDeriver deriver = new HostilityDeriver();
     private final BattleSimFacade battleSimFacade = new BattleSimFacade();
     private final ExercitoFacade exercitoFacade = new ExercitoFacade();
@@ -272,46 +281,108 @@ public class CombatScenario {
     }
 
     /**
-     * The player's own answer for one pair, overriding whatever was derived.
+     * The player's own answer for one directed cell, overriding whatever was derived.
      *
      * The matrix is the law for a simulation, so the player has to be able to state a different
-     * diplomatic situation and see what falls out of it: "suppose he declares on me this turn". The
-     * edit is symmetric, because hostility is.
+     * diplomatic situation and see what falls out of it: "suppose he declares on me this turn".
+     *
+     * ONE DIRECTION, because that is what the model stores and what the panel shows. A one-sided
+     * declaration of war is a real state of the world, and it is enough to start a battle on its
+     * own - {@link RelationshipMatrix#isHostile} ORs the two directions exactly as the Judge does.
+     * Writing both sides here would quietly invent the other nation's opinion.
+     *
+     * @param valor {@code -2..+4}; see the constants on {@link RelationshipMatrix}
+     */
+    public void setRelacionamento(Nacao from, Nacao to, int valor) {
+        if (from == null || to == null || from == to) {
+            return;
+        }
+        Map<Nacao, Integer> row = relationshipEdits.get(from);
+        if (row == null) {
+            row = new IdentityHashMap<>();
+            relationshipEdits.put(from, row);
+        }
+        row.put(to, valor);
+    }
+
+    /**
+     * "These two fight", in the vocabulary the roster speaks. A convenience over
+     * {@link #setRelacionamento} for a caller that has armies rather than nations.
+     *
+     * It sets BOTH directions, which {@link #setRelacionamento} deliberately does not: asked as a
+     * yes/no about a PAIR, the only honest reading is that neither of them is at war rather than
+     * that one of them is quietly still willing.
      */
     public void setHostile(ArmySim one, ArmySim other, boolean hostile) {
         if (one == null || other == null || one == other) {
             return;
         }
-        putEdit(one, other, hostile);
-        putEdit(other, one, hostile);
+        final int valor = hostile ? RelationshipMatrix.SWORN_ENEMY : RelationshipMatrix.NEUTRAL;
+        setRelacionamento(one.getNacao(), other.getNacao(), valor);
+        setRelacionamento(other.getNacao(), one.getNacao(), valor);
     }
 
-    private void putEdit(ArmySim from, ArmySim to, boolean hostile) {
-        Map<ArmySim, Boolean> row = hostilityEdits.get(from);
-        if (row == null) {
-            row = new IdentityHashMap<>();
-            hostilityEdits.put(from, row);
-        }
-        row.put(to, hostile);
+    /** Has the player overruled the derivation for this directed cell? */
+    public boolean isEdited(Nacao from, Nacao to) {
+        final Map<Nacao, Integer> row = relationshipEdits.get(from);
+        return row != null && row.containsKey(to);
     }
 
-    /** Has the player overruled the derivation for this pair? */
-    public boolean isEdited(ArmySim one, ArmySim other) {
-        final Map<ArmySim, Boolean> row = hostilityEdits.get(one);
-        return row != null && row.containsKey(other);
-    }
-
+    /**
+     * How many nation PAIRS the player has overruled, counting only nations in this battle.
+     *
+     * Scoped to the nations present because this feeds the status bar, which is about THIS fight.
+     * An override about a nation whose last army has been removed is still remembered - he may
+     * retype an army back to it - but it is not reported as affecting a battle it no longer touches.
+     */
     public int getEditedCount() {
+        final List<Nacao> present = getNacoes();
         int ret = 0;
-        for (Map<ArmySim, Boolean> row : hostilityEdits.values()) {
-            ret += row.size();
+        for (int ii = 0; ii < present.size(); ii++) {
+            for (int jj = ii + 1; jj < present.size(); jj++) {
+                if (isEdited(present.get(ii), present.get(jj))
+                        || isEdited(present.get(jj), present.get(ii))) {
+                    ret++;
+                }
+            }
         }
-        return ret / 2;
+        return ret;
     }
 
-    /** Back to what the EGF and the game type say. The matrix dialog's "Reset to assumed". */
+    /** Back to what the EGF and the game type say. The matrix panel's "Reset to derived". */
     public void clearHostilityEdits() {
-        hostilityEdits.clear();
+        relationshipEdits.clear();
+    }
+
+    /**
+     * Every nation taking part: the armies' nations, plus the CITY's owner.
+     *
+     * The city owner belongs in the table even with no army of its own. It is a combat participant
+     * (T-417), the player can now choose it, and whether an army assaults the city is decided by the
+     * same diplomacy as everything else - so leaving it out would hide the one row that answers
+     * "why is nobody attacking this city?".
+     */
+    public List<Nacao> getNacoes() {
+        final List<Nacao> ret = new ArrayList<>();
+        for (ArmySim army : armies) {
+            addNacao(ret, army.getNacao());
+        }
+        final Cidade active = getCidadeAtiva();
+        addNacao(ret, active == null ? null : active.getNacao());
+        return ret;
+    }
+
+    /** Identity, never equals: BaseModel.compareTo would collapse nations by codigo. */
+    private static void addNacao(List<Nacao> list, Nacao nacao) {
+        if (nacao == null) {
+            return;
+        }
+        for (Nacao known : list) {
+            if (known == nacao) {
+                return;
+            }
+        }
+        list.add(nacao);
     }
 
     public List<ArmySim> getArmies() {
@@ -336,24 +407,22 @@ public class CombatScenario {
     }
 
     /**
-     * Removes an army and every trace of it, the hostility edits included.
+     * Removes an army and everything recorded about it.
      *
-     * Forgetting the edits was enough to RESURRECT the army. {@link #getMatrix} replays each edited
-     * pair onto the freshly derived matrix, and {@code HostilityMatrix.setHostile} adds whichever
-     * army it does not already know - so a surviving army's row still naming the deleted one put
-     * the deleted one back into the matrix, where {@code hasCombat} counted it and the status bar
-     * went on reporting its pair as a player edit. Latent today only because the diplomacy editor
-     * is T-418 and nothing calls {@link #setHostile} yet; it would have shipped with that editor.
+     * The diplomacy overrides are deliberately NOT purged, and cannot go stale the way they could
+     * when they were keyed by army. Back then a surviving army's edit row still naming the deleted
+     * one replayed through {@code HostilityMatrix.setHostile}, which ADDS an army it does not know -
+     * resurrecting the deleted army into the matrix where {@code hasCombat} counted it. Keyed by
+     * nation and projected only onto the armies present, an override about an absent nation simply
+     * has nothing to project onto, and {@link #getEditedCount} scopes itself to the nations in the
+     * battle. Keeping it means retyping an army back to that nation restores the player's own
+     * statement rather than silently losing it.
      */
     public void remArmy(ArmySim army) {
         armies.remove(army);
         armyProvenance.remove(army);
         for (Pelotao pelotao : army.getPelotoes().values()) {
             platoonProvenance.remove(pelotao);
-        }
-        hostilityEdits.remove(army);
-        for (Map<ArmySim, Boolean> row : hostilityEdits.values()) {
-            row.remove(army);
         }
     }
 
@@ -376,31 +445,46 @@ public class CombatScenario {
     }
 
     /**
-     * The hostility matrix: derived from the EGF and the game type, then the player's edits on top.
+     * The nation table for this battle: derived from the EGF and the game type, the player's edits
+     * on top. This is what the diplomacy panel shows and edits, and it is the scenario's only
+     * hostility input.
      *
-     * <b>Rebuilt on every call, and the edits are what persist.</b> Caching the matrix itself would
+     * <b>Rebuilt on every call, and the EDITS are what persist.</b> Caching the table itself would
      * need an invalidation rule for every input that can move - a new army, a removed one, an army
-     * retyped to a different nation - and callers would forget one. A stale matrix is the kind of
-     * wrong that looks right. Keeping the player's overrides as the durable state and re-deriving
-     * around them gets persistence without the cache. The cost is a pairwise pass over at most a few
-     * dozen armies.
+     * retyped to a different nation, a new city owner - and a caller would forget one. A stale
+     * matrix is the kind of wrong that looks right. Keeping the overrides as the durable state and
+     * re-deriving around them gets persistence without the cache.
      */
-    public HostilityMatrix getMatrix() {
-        final HostilityMatrix ret = deriver.derive(partida, armies, observer);
-        for (ArmySim one : armies) {
-            final Map<ArmySim, Boolean> row = hostilityEdits.get(one);
+    public RelationshipMatrix getRelationships() {
+        final List<Nacao> present = getNacoes();
+        final RelationshipMatrix ret = deriver.deriveNations(partida, present, observer);
+        // Only cells BETWEEN nations in this battle. An override naming a nation whose last army
+        // has been removed is kept (he may retype an army back to it) but has nothing to apply to,
+        // and applying it anyway would add that nation to the table while this loop walks it.
+        for (Nacao from : present) {
+            final Map<Nacao, Integer> row = relationshipEdits.get(from);
             if (row == null) {
                 continue;
             }
-            for (Map.Entry<ArmySim, Boolean> entry : row.entrySet()) {
-                if (Boolean.TRUE.equals(entry.getValue())) {
-                    ret.setHostile(one, entry.getKey(), HostilityMatrix.Origin.PLAYER_EDITED);
-                } else {
-                    ret.setNotHostile(one, entry.getKey());
+            for (Nacao to : present) {
+                final Integer valor = row.get(to);
+                if (valor != null) {
+                    ret.set(from, to, valor, RelationshipMatrix.Origin.PLAYER_EDITED);
                 }
             }
         }
         return ret;
+    }
+
+    /**
+     * Who fights whom among the armies present: the nation table, projected.
+     *
+     * A projection and nothing more, because that is all the Judge does -
+     * {@code ExercitoControl.isInimigo} is {@code getNacaoControl().isInimigo(...)} and no property
+     * of the army takes part.
+     */
+    public HostilityMatrix getMatrix() {
+        return deriver.project(getRelationships(), armies);
     }
 
     /**

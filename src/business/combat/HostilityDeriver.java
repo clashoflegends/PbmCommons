@@ -13,8 +13,17 @@ import model.Nacao;
 import model.Partida;
 
 /**
- * Builds a {@link HostilityMatrix} from the game type and whatever relationships the loaded EGFs
- * actually contain. The ONE place the type-to-model mapping lives.
+ * Builds the nation-by-nation {@link RelationshipMatrix} from the game type and whatever
+ * relationships the loaded EGF actually contains, and projects it onto the armies present. The ONE
+ * place the type-to-model mapping lives.
+ *
+ * <h3>Nations first, armies second</h3>
+ *
+ * This used to derive army pairs directly and never name a nation table at all. It is two steps now
+ * because the Judge only ever had one input: {@code ExercitoControl.isInimigo(inimigo)} is exactly
+ * {@code getNacaoControl().isInimigo(inimigo.getNacaoControl())}. Separating them is what lets the
+ * player SEE the table and edit it (T-418), and it is what makes the game-type rules orderable
+ * against the read ones - see {@link #deriveNations}.
  *
  * <h3>Three sources of truth, and no fourth</h3>
  *
@@ -64,46 +73,138 @@ public class HostilityDeriver {
      */
     public HostilityMatrix derive(Partida partida, Collection<? extends IExercito> armies,
             Jogador observer) {
+        final List<IExercito> list = new ArrayList<>(armies);
+        return project(deriveNations(partida, nacoesOf(list), observer), list);
+    }
+
+    /**
+     * The nation table: every nation against every other, valued and tagged with its source.
+     *
+     * <b>Game type first, read second.</b> That order is a fix, not a preference. The army-pair
+     * derivation this replaces asked the EGF first and only consulted the game type when the read
+     * came back null - but {@link #read} answers a DERIVED zero for a populated row that simply
+     * lacks the other nation, so that fabricated neutral outranked a rule the game cannot violate
+     * and a Death Match could be reported as a room full of peace. A rule that is true by
+     * CONSTRUCTION cannot be beaten by an inference.
+     *
+     * <b>Each direction is read from its own nation's row, and never from the reverse one.</b> If
+     * the observer's nation calls X an enemy, that is a fact about the observer, and it makes the
+     * PAIR hostile through {@link RelationshipMatrix#isHostile}, which is the OR of both
+     * directions - exactly as the Judge does. What it is not is evidence about X's own view, so the
+     * reverse cell stays {@link RelationshipMatrix.Origin#ASSUMED} rather than being mirrored.
+     * Filling that cell by symmetry is one of the extrapolation rules, and John put those in a
+     * second pass on purpose: pass one reads, shows and lets him edit, so that a wrong rule can
+     * never be mistaken for read data.
+     *
+     * @param nacoes   every nation in the battle, the city's owner included
+     * @param observer the player at the keyboard, whose own nations carry complete rows
+     */
+    public RelationshipMatrix deriveNations(Partida partida, Collection<Nacao> nacoes,
+            Jogador observer) {
+        final RelationshipMatrix ret = new RelationshipMatrix();
+        final List<Nacao> list = new ArrayList<>();
+        for (Nacao nacao : nacoes) {
+            if (nacao != null && !contains(list, nacao)) {
+                list.add(nacao);
+                ret.addNacao(nacao);
+            }
+        }
+        final Map<Nacao, Map<Nacao, Integer>> known = readRows(partida, observer, list);
+        final boolean everyoneHostile = isEveryoneHostile(partida);
+
+        for (Nacao from : list) {
+            for (Nacao to : list) {
+                if (from == to) {
+                    continue;
+                }
+                if (everyoneHostile) {
+                    ret.set(from, to, RelationshipMatrix.SWORN_ENEMY,
+                            RelationshipMatrix.Origin.FROM_GAME_TYPE);
+                    continue;
+                }
+                final Integer read = read(known.get(from), to);
+                if (read != null) {
+                    ret.set(from, to, read, RelationshipMatrix.Origin.READ_FROM_EGF);
+                    continue;
+                }
+                // Nothing could answer it, so default to neutral - and MARK it, because a guessed
+                // peace looks exactly like a known one otherwise.
+                //
+                // Not hostile is the pessimistic direction, which is what makes it safe to default
+                // to rather than merely convenient: in the engine each army spends its attack on
+                // the armies in its own enemy list, so two of the observer's enemies who also fight
+                // each other split their fire, while two who ignore each other both aim everything
+                // at him. The assumption can therefore overstate a threat and cannot understate one.
+                ret.set(from, to, RelationshipMatrix.NEUTRAL, RelationshipMatrix.Origin.ASSUMED);
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Projects the nation table onto the armies actually standing on the hex.
+     *
+     * A pure projection, and that is the Judge's own structure rather than a simplification:
+     * {@code ExercitoControl.isInimigo(inimigo)} is nothing but
+     * {@code getNacaoControl().isInimigo(inimigo.getNacaoControl())}. No property of the army takes
+     * part. So everything interesting happens in the nation table, and this loop only decides which
+     * PAIRS of the armies present inherit it.
+     */
+    public HostilityMatrix project(RelationshipMatrix nations, List<? extends IExercito> armies) {
         final HostilityMatrix ret = new HostilityMatrix();
         for (IExercito army : armies) {
             ret.addArmy(army);
         }
-        final List<IExercito> list = new ArrayList<>(armies);
-        final List<Nacao> candidates = new ArrayList<>(list.size());
-        for (IExercito army : list) {
-            candidates.add(army.getNacao());
-        }
-        final Map<Nacao, Map<Nacao, Integer>> known = readRows(partida, observer, candidates);
-
-        for (int ii = 0; ii < list.size(); ii++) {
-            for (int jj = ii + 1; jj < list.size(); jj++) {
-                final IExercito one = list.get(ii), other = list.get(jj);
+        for (int ii = 0; ii < armies.size(); ii++) {
+            for (int jj = ii + 1; jj < armies.size(); jj++) {
+                final IExercito one = armies.get(ii), other = armies.get(jj);
                 final Nacao nOne = one.getNacao(), nOther = other.getNacao();
                 if (nOne == null || nOther == null || nOne == nOther) {
-                    // an army never fights itself, its own nation, or an army whose owner is unknown
+                    // an army never fights itself, its own nation, or one whose owner is unknown
                     continue;
                 }
-                final Integer read = lookup(known, nOne, nOther);
-                if (read != null) {
-                    if (read < 0) {
-                        ret.setHostile(one, other, HostilityMatrix.Origin.READ_FROM_EGF);
-                    }
-                    continue;
+                final RelationshipMatrix.Origin origin = nations.getPairOrigin(nOne, nOther);
+                if (nations.isHostile(nOne, nOther)) {
+                    ret.setHostile(one, other, toHostilityOrigin(origin));
+                } else if (origin == RelationshipMatrix.Origin.ASSUMED) {
+                    ret.markAssumed(one, other);
                 }
-                if (isEveryoneHostile(partida)) {
-                    ret.setHostile(one, other, HostilityMatrix.Origin.FROM_GAME_TYPE);
-                    continue;
-                }
-                // Nothing read it and the type does not settle it, so default to NOT hostile - and
-                // MARK it, because a guessed peace looks exactly like a known one otherwise.
-                //
-                // Not hostile is the pessimistic direction, which is what makes it safe to default to
-                // rather than merely convenient: in the engine each army spends its attack on the
-                // armies in its own enemy list, so two of the observer's enemies who also fight each
-                // other split their fire, while two who ignore each other both aim everything at him.
-                // The assumption can therefore overstate a threat and cannot understate one.
-                ret.markAssumed(one, other);
             }
+        }
+        return ret;
+    }
+
+    /** The two enums say the same four things; they are separate so neither layer owns the other. */
+    private static HostilityMatrix.Origin toHostilityOrigin(RelationshipMatrix.Origin origin) {
+        if (origin == null) {
+            return HostilityMatrix.Origin.ASSUMED;
+        }
+        switch (origin) {
+            case READ_FROM_EGF:
+                return HostilityMatrix.Origin.READ_FROM_EGF;
+            case FROM_GAME_TYPE:
+                return HostilityMatrix.Origin.FROM_GAME_TYPE;
+            case PLAYER_EDITED:
+                return HostilityMatrix.Origin.PLAYER_EDITED;
+            default:
+                return HostilityMatrix.Origin.ASSUMED;
+        }
+    }
+
+    /** Identity, not equals: see the class note on why these nations are never used as map keys. */
+    private static boolean contains(List<Nacao> list, Nacao wanted) {
+        for (Nacao one : list) {
+            if (one == wanted) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static List<Nacao> nacoesOf(Collection<? extends IExercito> armies) {
+        final List<Nacao> ret = new ArrayList<>();
+        for (IExercito army : armies) {
+            ret.add(army.getNacao());
         }
         return ret;
     }
@@ -128,12 +229,8 @@ public class HostilityDeriver {
         if (mine == null || mine == cityOwner) {
             return false;
         }
-        final Integer read = lookup(
-                readRows(partida, observer, Arrays.asList(mine, cityOwner)), mine, cityOwner);
-        if (read != null) {
-            return read < 0;
-        }
-        return isEveryoneHostile(partida);
+        return deriveNations(partida, Arrays.asList(mine, cityOwner), observer)
+                .isHostile(mine, cityOwner);
     }
 
     /**
@@ -208,22 +305,6 @@ public class HostilityDeriver {
      */
     private boolean isComplete(Nacao nacao, boolean everythingExported, Jogador observer) {
         return everythingExported || (observer != null && nacao.getOwner() == observer);
-    }
-
-    /**
-     * The relationship between two nations, from whichever of them has a loaded row, or null when
-     * neither does.
-     *
-     * Both directions are tried because either nation's EGF may be the one that was loaded, and
-     * relationships are reciprocated in practice. A nation with a loaded row but no entry for the
-     * other is a real answer, not a miss: it means the two are neutral, and it returns 0.
-     */
-    private Integer lookup(Map<Nacao, Map<Nacao, Integer>> known, Nacao one, Nacao other) {
-        final Integer fromOne = read(known.get(one), other);
-        if (fromOne != null) {
-            return fromOne;
-        }
-        return read(known.get(other), one);
     }
 
     /**
