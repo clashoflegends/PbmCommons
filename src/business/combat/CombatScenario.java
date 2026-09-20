@@ -528,9 +528,47 @@ public class CombatScenario {
         return ret;
     }
 
-    /** Is there anything to resolve at all? */
+    /** Is any pair hostile? A property of the MATRIX alone - see {@link RunGate#NO_ENGAGEMENT}. */
     public boolean hasCombat() {
         return getMatrix().hasCombat();
+    }
+
+    /**
+     * Does anybody actually exchange blows, in any layer?
+     *
+     * Not the same question as {@link #hasCombat}, and the difference is a real scenario rather
+     * than a corner case: two armies can be correctly read as hostile and still have every layer
+     * decline them - a fleet carrying no land troops against an army with no ships, neither ordered
+     * to assault the city. Hostility is a property of nations; engagement is a property of what is
+     * standing on the hex.
+     */
+    public boolean hasEngagement() {
+        for (LayerParticipation participation : getParticipation().values()) {
+            if (participation.isInAnyLayer()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Why Run cannot run, most-fixable first. See {@link RunGate}.
+     *
+     * @param engineExists false until T-801 builds the resolution chain. Passed in rather than
+     *                     asked of a flag here, so that the day it becomes true is one call site
+     *                     and not a hunt through the model.
+     */
+    public RunGate getRunGate(boolean engineExists) {
+        if (armies.isEmpty()) {
+            return RunGate.NO_ARMIES;
+        }
+        if (!hasCombat()) {
+            return RunGate.NO_HOSTILE_PAIR;
+        }
+        if (!hasEngagement()) {
+            return RunGate.NO_ENGAGEMENT;
+        }
+        return engineExists ? RunGate.READY : RunGate.NO_ENGINE;
     }
 
     /** How many hostile pairs were guessed rather than read or derived. Feeds the disclosure line. */
