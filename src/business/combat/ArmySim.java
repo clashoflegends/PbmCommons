@@ -4,6 +4,7 @@
  */
 package business.combat;
 
+import business.facade.BattleSimFacade;
 import business.facade.ExercitoFacade;
 
 import baseLib.BaseModel;
@@ -65,6 +66,10 @@ public class ArmySim extends BaseModel implements IExercito {
      */
     private String sizeBand = "";
     private String comandanteNome;
+    /** BORROWED, never edited. See {@link #getComandanteModel}. */
+    private Personagem comandanteModel;
+    /** Wiped out DURING the simulation. See {@link #isDisband}. */
+    private boolean disband = false;
     private Local local;
     private Terreno terreno;
     private Nacao nacao;
@@ -97,6 +102,7 @@ public class ArmySim extends BaseModel implements IExercito {
         // nothing to catch.
         this.comandante = exercito.getComandantePericia();
         this.comandanteNome = exercito.getComandanteNome();
+        this.comandanteModel = exercito.getComandante();
         this.setNome(exercito.isGarrison()
                 ? SettingsManager.getInstance().getBundleManager().getString("GUARNICAO")
                 : exercito.getComandanteNome());
@@ -122,6 +128,7 @@ public class ArmySim extends BaseModel implements IExercito {
         this.bonusDefense = exercito.getArmyDefenseBonus();
         this.comandante = exercito.getComandantePericia();
         this.comandanteNome = exercito.getComandanteNome();
+        this.comandanteModel = exercito.getComandanteModel();
         this.setNome(exercito.getNome());
     }
 
@@ -206,10 +213,23 @@ public class ArmySim extends BaseModel implements IExercito {
         this.nacao = nacao;
     }
 
+    /**
+     * The real commander, BORROWED. Returning null here was dropping a combat bonus.
+     *
+     * Its only consumer is {@code ExercitoFacade.isHero}, which reads
+     * {@code getComandanteModel().isHero()} inside a {@code catch (NullPointerException) return
+     * false} - so a null here did not fail, it answered "not a hero", and
+     * {@code BattleSimFacade.getPlatoonDefense} silently dropped the {@code ;TAH;} hero defence
+     * bonus from every army in the simulator. A wrong number with no warning, which is the one
+     * failure mode this whole rebuild is against.
+     *
+     * BORROWED, like {@code Nacao} and {@code TipoTropa} and unlike {@code Pelotao}: the simulator
+     * never edits the commander object. What the player edits is {@code comandante}, the skill as
+     * an int, which is a field of this class. Hero-ness is not editable and not his to change.
+     */
     @Override
     public Personagem getComandanteModel() {
-        //FIXME: someday, do commander here.
-        return null;
+        return comandanteModel;
     }
 
     @Override
@@ -286,10 +306,30 @@ public class ArmySim extends BaseModel implements IExercito {
         return ret;
     }
 
+    /**
+     * By land strength, descending-capable, as {@code ExercitoControl.compareTo} does.
+     *
+     * NOT inherited. {@code BaseModel.compareTo} compares {@code getCodigo()} as a string, and the
+     * Judge's engine sorts armies by this in two places it never names - {@code getExercitosSorted}
+     * and the {@code TreeMap} keyed on the army in {@code CombatLand}'s casualty snapshot. Left
+     * inherited, the engine would have resolved a battle in ALPHABETICAL order instead of strength
+     * order, silently, and a blank army (whose codigo is null) would have taken the snapshot down
+     * with an NPE. Neither shows up in any search for calls on the army.
+     *
+     * Guarded on type and on a missing hex, because this class has a constructor that takes neither
+     * a codigo nor a Local - the Judge's cast to its own concrete type cannot be copied here.
+     */
     @Override
-    public void doDisband() {
-        //destroy army to remove it from combat
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int compareTo(Object other) {
+        if (!(other instanceof ArmySim)) {
+            return super.compareTo(other);
+        }
+        return strength() - ((ArmySim) other).strength();
+    }
+
+    /** {@code ExercitoControl.getForcaBasicaLand()}, through the facade the Judge itself uses. */
+    private int strength() {
+        return local == null ? 0 : new BattleSimFacade().getArmyAttackBaseLand(this, local);
     }
 
     @Override
@@ -297,24 +337,66 @@ public class ArmySim extends BaseModel implements IExercito {
         return comandante <= 0;
     }
 
+    /**
+     * Has this army been wiped out DURING the simulation?
+     *
+     * The flag, not "has no platoons", which is what this used to answer. The two are different
+     * claims and the difference is the unscouted enemy: the server sends it with a size band and no
+     * platoons at all, so an army nobody has scouted would have reported itself destroyed before a
+     * blow was struck. Same mistake as the old DESTROYED_EARLIER reason, one layer down.
+     *
+     * {@code ExercitoFacade.subTropaQt} sets it when the last troop dies, which is the Judge's own
+     * contract for the field on {@code ExercitoControl}.
+     */
     @Override
     public boolean isDisband() {
-        return getPelotoes().isEmpty();
-    }
-
-    @Override
-    public void setArmyDefenseBonus(int bonus) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void doDisbandWithMsg() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return disband;
     }
 
     @Override
     public void setDisband(boolean disband) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.disband = disband;
+    }
+
+    /**
+     * The magic-defence exchange writes this five times per land combat, and it used to THROW.
+     *
+     * Worth stating because of how it hid: the method is declared on {@link IExercito}, so every
+     * compile-time check said the contract was met, and only running the engine would have found
+     * it. The Judge's is a plain int field ({@code ExercitoControl.setArmyDefenseBonus}), which is
+     * what {@code bonusDefense} already is here - the stub was never needed, only unwritten.
+     */
+    @Override
+    public void setArmyDefenseBonus(int bonus) {
+        this.bonusDefense = bonus;
+    }
+
+    /**
+     * Destroyed: marked, and emptied so every layer stops counting it.
+     *
+     * The Judge's version unregisters the army from the Partida, the Nacao and the Hexagono - server
+     * object-graph surgery that has no meaning here. For a simulation "disbanded" means exactly
+     * "takes no further part", and clearing the platoons is what says so in the vocabulary the rest
+     * of this package already reads: {@code getQtTropasTotal} falls to zero and
+     * {@code LayerParticipation} drops it from all three layers with NO_TROOPS.
+     */
+    @Override
+    public void doDisband() {
+        this.disband = true;
+        this.platoons.clear();
+    }
+
+    /**
+     * Same thing, and the "WithMsg" half is owed.
+     *
+     * {@code ExercitoFacade.isPrecisaDebandar} calls this, so it has to work, and the Judge's copy
+     * adds a line to the army's result text. The simulator has no narrative stream yet - that is
+     * T-802/T-803 - so it does the disbanding and silently owes the sentence. Named here rather
+     * than left as a silent equivalence, because "with msg" is a promise this does not yet keep.
+     */
+    @Override
+    public void doDisbandWithMsg() {
+        doDisband();
     }
 
     @Override
