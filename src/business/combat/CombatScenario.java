@@ -496,12 +496,19 @@ public class CombatScenario {
      */
     public Map<ArmySim, LayerParticipation> getParticipation() {
         final Cidade active = getCidadeAtiva();
+        // ONE table answers both layers. It used to ask deriver.isHostileToCity separately, which
+        // re-derives from the EGF and the game type WITHOUT the player's overrides - so declaring
+        // war on the city's owner in the diplomacy panel turned the grid red, made hasCombat()
+        // agree, and left the city layer reporting NOT_HOSTILE_TO_CITY. The army layer honoured his
+        // declaration and the city layer silently did not.
+        final RelationshipMatrix nations = getRelationships();
         final Map<ArmySim, Boolean> hostileToCity = new IdentityHashMap<>();
         for (ArmySim army : armies) {
             hostileToCity.put(army, active != null
-                    && deriver.isHostileToCity(partida, army, active.getNacao(), observer));
+                    && nations.isHostile(army.getNacao(), active.getNacao()));
         }
-        return LayerParticipation.forRoster(armies, terreno, active, getMatrix(), hostileToCity);
+        return LayerParticipation.forRoster(armies, terreno, active,
+                deriver.project(nations, armies), hostileToCity);
     }
 
     /** Where this one army fights. Prefer {@link #getParticipation()} when asking about several. */
