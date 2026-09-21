@@ -14,6 +14,7 @@ import model.TipoTropa;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -321,5 +322,53 @@ public class ScenarioLoaderTest {
         assertEquals(LayerParticipation.Reason.NO_TROOPS, p.getReason(CombatLayer.ARMY),
                 "it has nothing the player can see, which is not the same as being dead");
         assertFalse(p.isInAnyLayer());
+    }
+
+    /**
+     * Every army the loader produces HAS a nation, forced to the stand-in when the EGF lacks one.
+     *
+     * John, 2026-09-20: "we can't have a nationless army, we must force a nation into it. If
+     * unknown, we can assume barbarian. But I think armies always populate the nation in the EGF.
+     * The 'banner' is always known."
+     *
+     * He is right about the EGF - checked against a live results file, 188 army definitions and 188
+     * nations - which is exactly why this is forced rather than trusted. "Never observed" and
+     * "cannot happen" are different claims, and the cost of being wrong is not a wrong number but
+     * an exception inside shared combat maths, or a silently fabricated zero.
+     */
+    @Test
+    public void everyLoadedArmyHasANation() {
+        final Nacao barbarians = new Nacao();
+        barbarians.setCodigo("bar");
+        barbarians.setNome("Barbarians");
+        final Local hexagono = hex(null);
+        final Exercito ownerless = army("x1", null, hexagono, 0);
+        hexagono.getExercitos().put(ownerless.getCodigo(), ownerless);
+
+        final CombatScenario scenario =
+                new ScenarioLoader().load(null, hexagono, null, barbarians);
+
+        assertEquals(1, scenario.getArmies().size());
+        assertSame(barbarians, scenario.getArmies().get(0).getNacao(),
+                "an army with no banner is given the stand-in, not left null");
+    }
+
+    /** And an army that HAS a nation keeps its own. The stand-in fills gaps, it does not overwrite. */
+    @Test
+    public void aLoadedArmyKeepsItsOwnNation() {
+        final Nacao barbarians = new Nacao();
+        barbarians.setCodigo("bar");
+        barbarians.setNome("Barbarians");
+        final Nacao tyrell = new Nacao();
+        tyrell.setCodigo("ty");
+        tyrell.setNome("House Tyrell");
+        final Local hexagono = hex(null);
+        final Exercito owned = army("x2", tyrell, hexagono, 0);
+        hexagono.getExercitos().put(owned.getCodigo(), owned);
+
+        final CombatScenario scenario =
+                new ScenarioLoader().load(null, hexagono, null, barbarians);
+
+        assertSame(tyrell, scenario.getArmies().get(0).getNacao());
     }
 }

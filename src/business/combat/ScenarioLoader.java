@@ -62,16 +62,17 @@ public class ScenarioLoader {
     }
 
     /**
-     * @param unknownCityOwner stand-in owner for a city whose real one the player cannot see. Every
-     *                         city has an owner and the shared combat code assumes it; supplying the
-     *                         missing input is how that code stays shared. See
-     *                         {@link CombatScenario#setCityOwnerIfUnknown}.
+     * @param unknownOwner stand-in owner for a CITY or an ARMY whose real one the player cannot
+     *                     see. Everything on a hex belongs to somebody and the shared combat code
+     *                     assumes it; supplying the missing input is how that code stays shared.
+     *                     See {@link CombatScenario#setCityOwnerIfUnknown} and
+     *                     {@link #withOwner}.
      */
     public CombatScenario load(Partida partida, Local local, Jogador observer,
-            Nacao unknownCityOwner) {
+            Nacao unknownOwner) {
         final CombatScenario ret = new CombatScenario(partida, local);
         ret.setObserver(observer);
-        ret.setCityOwnerIfUnknown(unknownCityOwner);
+        ret.setCityOwnerIfUnknown(unknownOwner);
         if (local == null) {
             return ret;
         }
@@ -79,9 +80,39 @@ public class ScenarioLoader {
             if (exercito == null) {
                 continue;
             }
-            ret.addArmy(new ArmySim(exercito), provenanceOf(exercito, observer));
+            ret.addArmy(withOwner(new ArmySim(exercito), unknownOwner),
+                    provenanceOf(exercito, observer));
         }
         return ret;
+    }
+
+    /**
+     * Every army in a scenario HAS a nation. John, 2026-09-20: "we can't have a nationless army, we
+     * must force a nation into it. If unknown, we can assume barbarian."
+     *
+     * <h3>It is very nearly true already</h3>
+     *
+     * "I think armies always populate the nation in the EGF. The 'banner' is always known." Checked
+     * against a live results file and it holds: 188 army definitions, 188 with a nation, none
+     * without. The banner is what an observer sees first and the server never withholds it.
+     *
+     * <h3>So why force it at all</h3>
+     *
+     * Because "never observed" and "cannot happen" are different claims, and the cost of being
+     * wrong is not a wrong number - it is an exception in shared combat maths
+     * ({@code BattleSimFacade.getPlatoonDefense} dereferences the nation) or a silently fabricated
+     * zero. One line here removes the whole class of failure from the client, and it follows the
+     * rule this project keeps arriving at: when shared code needs an input, SUPPLY the input rather
+     * than branch around the method.
+     *
+     * The Barbarians are the right stand-in for the same reason they stand in for an unknown city
+     * owner - they hold whatever nobody else does.
+     */
+    private static ArmySim withOwner(ArmySim army, Nacao unknownOwner) {
+        if (army.getNacao() == null && unknownOwner != null) {
+            army.setNacao(unknownOwner);
+        }
+        return army;
     }
 
     /**
