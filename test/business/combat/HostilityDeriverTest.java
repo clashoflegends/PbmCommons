@@ -133,7 +133,7 @@ public class HostilityDeriverTest {
 
         assertTrue(m.isInimigo(mineArmy, one), "my own row is authoritative");
         assertTrue(m.isInimigo(mineArmy, two), "my own row is authoritative");
-        assertFalse(m.isInimigo(one, two), "X vs Y is unknowable, so they do not fight");
+        assertTrue(m.isInimigo(one, two), "X vs Y is unknowable, so they are assumed to fight");
         assertTrue(m.isAssumed(one, two), "and that has to be marked as a guess");
         assertEquals(1, m.getAssumedPairs().size());
     }
@@ -161,7 +161,7 @@ public class HostilityDeriverTest {
 
         assertTrue(m.isAssumed(friend, enemy),
                 "a one-entry fragment cannot answer for a nation it never mentions");
-        assertFalse(m.isInimigo(friend, enemy));
+        assertTrue(m.isInimigo(friend, enemy), "so the pair is assumed hostile, and disclosed");
     }
 
     /**
@@ -179,9 +179,9 @@ public class HostilityDeriverTest {
         final HostilityMatrix m = new HostilityDeriver()
                 .derive(partida(";FFA;"), Arrays.asList(me, enemy), null);
 
-        assertFalse(m.isInimigo(me, enemy), "an unreadable row cannot see the war");
+        assertTrue(m.isInimigo(me, enemy), "an unreadable row is assumed hostile");
         assertTrue(m.isAssumed(me, enemy),
-                "so it must be reported as a guess, not as a known peace");
+                "and reported as a guess - the point is that silence is never read as peace");
     }
 
     /**
@@ -204,7 +204,7 @@ public class HostilityDeriverTest {
 
         assertTrue(m.isAssumed(them, third),
                 "a one-entry fragment must not answer for a nation it never mentions");
-        assertFalse(m.isInimigo(them, third));
+        assertTrue(m.isInimigo(them, third), "so the pair is assumed hostile, and disclosed");
     }
 
     /**
@@ -271,7 +271,7 @@ public class HostilityDeriverTest {
         assertTrue(deriver.isHostileToCity(partida(";FFA;"), army, owner, me));
         assertFalse(deriver.isHostileToCity(partida(";FFA;"), army, mine, me),
                 "an army never assaults its own nation's city");
-        assertFalse(deriver.isHostileToCity(partida(";FFA;"), army, owner, null),
-                "unresolvable means no assault, not an assumed one");
+        assertTrue(deriver.isHostileToCity(partida(";FFA;"), army, owner, null),
+                "unresolvable means an ASSUMED assault now - see the deriver's default");
     }
 }

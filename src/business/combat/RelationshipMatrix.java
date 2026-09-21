@@ -67,7 +67,19 @@ public class RelationshipMatrix {
          * room full of peace.
          */
         FROM_GAME_TYPE,
-        /** Nothing could answer it, so neutral was applied. Must be disclosed. */
+        /**
+         * The OTHER direction was read, and this one was mirrored from it.
+         *
+         * John, 2026-09-21: "A safer assumption would be that all diplomacy is bidirectional
+         * (which it is in almost every case)."
+         *
+         * Much stronger than a blind guess and still not a read, which is why it is its own value.
+         * A one-sided declaration IS possible - the reciprocity rules in
+         * {@code NacaoControl.doArrumaRelacionamentos} are commented-out stubs - so this can be
+         * wrong; it is simply wrong far less often than assuming nothing was said.
+         */
+        MIRRORED,
+        /** Nothing could answer it from either side, so a default was applied. Must be disclosed. */
         ASSUMED,
         /** The player said so, and the player outranks every derivation. */
         PLAYER_EDITED
@@ -212,10 +224,12 @@ public class RelationshipMatrix {
         }
         switch (origin) {
             case PLAYER_EDITED:
-                return 4;
+                return 5;
             case FROM_GAME_TYPE:
-                return 3;
+                return 4;
             case READ_FROM_EGF:
+                return 3;
+            case MIRRORED:
                 return 2;
             default:
                 return 1;

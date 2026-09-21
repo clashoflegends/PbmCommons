@@ -149,14 +149,16 @@ public class ScenarioRosterTest {
         s.addArmy(enemy, CombatScenario.Provenance.ESTIMATED);
         s.addArmy(other, CombatScenario.Provenance.ESTIMATED);
 
-        // nothing in my EGF says the third nation fights my enemy, so it does not - yet
-        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(other));
-
-        // the matrix is the law, and the player may state it
-        s.setHostile(other, enemy, true);
-
+        // Nothing in my EGF says whether the third nation fights my enemy, and since 2026-09-21
+        // an unread pair is ASSUMED HOSTILE - so it does, by assumption, and lands with me.
         assertEquals(ScenarioRoster.Group.FIGHTING_WITH_ME, ScenarioRoster.of(s).getGroup(other));
         assertEquals(300, ScenarioRoster.of(s).getQtTropas(ScenarioRoster.Group.FIGHTING_WITH_ME));
+
+        // The matrix is the law and the player may state otherwise - which is what the assumed
+        // default is FOR: it shows him a fight, and he corrects it if he knows better.
+        s.setHostile(other, enemy, false);
+
+        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(other));
     }
 
     /** A friendly relationship on its own puts nobody in the battle. */
@@ -207,6 +209,11 @@ public class ScenarioRosterTest {
     public void aPlayerEditOutranksTheDerivationAndSurvivesRebuilds() {
         final Jogador me = jogador("j1");
         final Nacao mine = nacao("m", me), other = nacao("x", null);
+
+        // A STATED peace, so the baseline is a read fact rather than an absence: since 2026-09-21
+        // an unread pair is assumed hostile, and this test is about the player's edit outranking a
+        // derivation, not about what the default happens to be.
+        relate(mine, other, 0);
 
         final CombatScenario s = new CombatScenario(partida(";FFA;"), local());
         s.setObserver(me);

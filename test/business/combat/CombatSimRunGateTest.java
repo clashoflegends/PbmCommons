@@ -94,11 +94,18 @@ public class CombatSimRunGateTest {
     @Test
     public void aHexWhereNobodyIsHostileBlocksTheRun() {
         final Local hex = hex(null);
+        final Nacao mine = nacao("m", "Mine"), theirs = nacao("t", "Theirs");
         final CombatScenario scenario = new CombatScenario(null, hex);
-        scenario.addArmy(army("mine", nacao("m", "Mine"), hex,
-                platoon(troopType("inf", false), 900)), CombatScenario.Provenance.EXACT);
-        scenario.addArmy(army("theirs", nacao("t", "Theirs"), hex,
-                platoon(troopType("inf", false), 500)), CombatScenario.Provenance.ESTIMATED);
+        scenario.addArmy(army("mine", mine, hex, platoon(troopType("inf", false), 900)),
+                CombatScenario.Provenance.EXACT);
+        scenario.addArmy(army("theirs", theirs, hex, platoon(troopType("inf", false), 500)),
+                CombatScenario.Provenance.ESTIMATED);
+        // The peace has to be STATED now. Since 2026-09-21 an unread pair is assumed HOSTILE, so
+        // two armies about which nothing is known do fight - which is the whole point of the new
+        // default. "Nobody is hostile" is therefore a positive claim, and the player's own edit is
+        // how the simulator hears one.
+        scenario.setRelacionamento(mine, theirs, RelationshipMatrix.NEUTRAL);
+        scenario.setRelacionamento(theirs, mine, RelationshipMatrix.NEUTRAL);
 
         assertEquals(RunGate.NO_HOSTILE_PAIR, scenario.getRunGate(ENGINE_BUILT));
     }

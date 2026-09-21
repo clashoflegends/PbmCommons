@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -18,13 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Easily read from looping the nations... then having an edit panel for the players to adjust as
  * they want. On a second pass, we can then extrapolate the non-visible gaps."
  *
- * So pass one reads, shows and lets him edit. The tests here pin the three decisions that were not
- * obvious, each of which could be got wrong in a way nothing would report:
+ * Pass one read, showed and let him edit. The first extrapolation landed 2026-09-21, also on his
+ * call - mirroring, and an unread pair assumed HOSTILE - so what these tests pin is now:
  *
  *   a cell is DIRECTIONAL, and hostility is the OR of the two directions, because that is what the
  *   Judge does;
  *   a rule true BY CONSTRUCTION outranks a value read from a row;
- *   a pair is only ASSUMED when NEITHER direction could be read.
+ *   an unreadable direction is MIRRORED from the readable one and labelled as such;
+ *   a pair neither side can read is assumed HOSTILE, and disclosed.
  */
 public class RelationshipMatrixTest {
 
@@ -170,7 +172,7 @@ public class RelationshipMatrixTest {
      * ASSUMED, so the panel can show it as such and he can correct it.
      */
     @Test
-    public void theObserversOwnRowAnswersTheDirectionItStatesAndOnlyThatOne() {
+    public void theObserversOwnRowIsReadAndTheReverseIsMirroredFromIt() {
         final Jogador me = jogador("j1");
         final Nacao mine = myNacao("m", "Mine", me), foe = nacao("f", "Foe");
         relate(mine, foe, RelationshipMatrix.SWORN_ENEMY);
@@ -179,10 +181,11 @@ public class RelationshipMatrixTest {
                 .deriveNations(partida(";FFA;"), Arrays.asList(mine, foe), me);
 
         assertEquals(RelationshipMatrix.Origin.READ_FROM_EGF, m.getOrigin(mine, foe));
-        assertEquals(RelationshipMatrix.Origin.ASSUMED, m.getOrigin(foe, mine),
-                "his EGF carries HIS view; the enemy's own opinion was never exported");
+        assertEquals(RelationshipMatrix.Origin.MIRRORED, m.getOrigin(foe, mine),
+                "his EGF carries HIS view; the enemy's own opinion is MIRRORED from it, not read");
         assertTrue(m.isHostile(mine, foe));
-        assertEquals(RelationshipMatrix.Origin.READ_FROM_EGF, m.getPairOrigin(mine, foe));
+        assertEquals(RelationshipMatrix.Origin.READ_FROM_EGF, m.getPairOrigin(mine, foe),
+                "and the pair reports the better-founded of its two directions");
     }
 
     /** Two third parties in a free-for-all: neither row is readable, so the pair is a real guess. */
@@ -195,7 +198,8 @@ public class RelationshipMatrixTest {
                 .deriveNations(partida(";FFA;"), Arrays.asList(mine, x, y), me);
 
         assertEquals(RelationshipMatrix.Origin.ASSUMED, m.getPairOrigin(x, y));
-        assertFalse(m.isHostile(x, y), "and the guess goes the pessimistic way: not hostile");
+        assertTrue(m.isHostile(x, y),
+                "and the guess goes HOSTILE: an unread pair is assumed to fight (John, 2026-09-21)");
     }
 
     /**
@@ -241,21 +245,30 @@ public class RelationshipMatrixTest {
         final RelationshipMatrix m = new HostilityDeriver()
                 .deriveNations(partida(";FFA;"), Arrays.asList(mine, hidden), me);
 
-        assertFalse(m.isHostile(mine, hidden));
+        // It IS hostile now, because an unread pair is assumed hostile - but the ORIGIN is what
+        // this test is about: a hidden player must stay a GUESS, never promoted to FROM_GAME_TYPE
+        // the way a real NPC is.
         assertEquals(RelationshipMatrix.Origin.ASSUMED, m.getPairOrigin(mine, hidden),
                 "unknown, and marked as unknown - not promoted to a rule");
+        assertNotEquals(RelationshipMatrix.Origin.FROM_GAME_TYPE, m.getOrigin(mine, hidden),
+                "a secret human player is not an NPC");
     }
 
     /**
-     * The gaps are NOT filled by mirroring. That is a second-pass rule and it stays unwritten.
+     * An unreadable direction is MIRRORED from the one that can be read, and labelled as mirrored.
      *
-     * John put extrapolation - Locked Teams, Death Match, bidirectional symmetry - in a second pass
-     * on purpose: pass one reads, shows and lets him edit, so a wrong rule can never be mistaken for
-     * read data. Mirroring is the tempting one, because it looks like common sense and would quietly
-     * turn every unknown half into an authoritative-looking answer.
+     * John, 2026-09-21: "A safer assumption would be that all diplomacy is bidirectional (which it
+     * is in almost every case)." This was deliberately NOT done in pass one, and the objection then
+     * was that a rule filling a cell becomes indistinguishable from read data. The answer to that
+     * objection is {@link RelationshipMatrix.Origin#MIRRORED}: the inference is made AND marked, so
+     * the panel shows it in italic and the player can see which half nobody actually told him.
+     *
+     * It can still be wrong - a one-sided declaration is legal, since the reciprocity rules in
+     * {@code NacaoControl.doArrumaRelacionamentos} are commented-out stubs - just far less often
+     * than pretending nothing was said.
      */
     @Test
-    public void anUnreadableDirectionIsNotMirroredFromTheOneThatCouldBeRead() {
+    public void anUnreadableDirectionIsMirroredFromTheOneThatCouldBeRead() {
         final Jogador me = jogador("j1");
         final Nacao mine = myNacao("m", "Mine", me), ally = nacao("a", "Ally");
         relate(mine, ally, RelationshipMatrix.ALLY);
@@ -264,8 +277,26 @@ public class RelationshipMatrixTest {
                 .deriveNations(partida(";FFA;"), Arrays.asList(mine, ally), me);
 
         assertEquals(RelationshipMatrix.ALLY, m.getValor(mine, ally));
-        assertEquals(RelationshipMatrix.NEUTRAL, m.getValor(ally, mine),
-                "an alliance he signed is not evidence the other side still honours it");
-        assertEquals(RelationshipMatrix.Origin.ASSUMED, m.getOrigin(ally, mine));
+        assertEquals(RelationshipMatrix.ALLY, m.getValor(ally, mine),
+                "mirrored, because diplomacy is bidirectional in almost every case");
+        assertEquals(RelationshipMatrix.Origin.MIRRORED, m.getOrigin(ally, mine),
+                "and labelled as an inference, never as a read");
+        assertEquals(RelationshipMatrix.Origin.READ_FROM_EGF, m.getOrigin(mine, ally),
+                "while the direction that WAS read keeps its own origin");
+    }
+
+    /** Mirroring makes a one-sided war visible from both sides, which is what the Judge resolves. */
+    @Test
+    public void aReadDeclarationIsMirroredOntoTheSilentSide() {
+        final Jogador me = jogador("j1");
+        final Nacao mine = myNacao("m", "Mine", me), foe = nacao("f", "Foe");
+        relate(mine, foe, RelationshipMatrix.SWORN_ENEMY);
+
+        final RelationshipMatrix m = new HostilityDeriver()
+                .deriveNations(partida(";FFA;"), Arrays.asList(mine, foe), me);
+
+        assertEquals(RelationshipMatrix.SWORN_ENEMY, m.getValor(foe, mine));
+        assertEquals(RelationshipMatrix.Origin.MIRRORED, m.getOrigin(foe, mine));
+        assertTrue(m.isHostile(mine, foe));
     }
 }

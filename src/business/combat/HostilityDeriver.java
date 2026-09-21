@@ -31,7 +31,9 @@ import model.Partida;
  *   <li><b>Read</b> a relationship row from a loaded EGF. Authoritative, and always preferred.</li>
  *   <li><b>Derive</b> by construction: in a Death Match every pair fights, and an NPC nation is
  *       everyone's sworn enemy. Both are complete answers needing no row - see {@link #isNpc}.</li>
- *   <li><b>Assume</b>, and say so.</li>
+ *   <li><b>Mirror</b> the other direction when only it can be read - diplomacy is bidirectional
+ *       in almost every case.</li>
+ *   <li><b>Assume</b> HOSTILE, and say so.</li>
  * </ol>
  *
  * Nothing else. Not nation colour, not "hostile to my enemy", not transitive alliance. An inference
@@ -129,15 +131,30 @@ public class HostilityDeriver {
                     ret.set(from, to, read, RelationshipMatrix.Origin.READ_FROM_EGF);
                     continue;
                 }
-                // Nothing could answer it, so default to neutral - and MARK it, because a guessed
-                // peace looks exactly like a known one otherwise.
+                // MIRROR the other direction when it can be read. John, 2026-09-21: "A safer
+                // assumption would be that all diplomacy is bidirectional (which it is in almost
+                // every case)." A one-sided declaration is possible - the reciprocity rules in
+                // NacaoControl are commented-out stubs - so this can be wrong, just far less often
+                // than pretending nothing was said. Marked MIRRORED, never READ.
+                final Integer reverse = read(known.get(to), from);
+                if (reverse != null) {
+                    ret.set(from, to, reverse, RelationshipMatrix.Origin.MIRRORED);
+                    continue;
+                }
+                // Neither side could answer, so assume HOSTILE. John, 2026-09-21: "if it can't be
+                // read, assume hostile instead of non-hostile."
                 //
-                // Not hostile is the pessimistic direction, which is what makes it safe to default
-                // to rather than merely convenient: in the engine each army spends its attack on
-                // the armies in its own enemy list, so two of the observer's enemies who also fight
-                // each other split their fire, while two who ignore each other both aim everything
-                // at him. The assumption can therefore overstate a threat and cannot understate one.
-                ret.set(from, to, RelationshipMatrix.NEUTRAL, RelationshipMatrix.Origin.ASSUMED);
+                // This reverses the original default and the reasoning behind it, so the change is
+                // worth stating. The old argument was about damage concentration: two of the
+                // observer's enemies assumed at peace both aim everything at HIM, which overstates
+                // the threat to him and so was the safe direction. The argument for hostile is
+                // about the tool: a simulator whose answer is "no battle happens" teaches nothing,
+                // and a player who cannot see a relationship is better served by being shown the
+                // fight and told it was assumed than by a quiet nothing.
+                //
+                // ENEMY rather than SWORN_ENEMY: hostile enough to fight, without claiming the
+                // extreme the game reserves for a declared blood feud.
+                ret.set(from, to, RelationshipMatrix.ENEMY, RelationshipMatrix.Origin.ASSUMED);
             }
         }
         return ret;
@@ -168,7 +185,12 @@ public class HostilityDeriver {
                 final RelationshipMatrix.Origin origin = nations.getPairOrigin(nOne, nOther);
                 if (nations.isHostile(nOne, nOther)) {
                     ret.setHostile(one, other, toHostilityOrigin(origin));
-                } else if (origin == RelationshipMatrix.Origin.ASSUMED) {
+                }
+                // Marked SEPARATELY from hostility, not as its else-branch. Since the default
+                // became "assume hostile" the two coincide, and folding them together silently
+                // dropped the disclosure count to zero - every guess became an unannounced war.
+                // R-15 is about whether the player was TOLD, which is independent of the answer.
+                if (origin == RelationshipMatrix.Origin.ASSUMED) {
                     ret.markAssumed(one, other);
                 }
             }
