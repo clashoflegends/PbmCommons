@@ -169,7 +169,34 @@ public class BattleSimFacade implements Serializable {
         return getPlatoonAttack(pelotao, exercito, exercito.getLocal(), exercito.getTerreno());
     }
 
-    private float getPlatoonAttack(Pelotao pelotao, IExercito exercito, final Local local, final Terreno terreno) {
+    /**
+     * A platoon's attack. THE one implementation, shared with the Judge since T-426.
+     *
+     * <h3>Why this is now the only copy</h3>
+     *
+     * {@code ExercitoControlFacade.getPlatoonAttack} was a second implementation of this same
+     * formula and the two had drifted. Checked term by term before merging: quantity, training,
+     * weapon, the allied-city doubling and {@code ;PAB;}/{@code ;PABN;} were identical, and this
+     * class's {@code getArmyBonusModifier(exercito) / 100f} is exactly the Judge's
+     * {@code (skillCommander + moral + 200f) / 400f}. Exactly one rule differed - the
+     * {@code ;AAW;} woods bonus below, which existed only in the Judge's copy and is folded in here.
+     *
+     * John approved the convergence 2026-09-20. It was the cheap moment: no nation in the live game
+     * carries {@code ;AAW;}, so the Judge's numbers do not move today, while leaving it split would
+     * have meant the two drifting further apart the first time a scenario granted it.
+     *
+     * <h3>The terrain is a PARAMETER, and that is the point</h3>
+     *
+     * The Judge's copy read terrain off {@code local.getTerreno()}. Taking it separately is what
+     * lets the BattleSim answer "what if this battle were fought in forest" - an {@code ArmySim}
+     * carries an editable {@code terreno} alongside the real hex. Every live Judge caller passes
+     * the army's own hex, so the two readings coincide there and no Judge number changes.
+     *
+     * @param local   where the battle is, for the city and capital-distance rules
+     * @param terreno the ground being fought on, which the simulator lets the player change
+     */
+    public float getPlatoonAttack(Pelotao pelotao, IExercito exercito, final Local local,
+            final Terreno terreno) {
         float ret = 0;
         try {
             float forcaTrop = getTroopAttack(pelotao.getTipoTropa(), exercito, local, terreno)
@@ -177,6 +204,11 @@ public class BattleSimFacade implements Serializable {
                     * ((float) pelotao.getTreino() + (float) pelotao.getModAtaque() + 100f)
                     / 300f;
             ret = forcaTrop * getArmyBonusModifier(exercito) / 100f;
+            //A = ataque com bonus em floresta
+            if (exercito.getNacao().hasHabilidade(";AAW;") && terreno != null
+                    && terreno.isFloresta()) {
+                ret += ret * (float) exercito.getNacao().getHabilidadeValor(";AAW;") / 100f;
+            }
         } catch (NullPointerException ex) {
         }
         return ret;
