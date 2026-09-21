@@ -149,16 +149,16 @@ public class ScenarioRosterTest {
         s.addArmy(enemy, CombatScenario.Provenance.ESTIMATED);
         s.addArmy(other, CombatScenario.Provenance.ESTIMATED);
 
-        // Nothing in my EGF says whether the third nation fights my enemy, and since 2026-09-21
-        // an unread pair is ASSUMED HOSTILE - so it does, by assumption, and lands with me.
+        // Nothing in my EGF says whether the third nation fights my enemy, and two factions I
+        // cannot read are assumed FRIENDLY with each other - the worst case for me is that neither
+        // of them is distracted by the other. So it is not fighting with me, yet.
+        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(other));
+
+        // the matrix is the law, and the player may state it
+        s.setHostile(other, enemy, true);
+
         assertEquals(ScenarioRoster.Group.FIGHTING_WITH_ME, ScenarioRoster.of(s).getGroup(other));
         assertEquals(300, ScenarioRoster.of(s).getQtTropas(ScenarioRoster.Group.FIGHTING_WITH_ME));
-
-        // The matrix is the law and the player may state otherwise - which is what the assumed
-        // default is FOR: it shows him a fight, and he corrects it if he knows better.
-        s.setHostile(other, enemy, false);
-
-        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(other));
     }
 
     /** A friendly relationship on its own puts nobody in the battle. */

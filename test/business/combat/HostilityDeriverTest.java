@@ -133,7 +133,9 @@ public class HostilityDeriverTest {
 
         assertTrue(m.isInimigo(mineArmy, one), "my own row is authoritative");
         assertTrue(m.isInimigo(mineArmy, two), "my own row is authoritative");
-        assertTrue(m.isInimigo(one, two), "X vs Y is unknowable, so they are assumed to fight");
+        assertFalse(m.isInimigo(one, two),
+                "X and Y are both third parties, so they are assumed FRIENDLY - the worst case for "
+                + "me is that neither is distracted by the other");
         assertTrue(m.isAssumed(one, two), "and that has to be marked as a guess");
         assertEquals(1, m.getAssumedPairs().size());
     }
@@ -161,7 +163,8 @@ public class HostilityDeriverTest {
 
         assertTrue(m.isAssumed(friend, enemy),
                 "a one-entry fragment cannot answer for a nation it never mentions");
-        assertTrue(m.isInimigo(friend, enemy), "so the pair is assumed hostile, and disclosed");
+        assertFalse(m.isInimigo(friend, enemy),
+                "and two third parties are assumed friendly with each other, not hostile");
     }
 
     /**
@@ -179,9 +182,10 @@ public class HostilityDeriverTest {
         final HostilityMatrix m = new HostilityDeriver()
                 .derive(partida(";FFA;"), Arrays.asList(me, enemy), null);
 
-        assertTrue(m.isInimigo(me, enemy), "an unreadable row is assumed hostile");
+        assertFalse(m.isInimigo(me, enemy),
+                "with no observer, neither nation is the player's, so the worst case does not apply");
         assertTrue(m.isAssumed(me, enemy),
-                "and reported as a guess - the point is that silence is never read as peace");
+                "but it is still a GUESS - the point is that silence is never READ as peace");
     }
 
     /**
@@ -204,7 +208,8 @@ public class HostilityDeriverTest {
 
         assertTrue(m.isAssumed(them, third),
                 "a one-entry fragment must not answer for a nation it never mentions");
-        assertTrue(m.isInimigo(them, third), "so the pair is assumed hostile, and disclosed");
+        assertFalse(m.isInimigo(them, third),
+                "and two third parties are assumed friendly with each other, not hostile");
     }
 
     /**
@@ -271,7 +276,7 @@ public class HostilityDeriverTest {
         assertTrue(deriver.isHostileToCity(partida(";FFA;"), army, owner, me));
         assertFalse(deriver.isHostileToCity(partida(";FFA;"), army, mine, me),
                 "an army never assaults its own nation's city");
-        assertTrue(deriver.isHostileToCity(partida(";FFA;"), army, owner, null),
-                "unresolvable means an ASSUMED assault now - see the deriver's default");
+        assertFalse(deriver.isHostileToCity(partida(";FFA;"), army, owner, null),
+                "with no observer there is no worst case to assume, so no assault");
     }
 }

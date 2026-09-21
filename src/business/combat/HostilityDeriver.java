@@ -33,7 +33,8 @@ import model.Partida;
  *       everyone's sworn enemy. Both are complete answers needing no row - see {@link #isNpc}.</li>
  *   <li><b>Mirror</b> the other direction when only it can be read - diplomacy is bidirectional
  *       in almost every case.</li>
- *   <li><b>Assume</b> HOSTILE, and say so.</li>
+ *   <li><b>Assume</b> the worst case - hostile to the player, friendly among themselves - and
+ *       say so.</li>
  * </ol>
  *
  * Nothing else. Not nation colour, not "hostile to my enemy", not transitive alliance. An inference
@@ -141,20 +142,30 @@ public class HostilityDeriver {
                     ret.set(from, to, reverse, RelationshipMatrix.Origin.MIRRORED);
                     continue;
                 }
-                // Neither side could answer, so assume HOSTILE. John, 2026-09-21: "if it can't be
-                // read, assume hostile instead of non-hostile."
+                // Neither side could answer. The default depends on WHO the pair is, because
+                // the worst case is not the same for every pair. John, 2026-09-21: "let's assume
+                // that they are hostile to me and my team while friends between them. As it is the
+                // worse case and also the more probable."
                 //
-                // This reverses the original default and the reasoning behind it, so the change is
-                // worth stating. The old argument was about damage concentration: two of the
-                // observer's enemies assumed at peace both aim everything at HIM, which overstates
-                // the threat to him and so was the safe direction. The argument for hostile is
-                // about the tool: a simulator whose answer is "no battle happens" teaches nothing,
-                // and a player who cannot see a relationship is better served by being shown the
-                // fight and told it was assumed than by a quiet nothing.
+                // That is sharper than a blanket answer either way, and it is worth recording why
+                // both blanket answers are wrong. Assume everything peaceful and an unknown nation
+                // ignores the player, which understates what he is walking into. Assume everything
+                // hostile and the unknowns fight EACH OTHER, splitting their attacks - in the
+                // engine an army spends its damage on the armies in its own enemy list - so the
+                // threat to him comes out LOWER than the peaceful assumption would give. Hostile
+                // everywhere is not the pessimistic reading; it only looks like it.
+                //
+                // The genuine worst case is the one below: they all come for him, and none of them
+                // is distracted by the others. It is also the likelier one - a player who cannot
+                // read a relationship is usually the outsider, not the confidant.
                 //
                 // ENEMY rather than SWORN_ENEMY: hostile enough to fight, without claiming the
                 // extreme the game reserves for a declared blood feud.
-                ret.set(from, to, RelationshipMatrix.ENEMY, RelationshipMatrix.Origin.ASSUMED);
+                final boolean againstTheObserver =
+                        isObservers(from, observer) || isObservers(to, observer);
+                ret.set(from, to,
+                        againstTheObserver ? RelationshipMatrix.ENEMY : RelationshipMatrix.NEUTRAL,
+                        RelationshipMatrix.Origin.ASSUMED);
             }
         }
         return ret;
@@ -365,7 +376,25 @@ public class HostilityDeriver {
      * {@code Jogador.isNacao}, which can answer for a nation that is not the observer's.
      */
     private boolean isComplete(Nacao nacao, boolean everythingExported, Jogador observer) {
-        return everythingExported || (observer != null && nacao.getOwner() == observer);
+        return everythingExported || isObservers(nacao, observer);
+    }
+
+    /**
+     * Is this one of the player's own nations?
+     *
+     * Identity against the observer, exactly as {@link #isComplete} tests it and for the same
+     * reason: {@code getOwner()} is set on the observer's own nations, and the server does set an
+     * owner on an ALLY's nation in a team-locked game - the ally's owner, not the observer's - so
+     * identity is what distinguishes them.
+     *
+     * <b>"My team" is not answered here yet.</b> John's rule is "hostile to me and my team", and a
+     * locked-team ally is part of that worst case. Detecting the team means reading the game's team
+     * flags, which is the extrapolation pass that also owes Locked Teams and Death Match
+     * construction rules. Until then this covers the player's own nations only, which understates
+     * the assumed threat to an ally rather than overstating it.
+     */
+    private boolean isObservers(Nacao nacao, Jogador observer) {
+        return observer != null && nacao != null && nacao.getOwner() == observer;
     }
 
     /**

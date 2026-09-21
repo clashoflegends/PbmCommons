@@ -65,6 +65,10 @@ public class RelationshipMatrixTest {
         return ret;
     }
 
+    private static final String FRIENDS =
+            "assumed FRIENDLY with each other, because the worst case for the player is that "
+            + "neither of them is distracted by the other";
+
     private static void relate(Nacao from, Nacao to, int valor) {
         from.getRelacionamentos().put(to, valor);
     }
@@ -188,6 +192,26 @@ public class RelationshipMatrixTest {
                 "and the pair reports the better-founded of its two directions");
     }
 
+    /**
+     * An unresolvable pair INVOLVING the player is assumed hostile to him. John, 2026-09-21:
+     * "let's assume that they are hostile to me and my team while friends between them. As it is
+     * the worse case and also the more probable."
+     */
+    @Test
+    public void anUnresolvablePairInvolvingThePlayerIsAssumedHostileToHim() {
+        final Jogador me = jogador("j1");
+        final Nacao mine = myNacao("m", "Mine", me), stranger = nacao("s", "Stranger");
+        // mine's row is EMPTY, so nothing can be read in either direction
+
+        final RelationshipMatrix m = new HostilityDeriver()
+                .deriveNations(partida(";FFA;"), Arrays.asList(mine, stranger), me);
+
+        assertTrue(m.isHostile(mine, stranger),
+                "a faction he cannot read is assumed to be coming for him");
+        assertEquals(RelationshipMatrix.Origin.ASSUMED, m.getPairOrigin(mine, stranger),
+                "and it is still disclosed as a guess");
+    }
+
     /** Two third parties in a free-for-all: neither row is readable, so the pair is a real guess. */
     @Test
     public void aPairNeitherSideCanReadIsAssumed() {
@@ -198,8 +222,7 @@ public class RelationshipMatrixTest {
                 .deriveNations(partida(";FFA;"), Arrays.asList(mine, x, y), me);
 
         assertEquals(RelationshipMatrix.Origin.ASSUMED, m.getPairOrigin(x, y));
-        assertTrue(m.isHostile(x, y),
-                "and the guess goes HOSTILE: an unread pair is assumed to fight (John, 2026-09-21)");
+        assertFalse(m.isHostile(x, y), "X and Y are both third parties: " + FRIENDS);
     }
 
     /**
