@@ -195,23 +195,13 @@ public class BattleSimFacade implements Serializable {
                 } catch (NullPointerException ex) {
                 }
             }
-            // Nation guard, for the same reason as getPlatoonDefense's below - but here the NPE
-            // was already being caught, and that is worse rather than better. The outer catch
-            // answers 0f, so an army with no visible owner reported an attack of ZERO: a real
-            // number, silently wrong, indistinguishable from a genuinely harmless army. The catch
-            // exists for a missing terrain entry ("nao tem a tropa, retorna forca 0") and is right
-            // for that; it was never meant to absorb a nationless army.
-            //
-            // Scoped so it cannot change a number the Judge computes: where nacao is non-null,
-            // which is every army the Judge owns, these conditions evaluate exactly as before.
-            final Nacao nacao = exercito.getNacao();
-            if (nacao != null && nacao.hasHabilidade(";PAB;") && !tpTropa.isBarcos()
-                    && lf.getDistanciaToCapital(nacao, local)
-                    <= nacao.getHabilidadeValor(";PAB;")) {
+            if (exercito.getNacao().hasHabilidade(";PAB;") && !tpTropa.isBarcos()
+                    && lf.getDistanciaToCapital(exercito.getNacao(), local)
+                    <= exercito.getNacao().getHabilidadeValor(";PAB;")) {
                 tropasValor += tropasValor * 0.15f;
             }
-            if (nacao != null && nacao.hasHabilidade(";PABN;") && tpTropa.isBarcos()
-                    && lf.getDistanciaToCapital(nacao, local) <= nacao.getHabilidadeValor(";PABN;")) {
+            if (exercito.getNacao().hasHabilidade(";PABN;") && tpTropa.isBarcos()
+                    && lf.getDistanciaToCapital(exercito.getNacao(), local) <= exercito.getNacao().getHabilidadeValor(";PABN;")) {
                 tropasValor += tropasValor * 0.15f;
             }
             return (tropasValor);
@@ -247,31 +237,12 @@ public class BattleSimFacade implements Serializable {
         if (ef.isHero(army) && tpTropa.hasHabilidade(";TAH;")) {
             vlConstituicao += vlConstituicao * tpTropa.getHabilidadeValor(";TAH;") / 100;
         }
-        // An army with NO NATION reaches here, and these two blocks used to throw on it.
-        //
-        // The same guard the two getCity*Combat methods below already carry, and the same reason:
-        // an ownerless actor is a real state, not a broken one. In the Counselor an army whose
-        // owner is not visible arrives with a null nacao - business.combat.HostilityDeriver handles
-        // exactly that case by name - and a blank army the player adds in the simulator starts
-        // without one. Nothing computed a platoon's defence for such an army until the BattleSim
-        // grew attack and defence columns (T-427), so nothing ever hit it.
-        //
-        // SHARED CODE, and the Judge calls this. Scoped so that it cannot change a single number
-        // the Judge computes: where nacao is non-null - which is every army the Judge owns - the
-        // two conditions below are evaluated exactly as before. The only behaviour that changes is
-        // the one that used to be a NullPointerException.
-        //
-        // Deliberately NOT an outer try/catch like getTroopAttack's. That form swallows every NPE
-        // in the method, including a genuinely missing terrain entry, and answers 0 - a plausible
-        // number that hides the fault. Skipping a bonus a nationless army cannot qualify for is a
-        // different thing: it is the correct answer, not a fallback.
-        final Nacao nacao = army.getNacao();
-        if (nacao != null && nacao.hasHabilidade(";PDB;") && !tpTropa.isBarcos()
-                && lf.getDistanciaToCapital(nacao, army.getLocal()) <= nacao.getHabilidadeValor(";PDB;")) {
+        if (army.getNacao().hasHabilidade(";PDB;") && !tpTropa.isBarcos()
+                && lf.getDistanciaToCapital(army.getNacao(), army.getLocal()) <= army.getNacao().getHabilidadeValor(";PDB;")) {
             vlConstituicao += vlConstituicao * 0.2f;
         }
-        if (nacao != null && nacao.hasHabilidade(";PDBN;") && tpTropa.isBarcos()
-                && lf.getDistanciaToCapital(nacao, army.getLocal()) <= nacao.getHabilidadeValor(";PDBN;")) {
+        if (army.getNacao().hasHabilidade(";PDBN;") && tpTropa.isBarcos()
+                && lf.getDistanciaToCapital(army.getNacao(), army.getLocal()) <= army.getNacao().getHabilidadeValor(";PDBN;")) {
             vlConstituicao += vlConstituicao * 0.2f;
         }
 

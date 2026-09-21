@@ -3,7 +3,6 @@ package business.facade;
 import business.combat.ArmySim;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import model.Habilidade;
 import model.Local;
 import model.Nacao;
 import model.Pelotao;
@@ -12,42 +11,39 @@ import model.TipoTropa;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * An army with NO NATION is a real state, and the shared combat maths must survive it. T-440.
+ * An army with no nation must FAIL LOUDLY in the shared combat maths. It is not a guarded case.
  *
- * <h3>Why this is worth pinning</h3>
+ * <h3>Why this test asserts a crash</h3>
  *
- * An ownerless actor is not a broken one. {@code business.combat.HostilityDeriver} handles "an army
- * whose owner is unknown" by name, the server withholds a nation from an army the player cannot
- * identify, and a blank army the player adds in the simulator starts without one.
+ * John, 2026-09-20: "I prefer to keep the NPE unguarded on the Judge. Better to stop the game from
+ * making a mistake than allowing it to continue with an error. Loud failures are acceptable in this
+ * cases that it shouldn't happen by design and intention... plus the Judge can see everything, so
+ * it is a fatal flaw if it happens."
  *
- * Both methods below used to mishandle it, in the two different ways this codebase gets things
- * wrong:
+ * That is decisive, and it is the standing rule of this project: data integrity beats avoiding an
+ * NPE, and parking a game is the CORRECT outcome when the data is wrong. Server-side the Judge holds
+ * the whole world, so an army with no nation is not a visibility gap - it is corruption, and a
+ * simulation that carries on past it produces a turn result nobody can trust.
  *
- * <ul>
- *   <li>{@code getPlatoonDefense} dereferenced {@code getNacao()} unguarded and THREW. Loud, and it
- *       would have taken the BattleSim window down the moment T-427 put attack and defence on
- *       screen.</li>
- *   <li>{@code getPlatoonAttack} already caught the NPE in an outer handler and answered <b>0</b>.
- *       Silent, and worse: a real number, indistinguishable from a genuinely harmless army. The
- *       catch is there for a missing terrain entry and is right for that; it was never meant to
- *       absorb a nationless army.</li>
- * </ul>
+ * A guard was briefly added here and has been reverted. This test exists so the next person who
+ * finds the unguarded dereference reads the reasoning before "fixing" it.
  *
- * <h3>Scope of the fix</h3>
+ * <h3>The client's side of the bargain</h3>
  *
- * {@code BattleSimFacade} is SHARED and the Judge calls it in several places, so the guard is
- * scoped to the two nation-bonus conditions in each method. Where the nation is non-null - every
- * army the Judge owns - the arithmetic is unchanged, which is what
- * {@link #aNationDoesNotChangeTheBaselineArithmetic} asserts.
+ * The Counselor does NOT rely on this throwing or not throwing: {@code ScenarioLoader} forces a
+ * nation onto every army it loads and the blank-army path falls back to the same stand-in, so a
+ * nationless army cannot reach these methods from the client at all. Supplying the input is the
+ * client's job; failing loudly on bad input is the facade's.
  */
 public class BattleSimFacadeNationlessTest {
 
-    private static final Terreno PLAIN = terreno();
+    private static final Terreno PLAIN = plain();
 
-    private static Terreno terreno() {
+    private static Terreno plain() {
         final Terreno ret = new Terreno();
         ret.setCodigo("P");
         ret.setNome("Plain");
@@ -87,7 +83,6 @@ public class BattleSimFacadeNationlessTest {
         return ret;
     }
 
-    /** @param nacao null for an army whose owner the player cannot see */
     private static ArmySim army(Nacao nacao) {
         final ArmySim ret = new ArmySim("Host", PLAIN, nacao);
         ret.setCodigo("a1");
@@ -97,71 +92,54 @@ public class BattleSimFacadeNationlessTest {
         return ret;
     }
 
-    private static Nacao nacao(String codigo) {
+    private static Nacao nacao() {
         final Nacao ret = new Nacao();
-        ret.setCodigo(codigo);
-        ret.setNome(codigo);
+        ret.setCodigo("n");
+        ret.setNome("Nation");
         return ret;
     }
 
-    /** Defence: used to throw. */
+    /**
+     * Defence THROWS on a nationless army, by design. Do not guard this.
+     *
+     * {@code getPlatoonDefense} dereferences {@code army.getNacao()} for the {@code ;PDB;}
+     * capital-distance bonus. The exception is the feature: it stops a turn that is running on
+     * corrupt data rather than quietly producing a number from it.
+     */
     @Test
-    public void defenceIsComputedForAnArmyWithNoNation() {
-        final float defence = new BattleSimFacade().getPlatoonDefense(army(null), platoon());
-
-        assertTrue(defence > 0f, "an ownerless army still has troops that defend: " + defence);
+    public void defenceThrowsOnANationlessArmyAndThatIsIntended() {
+        assertThrows(NullPointerException.class,
+                () -> new BattleSimFacade().getPlatoonDefense(army(null), platoon()),
+                "a nationless army is corruption; failing loudly is the correct outcome");
     }
 
     /**
-     * Attack: used to answer a SILENT ZERO, swallowed by the outer catch.
+     * Attack does NOT throw - it answers 0 - and that is the half worth worrying about.
      *
-     * The dangerous half. An exception gets noticed; a plausible number does not.
+     * {@code getTroopAttack} wraps its body in a catch that answers {@code 0f}, documented for a
+     * missing terrain entry ("nao tem a tropa, retorna forca 0"). It absorbs this fatal flaw too,
+     * so the same corrupt army that correctly halts the defence calculation slips through the
+     * attack one as a harmless-looking zero.
+     *
+     * By the very principle that keeps the defence unguarded, this is the WRONG shape: it is the
+     * silent wrong answer rather than the loud stop. Pinned as the current behaviour so that
+     * changing it is a deliberate act, and flagged for John as T-442 rather than fixed here -
+     * narrowing that catch is a change to shared code with the Judge on the other end of it.
      */
     @Test
-    public void attackIsComputedForAnArmyWithNoNationRatherThanASilentZero() {
+    public void attackSwallowsTheSameFlawAndAnswersZero() {
         final float attack = new BattleSimFacade().getPlatoonAttack(platoon(), army(null), hex());
 
-        assertTrue(attack > 0f,
-                "an ownerless army still has troops that attack, and 0 is a lie: " + attack);
+        assertEquals(0f, attack, 0.0001f,
+                "documented, not endorsed - see T-442 and this method's javadoc");
     }
 
-    /**
-     * The safety property the whole fix rests on: a plain nation changes NOTHING.
-     *
-     * The guard is scoped to the two nation-bonus conditions, so an army whose nation carries none
-     * of those habilidades must compute exactly what a nationless one does. If this ever fails, the
-     * guard has started changing the Judge's arithmetic.
-     */
+    /** A real army computes normally, so neither assertion above is passing by accident. */
     @Test
-    public void aNationDoesNotChangeTheBaselineArithmetic() {
-        final BattleSimFacade facade = new BattleSimFacade();
-        final Nacao plain = nacao("n");
-
-        assertEquals(facade.getPlatoonDefense(army(null), platoon()),
-                facade.getPlatoonDefense(army(plain), platoon()), 0.0001f);
-        assertEquals(facade.getPlatoonAttack(platoon(), army(null), hex()),
-                facade.getPlatoonAttack(platoon(), army(plain), hex()), 0.0001f);
-    }
-
-    /**
-     * And a nation that DOES carry the bonus still gets it. The guard skips, it does not disable.
-     *
-     * {@code ;PDB;} is the capital-distance defence bonus; {@code getDistanciaToCapital} answers
-     * 9999 for a nation with no capital, so the value has to clear that for the bonus to apply.
-     */
-    @Test
-    public void aNationWithTheBonusStillReceivesIt() {
-        final Nacao bonused = nacao("b");
-        final Habilidade pdb = new Habilidade();
-        pdb.setCodigo(";PDB;");
-        pdb.setNome(";PDB;");
-        pdb.setValor(99999);
-        bonused.addHabilidade(pdb);
-
+    public void anArmyWithANationComputesNormally() {
         final BattleSimFacade facade = new BattleSimFacade();
 
-        assertTrue(facade.getPlatoonDefense(army(bonused), platoon())
-                > facade.getPlatoonDefense(army(null), platoon()),
-                "the ;PDB; bonus must still apply to a nation that has it");
+        assertTrue(facade.getPlatoonDefense(army(nacao()), platoon()) > 0f);
+        assertTrue(facade.getPlatoonAttack(platoon(), army(nacao()), hex()) > 0f);
     }
 }
