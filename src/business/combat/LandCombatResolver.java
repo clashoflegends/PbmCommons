@@ -390,7 +390,7 @@ public class LandCombatResolver {
             Map<ArmySim, ArmySim> toOriginal, Map<ArmySim, Boolean> engaged, boolean capped,
             CombatResult ret) {
         for (ArmySim army : scenario.getArmies()) {
-            ret.setOutcome(army, CombatResult.Outcome.DID_NOT_FIGHT);
+            ret.setOutcome(army, CombatLayer.ARMY, CombatResult.Outcome.DID_NOT_FIGHT);
         }
         for (ArmySim copy : fighters) {
             final ArmySim original = toOriginal.get(copy);
@@ -401,7 +401,7 @@ public class LandCombatResolver {
                 final Pelotao now = copy.getPelotoes().get(was.getCodigo());
                 ret.put(was, was.getQtd(), now == null ? 0 : now.getQtd());
             }
-            ret.setOutcome(original, outcomeOf(copy, engaged, capped));
+            ret.setOutcome(original, CombatLayer.ARMY, outcomeOf(copy, engaged, capped));
         }
     }
 

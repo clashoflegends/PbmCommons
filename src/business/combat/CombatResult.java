@@ -2,6 +2,7 @@ package business.combat;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,15 @@ public class CombatResult {
 
     private final Map<Pelotao, Integer> after = new IdentityHashMap<>();
     private final Map<Pelotao, Integer> before = new IdentityHashMap<>();
-    private final Map<IExercito, Outcome> outcomes = new IdentityHashMap<>();
+    /**
+     * Keyed per army AND PER LAYER, because a battle is three fights and they can end differently.
+     *
+     * A fleet can win at sea and the troops it lands can still be destroyed ashore; an army can
+     * sweep the field and then break on the city walls. One verdict per army would have to pick one
+     * of those and hide the rest, so the roster shows three marks and each says what happened in its
+     * own layer. A layer with no entry has not been resolved - today that is the sea and the city.
+     */
+    private final Map<IExercito, Map<CombatLayer, Outcome>> outcomes = new IdentityHashMap<>();
     private final List<String> notes = new ArrayList<>();
     private int rounds;
 
@@ -81,13 +90,24 @@ public class CombatResult {
         return was == null ? -1 : was - after.get(original);
     }
 
-    public void setOutcome(IExercito original, Outcome outcome) {
-        outcomes.put(original, outcome);
+    public void setOutcome(IExercito original, CombatLayer layer, Outcome outcome) {
+        Map<CombatLayer, Outcome> byLayer = outcomes.get(original);
+        if (byLayer == null) {
+            byLayer = new EnumMap<>(CombatLayer.class);
+            outcomes.put(original, byLayer);
+        }
+        byLayer.put(layer, outcome);
     }
 
-    /** How this army ended the battle, or null before a run and for an army that was not in it. */
-    public Outcome getOutcome(IExercito original) {
-        return outcomes.get(original);
+    /**
+     * How this army ended THIS layer, or null when the layer was not resolved.
+     *
+     * Null is a real answer and the roster must keep it distinguishable: the sea and city layers do
+     * not resolve yet, so "no verdict" has to read as "not simulated" and never as "took no part".
+     */
+    public Outcome getOutcome(IExercito original, CombatLayer layer) {
+        final Map<CombatLayer, Outcome> byLayer = outcomes.get(original);
+        return byLayer == null ? null : byLayer.get(layer);
     }
 
     public int getRounds() {

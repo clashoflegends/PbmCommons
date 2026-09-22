@@ -392,10 +392,10 @@ public class LandCombatResolverTest {
 
         final CombatResult result = new LandCombatResolver().resolve(scenario, cenario());
 
-        assertEquals(CombatResult.Outcome.DID_NOT_FIGHT, result.getOutcome(watcher),
+        assertEquals(CombatResult.Outcome.DID_NOT_FIGHT, result.getOutcome(watcher, CombatLayer.ARMY),
                 "untouched because it was never in the battle, not because it won one");
-        assertEquals(CombatResult.Outcome.WON, result.getOutcome(mineArmy));
-        assertEquals(CombatResult.Outcome.LOST, result.getOutcome(theirArmy));
+        assertEquals(CombatResult.Outcome.WON, result.getOutcome(mineArmy, CombatLayer.ARMY));
+        assertEquals(CombatResult.Outcome.LOST, result.getOutcome(theirArmy, CombatLayer.ARMY));
         assertEquals(300, bystander.getQtd(), "and the watcher is untouched in the numbers too");
     }
 
@@ -438,9 +438,9 @@ public class LandCombatResolverTest {
                 + result.getRounds() + " rounds");
         assertFalse(result.getNotes().contains("BATTLESIM.RESULT.CAPPED"),
                 "and it is not reported as a stalemate");
-        assertEquals(CombatResult.Outcome.LOST, result.getOutcome(beaten),
+        assertEquals(CombatResult.Outcome.LOST, result.getOutcome(beaten, CombatLayer.ARMY),
                 "an army whose land force was destroyed LOST, whatever is still floating");
-        assertEquals(CombatResult.Outcome.WON, result.getOutcome(victor));
+        assertEquals(CombatResult.Outcome.WON, result.getOutcome(victor, CombatLayer.ARMY));
     }
 
     /**
@@ -605,7 +605,7 @@ public class LandCombatResolverTest {
         // finish anybody, so nobody won: the mark says the battle was cut short, not that both
         // sides beat each other.
         for (ArmySim army : scenario.getArmies()) {
-            assertEquals(CombatResult.Outcome.UNDECIDED, result.getOutcome(army),
+            assertEquals(CombatResult.Outcome.UNDECIDED, result.getOutcome(army, CombatLayer.ARMY),
                     army.getNome() + " did not win a battle that nobody could finish");
         }
     }
