@@ -96,7 +96,11 @@ public class ArmySim extends BaseModel implements IExercito {
         this.comandanteNome = name;
         this.terreno = terrain;
         this.nacao = nation;
-        //FIXME: needs to receive Local for the Battle to be resolved. Deal with this later.
+        // NO LOCAL. Callers that will fight this army must setLocal() themselves, and since T-801
+        // that means all of them: the shared attack formula takes a Local for the city and
+        // capital-distance rules, and it SWALLOWS a null one into an attack of zero rather than
+        // failing. A silent zero is the worst of the three outcomes, so this is not a null to leave
+        // lying around - see BattleSimControler.doAddArmy.
     }
 
     public ArmySim(Exercito exercito) {

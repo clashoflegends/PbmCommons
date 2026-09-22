@@ -38,6 +38,42 @@ public class LandCombatResolverTest {
         return ret;
     }
 
+    private static final Terreno FOREST = forest();
+
+    private static Terreno forest() {
+        final Terreno ret = new Terreno();
+        ret.setCodigo("F");
+        ret.setNome("Forest");   // isFloresta() is the code "F", there is no flag to set
+        return ret;
+    }
+
+    /**
+     * A troop that ATTACKS at half strength in the forest and defends the same on both grounds.
+     *
+     * Only the attack, deliberately. Halving both sides of the ledger is a degenerate fixture: the
+     * casualty rule is a RATIO of damage to defence, so scaling both leaves every number identical
+     * and the test passes or fails for reasons that have nothing to do with terrain. It cost a
+     * debugging round to notice.
+     */
+    private static TipoTropa twoTerrainTroop(String codigo, int ataque, int defesa) {
+        final TipoTropa ret = new TipoTropa();
+        ret.setCodigo(codigo);
+        ret.setNome(codigo);
+        final SortedMap<Terreno, Integer> attack = new TreeMap<>();
+        attack.put(PLAIN, ataque);
+        attack.put(FOREST, Math.max(1, ataque / 2));
+        final SortedMap<Terreno, Integer> defence = new TreeMap<>();
+        defence.put(PLAIN, defesa);
+        defence.put(FOREST, defesa);
+        final SortedMap<Terreno, Integer> movement = new TreeMap<>();
+        movement.put(PLAIN, 5);
+        movement.put(FOREST, 5);
+        ret.setAtaqueTerreno(attack);
+        ret.setDefesaTerreno(defence);
+        ret.setMovimentoTerreno(movement);
+        return ret;
+    }
+
     private static SortedMap<Terreno, Integer> byTerrain(int valor) {
         final SortedMap<Terreno, Integer> ret = new TreeMap<>();
         ret.put(PLAIN, valor);
@@ -361,6 +397,194 @@ public class LandCombatResolverTest {
         assertEquals(CombatResult.Outcome.WON, result.getOutcome(mineArmy));
         assertEquals(CombatResult.Outcome.LOST, result.getOutcome(theirArmy));
         assertEquals(300, bystander.getQtd(), "and the watcher is untouched in the numbers too");
+    }
+
+    /**
+     * AN ARMY WITH SHIPS LEFT IS STILL BEATEN. Found by antagonist review 2026-09-21.
+     *
+     * The shape is the one in John's own screenshots: Reavers plus Krakens on the same hex. Kill the
+     * Reavers and the army has no land presence at all, but its troop count is still positive
+     * because the ships are counted - so it stayed on the winner's target list forever, absorbed a
+     * full attack every round, lost nobody (its land defence is zero, so the proportional rule
+     * divides into nothing) and never disbanded. The battle then ran to the 100-round cap and
+     * reported a STALEMATE where the Judge reports a victory.
+     *
+     * The Judge does not have this problem: it drops an army out of every enemy list the moment the
+     * round's damage meets its land defence.
+     */
+    @Test
+    public void anarmyWhoseLandTroopsAreGoneIsOutOfTheBattle() {
+        final Nacao mine = nacao("m"), theirs = nacao("t");
+        final TipoTropa kraken = troopType("kraken", 40, 40, false);
+        final Habilidade naval = new Habilidade();
+        naval.setCodigo(";TTN;");
+        naval.setNome(";TTN;");
+        kraken.addHabilidade(naval);
+        final Pelotao ships = platoon(kraken, 4);
+        final Pelotao doomedFoot = platoon(troopType("foot", 10, 10, false), 100);
+        final Pelotao winners = platoon(troopType("host", 90, 90, false), 2000);
+        final CombatScenario scenario = new CombatScenario(null, hex());
+        final ArmySim beaten = army("beaten", theirs, doomedFoot, ships);
+        final ArmySim victor = army("victor", mine, winners);
+        scenario.addArmy(victor, CombatScenario.Provenance.EXACT);
+        scenario.addArmy(beaten, CombatScenario.Provenance.EXACT);
+        scenario.setRelacionamento(mine, theirs, RelationshipMatrix.SWORN_ENEMY);
+        scenario.setRelacionamento(theirs, mine, RelationshipMatrix.SWORN_ENEMY);
+
+        final CombatResult result = new LandCombatResolver().resolve(scenario, cenario());
+
+        assertTrue(result.getRounds() < 100,
+                "the battle ENDED; it did not grind on against a fleet that cannot fight back: "
+                + result.getRounds() + " rounds");
+        assertFalse(result.getNotes().contains("BATTLESIM.RESULT.CAPPED"),
+                "and it is not reported as a stalemate");
+        assertEquals(CombatResult.Outcome.LOST, result.getOutcome(beaten),
+                "an army whose land force was destroyed LOST, whatever is still floating");
+        assertEquals(CombatResult.Outcome.WON, result.getOutcome(victor));
+    }
+
+    /**
+     * ONE-TIME ATTACK MAGIC IS ONE-TIME. Found by antagonist review 2026-09-21.
+     *
+     * The Judge reads it through {@code getCombateAtaqueOnetimeReset()}, which returns the value and
+     * zeroes the field in the same call - so a pre-combat attack spell lands in the first round that
+     * actually swings and never again. Left unreset it is a permanent buff, and the longer the
+     * battle the further the forecast drifts from the turn it is meant to predict.
+     */
+    @Test
+    public void onetimeAttackMagicIsSpentOnce() {
+        // Troops with ZERO attack on both sides, so the ONLY thing that ever does damage is the
+        // spell. Nobody can finish anybody, so the battle runs to the 100-round cap - which is what
+        // makes the difference visible: spent once the victim loses a sliver, applied every round it
+        // takes a hundred times as much and is wiped out.
+        final Nacao mine = nacao("m"), theirs = nacao("t");
+        final Pelotao harmless = platoon(troopType("caster", 0, 100, false), 1000);
+        final Pelotao victims = platoon(troopType("vic", 0, 100, false), 1000);
+        final ArmySim caster = army("mine", mine, harmless);
+        caster.setCombateAtaqueOnetime(5000);
+        final CombatScenario scenario = new CombatScenario(null, hex());
+        scenario.addArmy(caster, CombatScenario.Provenance.EXACT);
+        scenario.addArmy(army("theirs", theirs, victims), CombatScenario.Provenance.EXACT);
+        scenario.setRelacionamento(mine, theirs, RelationshipMatrix.SWORN_ENEMY);
+        scenario.setRelacionamento(theirs, mine, RelationshipMatrix.SWORN_ENEMY);
+
+        final CombatResult result = new LandCombatResolver().resolve(scenario, cenario());
+
+        assertTrue(result.getAfter(victims) > 0,
+                "ONE application, not a hundred. The only damage ever dealt in this battle was a"
+                + " spell that is spent once, so the victim has to survive it; being wiped out means"
+                + " the spell is landing every round. Lost " + result.getLost(victims) + " of 1000"
+                + " over " + result.getRounds() + " rounds.");
+        assertTrue(result.getLost(victims) > 0, "and it did land, once");
+        assertEquals(100, result.getRounds(),
+                "nobody can finish anybody here, so it runs to the cap");
+    }
+
+    /**
+     * And spending it does not touch the player's own army, so Run stays repeatable.
+     *
+     * The value is consumed on the CLONE. If it were consumed on the original, pressing Run a second
+     * time would fight a different battle from the first without anything on screen changing.
+     */
+    @Test
+    public void spendingTheMagicDoesNotTouchTheScenario() {
+        final Nacao mine = nacao("m"), theirs = nacao("t");
+        final Pelotao attackers = platoon(troopType("att", 20, 100, false), 1000);
+        final Pelotao victims = platoon(troopType("vic", 20, 100, false), 1000);
+        final ArmySim mineArmy = army("mine", mine, attackers);
+        mineArmy.setCombateAtaqueOnetime(5000);
+        final CombatScenario scenario = new CombatScenario(null, hex());
+        scenario.addArmy(mineArmy, CombatScenario.Provenance.EXACT);
+        scenario.addArmy(army("theirs", theirs, victims), CombatScenario.Provenance.EXACT);
+        scenario.setRelacionamento(mine, theirs, RelationshipMatrix.SWORN_ENEMY);
+        scenario.setRelacionamento(theirs, mine, RelationshipMatrix.SWORN_ENEMY);
+        final LandCombatResolver resolver = new LandCombatResolver();
+
+        final int first = resolver.resolve(scenario, cenario()).getLost(victims);
+        final int second = resolver.resolve(scenario, cenario()).getLost(victims);
+
+        assertEquals(5000, mineArmy.getCombateAtaqueOnetime(), "the player's army kept its spell");
+        assertEquals(first, second, "so the second Run answers the same as the first");
+    }
+
+
+    /**
+     * AN ARMY THE PLAYER TYPED IN HAS NO HEX. Found by antagonist review 2026-09-21.
+     *
+     * {@code ArmySim(name, terrain, nation)} - the Add army constructor - leaves {@code local}
+     * null. That was harmless while Run was disabled.
+     *
+     * It does not throw, and that is the problem rather than the reassurance:
+     * {@code BattleSimFacade.getPlatoonAttack} wraps the whole formula in
+     * {@code catch (NullPointerException)} and returns ZERO. So for a nation carrying {@code ;PAB;}
+     * - the capital-distance attack bonus, which dereferences the Local - a hand-built army would
+     * have marched into battle with no attack at all and nothing on screen to say why. A silent
+     * plausible zero is worse than a crash, so the fix is at the source: {@code doAddArmy} gives the
+     * army the scenario's hex. This test pins the floor.
+     */
+    @Test
+    public void ahandBuiltArmyCanStillFight() {
+        final Nacao mine = nacao("m"), theirs = nacao("t");
+        final Pelotao typed = platoon(troopType("typed", 50, 50, false), 500);
+        final Pelotao enemy = platoon(troopType("enemy", 50, 50, false), 500);
+        // exactly what doAddArmy builds: no Local at all
+        final ArmySim handBuilt = new ArmySim("typed in", PLAIN, mine);
+        handBuilt.setCodigo("typed in");
+        handBuilt.setMoral(100);
+        handBuilt.setComandante(50);
+        handBuilt.getPelotoes().put(typed.getCodigo(), typed);
+        final CombatScenario scenario = new CombatScenario(null, hex());
+        scenario.addArmy(handBuilt, CombatScenario.Provenance.MANUAL);
+        scenario.addArmy(army("theirs", theirs, enemy), CombatScenario.Provenance.EXACT);
+        scenario.setRelacionamento(mine, theirs, RelationshipMatrix.SWORN_ENEMY);
+        scenario.setRelacionamento(theirs, mine, RelationshipMatrix.SWORN_ENEMY);
+
+        final CombatResult result = new LandCombatResolver().resolve(scenario, cenario());
+
+        assertTrue(result.getRounds() > 0, "it fought rather than throwing");
+    }
+
+    /**
+     * CHANGING THE TERRAIN CHANGES THE BATTLE. Found by antagonist review 2026-09-21.
+     *
+     * The terrain that decides a troop's attack, its defence and its place in the casualty order is
+     * read off the ARMY, not off the scenario - {@code BattleSimFacade.getPlatoonAttack} takes
+     * {@code exercito.getTerreno()}. So {@code CombatScenario.setTerreno} setting only its own field
+     * left the Terrain combo changing which layers armies could enter while every combat number
+     * stayed on the terrain of the real hex. The control looked like it worked.
+     *
+     * "What if this battle were fought in forest" is the reason the shared formula takes terrain as
+     * a parameter at all. If this test fails, the question is unreachable from the window again.
+     */
+    @Test
+    public void changingTheTerrainChangesTheCasualties() {
+        final int onPlain = lossesOn(PLAIN);
+        final int inForest = lossesOn(FOREST);
+
+        assertTrue(onPlain != inForest,
+                "same armies, different ground, different battle: " + onPlain + " vs " + inForest);
+    }
+
+    /**
+     * The same battle, fought on the given ground. Returns what the WINNER lost.
+     *
+     * The winner's losses for the same reason as the relationship test: the loop runs until one side
+     * has no defence left, so the loser is wiped out on any terrain and its number cannot show a
+     * difference. What the ground moves is how much the losing side takes with it.
+     */
+    private int lossesOn(Terreno terreno) {
+        final Nacao mine = nacao("m"), theirs = nacao("t");
+        final Pelotao tough = platoon(twoTerrainTroop("tough", 60, 200), 2000);
+        final Pelotao fragile = platoon(twoTerrainTroop("fragile", 60, 10), 1000);
+        final CombatScenario scenario = new CombatScenario(null, hex());
+        scenario.addArmy(army("mine", mine, tough), CombatScenario.Provenance.EXACT);
+        scenario.addArmy(army("theirs", theirs, fragile), CombatScenario.Provenance.EXACT);
+        scenario.setRelacionamento(mine, theirs, RelationshipMatrix.SWORN_ENEMY);
+        scenario.setRelacionamento(theirs, mine, RelationshipMatrix.SWORN_ENEMY);
+        scenario.setTerreno(terreno);
+        final CombatResult ret = new LandCombatResolver().resolve(scenario, cenario());
+        assertTrue(ret.getLost(tough) > 0, "the fixture has to draw blood to say anything");
+        return ret.getLost(tough);
     }
 
     /** A battle nobody can win stops loudly rather than hanging. See MAX_ROUNDS. */

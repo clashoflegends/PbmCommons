@@ -134,8 +134,23 @@ public class CombatScenario {
     }
 
     /** What-if: fight the same armies on different ground. */
+    /**
+     * Changes the ground, FOR EVERY ARMY ON IT. One hex, one terrain.
+     *
+     * The armies have to be told, because the terrain that decides a troop's attack, its defence and
+     * its place in the casualty order is read off the ARMY
+     * ({@code BattleSimFacade.getPlatoonAttack} takes {@code exercito.getTerreno()}), not off the
+     * scenario. Setting only the field here left the Terrain combo changing which layers armies
+     * could enter while every combat number stayed on the terrain of the real hex - a control that
+     * looked like it worked and did not. "What if this battle were fought in forest" is the whole
+     * reason the shared formula takes terrain as a parameter; this is what makes the question
+     * reachable from the window.
+     */
     public void setTerreno(Terreno terreno) {
         this.terreno = terreno;
+        for (ArmySim army : armies) {
+            army.setTerreno(terreno);
+        }
     }
 
     public Cidade getCidade() {
@@ -400,6 +415,12 @@ public class CombatScenario {
             return;
         }
         armies.add(army);
+        // and it fights on the scenario's ground, not on whatever it was carrying. An army added
+        // after the player has changed the Terrain combo would otherwise be the one army on the hex
+        // still fighting somewhere else.
+        if (terreno != null) {
+            army.setTerreno(terreno);
+        }
         armyProvenance.put(army, provenance == null ? Provenance.ESTIMATED : provenance);
         for (Pelotao pelotao : army.getPelotoes().values()) {
             platoonProvenance.put(pelotao, provenance == null ? Provenance.ESTIMATED : provenance);

@@ -204,12 +204,20 @@ public class LandCombatResolver {
      * bonuses of characters travelling with the army; both are the secrecy seam (T-808), and neither
      * is in the EGF for an army the player can only see from outside. What IS here is what he can
      * type: the attack bonus and the one-time attack magic.
+     *
+     * The one-time magic is SPENT here, exactly as {@code getCombateAtaqueOnetimeReset()} spends it:
+     * it lands in the first round that actually swings and never again. Left unreset it would be a
+     * permanent buff, and the longer the battle the further the forecast would drift from the turn
+     * it is meant to predict. Safe to zero because this is a copy - the player's own army keeps the
+     * value he typed, so pressing Run twice still gives the same answer.
      */
     private long getForcaPlus(ArmySim army, int round) {
         if (round == 0) {
             return 0;       // only a first-strike artifact counts in round 0, and we have none
         }
-        return (long) army.getAttackBonus() + army.getCombateAtaqueOnetime();
+        final long onetime = army.getCombateAtaqueOnetime();
+        army.setCombateAtaqueOnetime(0);
+        return army.getAttackBonus() + onetime;
     }
 
     /**
@@ -325,8 +333,8 @@ public class LandCombatResolver {
     private boolean hasLiveFight(List<ArmySim> fighters, HostilityMatrix matrix,
             Map<ArmySim, ArmySim> toOriginal) {
         for (ArmySim one : fighters) {
-            if (!enemiesOf(one, fighters, matrix, toOriginal).isEmpty()
-                    && battleSimFacade.getArmyDefenseTotalLand(one) > 0) {
+            if (isStillInTheLandBattle(one)
+                    && !enemiesOf(one, fighters, matrix, toOriginal).isEmpty()) {
                 return true;
             }
         }
@@ -344,12 +352,29 @@ public class LandCombatResolver {
             Map<ArmySim, ArmySim> toOriginal) {
         final List<ArmySim> ret = new ArrayList<>();
         for (ArmySim other : fighters) {
-            if (other != army && exercitoFacade.getQtTropasTotal(other) > 0
+            if (other != army && isStillInTheLandBattle(other)
                     && matrix.isInimigo(toOriginal.get(army), toOriginal.get(other))) {
                 ret.add(other);
             }
         }
         return ret;
+    }
+
+    /**
+     * Has this army anything left to fight a LAND battle with?
+     *
+     * Land defence, not troop count, and the difference is not academic - it is the shape of half
+     * the armies in a coastal game. An army of Reavers and Krakens that loses its Reavers still has
+     * a positive troop count, because the ships are counted, so a count-based test kept it on the
+     * winner's target list forever: it absorbed a full attack every round, lost nobody (the
+     * proportional rule divides by a land defence of zero), and never disbanded. The battle then ran
+     * to the round cap and reported a STALEMATE where the Judge reports a victory.
+     *
+     * The Judge reaches the same place from the other side: it drops an army out of every enemy list
+     * the moment a round's damage meets its land defence.
+     */
+    private boolean isStillInTheLandBattle(ArmySim army) {
+        return battleSimFacade.getArmyDefenseTotalLand(army) > 0;
     }
 
     /**
@@ -391,7 +416,10 @@ public class LandCombatResolver {
         if (!Boolean.TRUE.equals(engaged.get(copy))) {
             return CombatResult.Outcome.DID_NOT_FIGHT;
         }
-        return copy.isDisband() || exercitoFacade.getQtTropasTotal(copy) <= 0
+        // LAND defence again, not troop count: an army whose land force was destroyed lost the
+        // battle whatever is still floating offshore, and counting its ships would report a defeat
+        // as a victory.
+        return copy.isDisband() || !isStillInTheLandBattle(copy)
                 ? CombatResult.Outcome.LOST : CombatResult.Outcome.WON;
     }
 
