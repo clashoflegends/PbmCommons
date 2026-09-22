@@ -136,7 +136,7 @@ public class LandCombatResolver {
         if (round >= MAX_ROUNDS) {
             ret.addNote("BATTLESIM.RESULT.CAPPED");
         }
-        report(scenario, fighters, toOriginal, engaged, ret);
+        report(scenario, fighters, toOriginal, engaged, round >= MAX_ROUNDS, ret);
         return ret;
     }
 
@@ -387,7 +387,8 @@ public class LandCombatResolver {
      * was not in the battle shows "--", which is a different statement from surviving it intact.
      */
     private void report(CombatScenario scenario, List<ArmySim> fighters,
-            Map<ArmySim, ArmySim> toOriginal, Map<ArmySim, Boolean> engaged, CombatResult ret) {
+            Map<ArmySim, ArmySim> toOriginal, Map<ArmySim, Boolean> engaged, boolean capped,
+            CombatResult ret) {
         for (ArmySim army : scenario.getArmies()) {
             ret.setOutcome(army, CombatResult.Outcome.DID_NOT_FIGHT);
         }
@@ -400,7 +401,7 @@ public class LandCombatResolver {
                 final Pelotao now = copy.getPelotoes().get(was.getCodigo());
                 ret.put(was, was.getQtd(), now == null ? 0 : now.getQtd());
             }
-            ret.setOutcome(original, outcomeOf(copy, engaged));
+            ret.setOutcome(original, outcomeOf(copy, engaged, capped));
         }
     }
 
@@ -412,15 +413,20 @@ public class LandCombatResolver {
      * and lost nobody and an army that stood by and watched both end at full strength, and calling
      * the first an observer would hide the fact that it was in a battle at all.
      */
-    private CombatResult.Outcome outcomeOf(ArmySim copy, Map<ArmySim, Boolean> engaged) {
+    private CombatResult.Outcome outcomeOf(ArmySim copy, Map<ArmySim, Boolean> engaged,
+            boolean capped) {
         if (!Boolean.TRUE.equals(engaged.get(copy))) {
             return CombatResult.Outcome.DID_NOT_FIGHT;
         }
-        // LAND defence again, not troop count: an army whose land force was destroyed lost the
-        // battle whatever is still floating offshore, and counting its ships would report a defeat
-        // as a victory.
-        return copy.isDisband() || !isStillInTheLandBattle(copy)
-                ? CombatResult.Outcome.LOST : CombatResult.Outcome.WON;
+        // LAND defence, not troop count: an army whose land force was destroyed lost the battle
+        // whatever is still floating offshore, and counting its ships would report a defeat as a
+        // victory. This holds even in a capped battle - being wiped out is not undecided.
+        if (copy.isDisband() || !isStillInTheLandBattle(copy)) {
+            return CombatResult.Outcome.LOST;
+        }
+        // A capped run means NEITHER side could finish the other, so nobody left alive won it.
+        // Marking them all victorious would contradict the sentence printed beside the marks.
+        return capped ? CombatResult.Outcome.UNDECIDED : CombatResult.Outcome.WON;
     }
 
     /** Anything the run cannot do faithfully has to be said, not silently dropped. */

@@ -40,6 +40,14 @@ public class CombatResult {
         WON,
         /** Wiped out, or disbanded during the battle. */
         LOST,
+        /**
+         * Still standing when the round cap stopped the battle. Not a winner.
+         *
+         * A capped run means neither side could finish the other, so calling everyone left alive a
+         * winner would contradict the very sentence beside it. The armies that were destroyed on the
+         * way still lost; what is undecided is who would eventually have won.
+         */
+        UNDECIDED,
         /** Present on the hex but never engaged: no hostile army it could reach on this layer. */
         DID_NOT_FIGHT
     }

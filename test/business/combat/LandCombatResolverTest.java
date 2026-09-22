@@ -601,5 +601,12 @@ public class LandCombatResolverTest {
         assertEquals(100, result.getRounds(), "capped, not hung");
         assertTrue(result.getNotes().contains("BATTLESIM.RESULT.CAPPED"),
                 "and it says so rather than presenting the stalemate as a finished battle");
+        // ...and the roster must not contradict that sentence with two trophies. Nobody could
+        // finish anybody, so nobody won: the mark says the battle was cut short, not that both
+        // sides beat each other.
+        for (ArmySim army : scenario.getArmies()) {
+            assertEquals(CombatResult.Outcome.UNDECIDED, result.getOutcome(army),
+                    army.getNome() + " did not win a battle that nobody could finish");
+        }
     }
 }
