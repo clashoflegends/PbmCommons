@@ -554,9 +554,15 @@ public class CombatScenario {
     /**
      * Why Run cannot run, most-fixable first. See {@link RunGate}.
      *
-     * @param engineExists false until T-801 builds the resolution chain. Passed in rather than
-     *                     asked of a flag here, so that the day it becomes true is one call site
-     *                     and not a hunt through the model.
+     * @param engineExists whether there is an engine to run at all. Passed in rather than asked
+     *                     of a flag here, so the day it became true (T-801) was one call site and
+     *                     not a hunt through the model.
+     *
+     * READY means SOMETHING will be fought, not that every layer will be: {@link #hasEngagement}
+     * accepts engagement on ANY of the three, while T-801 resolves only the land one. That is
+     * deliberate - the gate should not go back to NO_ENGAGEMENT for a naval battle the moment the
+     * sea layer lands - so the honesty has to live in the RESULT, which names the layers it
+     * resolved and says plainly when no land battle took place.
      */
     public RunGate getRunGate(boolean engineExists) {
         if (armies.isEmpty()) {

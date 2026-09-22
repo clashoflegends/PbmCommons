@@ -35,6 +35,22 @@ public class ArmySim extends BaseModel implements IExercito {
     private int tatica = 0;
     private int bonusAttack = 0, bonusDefense = 0;
     /**
+     * The one-time attack magic, the counterpart of {@code bonusDefense} in the magic exchange.
+     *
+     * A plain int on {@code ExercitoControl} that was never on {@code IExercito}, which is why this
+     * class did not have it: {@code CombatLand.doCancelMagic} spends attack magic against defence
+     * magic before any troops are counted, and without the field that step could not run at all.
+     *
+     * <b>Not the same as {@code bonusAttack}, and not wired to the editor's "Attack bonus".</b> In
+     * the Judge these are two fields with two histories - {@code Ordem247CombatAttackBonus} adds
+     * {@code 20 * pericia} HERE and separately calls {@code setArmyAttackBonus()}. Neither reaches
+     * the client: the EGF carries no combat bonuses at all
+     * ({@code model.Exercito.getAttackBonus()} is hardcoded to return 0), so both start at zero and
+     * only the player can put anything in them. Which spinner should drive which is a decision
+     * about what the editor MEANS, not a detail to guess at - see the task list.
+     */
+    private int combateAtaqueOnetime = 0;
+    /**
      * Combat intent, the Judge's {@code ExercitoControl.combateNivel}. Editable, because without it
      * the simulator cannot tell "defend in place" from "storm the city".
      *
@@ -126,6 +142,7 @@ public class ArmySim extends BaseModel implements IExercito {
         this.targetNacao = exercito.getTargetNacao();
         this.bonusAttack = exercito.getAttackBonus();
         this.bonusDefense = exercito.getArmyDefenseBonus();
+        this.combateAtaqueOnetime = exercito.getCombateAtaqueOnetime();
         this.comandante = exercito.getComandantePericia();
         this.comandanteNome = exercito.getComandanteNome();
         this.comandanteModel = exercito.getComandanteModel();
@@ -266,6 +283,15 @@ public class ArmySim extends BaseModel implements IExercito {
 
     public void setTargetNacao(Nacao targetNacao) {
         this.targetNacao = targetNacao;
+    }
+
+    /** The one-time attack magic. See the field note: distinct from {@link #getAttackBonus}. */
+    public int getCombateAtaqueOnetime() {
+        return combateAtaqueOnetime;
+    }
+
+    public void setCombateAtaqueOnetime(int combateAtaqueOnetime) {
+        this.combateAtaqueOnetime = combateAtaqueOnetime;
     }
 
     @Override
