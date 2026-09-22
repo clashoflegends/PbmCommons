@@ -105,15 +105,47 @@ public class SeagardFidelityCheck {
         }
         run(scenario, "WITH THE TACTICS THE TURN ACTUALLY USED (both Greyjoy on Charge)");
 
-        // The Judge's own deploy listing for this battle shows ONE platoon per army - the land one.
-        // displayTipoTropa prints every platoon when the combat is not naval, so the fleets were
-        // genuinely not with the armies by the time they fought. The troop-share split that decides
-        // how the attack is divided counts every platoon, so a fleet still attached in the EGF moves
-        // the numbers. Third pass: what the sim says once the ships are out of the way.
+        // The last unknown is the defender's MORALE: an army seen from outside carries none in the
+        // EGF, so the simulator assumes zero. It is a large term - the army bonus is
+        // (commander + morale + 200) / 4 - and the Judge published the attack it actually used,
+        // 2,609. So solve for it: sweep the morale and print the attack and the survivors, and the
+        // value that reproduces the turn is the one the army really had.
+        ArmySim dorian = null;
         for (ArmySim army : scenario.getArmies()) {
-            army.getPelotoes().values().removeIf(p -> p.getTipoTropa().isBarcos());
+            if (army.getNome().contains("Dorian")) {
+                dorian = army;
+            }
         }
-        run(scenario, "AND WITHOUT THE FLEETS, WHICH THE JUDGE DID NOT HAVE ON THE HEX");
+        if (dorian != null) {
+            System.out.println("--- solving for Dorian's morale (Judge published A=2,609) ---");
+            for (int moral = 0; moral <= 40; moral++) {
+                dorian.setMoral(moral);
+                final int attack = bsf.getArmyAttackBaseNot(dorian, ";TTN;", dorian.getLocal());
+                if (attack < 2600 || attack > 2620) {
+                    continue;
+                }
+                final CombatResult one = new LandCombatResolver().resolve(scenario,
+                        scenario.getPartida().getCenario());
+                System.out.println(String.format(
+                        "    moral=%2d  A=%,5d  Waldon=%,4d Joron=%,4d  (Judge: A=2,609 518 523)",
+                        moral, attack, survivors(one, scenario, "Waldon"),
+                        survivors(one, scenario, "Joron")));
+            }
+        }
+    }
+
+    private int survivors(CombatResult result, CombatScenario scenario, String who) {
+        for (ArmySim army : scenario.getArmies()) {
+            if (!army.getNome().contains(who)) {
+                continue;
+            }
+            for (model.Pelotao pelotao : army.getPelotoes().values()) {
+                if (!pelotao.getTipoTropa().isBarcos()) {
+                    return result.getAfter(pelotao);
+                }
+            }
+        }
+        return -1;
     }
 
     private void run(CombatScenario scenario, String title) {

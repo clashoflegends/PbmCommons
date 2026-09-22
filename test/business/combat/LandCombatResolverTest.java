@@ -587,6 +587,55 @@ public class LandCombatResolverTest {
         return ret.getLost(tough);
     }
 
+    /**
+     * THE FLEET IS LEFT BEHIND, and that changes the numbers. Verified against a real turn.
+     *
+     * {@code CombateTmpbm} anchors every army's ships before the land battle
+     * ({@code doAncoraBarcoAll}), so they are simply not in the army when it fights. That is not
+     * cosmetic: the attack is divided between enemies by each enemy's share of the TOTAL troop
+     * count, ships included, so a fleet still attached inflates its owner's share of the incoming
+     * damage.
+     *
+     * Two armies with identical infantry and wildly different fleets must therefore take identical
+     * losses. At Seagard the un-anchored version had them losing 264 and 240 where the Judge had
+     * 250 and 253 - an asymmetry with no cause in the battle at all.
+     */
+    @Test
+    public void theFleetIsAnchoredBeforeTheLandBattle() {
+        final Nacao mine = nacao("m"), theirs = nacao("t");
+        final Pelotao bigFleet = platoon(shipType("bigFleet"), 93);
+        final Pelotao smallFleet = platoon(shipType("smallFleet"), 4);
+        // tough infantry against a modest enemy, so the losses are PARTIAL. A fixture that wipes
+        // both sides out reports 500 and 500 whatever the split was, and proves nothing - which is
+        // exactly what the first version of this test did.
+        final Pelotao footA = platoon(troopType("footA", 10, 400, false), 500);
+        final Pelotao footB = platoon(troopType("footB", 10, 400, false), 500);
+        final Pelotao enemy = platoon(troopType("enemy", 40, 400, false), 500);
+        final CombatScenario scenario = new CombatScenario(null, hex());
+        scenario.addArmy(army("withFleet", mine, footA, bigFleet), CombatScenario.Provenance.EXACT);
+        scenario.addArmy(army("withBoat", mine, footB, smallFleet), CombatScenario.Provenance.EXACT);
+        scenario.addArmy(army("enemy", theirs, enemy), CombatScenario.Provenance.EXACT);
+        scenario.setRelacionamento(mine, theirs, RelationshipMatrix.SWORN_ENEMY);
+        scenario.setRelacionamento(theirs, mine, RelationshipMatrix.SWORN_ENEMY);
+
+        final CombatResult result = new LandCombatResolver().resolve(scenario, cenario());
+
+        assertEquals(result.getLost(footA), result.getLost(footB),
+                "identical infantry takes identical losses; the fleets are ashore and count for"
+                + " nothing. Lost " + result.getLost(footA) + " and " + result.getLost(footB));
+        assertFalse(result.has(bigFleet), "and the ships are absent from the land result");
+    }
+
+    /** A naval troop type: {@code ;TTN;} is what makes {@code isBarcos()} true. */
+    private static TipoTropa shipType(String codigo) {
+        final TipoTropa ret = troopType(codigo, 40, 40, false);
+        final Habilidade naval = new Habilidade();
+        naval.setCodigo(";TTN;");
+        naval.setNome(";TTN;");
+        ret.addHabilidade(naval);
+        return ret;
+    }
+
     /** A battle nobody can win stops loudly rather than hanging. See MAX_ROUNDS. */
     @Test
     public void aBattleThatCannotEndIsCappedAndSaysSo() {

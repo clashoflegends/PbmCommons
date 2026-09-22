@@ -108,6 +108,7 @@ public class LandCombatResolver {
                 continue;
             }
             final ArmySim copy = new ArmySim(original);
+            doAncoraBarcos(copy, scenario);
             fighters.add(copy);
             toOriginal.put(copy, original);
         }
@@ -182,6 +183,34 @@ public class LandCombatResolver {
                 pending.put(enemy, banked(pending, enemy) + dano);
             }
         }
+    }
+
+    /**
+     * THE FLEET IS LEFT BEHIND. An army that fights ashore anchors its ships first.
+     *
+     * {@code CombateTmpbm.executaMsgBasicaCombateLand} calls {@code doAncoraBarcoAll()} on every
+     * attacking army when the hex is anchorable, and {@code doAncoraEsquadras()} does the same for
+     * the rest; the ships are moved into the hex's garrison and are simply not in the army when the
+     * land battle runs. The Judge's own deploy listing for a land combat prints every platoon an
+     * army still has, and for a fleet-borne assault it prints only the troops - which is how this
+     * was noticed.
+     *
+     * It is not cosmetic. The attack is divided between enemies by each enemy's share of the TOTAL
+     * troop count, ships included, so a fleet still attached inflates its owner's share of the
+     * incoming damage. At Seagard that alone moved two nearly identical armies from losing 250 and
+     * 253 to losing 264 and 240 - an asymmetry with no cause in the battle at all.
+     *
+     * A garrison keeps its ships: {@code doAncoraBarcoAll} returns early for one, since it is
+     * already the thing the ships would be anchored into.
+     */
+    private void doAncoraBarcos(ArmySim army, CombatScenario scenario) {
+        final boolean anchorable = scenario.getTerreno() != null
+                && scenario.getTerreno().isAncoravel();
+        if (!anchorable || army.isGarrison()) {
+            return;
+        }
+        army.getPelotoes().values().removeIf(pelotao -> pelotao.getTipoTropa() != null
+                && pelotao.getTipoTropa().isBarcos());
     }
 
     /**
