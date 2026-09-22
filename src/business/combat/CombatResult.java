@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import business.interfaces.IExercito;
 import model.Pelotao;
 
 /**
@@ -26,8 +27,26 @@ import model.Pelotao;
  */
 public class CombatResult {
 
+    /**
+     * How one army came out of the battle. The Judge's own three-way split, from the report it
+     * writes at the end of a combat: took no part, won, or was destroyed.
+     *
+     * {@link #DID_NOT_FIGHT} is the one that cannot be re-derived from casualties afterwards. An
+     * army that fought and lost nobody and an army that stood and watched both end at full strength,
+     * and only the resolver knows which is which.
+     */
+    public enum Outcome {
+        /** Left standing with an enemy it had actually engaged. */
+        WON,
+        /** Wiped out, or disbanded during the battle. */
+        LOST,
+        /** Present on the hex but never engaged: no hostile army it could reach on this layer. */
+        DID_NOT_FIGHT
+    }
+
     private final Map<Pelotao, Integer> after = new IdentityHashMap<>();
     private final Map<Pelotao, Integer> before = new IdentityHashMap<>();
+    private final Map<IExercito, Outcome> outcomes = new IdentityHashMap<>();
     private final List<String> notes = new ArrayList<>();
     private int rounds;
 
@@ -52,6 +71,15 @@ public class CombatResult {
     public int getLost(Pelotao original) {
         final Integer was = before.get(original);
         return was == null ? -1 : was - after.get(original);
+    }
+
+    public void setOutcome(IExercito original, Outcome outcome) {
+        outcomes.put(original, outcome);
+    }
+
+    /** How this army ended the battle, or null before a run and for an army that was not in it. */
+    public Outcome getOutcome(IExercito original) {
+        return outcomes.get(original);
     }
 
     public int getRounds() {

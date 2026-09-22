@@ -4,63 +4,79 @@ import business.facade.BattleSimFacade;
 import business.facade.CenarioFacade;
 import business.facade.ExercitoFacade;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import model.Cenario;
 import model.Pelotao;
-import model.Terreno;
 import model.TipoTropa;
+import msgs.BaseMsgs;
 
 /**
- * Resolves the LAND layer of a simulated battle, round by round, and reports the casualties.
+ * Fights the land layer of a simulated battle, the way the live games actually fight it.
  *
- * <h3>A transcription, not a reimplementation</h3>
+ * <h3>Which engine this is, and why it matters</h3>
  *
- * Every number here comes from a facade the Judge itself calls -
- * {@code BattleSimFacade.getPlatoonAttack} and {@code getPlatoonDefense},
- * {@code CenarioFacade.getTaticaBonus}, {@code ExercitoFacade.subTropaQt}, and the casualty
- * comparator behind {@code ComparatorFactory}. What this class contributes is the LOOP, transcribed
- * from {@code CombatLand.doDistributeDamage} and {@code doCombatRound}: snapshot, armies strongest
- * first, platoons in casualty order, attack points consumed down the defender's list.
+ * The Judge has TWO combat engines. This one models {@code CombateTmpbm}, the traditional engine
+ * that nearly every live game runs and the one the design named for MVP. The newer
+ * {@code CombatBase / CombatArmy / CombatLand} family is a DIFFERENT algorithm - platoon against
+ * platoon, one attack spent down one casualty-ordered list, stopping at the first defender that
+ * survives - and modelling it here produced numbers wrong in a way a player would notice: with two
+ * armies on one side, the first absorbed everything and the second took no casualties at all.
  *
- * It exists because those two methods live in PbmJudge and take {@code ExercitoControl}. Moving
- * them is T-903 and it is the better end state; this is what lets the simulator answer today
- * without a Judge change, and it is meant to be DELETED when the real class moves across. The
- * arithmetic is shared either way, so the thing being thrown away is a loop, not a rules engine.
+ * {@code CombateTmpbm} works at ARMY level instead:
+ *
+ * <ol>
+ *   <li>Each army computes ONE attack value for the round: {@code forcaPlus} plus {@code
+ *       forcaBasica} scaled by the relationship and tactic modifiers.</li>
+ *   <li>That attack is dealt to EVERY enemy, split by each enemy's share of the total enemy troop
+ *       count. Two enemies of equal size each take half; nobody is skipped.</li>
+ *   <li>Damage accumulates and is suffered at the END of the round, so every army in a round strikes
+ *       the enemy as it stood when the round began.</li>
+ *   <li>The banked damage becomes casualties either proportionally across every platoon or platoon
+ *       by platoon down the casualty order - the same split {@link CasualtyMode} shows the
+ *       player.</li>
+ * </ol>
+ *
+ * Verified against a real turn: game 901, turn 8, the battle at 1141. The Judge dealt 1297 damage to
+ * 778 Reavers with 7780 defence and killed 130 of them, and 1310 to 786 Reavers with 7860 defence
+ * and killed 131. Both fall out of the arithmetic below exactly, including where it truncates.
+ *
+ * <h3>It orchestrates, it does not calculate</h3>
+ *
+ * Every number comes from something the Judge itself calls - {@link BattleSimFacade} for attack and
+ * defence, {@link CenarioFacade} for the tactic table, {@link BaseMsgs#dificuldadeBonus} for the
+ * relationship modifier. No combat arithmetic is reimplemented here, so the simulator cannot drift
+ * away from the Judge one rounding rule at a time.
  *
  * <h3>It runs on COPIES</h3>
  *
- * The Judge resolves in place, because its armies are the world. Here the armies are the player's
- * setup, and he will press Run again after changing a tactic - so the battle is fought by clones
- * and the originals are untouched. The old window carried the same intent as a TODO it never
- * reached: "clone the army so that we can run multiple simulations without changing the BattleSim".
+ * The Judge resolves in place because its armies are the world. Here they are what the player typed,
+ * and he will press Run again after changing a tactic - so the battle is fought by clones and the
+ * originals are untouched.
  *
  * <h3>What it does NOT do, and says so</h3>
  *
  * <ul>
- *   <li>The NAVY and CITY layers. This is the land layer only; the three-layer chain is T-801's
- *       remainder.</li>
- *   <li>{@code doTroopPowers} - corruption and undead raising. It needs the habilidade DAO, which
- *       the client has no access to, so a battle involving {@code ;TCT;}-family troops is reported
- *       as incomplete rather than quietly resolved without them.</li>
- *   <li>The troop-matchup modifiers. They are identity functions HERE because they are identity
- *       functions in the Judge - see {@link #attackModifier} and KI-055.</li>
- *   <li>Any narrative. Numbers only; the messages are T-802/T-803 and need the shared tokens
- *       (T-900).</li>
+ *   <li>The NAVY and CITY layers. Land only; the three-layer chain is T-801's remainder, and every
+ *       result says so.</li>
+ *   <li>The commander's combat artifact and travelling-character bonuses inside {@code forcaPlus}.
+ *       They are the secrecy seam (T-808) and are not in the EGF for an army seen from outside.</li>
+ *   <li>{@code doTroopPowers} - corruption and undead raising. It needs the habilidade DAO, so a
+ *       battle with {@code ;TCT;}-family troops is reported as incomplete rather than quietly
+ *       resolved without them.</li>
+ *   <li>Any narrative. Numbers only; the messages are T-802/T-803.</li>
  * </ul>
  */
 public class LandCombatResolver {
 
     /**
-     * Stop after this many rounds and say so, rather than hanging.
+     * A simulator has to stop; the Judge does not.
      *
-     * The Judge's loop is {@code while (isCombatCleared())} with no cap, which is safe there only
-     * because a real battle always kills somebody. A SIMULATOR is handed whatever the player typed,
-     * and an army whose attack rounds to zero against a defence that never falls would spin here
-     * forever. Stopping loudly is the honest answer; a frozen window is not.
+     * {@code CombateTmpbm} loops while some army still has an enemy and still has defence, which is
+     * safe there because a real battle always kills somebody. A simulator is handed whatever the
+     * player typed, and two armies whose attack rounds to zero satisfy that condition forever.
+     * Stopping loudly is the honest answer; a frozen window is not.
      */
     private static final int MAX_ROUNDS = 100;
 
@@ -72,7 +88,7 @@ public class LandCombatResolver {
      * Fights the land battle and reports what is left.
      *
      * @param scenario the player's setup, LEFT UNTOUCHED
-     * @param cenario  for the tactic-versus-tactic bonus table
+     * @param cenario  for the tactic-versus-tactic bonus table and the casualty-order rule
      */
     public CombatResult resolve(CombatScenario scenario, Cenario cenario) {
         final CombatResult ret = new CombatResult();
@@ -83,7 +99,6 @@ public class LandCombatResolver {
         if (scenario == null) {
             return ret;
         }
-        // the land fighters, as COPIES, paired back to the originals
         final List<ArmySim> fighters = new ArrayList<>();
         final Map<ArmySim, ArmySim> toOriginal = new IdentityHashMap<>();
         final Map<ArmySim, LayerParticipation> participation = scenario.getParticipation();
@@ -101,15 +116,255 @@ public class LandCombatResolver {
         }
         noteWhatWasSkipped(fighters, ret);
 
+        final RelationshipMatrix relations = scenario.getRelationships();
         final HostilityMatrix matrix = scenario.getMatrix();
+        // What an army has taken this round but not yet suffered. The Judge keeps this on the army
+        // as combatDano; here it is a side map, so ArmySim stays a plain model object.
+        final Map<ArmySim, Long> pending = new IdentityHashMap<>();
+        // Who was ever in the fight. An army with no enemy on this layer is an observer, not a
+        // winner, and only this loop can tell them apart - both end at full strength.
+        final Map<ArmySim, Boolean> engaged = new IdentityHashMap<>();
+
         int round = 0;
         while (round < MAX_ROUNDS && hasLiveFight(fighters, matrix, toOriginal)) {
-            doDistributeDamage(fighters, matrix, toOriginal, scenario.getTerreno(), cenario, round);
+            doDistributeDamage(fighters, matrix, toOriginal, relations, cenario, pending, engaged,
+                    round);
+            doApplyCasualties(fighters, cenario, pending);
             round++;
         }
         ret.setRounds(round);
         if (round >= MAX_ROUNDS) {
             ret.addNote("BATTLESIM.RESULT.CAPPED");
+        }
+        report(scenario, fighters, toOriginal, engaged, ret);
+        return ret;
+    }
+
+    /**
+     * One round of attacks. Nothing dies here: damage is banked and suffered at the end of it.
+     *
+     * The Judge's own comment for this is "efetua dano em todos os exercitos, fingindo ser
+     * simultaneo" - pretend it is simultaneous. That is why the order of armies within a round
+     * cannot change the answer, and why every strength below is read before anything falls.
+     */
+    private void doDistributeDamage(List<ArmySim> fighters, HostilityMatrix matrix,
+            Map<ArmySim, ArmySim> toOriginal, RelationshipMatrix relations, Cenario cenario,
+            Map<ArmySim, Long> pending, Map<ArmySim, Boolean> engaged, int round) {
+        for (ArmySim army : fighters) {
+            final List<ArmySim> enemies = enemiesOf(army, fighters, matrix, toOriginal);
+            if (enemies.isEmpty()) {
+                continue;
+            }
+            // ONCE per army per round, before the enemy loop. This is the denominator that splits
+            // the attack between enemies; recomputing it inside would change every number.
+            long qtTropsInimigo = 0;
+            for (ArmySim enemy : enemies) {
+                qtTropsInimigo += exercitoFacade.getQtTropasTotal(enemy);
+            }
+            if (qtTropsInimigo <= 0) {
+                continue;
+            }
+            final long forcaBasica = getForcaBasica(army, round);
+            final long forcaPlus = getForcaPlus(army, round);
+            for (ArmySim enemy : enemies) {
+                engaged.put(army, Boolean.TRUE);
+                engaged.put(enemy, Boolean.TRUE);
+                final long modRelacionamento = 100 - getBonusRelacionamento(relations,
+                        toOriginal.get(army), toOriginal.get(enemy));
+                final long modTatica = cenario == null ? 100
+                        : cenarioFacade.getTaticaBonus(cenario, army.getTatica(), enemy.getTatica());
+                // The Judge's exact expression, including where it truncates: TWO successive
+                // integer divisions, not one combined multiply. Collapsing them moves the answer.
+                final long ataqueFinal =
+                        forcaPlus + (forcaBasica * modRelacionamento / 100 * modTatica / 100);
+                final long dano =
+                        exercitoFacade.getQtTropasTotal(enemy) * ataqueFinal / qtTropsInimigo;
+                pending.put(enemy, banked(pending, enemy) + dano);
+            }
+        }
+    }
+
+    /**
+     * The attack an army brings to the round.
+     *
+     * Round 0 is FIRST STRIKE: only troops carrying {@code ;TT1;} swing, which is why a battle
+     * between two ordinary armies opens with a round in which nothing happens. Afterwards it is
+     * every non-naval troop.
+     */
+    private long getForcaBasica(ArmySim army, int round) {
+        return round == 0
+                ? battleSimFacade.getArmyAttackBase(army, ";TT1;", army.getLocal())
+                : battleSimFacade.getArmyAttackBaseNot(army, ";TTN;", army.getLocal());
+    }
+
+    /**
+     * The flat additions, which are NOT scaled by the relationship or tactic modifiers.
+     *
+     * Partly out of reach, deliberately. The Judge also adds the commander's combat artifact and the
+     * bonuses of characters travelling with the army; both are the secrecy seam (T-808), and neither
+     * is in the EGF for an army the player can only see from outside. What IS here is what he can
+     * type: the attack bonus and the one-time attack magic.
+     */
+    private long getForcaPlus(ArmySim army, int round) {
+        if (round == 0) {
+            return 0;       // only a first-strike artifact counts in round 0, and we have none
+        }
+        return (long) army.getAttackBonus() + army.getCombateAtaqueOnetime();
+    }
+
+    /**
+     * The diplomacy matrix, turned into a damage modifier.
+     *
+     * This is the first place an edited relationship cell changes a NUMBER rather than merely who
+     * fights whom, and the effect is large: {@link BaseMsgs#dificuldadeBonus} runs from -35 to +25,
+     * so the same two armies can hit 35% harder or 25% softer on the strength of one cell. Worth
+     * knowing when reading a result whose relationships were assumed rather than read.
+     */
+    private int getBonusRelacionamento(RelationshipMatrix relations, ArmySim army, ArmySim enemy) {
+        if (relations == null || army == null || enemy == null
+                || army.getNacao() == null || enemy.getNacao() == null) {
+            return 0;
+        }
+        return BaseMsgs.dificuldadeBonus[relations.getValor(army.getNacao(), enemy.getNacao()) + 3];
+    }
+
+    /**
+     * End of round: everything banked is suffered at once, by whichever casualty rule applies.
+     *
+     * The two rules are {@code ExercitoControl.doCombateDano}'s, and they are the ones
+     * {@link CasualtyMode} already names above the platoon table - so what the player was told about
+     * the order is what actually happens to him here.
+     */
+    private void doApplyCasualties(List<ArmySim> fighters, Cenario cenario,
+            Map<ArmySim, Long> pending) {
+        for (ArmySim army : fighters) {
+            long dano = banked(pending, army);
+            pending.put(army, 0L);
+            if (dano <= 0) {
+                continue;
+            }
+            // Defensive magic absorbs first, and what it absorbs it spends.
+            final int bonusDefesa = army.getArmyDefenseBonus();
+            if (bonusDefesa > 0) {
+                army.setArmyDefenseBonus((int) Math.max(bonusDefesa - dano, 0));
+                dano = Math.max(dano - bonusDefesa, 0);
+            }
+            if (dano <= 0) {
+                continue;
+            }
+            if (CasualtyMode.of(army, cenario, CombatLayer.ARMY) == CasualtyMode.BY_RANK) {
+                doCasualtiesByRank(army, dano);
+            } else {
+                doCasualtiesProportional(army, dano);
+            }
+            if (exercitoFacade.getQtTropasTotal(army) <= 0) {
+                army.setDisband(true);
+            }
+        }
+    }
+
+    /**
+     * Standard: the same PERCENTAGE off every platoon, so nobody is spared and nobody is singled
+     * out.
+     *
+     * Note the {@code Math.ceil} per platoon. It is the Judge's, and it means total losses can
+     * slightly exceed the damage dealt. Reproduced rather than corrected: the simulator's job is to
+     * predict the turn that will actually run.
+     */
+    private void doCasualtiesProportional(ArmySim army, long dano) {
+        final float constituicao = battleSimFacade.getArmyDefenseTotalLand(army);
+        if (constituicao <= 0) {
+            return;
+        }
+        final float percent = 100F * dano / constituicao;
+        for (Pelotao pelotao : new ArrayList<>(army.getPelotoes().values())) {
+            final TipoTropa tipo = pelotao.getTipoTropa();
+            if (tipo == null || tipo.isBarcos()) {
+                continue;
+            }
+            final int qtd = percent >= 100F ? pelotao.getQtd()
+                    : (int) Math.min(pelotao.getQtd(), Math.ceil(pelotao.getQtd() * percent / 100F));
+            exercitoFacade.subTropaQt(army, tipo, qtd);
+        }
+    }
+
+    /**
+     * Every other tactic: platoons are consumed in turn, down the casualty order.
+     *
+     * The order IS the answer here, which is why the platoon table is sorted by it. A platoon that
+     * dies outright costs its whole defence and the rest of the damage carries on to the next one
+     * down; the first platoon that survives absorbs what is left and the damage stops there.
+     */
+    private void doCasualtiesByRank(ArmySim army, long dano) {
+        for (Pelotao pelotao : exercitoFacade.listaTropasTerra(army)) {
+            if (dano <= 0) {
+                return;
+            }
+            final float constituicao = battleSimFacade.getPlatoonDefense(army, pelotao);
+            if (constituicao <= 0) {
+                continue;       // nothing to absorb the blow, and no divide by zero
+            }
+            if (dano >= constituicao) {
+                exercitoFacade.subTropaQt(army, pelotao.getTipoTropa(), pelotao.getQtd());
+                dano -= (long) constituicao;
+            } else {
+                final int qtd = (int) Math.min(pelotao.getQtd(),
+                        Math.ceil(pelotao.getQtd() * dano / constituicao));
+                exercitoFacade.subTropaQt(army, pelotao.getTipoTropa(), qtd);
+                return;
+            }
+        }
+    }
+
+    /**
+     * Is there still a fight? The Judge's {@code fim} test, in its own terms.
+     *
+     * "Some army still has an enemy and still has something to fight with." Rebuilt every round
+     * rather than cached, exactly as the Judge drops a wiped-out army out of everyone's enemy list.
+     */
+    private boolean hasLiveFight(List<ArmySim> fighters, HostilityMatrix matrix,
+            Map<ArmySim, ArmySim> toOriginal) {
+        for (ArmySim one : fighters) {
+            if (!enemiesOf(one, fighters, matrix, toOriginal).isEmpty()
+                    && battleSimFacade.getArmyDefenseTotalLand(one) > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The matrix decides, and it is keyed on the ORIGINALS - the copies are not in it.
+     *
+     * Hence {@code toOriginal}: every hostility question has to be translated back to the army the
+     * scenario knows about. Getting this backwards silently answers "nobody is hostile" and the
+     * battle resolves in zero rounds.
+     */
+    private List<ArmySim> enemiesOf(ArmySim army, List<ArmySim> fighters, HostilityMatrix matrix,
+            Map<ArmySim, ArmySim> toOriginal) {
+        final List<ArmySim> ret = new ArrayList<>();
+        for (ArmySim other : fighters) {
+            if (other != army && exercitoFacade.getQtTropasTotal(other) > 0
+                    && matrix.isInimigo(toOriginal.get(army), toOriginal.get(other))) {
+                ret.add(other);
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Survivors, losses, and how each army ended up, all keyed back to the player's own objects.
+     *
+     * EVERY army in the scenario gets an outcome, not only the ones that fought - a fleet with no
+     * land troops, an army whose only neighbours are friendly, an army the layer rules kept out. The
+     * roster shows a mark against each of them, so "no mark" has to mean "no run yet" and never "the
+     * resolver forgot about this one". Only the fighters get platoon numbers, though: an army that
+     * was not in the battle shows "--", which is a different statement from surviving it intact.
+     */
+    private void report(CombatScenario scenario, List<ArmySim> fighters,
+            Map<ArmySim, ArmySim> toOriginal, Map<ArmySim, Boolean> engaged, CombatResult ret) {
+        for (ArmySim army : scenario.getArmies()) {
+            ret.setOutcome(army, CombatResult.Outcome.DID_NOT_FIGHT);
         }
         for (ArmySim copy : fighters) {
             final ArmySim original = toOriginal.get(copy);
@@ -120,10 +375,25 @@ public class LandCombatResolver {
                 final Pelotao now = copy.getPelotoes().get(was.getCodigo());
                 ret.put(was, was.getQtd(), now == null ? 0 : now.getQtd());
             }
+            ret.setOutcome(original, outcomeOf(copy, engaged));
         }
-        return ret;
     }
 
+    /**
+     * The Judge's own three-way split, from the report it writes at the end of a battle: an army
+     * that never had an enemy did not take part, one left standing won, one wiped out lost.
+     *
+     * The distinction that needs the battle to have been fought is the first. An army that fought
+     * and lost nobody and an army that stood by and watched both end at full strength, and calling
+     * the first an observer would hide the fact that it was in a battle at all.
+     */
+    private CombatResult.Outcome outcomeOf(ArmySim copy, Map<ArmySim, Boolean> engaged) {
+        if (!Boolean.TRUE.equals(engaged.get(copy))) {
+            return CombatResult.Outcome.DID_NOT_FIGHT;
+        }
+        return copy.isDisband() || exercitoFacade.getQtTropasTotal(copy) <= 0
+                ? CombatResult.Outcome.LOST : CombatResult.Outcome.WON;
+    }
 
     /** Anything the run cannot do faithfully has to be said, not silently dropped. */
     private void noteWhatWasSkipped(List<ArmySim> fighters, CombatResult ret) {
@@ -139,204 +409,8 @@ public class LandCombatResolver {
         }
     }
 
-    /**
-     * Is there still a fight? The stand-in for {@code CombatArmy.isCombatCleared()}.
-     *
-     * Rebuilt every round rather than cached, exactly as the Judge rebuilds its enemy lists: an
-     * army wiped out in round N has to stop being a target in round N+1.
-     */
-    private boolean hasLiveFight(List<ArmySim> fighters, HostilityMatrix matrix,
-            Map<ArmySim, ArmySim> toOriginal) {
-        for (ArmySim one : fighters) {
-            if (!enemiesOf(one, fighters, matrix, toOriginal).isEmpty()
-                    && exercitoFacade.getQtTropasTotal(one) > 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * The matrix decides, and it is keyed on the ORIGINALS - the copies are not in it.
-     *
-     * Hence {@code toOriginal}: every hostility question has to be translated back to the army the
-     * scenario knows about. Getting this backwards silently answers "nobody is hostile" and the
-     * battle resolves in zero rounds, which is exactly what it did first time.
-     */
-    private List<ArmySim> enemiesOf(ArmySim army, List<ArmySim> fighters, HostilityMatrix matrix,
-            Map<ArmySim, ArmySim> toOriginal) {
-        final List<ArmySim> ret = new ArrayList<>();
-        for (ArmySim other : fighters) {
-            if (other != army && exercitoFacade.getQtTropasTotal(other) > 0
-                    && matrix.isInimigo(toOriginal.get(army), toOriginal.get(other))) {
-                ret.add(other);
-            }
-        }
-        return ret;
-    }
-
-    /**
-     * One round: every army in turn, strongest first, spends its platoons' attack.
-     *
-     * The SNAPSHOT is the subtle part and it is the Judge's own comment - "create a snapshot of
-     * pelotoes each round, to apply same damage, even after casualties". Every attacker in a round
-     * strikes the army as it stood when the round began, so two attackers do not queue up behind
-     * each other's casualties. Losses are written back only once the round ends.
-     */
-    private void doDistributeDamage(List<ArmySim> fighters, HostilityMatrix matrix,
-            Map<ArmySim, ArmySim> toOriginal, Terreno terreno, Cenario cenario, int round) {
-        final Map<ArmySim, List<Pelotao>> remaining = new IdentityHashMap<>();
-        for (ArmySim army : fighters) {
-            remaining.put(army, exercitoFacade.listaTropasTerra(army));
-        }
-        for (ArmySim army : strongestFirst(fighters)) {
-            for (Pelotao attacker : new ArrayList<>(army.getPelotoes().values())) {
-                final TipoTropa tipo = attacker.getTipoTropa();
-                if (tipo == null || tipo.isBarcos()) {
-                    continue;
-                }
-                if (round == 0 && !tipo.hasHabilidade(";TT1;")) {
-                    continue;       // round 0 is first strike only
-                }
-                doCombatRound(army, attacker, fighters, matrix, toOriginal, remaining, terreno,
-                        cenario);
-            }
-        }
-        doSaveCasualties(fighters, remaining);
-    }
-
-    /** Strongest first: land attack plus naval attack weighted ten times, as the Judge orders them. */
-    private List<ArmySim> strongestFirst(List<ArmySim> fighters) {
-        final List<ArmySim> ret = new ArrayList<>(fighters);
-        Collections.sort(ret, new Comparator<ArmySim>() {
-            @Override
-            public int compare(ArmySim one, ArmySim other) {
-                return (int) (attackWeight(other) - attackWeight(one));
-            }
-        });
-        return ret;
-    }
-
-    private float attackWeight(ArmySim army) {
-        return battleSimFacade.getArmyAttackBaseLand(army, army.getLocal())
-                + battleSimFacade.getArmyAttackBase(army, ";TTN;", army.getLocal()) * 10;
-    }
-
-    /**
-     * One platoon's attack, spent down the enemy's casualty-ordered list.
-     *
-     * The shape to keep: attack points are consumed by each defending platoon's DEFENCE. A platoon
-     * that dies outright costs its whole defence and the rest carries on to the next one down the
-     * list; a platoon that survives absorbs everything left, and the attack ends there. That is why
-     * the casualty order matters so much to the player - it decides who absorbs and who is spared.
-     */
-    private void doCombatRound(ArmySim army, Pelotao attacker, List<ArmySim> fighters,
-            HostilityMatrix matrix, Map<ArmySim, ArmySim> toOriginal,
-            Map<ArmySim, List<Pelotao>> remaining, Terreno terreno, Cenario cenario) {
-        final List<ArmySim> enemies = enemiesOf(army, fighters, matrix, toOriginal);
-        Collections.sort(enemies, new Comparator<ArmySim>() {
-            @Override
-            public int compare(ArmySim one, ArmySim other) {
-                return (int) (attackWeight(other) - attackWeight(one));
-            }
-        });
-        for (ArmySim enemy : enemies) {
-            doCancelMagic(army, enemy);
-            final long base = (long) battleSimFacade.getPlatoonAttack(attacker, army,
-                    army.getLocal(), terreno);
-            final long modTatica = cenario == null ? 100
-                    : cenarioFacade.getTaticaBonus(cenario, army.getTatica(), enemy.getTatica());
-            long attack = base * modTatica / 100;
-            for (Pelotao defender : new ArrayList<>(remaining.get(enemy))) {
-                if (attack <= 0) {
-                    return;
-                }
-                final float attackMod = attackModifier(attack, attacker.getTipoTropa(),
-                        defender.getTipoTropa());
-                final float defenseMod = defenseModifier(
-                        battleSimFacade.getPlatoonDefense(enemy, defender),
-                        attacker.getTipoTropa(), defender.getTipoTropa());
-                if (defenseMod <= 0f) {
-                    continue;       // nothing to absorb the blow, and no divide by zero
-                }
-                final int available = defender.getQtd();
-                final int lost = (int) Math.min(available,
-                        Math.ceil(available * attackMod / defenseMod));
-                if (lost >= available) {
-                    remaining.get(enemy).remove(defender);
-                    attack -= (long) defenseMod;    // excess carries to the next platoon down
-                } else {
-                    defender.setQtd(available - lost);
-                    return;                          // the attack is spent
-                }
-            }
-        }
-    }
-
-    /**
-     * Attack magic against defence magic: each cancels the other, and the remainder stands.
-     *
-     * Transcribed from {@code CombatLand.doCancelMagic}. Both values are plain ints on
-     * {@link business.interfaces.IExercito}, already carrying whatever the pre-combat spell orders
-     * put there - so the commander's magic is in the battle without any of the commander's chain.
-     */
-    private void doCancelMagic(ArmySim attacker, ArmySim defender) {
-        final int matt = attacker.getCombateAtaqueOnetime();
-        final int mdef = defender.getArmyDefenseBonus();
-        if (matt == 0 || mdef == 0) {
-            return;
-        }
-        if (matt > mdef) {
-            attacker.setCombateAtaqueOnetime(matt - mdef);
-            defender.setArmyDefenseBonus(0);
-        } else if (matt < mdef) {
-            attacker.setCombateAtaqueOnetime(0);
-            defender.setArmyDefenseBonus(mdef - matt);
-        } else {
-            attacker.setCombateAtaqueOnetime(0);
-            defender.setArmyDefenseBonus(0);
-        }
-    }
-
-    /**
-     * The troop-matchup attack modifier. An IDENTITY function, on purpose - see KI-055.
-     *
-     * {@code ExercitoControlFacade.getPlatoonAttackModifier} computes five matchup bonuses
-     * (dwarf-vs-orc, orc-vs-dwarf, ranged-vs-flying, small-vs-giant, the giant penalty) and then
-     * returns the value it captured BEFORE applying any of them. It is a no-op in the Judge, so it
-     * is a no-op here: a simulator's job is to predict the turn that will actually run.
-     *
-     * Named rather than omitted so the seam exists. When KI-055 is fixed - John's call, ideally
-     * inside the engine merge, since the flags are WDO's and the new engine adds a flying layer -
-     * this method and its sibling are the two places that change.
-     */
-    private float attackModifier(long attack, TipoTropa attacker, TipoTropa defender) {
-        return attack;
-    }
-
-    /** The defence side of the same no-op. See {@link #attackModifier} and KI-055. */
-    private float defenseModifier(float defense, TipoTropa attacker, TipoTropa defender) {
-        return defense;
-    }
-
-    /** Writes the round's losses back, through the shared subtraction the Judge uses. */
-    private void doSaveCasualties(List<ArmySim> fighters, Map<ArmySim, List<Pelotao>> remaining) {
-        for (ArmySim army : fighters) {
-            final List<Pelotao> left = remaining.get(army);
-            for (Pelotao pelotao : new ArrayList<>(army.getPelotoes().values())) {
-                if (pelotao.getTipoTropa() == null || pelotao.getTipoTropa().isBarcos()) {
-                    continue;
-                }
-                int survivors = 0;
-                for (Pelotao one : left) {
-                    if (one.getTipoTropa() == pelotao.getTipoTropa()) {
-                        survivors = one.getQtd();
-                        break;
-                    }
-                }
-                exercitoFacade.subTropaQt(army, pelotao.getTipoTropa(),
-                        pelotao.getQtd() - survivors);
-            }
-        }
+    private long banked(Map<ArmySim, Long> pending, ArmySim army) {
+        final Long ret = pending.get(army);
+        return ret == null ? 0L : ret;
     }
 }
