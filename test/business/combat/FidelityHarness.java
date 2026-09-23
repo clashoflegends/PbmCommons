@@ -1,6 +1,7 @@
 package business.combat;
 
 import business.facade.BattleSimFacade;
+import business.facade.CenarioFacade;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,9 +10,12 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import model.Local;
 import model.Pelotao;
+import model.TipoTropa;
 import model.World;
 import org.junit.jupiter.api.Test;
 
@@ -100,7 +104,18 @@ public class FidelityHarness {
      */
     private static void applySpec(CombatScenario scenario, File spec) throws Exception {
         final BattleSimFacade bsf = new BattleSimFacade();
-        for (String raw : Files.readAllLines(spec.toPath(), StandardCharsets.UTF_8)) {
+        final List<String> lines = Files.readAllLines(spec.toPath(), StandardCharsets.UTF_8);
+        // COMPOSITION FIRST, in its own pass. The army pass fits the commander skill against the
+        // attack the Judge published, and that fit is meaningless until the army is holding the
+        // right troops - run in file order it fitted the placeholder composition and reported a
+        // 97% miss that looked like a resolver fault.
+        final Set<ArmySim> cleared = new HashSet<>();
+        for (String raw : lines) {
+            if (raw.trim().startsWith("platoon|")) {
+                applyPlatoon(scenario, raw.trim(), cleared);
+            }
+        }
+        for (String raw : lines) {
             final String line = raw.trim();
             if (!line.startsWith("army|")) {
                 continue;
@@ -118,6 +133,8 @@ public class FidelityHarness {
                     army.setTatica(Integer.parseInt(kv[1].trim()));
                 } else if ("moral".equals(kv[0])) {
                     army.setMoral(Integer.parseInt(kv[1].trim()));
+                } else if ("commander".equals(kv[0])) {
+                    army.setComandante(Integer.parseInt(kv[1].trim()));
                 } else if ("attack".equals(kv[0])) {
                     target = Integer.valueOf(kv[1].trim());
                 }
@@ -160,6 +177,59 @@ public class FidelityHarness {
         army.setMoral(bestSum - Math.min(bestSum, MAX_MORAL));
         System.out.println(String.format("FIT|%s|bonus=%d|attack=%d|target=%d|gap=%d",
                 army.getNome(), bestSum, bestAttack, target, bestGap));
+    }
+
+    /**
+     * Replaces an army's composition with the one the JUDGE recorded. The point of the harness.
+     *
+     * An EGF is one player's view and an unscouted enemy arrives as a placeholder, so validating
+     * against it is guaranteed to mismatch and proves nothing about the resolver. The question worth
+     * answering is the other one: GIVEN THE RIGHT INPUTS, does the simulator reproduce the turn? So
+     * the composition comes from `ex_pelotao` - quantity, training, weapon and armour per platoon -
+     * which is exactly what a player does by hand when he knows what he is facing.
+     *
+     * <pre>
+     *   platoon|Elston Stone|clarryn2|485|25|100|100
+     *                        ^troop   ^qty ^treino ^modAttack ^modDefence
+     * </pre>
+     *
+     * The first platoon line for an army CLEARS what the EGF gave it; the rest add to that.
+     */
+    private static void applyPlatoon(CombatScenario scenario, String line, Set<ArmySim> cleared) {
+        final String[] p = line.split("\\|");
+        final ArmySim army = find(scenario, p[1]);
+        if (army == null) {
+            System.out.println("MISSING|" + p[1]);
+            return;
+        }
+        final TipoTropa tipo = troopType(scenario, p[2].trim());
+        if (tipo == null) {
+            System.out.println("NOTROOP|" + p[2]);
+            return;
+        }
+        if (cleared.add(army)) {
+            army.getPelotoes().clear();
+        }
+        final Pelotao pelotao = new Pelotao();
+        pelotao.setTipoTropa(tipo);
+        pelotao.setQtd(Integer.parseInt(p[3].trim()));
+        pelotao.setTreino(Integer.parseInt(p[4].trim()));
+        pelotao.setModAtaque(Integer.parseInt(p[5].trim()));
+        pelotao.setModDefesa(Integer.parseInt(p[6].trim()));
+        army.getPelotoes().put(pelotao.getCodigo(), pelotao);
+    }
+
+    /** The scenario's own troop catalogue, keyed the way {@code ex_tipo_tropa.cd_tropa} keys it. */
+    private static TipoTropa troopType(CombatScenario scenario, String codigo) {
+        if (scenario.getPartida() == null || scenario.getPartida().getCenario() == null) {
+            return null;
+        }
+        for (TipoTropa tipo : new CenarioFacade().getTipoTropas(scenario.getPartida().getCenario())) {
+            if (codigo.equalsIgnoreCase(tipo.getCodigo())) {
+                return tipo;
+            }
+        }
+        return null;
     }
 
     private static ArmySim find(CombatScenario scenario, String name) {
