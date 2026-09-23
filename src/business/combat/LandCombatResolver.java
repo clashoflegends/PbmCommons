@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import model.Artefato;
 import model.Cenario;
 import model.Pelotao;
+import model.Personagem;
 import model.TipoTropa;
 import msgs.BaseMsgs;
 
@@ -80,6 +82,16 @@ public class LandCombatResolver {
      */
     private static final int MAX_ROUNDS = 100;
 
+    /**
+     * An NPC travelling with a commander is worth its commander skill times this.
+     *
+     * {@code NpcBase.getBonusCombate()} is {@code getComandante() * 100}, and it is VITALITY
+     * INDEPENDENT - a wounded dragon is worth exactly what a healthy one is. Verified at 811 t58
+     * hex 1630, where the gap between the sim and the turn in round 1 was 34,600 to the troop,
+     * which is Vhagar at skill 346.
+     */
+    private static final int NPC_COMBAT_PER_SKILL = 100;
+
     private final BattleSimFacade battleSimFacade = new BattleSimFacade();
     private final ExercitoFacade exercitoFacade = new ExercitoFacade();
     private final CenarioFacade cenarioFacade = new CenarioFacade();
@@ -129,7 +141,7 @@ public class LandCombatResolver {
         int round = 0;
         while (round < MAX_ROUNDS && hasLiveFight(fighters, matrix, toOriginal)) {
             doDistributeDamage(fighters, matrix, toOriginal, relations, cenario, pending, engaged,
-                    round);
+                    round, ret);
             doApplyCasualties(fighters, cenario, pending, round, ret);
             round++;
         }
@@ -150,7 +162,8 @@ public class LandCombatResolver {
      */
     private void doDistributeDamage(List<ArmySim> fighters, HostilityMatrix matrix,
             Map<ArmySim, ArmySim> toOriginal, RelationshipMatrix relations, Cenario cenario,
-            Map<ArmySim, Long> pending, Map<ArmySim, Boolean> engaged, int round) {
+            Map<ArmySim, Long> pending, Map<ArmySim, Boolean> engaged, int round,
+            CombatResult ret) {
         for (ArmySim army : fighters) {
             final List<ArmySim> enemies = enemiesOf(army, fighters, matrix, toOriginal);
             if (enemies.isEmpty()) {
@@ -181,6 +194,7 @@ public class LandCombatResolver {
                 final long dano =
                         exercitoFacade.getQtTropasTotal(enemy) * ataqueFinal / qtTropsInimigo;
                 pending.put(enemy, banked(pending, enemy) + dano);
+                ret.addRoundDamage(round, army, enemy, ataqueFinal, dano);
             }
         }
     }
@@ -242,11 +256,38 @@ public class LandCombatResolver {
      */
     private long getForcaPlus(ArmySim army, int round) {
         if (round == 0) {
-            return 0;       // only a first-strike artifact counts in round 0, and we have none
+            // Round 0 counts ONLY a first-strike artifact, and `Artefato` carries no isFirstStrike
+            // on this side of the wire, so this returns zero. Verified against a real turn rather
+            // than assumed: at 811 t58 hex 1630 every round-0 number matches exactly with zero here.
+            return 0;
         }
         final long onetime = army.getCombateAtaqueOnetime();
         army.setCombateAtaqueOnetime(0);
-        return army.getAttackBonus() + onetime;
+        long ret = army.getAttackBonus() + onetime;
+        final Personagem comandante = army.getComandanteModel();
+        if (comandante == null) {
+            return ret;
+        }
+        ret += combatArtifact(comandante);
+        // Characters travelling WITH the commander, which is what getLiderados() holds - the same
+        // set the Judge walks as getPersonagemViajandoIterator(). A dragon is the big one: its
+        // bonus is commander skill x 100, and at 811 t58 Vhagar was worth 34,600 to an army whose
+        // whole troop attack was 197,000.
+        for (Personagem traveller : comandante.getLiderados().values()) {
+            if (traveller == null || traveller.isRefem()) {
+                continue;
+            }
+            ret += traveller.isNpc()
+                    ? (long) traveller.getPericiaComandante() * NPC_COMBAT_PER_SKILL
+                    : combatArtifact(traveller);
+        }
+        return ret;
+    }
+
+    /** A combat artifact is worth its value, and anything else is worth nothing. */
+    private long combatArtifact(Personagem personagem) {
+        final Artefato artefato = personagem.getArtefatoCombateAtivo();
+        return artefato != null && artefato.isCombate() ? artefato.getValor() : 0;
     }
 
     /**

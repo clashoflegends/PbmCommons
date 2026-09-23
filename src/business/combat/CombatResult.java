@@ -65,6 +65,7 @@ public class CombatResult {
      */
     private final Map<IExercito, Map<CombatLayer, Outcome>> outcomes = new IdentityHashMap<>();
     private final List<RoundLoss> roundLosses = new ArrayList<>();
+    private final List<RoundDamage> roundDamage = new ArrayList<>();
     private final List<String> notes = new ArrayList<>();
     private int rounds;
 
@@ -161,6 +162,58 @@ public class CombatResult {
     public Outcome getOutcome(IExercito original, CombatLayer layer) {
         final Map<CombatLayer, Outcome> byLayer = outcomes.get(original);
         return byLayer == null ? null : byLayer.get(layer);
+    }
+
+    /** One attack, as it landed: who hit whom, with what, for how much. */
+    public static class RoundDamage {
+
+        private final int round;
+        private final ArmySim attacker;
+        private final ArmySim defender;
+        private final long attack;
+        private final long damage;
+
+        RoundDamage(int round, ArmySim attacker, ArmySim defender, long attack, long damage) {
+            this.round = round;
+            this.attacker = attacker;
+            this.defender = defender;
+            this.attack = attack;
+            this.damage = damage;
+        }
+
+        public int getRound() {
+            return round;
+        }
+
+        public ArmySim getAttacker() {
+            return attacker;
+        }
+
+        public ArmySim getDefender() {
+            return defender;
+        }
+
+        /** {@code ataqueFinal} - per PAIR, since both modifiers depend on the defender. */
+        public long getAttack() {
+            return attack;
+        }
+
+        public long getDamage() {
+            return damage;
+        }
+    }
+
+    public void addRoundDamage(int round, ArmySim attacker, ArmySim defender, long attack,
+            long damage) {
+        roundDamage.add(new RoundDamage(round, attacker, defender, attack, damage));
+    }
+
+    /**
+     * Every blow, round by round. The Judge publishes exactly this, which is what makes a forecast
+     * checkable against a real turn at the level of a single attack rather than a final total.
+     */
+    public List<RoundDamage> getRoundDamage() {
+        return Collections.unmodifiableList(roundDamage);
     }
 
     /** Records a platoon's losses for one round. The platoon is the COPY that fought. */

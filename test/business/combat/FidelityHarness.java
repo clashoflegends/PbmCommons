@@ -135,6 +135,11 @@ public class FidelityHarness {
                     army.setMoral(Integer.parseInt(kv[1].trim()));
                 } else if ("commander".equals(kv[0])) {
                     army.setComandante(Integer.parseInt(kv[1].trim()));
+                } else if ("plus".equals(kv[0])) {
+                    // forcaPlus the client cannot see: an ENEMY army's dragon or combat artifact.
+                    // Supplying it is the point - it separates "the model is wrong" from "the
+                    // player could not know", and only the first is a defect.
+                    army.setBonusAttack(Integer.parseInt(kv[1].trim()));
                 } else if ("attack".equals(kv[0])) {
                     target = Integer.valueOf(kv[1].trim());
                 }
@@ -246,6 +251,11 @@ public class FidelityHarness {
         System.out.println("ROUNDS|" + result.getRounds());
         // round by round, so a divergence is located in the round it STARTS in rather than being
         // read off a total five rounds later
+        for (CombatResult.RoundDamage hit : result.getRoundDamage()) {
+            System.out.println(String.format("DMG|%d|%s|%s|%d|%d", hit.getRound(),
+                    hit.getAttacker().getNome(), hit.getDefender().getNome(),
+                    hit.getAttack(), hit.getDamage()));
+        }
         for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
             System.out.println(String.format("LOSS|%d|%s|%s|%d|%d", loss.getRound(),
                     loss.getArmy().getNome(), loss.getPlatoon().getTipoTropa().getNome(),
