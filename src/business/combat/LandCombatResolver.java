@@ -130,7 +130,7 @@ public class LandCombatResolver {
         while (round < MAX_ROUNDS && hasLiveFight(fighters, matrix, toOriginal)) {
             doDistributeDamage(fighters, matrix, toOriginal, relations, cenario, pending, engaged,
                     round);
-            doApplyCasualties(fighters, cenario, pending);
+            doApplyCasualties(fighters, cenario, pending, round, ret);
             round++;
         }
         ret.setRounds(round);
@@ -273,7 +273,7 @@ public class LandCombatResolver {
      * the order is what actually happens to him here.
      */
     private void doApplyCasualties(List<ArmySim> fighters, Cenario cenario,
-            Map<ArmySim, Long> pending) {
+            Map<ArmySim, Long> pending, int round, CombatResult ret) {
         for (ArmySim army : fighters) {
             long dano = banked(pending, army);
             pending.put(army, 0L);
@@ -290,9 +290,9 @@ public class LandCombatResolver {
                 continue;
             }
             if (CasualtyMode.of(army, cenario, CombatLayer.ARMY) == CasualtyMode.BY_RANK) {
-                doCasualtiesByRank(army, dano);
+                doCasualtiesByRank(army, dano, round, ret);
             } else {
-                doCasualtiesProportional(army, dano);
+                doCasualtiesProportional(army, dano, round, ret);
             }
             if (exercitoFacade.getQtTropasTotal(army) <= 0) {
                 army.setDisband(true);
@@ -308,7 +308,7 @@ public class LandCombatResolver {
      * slightly exceed the damage dealt. Reproduced rather than corrected: the simulator's job is to
      * predict the turn that will actually run.
      */
-    private void doCasualtiesProportional(ArmySim army, long dano) {
+    private void doCasualtiesProportional(ArmySim army, long dano, int round, CombatResult ret) {
         final float constituicao = battleSimFacade.getArmyDefenseTotalLand(army);
         if (constituicao <= 0) {
             return;
@@ -321,7 +321,9 @@ public class LandCombatResolver {
             }
             final int qtd = percent >= 100F ? pelotao.getQtd()
                     : (int) Math.min(pelotao.getQtd(), Math.ceil(pelotao.getQtd() * percent / 100F));
+            final int before = pelotao.getQtd();
             exercitoFacade.subTropaQt(army, tipo, qtd);
+            ret.addRoundLoss(round, army, pelotao, qtd, before - qtd);
         }
     }
 
@@ -332,7 +334,7 @@ public class LandCombatResolver {
      * dies outright costs its whole defence and the rest of the damage carries on to the next one
      * down; the first platoon that survives absorbs what is left and the damage stops there.
      */
-    private void doCasualtiesByRank(ArmySim army, long dano) {
+    private void doCasualtiesByRank(ArmySim army, long dano, int round, CombatResult ret) {
         for (Pelotao pelotao : exercitoFacade.listaTropasTerra(army)) {
             if (dano <= 0) {
                 return;
@@ -341,13 +343,15 @@ public class LandCombatResolver {
             if (constituicao <= 0) {
                 continue;       // nothing to absorb the blow, and no divide by zero
             }
+            final int before = pelotao.getQtd();
             if (dano >= constituicao) {
-                exercitoFacade.subTropaQt(army, pelotao.getTipoTropa(), pelotao.getQtd());
+                exercitoFacade.subTropaQt(army, pelotao.getTipoTropa(), before);
+                ret.addRoundLoss(round, army, pelotao, before, 0);
                 dano -= (long) constituicao;
             } else {
-                final int qtd = (int) Math.min(pelotao.getQtd(),
-                        Math.ceil(pelotao.getQtd() * dano / constituicao));
+                final int qtd = (int) Math.min(before, Math.ceil(before * dano / constituicao));
                 exercitoFacade.subTropaQt(army, pelotao.getTipoTropa(), qtd);
+                ret.addRoundLoss(round, army, pelotao, qtd, before - qtd);
                 return;
             }
         }

@@ -64,8 +64,61 @@ public class CombatResult {
      * own layer. A layer with no entry has not been resolved - today that is the sea and the city.
      */
     private final Map<IExercito, Map<CombatLayer, Outcome>> outcomes = new IdentityHashMap<>();
+    private final List<RoundLoss> roundLosses = new ArrayList<>();
     private final List<String> notes = new ArrayList<>();
     private int rounds;
+
+    /**
+     * What one platoon lost in one round.
+     *
+     * Kept because a total tells you THAT a forecast is wrong and a per-round trace tells you WHERE:
+     * two runs that differ by a hundred troops at the end may agree perfectly until round 4, and
+     * that is the round worth reading. It is also what the results pane needs (T-802) - John asked
+     * to see the turn-by-turn numbers and the round count per layer, data points, no narrative.
+     */
+    public static class RoundLoss {
+
+        private final int round;
+        private final ArmySim army;
+        private final Pelotao platoon;
+        private final int lost;
+        private final int left;
+
+        RoundLoss(int round, ArmySim army, Pelotao platoon, int lost, int left) {
+            this.round = round;
+            this.army = army;
+            this.platoon = platoon;
+            this.lost = lost;
+            this.left = left;
+        }
+
+        public int getRound() {
+            return round;
+        }
+
+        /**
+         * The army that took the losses - the COPY that fought, not the scenario's own object.
+         *
+         * Fine for a trace and for display, but T-802 will want to key the results pane on the
+         * player's armies, and that needs the copy-to-original map the resolver holds. Translate
+         * there rather than teaching callers to guess.
+         */
+        public ArmySim getArmy() {
+            return army;
+        }
+
+        public Pelotao getPlatoon() {
+            return platoon;
+        }
+
+        public int getLost() {
+            return lost;
+        }
+
+        public int getLeft() {
+            return left;
+        }
+    }
 
     /** @param survivors how many of this platoon are left when the battle ends */
     public void put(Pelotao original, int started, int survivors) {
@@ -108,6 +161,18 @@ public class CombatResult {
     public Outcome getOutcome(IExercito original, CombatLayer layer) {
         final Map<CombatLayer, Outcome> byLayer = outcomes.get(original);
         return byLayer == null ? null : byLayer.get(layer);
+    }
+
+    /** Records a platoon's losses for one round. The platoon is the COPY that fought. */
+    public void addRoundLoss(int round, ArmySim army, Pelotao platoon, int lost, int left) {
+        if (lost > 0) {
+            roundLosses.add(new RoundLoss(round, army, platoon, lost, left));
+        }
+    }
+
+    /** Every platoon's losses, round by round, in the order they happened. */
+    public List<RoundLoss> getRoundLosses() {
+        return Collections.unmodifiableList(roundLosses);
     }
 
     public int getRounds() {

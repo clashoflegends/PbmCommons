@@ -123,31 +123,43 @@ public class FidelityHarness {
                 }
             }
             if (target != null) {
-                fitMoral(bsf, army, target);
+                fitBonus(bsf, army, target);
             }
         }
     }
 
-    private static void fitMoral(BattleSimFacade bsf, ArmySim army, int target) {
-        int bestMoral = army.getMoral();
+    /**
+     * Fits the army bonus to the attack the Judge published.
+     *
+     * The bonus is {@code (commander skill + morale + 200) / 4}, so only the SUM of the two is
+     * observable in the attack - which is why this sweeps the sum rather than morale alone. Morale
+     * is the part that moves mid-turn (a refused challenge is worth {@code rand(10)+5}), but the
+     * commander's skill moves too, from the experience he earns in the very battle being fought, and
+     * pinning morale at its ceiling while the real gap was in the skill left a 1.5% error that the
+     * by-rank casualty rule then concentrated entirely into the last platoon in the order.
+     */
+    private static void fitBonus(BattleSimFacade bsf, ArmySim army, int target) {
+        int bestSum = army.getComandantePericia() + army.getMoral();
         int bestGap = Integer.MAX_VALUE;
         int bestAttack = 0;
-        for (int moral = 0; moral <= MAX_MORAL; moral++) {
-            army.setMoral(moral);
+        for (int sum = 0; sum <= 2 * MAX_MORAL; sum++) {
+            army.setComandante(Math.min(sum, MAX_MORAL));
+            army.setMoral(sum - Math.min(sum, MAX_MORAL));
             final int attack = bsf.getArmyAttackBaseNot(army, ";TTN;", army.getLocal());
             final int gap = Math.abs(attack - target);
             if (gap < bestGap) {
                 bestGap = gap;
-                bestMoral = moral;
+                bestSum = sum;
                 bestAttack = attack;
             }
             if (gap == 0) {
                 break;
             }
         }
-        army.setMoral(bestMoral);
-        System.out.println(String.format("FIT|%s|moral=%d|attack=%d|target=%d|gap=%d",
-                army.getNome(), bestMoral, bestAttack, target, bestGap));
+        army.setComandante(Math.min(bestSum, MAX_MORAL));
+        army.setMoral(bestSum - Math.min(bestSum, MAX_MORAL));
+        System.out.println(String.format("FIT|%s|bonus=%d|attack=%d|target=%d|gap=%d",
+                army.getNome(), bestSum, bestAttack, target, bestGap));
     }
 
     private static ArmySim find(CombatScenario scenario, String name) {
@@ -162,6 +174,13 @@ public class FidelityHarness {
     /** Machine-readable, because the diff is done by the Python side against the turn text. */
     private static void report(CombatScenario scenario, CombatResult result) {
         System.out.println("ROUNDS|" + result.getRounds());
+        // round by round, so a divergence is located in the round it STARTS in rather than being
+        // read off a total five rounds later
+        for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
+            System.out.println(String.format("LOSS|%d|%s|%s|%d|%d", loss.getRound(),
+                    loss.getArmy().getNome(), loss.getPlatoon().getTipoTropa().getNome(),
+                    loss.getLost(), loss.getLeft()));
+        }
         for (String note : result.getNotes()) {
             System.out.println("NOTE|" + note);
         }
@@ -204,7 +223,7 @@ public class FidelityHarness {
         final BattleSimFacade bsf = new BattleSimFacade();
         for (ArmySim army : scenario.getArmies()) {
             if (army.getNome().contains("Dorian")) {
-                fitMoral(bsf, army, 2609);
+                fitBonus(bsf, army, 2609);
             } else {
                 army.setTatica(0);      // CA - Charge, as the turn's orders set it
             }
