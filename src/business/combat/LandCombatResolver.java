@@ -142,7 +142,7 @@ public class LandCombatResolver {
         while (round < MAX_ROUNDS && hasLiveFight(fighters, matrix, toOriginal)) {
             doDistributeDamage(fighters, matrix, toOriginal, relations, cenario, pending, engaged,
                     round, ret);
-            doApplyCasualties(fighters, cenario, pending, round, ret);
+            doApplyCasualties(fighters, toOriginal, cenario, pending, round, ret);
             round++;
         }
         ret.setRounds(round);
@@ -194,7 +194,8 @@ public class LandCombatResolver {
                 final long dano =
                         exercitoFacade.getQtTropasTotal(enemy) * ataqueFinal / qtTropsInimigo;
                 pending.put(enemy, banked(pending, enemy) + dano);
-                ret.addRoundDamage(round, army, enemy, ataqueFinal, dano);
+                ret.addRoundDamage(round, toOriginal.get(army), toOriginal.get(enemy),
+                        ataqueFinal, dano);
             }
         }
     }
@@ -313,8 +314,8 @@ public class LandCombatResolver {
      * {@link CasualtyMode} already names above the platoon table - so what the player was told about
      * the order is what actually happens to him here.
      */
-    private void doApplyCasualties(List<ArmySim> fighters, Cenario cenario,
-            Map<ArmySim, Long> pending, int round, CombatResult ret) {
+    private void doApplyCasualties(List<ArmySim> fighters, Map<ArmySim, ArmySim> toOriginal,
+            Cenario cenario, Map<ArmySim, Long> pending, int round, CombatResult ret) {
         for (ArmySim army : fighters) {
             long dano = banked(pending, army);
             pending.put(army, 0L);
@@ -330,10 +331,11 @@ public class LandCombatResolver {
             if (dano <= 0) {
                 continue;
             }
+            final ArmySim original = toOriginal.get(army);
             if (CasualtyMode.of(army, cenario, CombatLayer.ARMY) == CasualtyMode.BY_RANK) {
-                doCasualtiesByRank(army, dano, round, ret);
+                doCasualtiesByRank(army, original, dano, round, ret);
             } else {
-                doCasualtiesProportional(army, dano, round, ret);
+                doCasualtiesProportional(army, original, dano, round, ret);
             }
             if (exercitoFacade.getQtTropasTotal(army) <= 0) {
                 army.setDisband(true);
@@ -349,7 +351,8 @@ public class LandCombatResolver {
      * slightly exceed the damage dealt. Reproduced rather than corrected: the simulator's job is to
      * predict the turn that will actually run.
      */
-    private void doCasualtiesProportional(ArmySim army, long dano, int round, CombatResult ret) {
+    private void doCasualtiesProportional(ArmySim army, ArmySim original, long dano, int round,
+            CombatResult ret) {
         final float constituicao = battleSimFacade.getArmyDefenseTotalLand(army);
         if (constituicao <= 0) {
             return;
@@ -364,7 +367,7 @@ public class LandCombatResolver {
                     : (int) Math.min(pelotao.getQtd(), Math.ceil(pelotao.getQtd() * percent / 100F));
             final int before = pelotao.getQtd();
             exercitoFacade.subTropaQt(army, tipo, qtd);
-            ret.addRoundLoss(round, army, pelotao, qtd, before - qtd);
+            ret.addRoundLoss(round, original, originalOf(original, pelotao), qtd, before - qtd);
         }
     }
 
@@ -375,7 +378,8 @@ public class LandCombatResolver {
      * dies outright costs its whole defence and the rest of the damage carries on to the next one
      * down; the first platoon that survives absorbs what is left and the damage stops there.
      */
-    private void doCasualtiesByRank(ArmySim army, long dano, int round, CombatResult ret) {
+    private void doCasualtiesByRank(ArmySim army, ArmySim original, long dano, int round,
+            CombatResult ret) {
         for (Pelotao pelotao : exercitoFacade.listaTropasTerra(army)) {
             if (dano <= 0) {
                 return;
@@ -387,12 +391,13 @@ public class LandCombatResolver {
             final int before = pelotao.getQtd();
             if (dano >= constituicao) {
                 exercitoFacade.subTropaQt(army, pelotao.getTipoTropa(), before);
-                ret.addRoundLoss(round, army, pelotao, before, 0);
+                ret.addRoundLoss(round, original, originalOf(original, pelotao), before, 0);
                 dano -= (long) constituicao;
             } else {
                 final int qtd = (int) Math.min(before, Math.ceil(before * dano / constituicao));
                 exercitoFacade.subTropaQt(army, pelotao.getTipoTropa(), qtd);
-                ret.addRoundLoss(round, army, pelotao, qtd, before - qtd);
+                ret.addRoundLoss(round, original, originalOf(original, pelotao), qtd,
+                        before - qtd);
                 return;
             }
         }
@@ -515,6 +520,21 @@ public class LandCombatResolver {
                 }
             }
         }
+    }
+
+    /**
+     * The scenario's own platoon for one the battle was fought with.
+     *
+     * The round log exists to be READ - by the results pane and by a fidelity diff - and both speak
+     * in terms of the armies the player is looking at, not the clones. Matching on the troop code is
+     * the same join {@code report} uses to hand back survivors.
+     */
+    private Pelotao originalOf(ArmySim original, Pelotao copy) {
+        if (original == null || copy == null) {
+            return copy;
+        }
+        final Pelotao ret = original.getPelotoes().get(copy.getCodigo());
+        return ret == null ? copy : ret;
     }
 
     private long banked(Map<ArmySim, Long> pending, ArmySim army) {

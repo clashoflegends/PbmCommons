@@ -98,11 +98,9 @@ public class CombatResult {
         }
 
         /**
-         * The army that took the losses - the COPY that fought, not the scenario's own object.
-         *
-         * Fine for a trace and for display, but T-802 will want to key the results pane on the
-         * player's armies, and that needs the copy-to-original map the resolver holds. Translate
-         * there rather than teaching callers to guess.
+         * The SCENARIO'S own army, not the clone that fought: the resolver translates before
+         * recording, because everything that reads this - the results pane, a fidelity diff -
+         * speaks in terms of the armies the player is looking at.
          */
         public ArmySim getArmy() {
             return army;
@@ -216,7 +214,7 @@ public class CombatResult {
         return Collections.unmodifiableList(roundDamage);
     }
 
-    /** Records a platoon's losses for one round. The platoon is the COPY that fought. */
+    /** Records a platoon's losses for one round, keyed on the SCENARIO'S army and platoon. */
     public void addRoundLoss(int round, ArmySim army, Pelotao platoon, int lost, int left) {
         if (lost > 0) {
             roundLosses.add(new RoundLoss(round, army, platoon, lost, left));
