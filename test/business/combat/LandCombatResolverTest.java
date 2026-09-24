@@ -503,16 +503,6 @@ public class LandCombatResolverTest extends LandCombatFixture {
         assertFalse(result.has(bigFleet), "and the ships are absent from the land result");
     }
 
-    /** A naval troop type: {@code ;TTN;} is what makes {@code isBarcos()} true. */
-    private static TipoTropa shipType(String codigo) {
-        final TipoTropa ret = troopType(codigo, 40, 40, false);
-        final Habilidade naval = new Habilidade();
-        naval.setCodigo(";TTN;");
-        naval.setNome(";TTN;");
-        ret.addHabilidade(naval);
-        return ret;
-    }
-
     /** A battle nobody can win stops loudly rather than hanging. See MAX_ROUNDS. */
     @Test
     public void aBattleThatCannotEndIsCappedAndSaysSo() {

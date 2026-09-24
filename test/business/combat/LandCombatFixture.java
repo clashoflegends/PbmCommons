@@ -126,6 +126,16 @@ public class LandCombatFixture {
         return ret;
     }
 
+    /** A naval troop type: {@code ;TTN;} is what makes {@code isBarcos()} true. */
+    protected static TipoTropa shipType(String codigo) {
+        final TipoTropa ret = troopType(codigo, 40, 40, false);
+        final Habilidade naval = new Habilidade();
+        naval.setCodigo(";TTN;");
+        naval.setNome(";TTN;");
+        ret.addHabilidade(naval);
+        return ret;
+    }
+
     protected static Cenario cenario() {
         final Cenario ret = new Cenario();
         ret.setCodigo("c1");

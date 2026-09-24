@@ -26,6 +26,9 @@ import model.Pelotao;
  */
 public class LayerReport {
 
+    /** This army took no part in this layer, which is not the same as taking part and losing all. */
+    public static final int ABSENT = -1;
+
     private final CombatLayer layer;
     private final int rounds;
     private final List<ArmySim> armies = new ArrayList<>();
@@ -54,7 +57,7 @@ public class LayerReport {
         }
         for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
             final int[] row = ret.remaining.get(loss.getArmy());
-            if (row == null) {
+            if (row == null || row[0] == ABSENT) {
                 continue;
             }
             // every column from this round onward drops, because the table is a running total and
@@ -66,12 +69,21 @@ public class LayerReport {
         return ret;
     }
 
-    /** What this army brought into the layer: the land troops it had when the fighting started. */
+    /**
+     * What this army brought into the layer, or ABSENT when it brought nothing to this one.
+     *
+     * A fleet with no land troops is not an army of zero men, and a row of zeroes says the wrong
+     * thing about it - it reads as wiped out, or as present and empty, when the truth is that it was
+     * never in this layer at all. The casualty summary already draws that distinction with "--"; the
+     * rounds table has to draw the same one or the two tables contradict each other on the same
+     * screen. Seen at 829 t24, where a vast navy and a second fleet sat in the land table as rows of
+     * zeroes beside their own "--" in the summary above.
+     */
     private static int startOf(ArmySim army, CombatResult result) {
-        int ret = 0;
+        int ret = ABSENT;
         for (Pelotao pelotao : army.getPelotoes().values()) {
             if (result.has(pelotao)) {
-                ret += pelotao.getQtd();
+                ret = Math.max(ret, 0) + pelotao.getQtd();
             }
         }
         return ret;

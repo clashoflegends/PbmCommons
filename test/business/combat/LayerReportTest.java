@@ -50,6 +50,32 @@ public class LayerReportTest extends LandCombatFixture {
                 report.getRemaining(watcher, report.getRounds()), "and its row never moves");
     }
 
+    /**
+     * A FLEET IS ABSENT FROM THE LAND TABLE, not present with nobody in it.
+     *
+     * A row of zeroes reads as an army that was wiped out, or one that turned up empty. The truth is
+     * that it was never in this layer. The casualty summary already says "--" for it, and the two
+     * tables sit on the same screen, so the rounds table has to say the same thing or they
+     * contradict each other - which is exactly what 829 t24 showed, a vast navy carrying a row of
+     * zeroes beside its own "--" one table up.
+     */
+    @Test
+    public void afleetIsAbsentFromTheLandTableRatherThanZero() {
+        final Pelotao strong = platoon(troopType("strong", 90, 40, false), 1000);
+        final Pelotao weak = platoon(troopType("weak", 10, 10, false), 400);
+        final CombatScenario scenario = twoArmiesAtWar(strong, weak);
+        final ArmySim fleet = army("fleet", nacao("n"), platoon(shipType("kraken"), 350));
+        scenario.addArmy(fleet, CombatScenario.Provenance.EXACT);
+        final CombatResult result = new LandCombatResolver().resolve(scenario, cenario());
+
+        final LayerReport report = LayerReport.ofLand(scenario, result);
+
+        assertEquals(LayerReport.ABSENT, report.getRemaining(fleet, 0),
+                "it brought nothing to the land layer, which is not the same as bringing zero");
+        assertEquals(LayerReport.ABSENT, report.getRemaining(fleet, report.getRounds()),
+                "and it stays absent rather than drifting to a number");
+    }
+
     /** A layer that did not happen says why rather than rendering an empty grid. */
     @Test
     public void alayerThatDidNotHappenCarriesItsReason() {
