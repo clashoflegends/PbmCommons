@@ -110,6 +110,12 @@ public final class WorldProbe {
                     + "|" + (army.getNacao() == null ? "?" : army.getNacao().getNome())
                     + "|troops=" + new business.facade.ExercitoFacade().getQtTropasTotal(army)
                     + "|platoons=" + army.getPelotoes().size()
+                    // The size BAND, which the server exports at visibility 1, 2 and 4 alike
+                    // (ServerExercitoDao.setVisSize) and which the simulator currently ignores. At
+                    // visibility 1 it is the ONLY thing known about an army's strength: no platoons
+                    // come across at all, so getQtTropasTotal answers 0 for an army the player can
+                    // plainly see is "vast".
+                    + "|band=" + army.getSizeBand()
                     + "|moral=" + army.getMoral()
                     + "|moralUnknown=" + scenario.isMoraleUnknown(army)
                     + "|" + scenario.getProvenance(army)

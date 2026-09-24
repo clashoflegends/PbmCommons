@@ -23,6 +23,16 @@ import model.Partida;
  * entries carry attack and defense of 1 on every terrain. At visibility level 2 - a scouted or
  * reconned army, which is generally the one that matters - the real platoons come across.
  *
+ * <b>Level 1 is a THIRD state, and it is the one that looks like a bug.</b> The switch in
+ * {@code ServerExercitoDao} calls only {@code setVisIconLocalNation}, {@code setVisCommanderName}
+ * and {@code setVisSize} - no platoon call of any kind - so the army arrives with a nation, a
+ * commander name and a size BAND and literally NO platoons. {@code getQtTropasTotal} therefore
+ * answers ZERO for an army the player can plainly see is "vast", and every layer declines it with
+ * {@code NO_TROOPS}. Seen live on game 903 turn 3: from either BLUE player's file the Persian army
+ * at hex 1815 is {@code platoons=0, troops=0, band=great navy}. The band is the only strength the
+ * player actually holds, which is why {@link ArmySim} keeps it - and it is why a foreign battle
+ * needs its composition typed in before anything can run.
+ *
  * <b>The loader does not special-case any of this, and must not start.</b> Not knowing what is in
  * an enemy stack IS the game: that is what scouting orders are for, and what a player who has not
  * scouted is expected to guess at. The placeholder pair is the intelligence the player actually
