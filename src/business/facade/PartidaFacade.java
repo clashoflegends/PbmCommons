@@ -61,6 +61,33 @@ public class PartidaFacade {
         return hasHabilidade(partida, ";GLA;");
     }
 
+    /**
+     * Teams with a Lord: locked teams where one nation of each team outranks the others.
+     *
+     * Its own type rather than a variation on {@link #isTeamLocked}, because the Judge treats it as
+     * one: {@code NacaoControl.doCarregaRelacionamentosFresh} tests it FIRST and its comment says it
+     * "superseeds LockedAlliances and BattleRoyale". Inside a team it grades the relationship
+     * Vassal/Lord instead of a flat Ally, and the grade is the number
+     * {@code NacaoFacade.getBonusRelacionamento} reads.
+     */
+    public boolean isTeamWithLord(Partida partida) {
+        return hasHabilidade(partida, ";GSL;");
+    }
+
+    /**
+     * Diplomatic actions are disabled, so whatever relationships the game started with are the
+     * relationships it ends with.
+     *
+     * This is the flag that turns a starting arrangement into a RULE. Every closed game type carries
+     * it - {@code ConverterFactory.getGameType} emits {@code ;GLA;;GND;} for Team, Hidden and Iron,
+     * and {@code ;GDM;;GND;} for Death Match and Gun Boat - and the open ones (FFA, Battle Royale)
+     * deliberately do not. Without it a team flag describes only turn zero and the table can drift
+     * away from it.
+     */
+    public boolean isDiplomacyDisabled(Partida partida) {
+        return hasHabilidade(partida, ";GND;");
+    }
+
     /** Free for all: diplomacy floats, and this is the game type that leaves the most unknown. */
     public boolean isFreeForAll(Partida partida) {
         return hasHabilidade(partida, ";FFA;");

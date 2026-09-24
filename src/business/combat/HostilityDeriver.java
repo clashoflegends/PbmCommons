@@ -25,12 +25,15 @@ import model.Partida;
  * player SEE the table and edit it (T-418), and it is what makes the game-type rules orderable
  * against the read ones - see {@link #deriveNations}.
  *
- * <h3>Three sources of truth, and no fourth</h3>
+ * <h3>Four sources of truth, and no fifth</h3>
  *
  * <ol>
- *   <li><b>Read</b> a relationship row from a loaded EGF. Authoritative, and always preferred.</li>
- *   <li><b>Derive</b> by construction: in a Death Match every pair fights, and an NPC nation is
- *       everyone's sworn enemy. Both are complete answers needing no row - see {@link #isNpc}.</li>
+ *   <li><b>Derive</b> by construction, and FIRST: in a Death Match every pair fights, in a locked
+ *       team game the team flags settle every pair, and an NPC nation is everyone's sworn enemy.
+ *       All three are complete answers needing no row - see {@link #isNpc} and {@link #byTeam}.
+ *       First because a rule the game cannot violate must not lose to an inference; the argument
+ *       is on {@link #deriveNations}.</li>
+ *   <li><b>Read</b> a relationship row from a loaded EGF, when that row can be PROVEN complete.</li>
  *   <li><b>Mirror</b> the other direction when only it can be read - diplomacy is bidirectional
  *       in almost every case.</li>
  *   <li><b>Assume</b> the worst case - hostile to the player, friendly among themselves - and
@@ -125,6 +128,11 @@ public class HostilityDeriver {
                 if (everyoneHostile || isNpc(from) || isNpc(to)) {
                     ret.set(from, to, RelationshipMatrix.SWORN_ENEMY,
                             RelationshipMatrix.Origin.FROM_GAME_TYPE);
+                    continue;
+                }
+                final Integer team = byTeam(partida, from, to);
+                if (team != null) {
+                    ret.set(from, to, team, RelationshipMatrix.Origin.FROM_GAME_TYPE);
                     continue;
                 }
                 final Integer read = read(known.get(from), to);
@@ -269,6 +277,91 @@ public class HostilityDeriver {
     }
 
     /**
+     * A locked team game answers the WHOLE table from the team flags, for every pair, including two
+     * nations the observer has nothing to do with.
+     *
+     * <h3>This is what makes a battle the player is not in simulable at all</h3>
+     *
+     * Without it, two foreign nations fall all the way through to {@link #deriveNations}'s last
+     * resort. That default is built around the observer - "hostile to me, friendly among
+     * themselves" - and neither of them is the observer, so the pair comes out NEUTRAL, the matrix
+     * reports no combat, and {@link RunGate#NO_HOSTILE_PAIR} disables Run on a hex where two armies
+     * are plainly about to fight. Verified on game 903 turn 3 hex 1815: Athens and Persia, one BLUE
+     * one RED, neither of them Macedon's, and the simulator would not start.
+     *
+     * <h3>Why this is a rule and not a guess</h3>
+     *
+     * It is {@code NacaoControl.doCarregaRelacionamentosFresh}, transcribed. Same team is
+     * {@code RELATIONSHIP_ALLY}, a different team is {@code RELATIONSHIP_SWORNENEMY}, and
+     * {@code ;GSL;} is tested first because its own comment says it "superseeds LockedAlliances".
+     * Checked against every complete row in all four player EGFs of game 903 turn 3: four nations,
+     * sixteen cells, every one of them exactly what the team flags predict. See
+     * {@code HostilityDeriverTeamTest}.
+     *
+     * The datum is free. {@code ServerNacaoDao} sets {@code nm_alianca} in the block it calls
+     * "publicos", before any visibility gating, so the team flag ships in every EGF for every
+     * nation - even under {@code ;GAP;}, which hides the OWNER and leaves the team alone.
+     *
+     * <h3>{@code ;GND;} is required, and that is the interesting half</h3>
+     *
+     * The Judge's rule SEEDS the table, and it only runs at all when {@code isRandom()}; after that
+     * {@code doCarregaRelacionamentosDb} reads whatever the table has become. So a team flag
+     * describes turn zero, and it stays true for the rest of the game only because diplomacy is
+     * switched off. {@code ConverterFactory.getGameType} emits {@code ;GLA;;GND;} together for every
+     * team type, so this costs nothing in practice - but a hand-built game carrying {@code ;GLA;}
+     * alone gets no rule here, and falls through to the read and the assumption, which is right.
+     *
+     * <h3>An empty team is not a team</h3>
+     *
+     * {@code "-"} is what the Judge writes for a nation on no team, and {@code MilestoneGameOver}
+     * treats it as the Barbarians' marker. Two such nations are not allies, so a blank, a null and
+     * a {@code "-"} all mean "cannot answer" and fall through. The Judge does not need this guard
+     * because its NPC branch catches neutrals first; ours cannot, since the deciding column
+     * {@code tp_nacao} is not in the EGF - see {@link #isNpc}.
+     *
+     * @return the relationship value, or null when the game type cannot answer this pair
+     */
+    private Integer byTeam(Partida partida, Nacao from, Nacao to) {
+        final boolean withLord = partidaFacade.isTeamWithLord(partida);
+        if (!withLord && !partidaFacade.isTeamLocked(partida)) {
+            return null;
+        }
+        if (!partidaFacade.isDiplomacyDisabled(partida)) {
+            return null;
+        }
+        final String one = teamOf(from), other = teamOf(to);
+        if (one == null || other == null) {
+            return null;
+        }
+        if (!one.equals(other)) {
+            return RelationshipMatrix.SWORN_ENEMY;
+        }
+        if (withLord) {
+            // Direction copied from the Judge rather than reasoned about: it asks FROM first and
+            // records VASSAL, then asks TO and records LORD. Reading it the other way round would
+            // invert every graded cell in a ;GSL; game, and the two values differ by a combat
+            // bonus - NacaoFacade.getBonusRelacionamento reads the number, not the sign.
+            if (from.hasHabilidade(";NSL;")) {
+                return RelationshipMatrix.VASSAL;
+            }
+            if (to.hasHabilidade(";NSL;")) {
+                return RelationshipMatrix.LORD;
+            }
+        }
+        return RelationshipMatrix.ALLY;
+    }
+
+    /** A nation's team, or null when it has none. See {@link #byTeam} on why {@code "-"} is none. */
+    private static String teamOf(Nacao nacao) {
+        final String ret = nacao == null ? null : nacao.getTeamFlag();
+        if (ret == null) {
+            return null;
+        }
+        final String trimmed = ret.trim();
+        return trimmed.isEmpty() || "-".equals(trimmed) ? null : trimmed;
+    }
+
+    /**
      * Death Match: every nation is hostile to every other by construction, diplomacy is disabled,
      * and the answer needs no relationship row at all.
      *
@@ -387,11 +480,12 @@ public class HostilityDeriver {
      * owner on an ALLY's nation in a team-locked game - the ally's owner, not the observer's - so
      * identity is what distinguishes them.
      *
-     * <b>"My team" is not answered here yet.</b> John's rule is "hostile to me and my team", and a
-     * locked-team ally is part of that worst case. Detecting the team means reading the game's team
-     * flags, which is the extrapolation pass that also owes Locked Teams and Death Match
-     * construction rules. Until then this covers the player's own nations only, which understates
-     * the assumed threat to an ally rather than overstating it.
+     * <b>"My team" is deliberately still not answered here, and no longer needs to be.</b> John's
+     * rule was "hostile to me and my team", and a locked-team ally is part of that worst case - but
+     * in a locked team game {@link #byTeam} has already settled every pair by construction, so no
+     * pair involving a teammate ever reaches this default. What is left is FFA and Battle Royale,
+     * where the team flag says nothing and "my team" has no meaning either. So this covers the
+     * player's own nations, which is now the whole of what it can mean.
      */
     private boolean isObservers(Nacao nacao, Jogador observer) {
         return observer != null && nacao != null && nacao.getOwner() == observer;
