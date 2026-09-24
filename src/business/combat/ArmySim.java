@@ -81,6 +81,17 @@ public class ArmySim extends BaseModel implements IExercito {
      * exists here.
      */
     private String sizeBand = "";
+    /**
+     * The LAND band, kept SEPARATELY because the displayed one may be naval and hide it.
+     *
+     * An army carries two server-assigned bands, {@code tamanhoExercito} and
+     * {@code tamanhoEsquadra}, and {@code ExercitoFacade.getDescricaoTamanho} shows whichever suits
+     * the army's own shape - naval the moment it holds a single ship. For a fleet that is exactly
+     * backwards for this window: what the player wants to know about an enemy fleet off his coast
+     * is the size of the force it can LAND, and that is the band being suppressed. 906 t3 hex 0452
+     * is the case that found it - a "huge navy" concealing a top-bucket vast army.
+     */
+    private String sizeBandLand = "";
     private String comandanteNome;
     /** BORROWED, never edited. See {@link #getComandanteModel}. */
     private Personagem comandanteModel;
@@ -111,7 +122,9 @@ public class ArmySim extends BaseModel implements IExercito {
         this.tatica = exercito.getTatica();
         this.setCodigo(exercito.getCodigo());
         this.nacao = exercito.getNacao();
-        this.sizeBand = new ExercitoFacade().getDescricaoTamanho(exercito);
+        final ExercitoFacade facade = new ExercitoFacade();
+        this.sizeBand = facade.getDescricaoTamanho(exercito);
+        this.sizeBandLand = facade.getDescricaoTamanhoTerra(exercito);
         // A GARRISON IS AN ARMY WITHOUT A COMMANDER, and that is all it is. Reading the skill off
         // getComandante() threw for exactly those armies, and the catch set only the name - so the
         // field initializer stood and every garrison entered the simulator with a commander of
@@ -137,6 +150,7 @@ public class ArmySim extends BaseModel implements IExercito {
         this.setCodigo(exercito.getCodigo());
         this.nacao = exercito.getNacao();
         this.sizeBand = exercito.getSizeBand();
+        this.sizeBandLand = exercito.getSizeBandLand();
         // Clone army has to mean CLONE. These four were dropped, so a clone silently reverted to
         // the field defaults: an army the player had set to "Defend only" came back as
         // ATTACK_ARMY - reported as initiating combat and entering a layer the original does not
@@ -182,6 +196,21 @@ public class ArmySim extends BaseModel implements IExercito {
 
     public void setSizeBand(String sizeBand) {
         this.sizeBand = sizeBand;
+    }
+
+    /**
+     * The LAND band, which for a fleet is the one the displayed band hides.
+     *
+     * Empty when the server did not rank this army on land at all. Worth showing beside
+     * {@link #getSizeBand} rather than instead of it: "huge navy carrying a vast army" is two
+     * facts, and a player deciding whether to contest a landing needs both.
+     */
+    public String getSizeBandLand() {
+        return sizeBandLand == null ? "" : sizeBandLand;
+    }
+
+    public void setSizeBandLand(String sizeBandLand) {
+        this.sizeBandLand = sizeBandLand;
     }
 
     @Override

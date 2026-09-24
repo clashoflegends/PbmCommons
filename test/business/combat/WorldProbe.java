@@ -85,6 +85,17 @@ public final class WorldProbe {
             System.out.println("GATE|" + hex + "|no such hex on this map");
             return;
         }
+        // BOTH raw bands, straight off the model. ExercitoFacade.getDescricaoTamanho shows only
+        // ONE of them - the moment an army has any ships it reports the ESQUADRA wording, so a
+        // fleet's LAND band is hidden behind "huge navy" even though the server exported it.
+        for (Exercito army : local.getExercitos().values()) {
+            if (army != null) {
+                System.out.println("RAWBAND|" + army.getNome()
+                        + "|tamanhoExercito=" + army.getTamanhoExercito()
+                        + "|tamanhoEsquadra=" + army.getTamanhoEsquadra()
+                        + "|shown=" + new ExercitoFacade().getDescricaoTamanho(army));
+            }
+        }
         final CombatScenario scenario = new ScenarioLoader().load(world.getPartida(), local,
                 world.getPartida() == null ? null : world.getPartida().getJogadorAtivo());
         System.out.println("GATE|" + hex + "|" + scenario.getRunGate(true)

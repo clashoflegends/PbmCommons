@@ -70,6 +70,32 @@ public class ExercitoFacade implements Serializable {
         return ret;
     }
 
+    /**
+     * The LAND band, always - even for a fleet, whose displayed wording is naval.
+     *
+     * {@link #getDescricaoTamanho} picks ONE of the two bands the server exports, and the moment an
+     * army holds any ships it picks the naval one. That hides the more interesting number: an army
+     * carries {@code tamanhoExercito} AND {@code tamanhoEsquadra}, and for a fleet standing off a
+     * coast the land band is what says how big the force it can put ashore is.
+     *
+     * Live example, game 906 turn 3 hex 0452: House Tyrell's {@code Colin Florent} shows as
+     * "huge navy" and reads as zero troops, while its {@code tamanhoExercito} is 5 - the TOP
+     * bucket, a vast army, aimed at Lannisport. The player was told that and the tool was not
+     * repeating it.
+     *
+     * @return the band wording, or empty when the server did not rank this army on land
+     */
+    public String getDescricaoTamanhoTerra(Exercito exercito) {
+        if (exercito == null) {
+            return "";
+        }
+        final String[] scale = isGuarnicao(exercito)
+                ? BaseMsgs.guarnicaoTamanho : BaseMsgs.exercitoTamanho;
+        final int band = exercito.getTamanhoExercito();
+        // 0 is "unestimated", which is an absence rather than a size, and the arrays are six long.
+        return band <= 0 || band >= scale.length ? "" : scale[band];
+    }
+
     public StringIntSortedCell getTamanhoCell(Exercito exercito) {
         if (isGuarnicao(exercito)) {
             if (isEsquadra(exercito) || exercito.getTamanhoEsquadra() > 0) {
