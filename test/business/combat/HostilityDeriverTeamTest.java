@@ -195,6 +195,63 @@ public class HostilityDeriverTeamTest {
                 "the team rule must stand down in a free-for-all");
     }
 
+    /**
+     * A war the observer can actually READ beats the team flags, because the flags describe turn
+     * zero and the row describes now.
+     *
+     * {@code ;GND;} does not freeze the table, which is what this rule originally assumed.
+     * {@code Ordem555PlaceCamp} is gated only on {@code ;GPC;} and a camping-restricted hex: it
+     * then loops every active nation and writes {@code RELATIONSHIP_SWORNENEMY} in BOTH directions,
+     * teammates included, without consulting {@code ;GND;} at all. A player who camps where he
+     * should not is at war with his own ally, it is in his own complete row, and answering ALLY
+     * from the flags would report no battle on a hex the Judge is about to resolve.
+     */
+    @Test
+    public void aStatedWarWithATeammateOutranksTheTeamFlags() {
+        final Partida partida = lockedTeams();
+        final Jogador observer = new Jogador();
+        observer.setNome("Angel Alonso Padilla");
+        final Nacao macedon = nacao("Macedon", BLUE), athens = nacao("Athens", BLUE);
+        macedon.setOwner(observer);     // only his own row can be proven complete
+        // he camped where he should not, so the Judge broke the pact with his own teammate
+        macedon.addRelacionamento(athens, RelationshipMatrix.SWORN_ENEMY);
+
+        final RelationshipMatrix matrix = new HostilityDeriver()
+                .deriveNations(partida, Arrays.asList(macedon, athens), observer);
+
+        assertTrue(matrix.isHostile(macedon, athens),
+                "his own EGF says they are at war and it is right");
+        assertEquals(RelationshipMatrix.Origin.READ_FROM_EGF, matrix.getOrigin(macedon, athens),
+                "and it is a READ, not a construction");
+    }
+
+    /**
+     * But a row that merely FAILS TO MENTION a nation must not beat the team rule.
+     *
+     * That distinction is the reason the two reads sit at different heights. A populated row
+     * lacking an entry answers a derived zero, and letting that fabricated neutral outrank a
+     * construction rule is how a Death Match once came out as a room full of peace.
+     */
+    @Test
+    public void aRowThatSimplyOmitsANationDoesNotBeatTheTeamRule() {
+        final Partida partida = lockedTeams();
+        final Jogador observer = new Jogador();
+        observer.setNome("Angel Alonso Padilla");
+        final Nacao macedon = nacao("Macedon", BLUE), athens = nacao("Athens", BLUE);
+        final Nacao persia = nacao("Persia", RED);
+        macedon.setOwner(observer);
+        // a complete row, which happens not to mention Persia at all
+        macedon.addRelacionamento(athens, RelationshipMatrix.ALLY);
+
+        final RelationshipMatrix matrix = new HostilityDeriver()
+                .deriveNations(partida, Arrays.asList(macedon, athens, persia), observer);
+
+        assertEquals(RelationshipMatrix.SWORN_ENEMY, matrix.getValor(macedon, persia),
+                "the team flags answer this one");
+        assertEquals(RelationshipMatrix.Origin.FROM_GAME_TYPE,
+                matrix.getOrigin(macedon, persia));
+    }
+
     /** {@code ;GLA;;GND;}, which is what {@code ConverterFactory} emits for every team type. */
     private static Partida lockedTeams() {
         final Partida ret = new Partida();

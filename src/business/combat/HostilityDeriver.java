@@ -130,6 +130,24 @@ public class HostilityDeriver {
                             RelationshipMatrix.Origin.FROM_GAME_TYPE);
                     continue;
                 }
+                // An EXPLICIT entry in a row this class could prove complete outranks the team
+                // rule, because it is a statement about THIS turn and the team rule is a statement
+                // about turn zero. ;GND; does not make the flags permanent - that claim was wrong.
+                // Ordem555PlaceCamp, gated only on ;GPC; and a camping-restricted hex, loops every
+                // active nation and writes RELATIONSHIP_SWORNENEMY BOTH WAYS, teammates included,
+                // with no ;GND; check at all. So a player who camps where he should not is at war
+                // with his own ally, it is in his own EGF row, and reading the flags instead would
+                // report no battle on a hex the Judge is about to resolve.
+                //
+                // EXPLICIT, not read(): a populated row that simply lacks the other nation answers
+                // a DERIVED zero, and letting that fabricated neutral outrank a construction rule
+                // is how a Death Match once came out a room full of peace. That path stays below
+                // the team rule, where it was.
+                final Integer stated = readExplicit(known.get(from), to);
+                if (stated != null) {
+                    ret.set(from, to, stated, RelationshipMatrix.Origin.READ_FROM_EGF);
+                    continue;
+                }
                 final Integer team = byTeam(partida, from, to);
                 if (team != null) {
                     ret.set(from, to, team, RelationshipMatrix.Origin.FROM_GAME_TYPE);
@@ -536,6 +554,21 @@ public class HostilityDeriver {
      * A POPULATED row that simply lacks the other nation is a real answer, and means neutral: a
      * nation's own EGF carries its complete set.
      */
+    /**
+     * The value this row STATES about that nation, or null when it does not mention it.
+     *
+     * The difference from {@link #read} is the whole of it: this never manufactures a zero. A
+     * populated row lacking an entry is a real answer and means neutral, but it is a DERIVED answer
+     * and must not outrank a rule the game cannot violate - so the two live at different heights in
+     * {@link #deriveNations}, and only the stated one goes above the team rule.
+     *
+     * The map is the identity-keyed copy {@link #readRows} built by iteration, not the model's own
+     * TreeMap, so {@code get} is safe here.
+     */
+    private Integer readExplicit(Map<Nacao, Integer> row, Nacao about) {
+        return row == null || row.isEmpty() ? null : row.get(about);
+    }
+
     private Integer read(Map<Nacao, Integer> row, Nacao about) {
         if (row == null || row.isEmpty()) {
             return null;
