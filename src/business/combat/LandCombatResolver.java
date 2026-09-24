@@ -128,6 +128,7 @@ public class LandCombatResolver {
             return ret;
         }
         noteWhatWasSkipped(fighters, ret);
+        noteUnknownMorale(scenario, toOriginal, ret);
 
         final RelationshipMatrix relations = scenario.getRelationships();
         final HostilityMatrix matrix = scenario.getMatrix();
@@ -506,6 +507,37 @@ public class LandCombatResolver {
         // A capped run means NEITHER side could finish the other, so nobody left alive won it.
         // Marking them all victorious would contradict the sentence printed beside the marks.
         return capped ? CombatResult.Outcome.UNDECIDED : CombatResult.Outcome.WON;
+    }
+
+    /**
+     * MORALE ZERO IS NOT NEUTRAL, it is the floor, and for an enemy it usually means "not exported".
+     *
+     * An army seen from outside arrives with no morale at all, and zero is indistinguishable from an
+     * army that is genuinely broken. The difference is worth up to a quarter of its attack, because
+     * the army bonus is {@code (commander + morale + 200) / 4} - so every unscouted enemy fights
+     * systematically weaker than it will, and a battle decided by several of them can come out the
+     * wrong way round while looking perfectly confident.
+     *
+     * Seen live: game 901 turn 8 at Lannisport, four Lannister and Tully armies all at zero against
+     * Tyrells carrying their real morale. The simulator had the Tyrells holding the field; the turn
+     * had them destroyed. Nothing on screen suggested the answer was built on a guess.
+     *
+     * So it is counted and stated. Guessing a better number would be worse - it would be just as
+     * wrong and no longer visible.
+     */
+    private void noteUnknownMorale(CombatScenario scenario, Map<ArmySim, ArmySim> toOriginal,
+            CombatResult ret) {
+        int unknown = 0;
+        for (ArmySim copy : toOriginal.keySet()) {
+            final ArmySim original = toOriginal.get(copy);
+            if (copy.getMoral() <= 0
+                    && scenario.getProvenance(original) == CombatScenario.Provenance.ESTIMATED) {
+                unknown++;
+            }
+        }
+        if (unknown > 0) {
+            ret.addNote("BATTLESIM.RESULT.UNKNOWNMORALE", unknown);
+        }
     }
 
     /** Anything the run cannot do faithfully has to be said, not silently dropped. */

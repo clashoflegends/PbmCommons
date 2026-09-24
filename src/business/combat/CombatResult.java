@@ -67,6 +67,7 @@ public class CombatResult {
     private final List<RoundLoss> roundLosses = new ArrayList<>();
     private final List<RoundDamage> roundDamage = new ArrayList<>();
     private final List<String> notes = new ArrayList<>();
+    private final Map<String, Integer> noteCounts = new java.util.HashMap<>();
     private int rounds;
 
     /**
@@ -246,5 +247,23 @@ public class CombatResult {
 
     public void addNote(String note) {
         notes.add(note);
+    }
+
+    /**
+     * A note that carries a NUMBER, kept apart from the key so the view still owns the wording.
+     *
+     * "Some armies have no morale" is a footnote; "4 armies have no morale" is a reason to go and
+     * fix them. The count is the part that makes the caveat actionable, and it cannot be recovered
+     * later from the key alone.
+     */
+    public void addNote(String note, int count) {
+        notes.add(note);
+        noteCounts.put(note, count);
+    }
+
+    /** The number behind a note, or 0 when it carries none. */
+    public int getNoteCount(String note) {
+        final Integer ret = noteCounts.get(note);
+        return ret == null ? 0 : ret;
     }
 }
