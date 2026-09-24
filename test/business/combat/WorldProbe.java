@@ -1,5 +1,6 @@
 package business.combat;
 
+import business.facade.ExercitoFacade;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,6 +9,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import model.Exercito;
 import model.Local;
 import model.Nacao;
@@ -61,6 +63,7 @@ public final class WorldProbe {
         System.out.println("OBSERVER|" + (partida == null || partida.getJogadorAtivo() == null
                 ? "(none)" : partida.getJogadorAtivo().getNome()));
         doNations(partida, world);
+        doBands(world);
         doCrowdedHexes(world);
         if (args.length > 1) {
             doHex(world, args[1]);
@@ -174,6 +177,75 @@ public final class WorldProbe {
                     + "|rows=" + nacao.getRelacionamentos().size()
                     + "|" + (row.length() == 0 ? "(empty)" : row));
         }
+    }
+
+    /**
+     * What every size BAND is worth in troops, measured off the armies this EGF can actually count.
+     *
+     * <h3>The band is a percentile, not a size</h3>
+     *
+     * {@code MilestoneCalculos} sorts every army in the GAME by troop count and buckets them by rank
+     * against {@code ratio = {25, 65, 85, 97, 100}}. So "vast army" means "in the top 3% of armies
+     * in this game" and carries no absolute number whatsoever. A fixed band-to-count table would be
+     * wrong in every scenario and wrong again as a game develops.
+     *
+     * <h3>Which is why it has to be fitted, and can be</h3>
+     *
+     * The same EGF that hides one army's platoons hands over the real count for every army the
+     * player can see, each one already carrying its band. That is a sample of the very distribution
+     * the band indexes, taken from the same game and the same turn. An army known only as "huge
+     * navy" can be given the range the player's own visible "huge navy" fleets occupy - an estimate
+     * built from his own intelligence rather than from a constant somebody picked.
+     *
+     * This prints the sample so the idea can be checked before anything is built on it.
+     */
+    private static void doBands(World world) {
+        final Map<String, List<Integer>> byBand = new java.util.TreeMap<>();
+        final ExercitoFacade facade = new ExercitoFacade();
+        for (Local local : world.getLocais().values()) {
+            if (local == null || local.getExercitos() == null) {
+                continue;
+            }
+            for (Exercito army : local.getExercitos().values()) {
+                if (army == null) {
+                    continue;
+                }
+                final int troops = facade.getQtTropasTotal(army);
+                final String band = facade.getDescricaoTamanho(army);
+                List<Integer> seen = byBand.get(band);
+                if (seen == null) {
+                    seen = new ArrayList<>();
+                    byBand.put(band, seen);
+                }
+                seen.add(troops);
+            }
+        }
+        for (Map.Entry<String, List<Integer>> entry : byBand.entrySet()) {
+            final List<Integer> counts = new ArrayList<>(entry.getValue());
+            java.util.Collections.sort(counts);
+            int known = 0, sum = 0;
+            for (Integer one : counts) {
+                if (one > 0) {
+                    known++;
+                    sum += one;
+                }
+            }
+            System.out.println("BAND|" + entry.getKey()
+                    + "|armies=" + counts.size()
+                    + "|counted=" + known
+                    + "|min=" + (known == 0 ? "-" : firstPositive(counts))
+                    + "|max=" + (known == 0 ? "-" : counts.get(counts.size() - 1))
+                    + "|mean=" + (known == 0 ? "-" : String.valueOf(sum / known)));
+        }
+    }
+
+    private static String firstPositive(List<Integer> sorted) {
+        for (Integer one : sorted) {
+            if (one > 0) {
+                return String.valueOf(one);
+            }
+        }
+        return "-";
     }
 
     /**
