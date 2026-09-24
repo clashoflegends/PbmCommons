@@ -131,13 +131,17 @@ public class HostilityDeriver {
                     continue;
                 }
                 // An EXPLICIT entry in a row this class could prove complete outranks the team
-                // rule, because it is a statement about THIS turn and the team rule is a statement
-                // about turn zero. ;GND; does not make the flags permanent - that claim was wrong.
-                // Ordem555PlaceCamp, gated only on ;GPC; and a camping-restricted hex, loops every
-                // active nation and writes RELATIONSHIP_SWORNENEMY BOTH WAYS, teammates included,
-                // with no ;GND; check at all. So a player who camps where he should not is at war
-                // with his own ally, it is in his own EGF row, and reading the flags instead would
-                // report no battle on a hex the Judge is about to resolve.
+                // rule, for one reason and it is not a special case: the flags describe TURN ZERO
+                // and the row describes now.
+                //
+                // doCarregaRelacionamentosFresh seeds the table from the team flags, and only when
+                // isRandom(); every later turn reads whatever the stored table has become
+                // (doCarregaRelacionamentosDb). Nothing protects it in between - ;GND; is a SITE
+                // flag that stops the diplomacy order being offered to players, and the Judge never
+                // reads it at all. So the observer's own row is simply the more current answer, and
+                // the several Judge paths that can move a relationship (Ordem188Diplomacy,
+                // MilestoneDiplomacia, DiplomaticChange, Ordem555PlaceCamp) are examples of that,
+                // not the reason for it.
                 //
                 // EXPLICIT, not read(): a populated row that simply lacks the other nation answers
                 // a DERIVED zero, and letting that fabricated neutral outrank a construction rule
@@ -320,12 +324,14 @@ public class HostilityDeriver {
      * "publicos", before any visibility gating, so the team flag ships in every EGF for every
      * nation - even under {@code ;GAP;}, which hides the OWNER and leaves the team alone.
      *
-     * <h3>{@code ;GND;} is required, and that is the interesting half</h3>
+     * <h3>{@code ;GND;} is required, and it does less than it looks</h3>
      *
      * The Judge's rule SEEDS the table, and it only runs at all when {@code isRandom()}; after that
      * {@code doCarregaRelacionamentosDb} reads whatever the table has become. So a team flag
-     * describes turn zero, and it stays true for the rest of the game only because diplomacy is
-     * switched off. {@code ConverterFactory.getGameType} emits {@code ;GLA;;GND;} together for every
+     * describes turn zero and nothing keeps it true afterwards - {@code ;GND;} is a SITE flag that
+     * stops the diplomacy order being offered, and no Judge code reads it. It is used here as a
+     * proxy for "the players cannot renegotiate", which makes the seed a good default; where the
+     * seed is wrong, the observer's own row says so and outranks this. {@code ConverterFactory.getGameType} emits {@code ;GLA;;GND;} together for every
      * team type, so this costs nothing in practice - but a hand-built game carrying {@code ;GLA;}
      * alone gets no rule here, and falls through to the read and the assumption, which is right.
      *
@@ -352,6 +358,13 @@ public class HostilityDeriver {
         if (partidaFacade.isFreeForAll(partida)) {
             return null;
         }
+        // ;GND; required, but NOT because it freezes the table - nothing does. It is a SITE flag
+        // (PbmSite's own comment: "it is now a site-only flag") that stops the diplomacy order
+        // being offered, and the Judge never reads it. What it buys is a proxy: where players
+        // cannot renegotiate, the turn-zero seed is usually still the truth, so deriving from the
+        // flags is sound. Where it is NOT the truth the observer's own row says so, and that read
+        // now outranks this rule - see deriveNations. Without ;GND; the flags are only a seed and
+        // this stands down entirely.
         if (!partidaFacade.isDiplomacyDisabled(partida)) {
             return null;
         }

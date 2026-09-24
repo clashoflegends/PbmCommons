@@ -199,12 +199,12 @@ public class HostilityDeriverTeamTest {
      * A war the observer can actually READ beats the team flags, because the flags describe turn
      * zero and the row describes now.
      *
-     * {@code ;GND;} does not freeze the table, which is what this rule originally assumed.
-     * {@code Ordem555PlaceCamp} is gated only on {@code ;GPC;} and a camping-restricted hex: it
-     * then loops every active nation and writes {@code RELATIONSHIP_SWORNENEMY} in BOTH directions,
-     * teammates included, without consulting {@code ;GND;} at all. A player who camps where he
-     * should not is at war with his own ally, it is in his own complete row, and answering ALLY
-     * from the flags would report no battle on a hex the Judge is about to resolve.
+     * {@code doCarregaRelacionamentosFresh} SEEDS the table from the flags, and only when
+     * {@code isRandom()}; every later turn reads whatever the stored table has become. Nothing
+     * keeps the two in step - {@code ;GND;} is a SITE flag that stops the diplomacy order being
+     * offered and the Judge never reads it, so several Judge paths can move a relationship
+     * afterwards. Which one did is not the point and this test does not name one: the point is that
+     * a stated entry is current and a flag is not.
      */
     @Test
     public void aStatedWarWithATeammateOutranksTheTeamFlags() {
