@@ -529,9 +529,7 @@ public class LandCombatResolver {
             CombatResult ret) {
         int unknown = 0;
         for (ArmySim copy : toOriginal.keySet()) {
-            final ArmySim original = toOriginal.get(copy);
-            if (copy.getMoral() <= 0
-                    && scenario.getProvenance(original) == CombatScenario.Provenance.ESTIMATED) {
+            if (scenario.isMoraleUnknown(toOriginal.get(copy))) {
                 unknown++;
             }
         }

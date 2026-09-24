@@ -598,6 +598,23 @@ public class CombatScenario {
         return engineExists ? RunGate.READY : RunGate.NO_ENGINE;
     }
 
+    /**
+     * Is this army's morale a real number, or just the zero an unexported field leaves behind?
+     *
+     * An army seen from outside arrives with no morale at all, and zero is indistinguishable from an
+     * army that is genuinely broken - except by where the army CAME FROM, which is what provenance
+     * records. The difference is worth up to a quarter of its attack, because the army bonus is
+     * {@code (commander + morale + 200) / 4}.
+     *
+     * One definition, because two would drift: the resolver counts these for the fidelity note and
+     * the editor marks the field the player has to fill in, and they must never disagree about which
+     * armies they mean.
+     */
+    public boolean isMoraleUnknown(ArmySim army) {
+        return army != null && army.getMoral() <= 0
+                && getProvenance(army) == Provenance.ESTIMATED;
+    }
+
     /** How many hostile pairs were guessed rather than read or derived. Feeds the disclosure line. */
     public int getAssumedCount() {
         return getMatrix().getAssumedPairs().size();
