@@ -1,5 +1,12 @@
 package business.combat;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import model.Cidade;
 import model.Habilidade;
 import model.Jogador;
@@ -21,14 +28,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * from, so the gate is a model with a reason rather than a boolean, and it is tested here without a
  * bundle and without a window.
  *
- * The states are ordered most-fixable first. The player can put armies on the hex, and can declare a
- * war in the diplomacy panel; he can do nothing at all about the engine not being written yet, so
- * {@link RunGate#NO_ENGINE} is what is LEFT once everything he controls is right.
+ * The states are ordered most-fixable first. The player can put armies on the hex, can declare a war
+ * in the diplomacy panel, and can give an empty army a composition - so the first answer he is handed
+ * is always one he can act on. There was a fifth state, NO_ENGINE, for a scenario that was resolvable
+ * with nothing to resolve it; T-801 landed the land resolver and took it and its flag away.
  */
 public class CombatSimRunGateTest {
-
-    private static final boolean NO_ENGINE_YET = false;
-    private static final boolean ENGINE_BUILT = true;
 
     private static Nacao nacao(String codigo, String nome) {
         final Nacao ret = new Nacao();
@@ -84,10 +89,8 @@ public class CombatSimRunGateTest {
     public void anEmptyHexBlocksTheRunAndSaysWhich() {
         final CombatScenario scenario = new CombatScenario(null, hex(null));
 
-        assertEquals(RunGate.NO_ARMIES, scenario.getRunGate(NO_ENGINE_YET));
-        assertEquals(RunGate.NO_ARMIES, scenario.getRunGate(ENGINE_BUILT),
-                "an empty hex stays empty whether or not the engine exists");
-        assertFalse(scenario.getRunGate(ENGINE_BUILT).isRunnable());
+        assertEquals(RunGate.NO_ARMIES, scenario.getRunGate());
+        assertFalse(scenario.getRunGate().isRunnable());
     }
 
     /** Armies present and all at peace. Nothing to resolve, and nothing wrong. */
@@ -107,7 +110,7 @@ public class CombatSimRunGateTest {
         scenario.setRelacionamento(mine, theirs, RelationshipMatrix.NEUTRAL);
         scenario.setRelacionamento(theirs, mine, RelationshipMatrix.NEUTRAL);
 
-        assertEquals(RunGate.NO_HOSTILE_PAIR, scenario.getRunGate(ENGINE_BUILT));
+        assertEquals(RunGate.NO_HOSTILE_PAIR, scenario.getRunGate());
     }
 
     /**
@@ -134,12 +137,12 @@ public class CombatSimRunGateTest {
 
         assertTrue(scenario.hasCombat(), "they ARE hostile - that is what makes this the trap");
         assertFalse(scenario.hasEngagement(), "and yet no layer can pair them");
-        assertEquals(RunGate.NO_ENGAGEMENT, scenario.getRunGate(ENGINE_BUILT));
+        assertEquals(RunGate.NO_ENGAGEMENT, scenario.getRunGate());
     }
 
-    /** Two hostile land armies do engage, so only the missing engine is left. */
+    /** Two hostile land armies do engage, and nothing else is in the way: Run works. */
     @Test
-    public void aResolvableScenarioIsBlockedOnlyByTheMissingEngine() {
+    public void aResolvableScenarioIsReady() {
         final Local hex = hex(null);
         final Nacao mine = nacao("m", "Mine"), theirs = nacao("t", "Theirs");
         final CombatScenario scenario = new CombatScenario(null, hex);
@@ -149,11 +152,9 @@ public class CombatSimRunGateTest {
                 CombatScenario.Provenance.ESTIMATED);
         scenario.setRelacionamento(mine, theirs, RelationshipMatrix.SWORN_ENEMY);
 
-        assertEquals(RunGate.NO_ENGINE, scenario.getRunGate(NO_ENGINE_YET));
-        assertFalse(scenario.getRunGate(NO_ENGINE_YET).isRunnable(), "R-40: MVP never runs");
-        assertEquals(RunGate.READY, scenario.getRunGate(ENGINE_BUILT),
-                "and the day the engine exists, the same scenario is ready - one flag, no rework");
-        assertTrue(scenario.getRunGate(ENGINE_BUILT).isRunnable());
+        assertEquals(RunGate.READY, scenario.getRunGate(),
+                "everything the player controls is right, and the land resolver landed at T-801");
+        assertTrue(scenario.getRunGate().isRunnable());
     }
 
     /**
@@ -186,7 +187,7 @@ public class CombatSimRunGateTest {
                 CombatScenario.Provenance.ESTIMATED);
 
         assertTrue(scenario.getAssumedCount() > 0, "the third party's pairs are guesses");
-        assertEquals(RunGate.READY, scenario.getRunGate(ENGINE_BUILT),
+        assertEquals(RunGate.READY, scenario.getRunGate(),
                 "and a guess is disclosed, never used to refuse the run");
     }
 
@@ -196,5 +197,52 @@ public class CombatSimRunGateTest {
         for (RunGate gate : RunGate.values()) {
             assertEquals(gate == RunGate.READY, gate.isRunnable(), gate.name());
         }
+    }
+
+    /**
+     * Every gate has a sentence in the bundle, and no sentence outlives its gate.
+     *
+     * {@code BattleSimConverter} builds the key from {@code gate.name()}, so NOTHING greps: a label
+     * for a deleted constant sits there forever looking current - BATTLESIM.RUN.DISABLED.NO_ENGINE
+     * did, still promising an engine that arrived at T-801 - and a constant added without a label
+     * fails SILENTLY, because {@code BundleManager.getString} logs a missing key and returns
+     * "N/A (Missing Translation: ...)" rather than throwing. The player would read that in the
+     * status bar. The key convention is the converter's; it is asserted here because this is the
+     * module that ships the enum AND the bundle.
+     *
+     * READY maps to an EMPTY value on purpose - when Run works there is nothing to explain - so this
+     * asks whether the key EXISTS, never whether it says anything.
+     */
+    @Test
+    public void everyGateHasASentenceAndEverySentenceHasAGate() throws IOException {
+        final Properties labels = new Properties();
+        try (InputStream is = CombatSimRunGateTest.class.getResourceAsStream("/labels.properties")) {
+            assertTrue(is != null, "missing /labels.properties");
+            labels.load(new InputStreamReader(is, StandardCharsets.ISO_8859_1));
+        }
+        final List<String> expected = new ArrayList<>();
+        for (RunGate gate : RunGate.values()) {
+            final String key = keyFor(gate);
+            expected.add(key);
+            assertTrue(labels.containsKey(key), gate.name() + " has no label: " + key);
+        }
+        final List<String> orphans = new ArrayList<>();
+        for (String key : labels.stringPropertyNames()) {
+            // BATTLESIM.RUN.DISABLED. is the gate's own namespace - BATTLESIM.RUN.SIMULATION is the
+            // button's caption and lives outside it. NO_ENGAGEMENT.EMPTY is a second, more specific
+            // sentence for a gate that HAS one, so it is a legitimate extra; anything else under
+            // the prefix has lost its constant.
+            if (key.startsWith("BATTLESIM.RUN.DISABLED.") && !expected.contains(key)
+                    && !key.endsWith(".EMPTY")) {
+                orphans.add(key);
+            }
+        }
+        assertTrue(orphans.isEmpty(), "labels for RunGates that no longer exist: " + orphans);
+    }
+
+    /** The converter's key convention, restated where the enum can be iterated. */
+    private static String keyFor(RunGate gate) {
+        return "BATTLESIM.RUN."
+                + (gate == RunGate.READY ? "READY" : "DISABLED." + gate.name());
     }
 }

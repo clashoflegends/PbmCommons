@@ -98,7 +98,7 @@ public final class WorldProbe {
         }
         final CombatScenario scenario = new ScenarioLoader().load(world.getPartida(), local,
                 world.getPartida() == null ? null : world.getPartida().getJogadorAtivo());
-        System.out.println("GATE|" + hex + "|" + scenario.getRunGate(true)
+        System.out.println("GATE|" + hex + "|" + scenario.getRunGate()
                 + "|armies=" + scenario.getArmies().size()
                 + "|troops=" + scenario.getQtTropasTotal()
                 + "|assumedPairs=" + scenario.getAssumedCount());

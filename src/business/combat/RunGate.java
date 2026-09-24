@@ -13,9 +13,16 @@ package business.combat;
  * <h3>Order matters: the fixable answers come first</h3>
  *
  * More than one of these can be true at once. They are reported most-fixable first, because the
- * player can do something about an empty roster or a room full of friends, and can do nothing at all
- * about the engine. {@link #NO_ENGINE} is therefore what is left when the scenario itself is ready -
- * which makes it the state that will simply disappear at T-801 rather than a special case to unpick.
+ * player can do something about an empty roster, about a room full of friends, and about armies that
+ * cannot reach each other - so the first answer he is given is always the one he can act on.
+ *
+ * <h3>There was a fifth state, and T-801 took it away</h3>
+ *
+ * {@code NO_ENGINE} said the scenario was resolvable and the engine was not built yet. It was last in
+ * the order because it was what was left once everything the player controls was already right, and
+ * it was written to disappear rather than be unpicked. T-801 landed the land resolver, so it is gone,
+ * along with the {@code engineExists} flag that produced it. A later layer does not bring it back: a
+ * scenario that engages on ANY layer is {@link #READY}, and the result names the layers it resolved.
  *
  * <h3>Allegiance is never a blocker</h3>
  *
@@ -53,13 +60,6 @@ public enum RunGate {
      * test that stopped each army, and several of them are orders the player can change.
      */
     NO_ENGAGEMENT,
-
-    /**
-     * The scenario is resolvable and the engine is not built yet. MVP's permanent answer.
-     *
-     * Last in the order on purpose: it means everything the player controls is already right.
-     */
-    NO_ENGINE,
 
     /** Resolvable, and there is something to resolve it with. */
     READY;

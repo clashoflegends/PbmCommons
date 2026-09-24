@@ -575,9 +575,10 @@ public class CombatScenario {
     /**
      * Why Run cannot run, most-fixable first. See {@link RunGate}.
      *
-     * @param engineExists whether there is an engine to run at all. Passed in rather than asked
-     *                     of a flag here, so the day it became true (T-801) was one call site and
-     *                     not a hunt through the model.
+     * Took an {@code engineExists} flag until T-801, so that the day the engine arrived was one call
+     * site and not a hunt through the model. That day came, the flag was a constant {@code true} at
+     * its only caller, and it is gone along with {@code RunGate.NO_ENGINE}: every answer this method
+     * can still give is about the scenario, which is the only thing the player can do anything about.
      *
      * READY means SOMETHING will be fought, not that every layer will be: {@link #hasEngagement}
      * accepts engagement on ANY of the three, while T-801 resolves only the land one. That is
@@ -585,7 +586,7 @@ public class CombatScenario {
      * sea layer lands - so the honesty has to live in the RESULT, which names the layers it
      * resolved and says plainly when no land battle took place.
      */
-    public RunGate getRunGate(boolean engineExists) {
+    public RunGate getRunGate() {
         if (armies.isEmpty()) {
             return RunGate.NO_ARMIES;
         }
@@ -595,7 +596,7 @@ public class CombatScenario {
         if (!hasEngagement()) {
             return RunGate.NO_ENGAGEMENT;
         }
-        return engineExists ? RunGate.READY : RunGate.NO_ENGINE;
+        return RunGate.READY;
     }
 
     /**
@@ -618,6 +619,81 @@ public class CombatScenario {
     /** How many hostile pairs were guessed rather than read or derived. Feeds the disclosure line. */
     public int getAssumedCount() {
         return getMatrix().getAssumedPairs().size();
+    }
+
+    /**
+     * A name for this army that is UNIQUE on this hex, which its own name very often is not.
+     *
+     * <h3>Why this exists</h3>
+     *
+     * A garrison is an army without a commander, so its name is the generic word "Garrison". Game
+     * 802 turn 40 hex 1530 is three of them - two Wildlings and one House Stark - and every screen
+     * that names an army named all three identically: the roster read "Garrison, Garrison,
+     * Garrison", and so did the verdict ("Garrison holds the field. Garrison, Garrison were
+     * destroyed"), the casualty table and the per-round table. The result was unreadable; nothing on
+     * screen said which side had won.
+     *
+     * <h3>Only as much qualification as it takes</h3>
+     *
+     * The nation is added ONLY when the bare name repeats, and an ordinal ONLY when the nation does
+     * not settle it either - so a normal hex, where every army carries its commander's name, is
+     * untouched and stays short. Two Wildlings garrisons and one Stark one become
+     * "Garrison (Wildlings) 1", "Garrison (Wildlings) 2" and "Garrison (House Stark)".
+     *
+     * Ordinals come from roster ORDER, which is the hex's own order and is stable across a refresh -
+     * so the number against an army does not move while the player is reading it. Sorting by
+     * strength would be friendlier to read once and useless to read twice.
+     *
+     * @return the name to show, never null
+     */
+    public String getDisplayName(ArmySim army) {
+        if (army == null) {
+            return "";
+        }
+        final String nome = army.getNome() == null ? "" : army.getNome();
+        if (countByName(nome) < 2) {
+            return nome;
+        }
+        final Nacao nacao = army.getNacao();
+        final String qualified = nacao == null ? nome : nome + " (" + nacao.getNome() + ")";
+        if (countByNameAndNacao(nome, nacao) < 2) {
+            return qualified;
+        }
+        int ordinal = 0;
+        for (ArmySim one : armies) {
+            if (sameName(one, nome) && one.getNacao() == nacao) {
+                ordinal++;
+                if (one == army) {
+                    return qualified + " " + ordinal;
+                }
+            }
+        }
+        return qualified;
+    }
+
+    private int countByName(String nome) {
+        int ret = 0;
+        for (ArmySim one : armies) {
+            if (sameName(one, nome)) {
+                ret++;
+            }
+        }
+        return ret;
+    }
+
+    /** Identity on the nation, never equals: BaseModel.compareTo collapses nations by codigo. */
+    private int countByNameAndNacao(String nome, Nacao nacao) {
+        int ret = 0;
+        for (ArmySim one : armies) {
+            if (sameName(one, nome) && one.getNacao() == nacao) {
+                ret++;
+            }
+        }
+        return ret;
+    }
+
+    private static boolean sameName(ArmySim army, String nome) {
+        return nome.equals(army.getNome() == null ? "" : army.getNome());
     }
 
     /** Total troops across every army, for the roster header. */

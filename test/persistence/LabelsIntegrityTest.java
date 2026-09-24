@@ -175,6 +175,44 @@ public class LabelsIntegrityTest {
         return ret.toString().trim();
     }
 
+    /**
+     * No value may open with a space, because {@code Properties.load} eats it.
+     *
+     * A leading space after the {@code =} is not stored, so it is either a separator that never
+     * arrives or a lie about who owns the layout - and in every language at once, which is why
+     * nobody notices. {@code BATTLESIM.STATUS.EDITED} carried one in all five files: the status bar
+     * concatenates it after another sentence and puts the real gap in the CODE, so the space bought
+     * nothing, and had it survived it would have indented the sentence when it appears alone.
+     *
+     * Spacing between two labels belongs to the code that joins them. A label does not know what, if
+     * anything, will be printed before it.
+     *
+     * Read as ISO-8859-1 bytes rather than through {@code Properties}, for the obvious reason: by
+     * the time the loader has answered, the evidence is gone.
+     */
+    @Test
+    public void noLabelValueOpensWithASpace() throws IOException {
+        final List<String> problems = new ArrayList<>();
+        for (String name : new String[]{"labels", "labels_es", "labels_ca", "labels_it",
+            "labels_pt"}) {
+            final String text = new String(bytes("/" + name + ".properties"),
+                    StandardCharsets.ISO_8859_1);
+            for (String line : text.split("\n")) {
+                final int eq = line.indexOf('=');
+                if (eq <= 0 || line.startsWith("#") || line.startsWith("!")
+                        || eq + 1 >= line.length()) {
+                    continue;
+                }
+                final char first = line.charAt(eq + 1);
+                if (first == ' ' || first == '\t') {
+                    problems.add(name + ": " + line.substring(0, eq) + " opens with whitespace");
+                }
+            }
+        }
+        assertTrue(problems.isEmpty(), "Properties.load strips it, so it never reaches the player:"
+                + System.lineSeparator() + join(problems));
+    }
+
     /** A duplicate key is legal, silent, and the last one wins. KI-048. */
     @Test
     public void noLabelFileRepeatsAKey() throws IOException {
