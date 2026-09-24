@@ -114,23 +114,85 @@ public class HostilityDeriverTeamTest {
     }
 
     /**
-     * Two nations with no team are not teammates.
+     * {@code "-"} is a team NAME, exactly as the Judge compares it.
      *
-     * {@code "-"} is what the Judge writes for a nation on no team. Treating it as a team name would
-     * declare every neutral nation an ally of every other, and the client cannot fall back on the
-     * NPC branch to catch them the way the Judge can - the column that decides it is not in the EGF.
+     * This test asserted the opposite until 2026-09-23, and the assumption behind it reproduced the
+     * very bug this rule was written to fix. Treating {@code "-"} as "no team" made the rule decline
+     * any pair with a teamless nation in it, so in a Hidden Team game - where {@code ;GAP;} hides
+     * the owner and {@code isNacaoBarbarian} therefore cannot identify the NPC either - a barbarian
+     * stack facing a foreign army came out NEUTRAL and Run was disabled. The Judge simply compares:
+     * {@code "BLUE".equals("-")} is false, so they are sworn enemies.
      */
     @Test
-    public void theEmptyTeamIsNotATeam() {
+    public void aTeamlessNationIsAnEnemyOfEveryTeam() {
+        final Partida partida = lockedTeams();
+        final Nacao barbarians = nacao("Barbarians", "-"), athens = nacao("Athens", BLUE);
+
+        final RelationshipMatrix matrix = new HostilityDeriver()
+                .deriveNations(partida, Arrays.asList(barbarians, athens), null);
+
+        assertTrue(matrix.isHostile(barbarians, athens),
+                "a different team is a different team, whatever it is called");
+        assertEquals(RelationshipMatrix.Origin.FROM_GAME_TYPE,
+                matrix.getPairOrigin(barbarians, athens));
+    }
+
+    /** And two of them share it, which is what the Judge does with any two equal flags. */
+    @Test
+    public void twoTeamlessNationsShareTheSameTeamName() {
         final Partida partida = lockedTeams();
         final Nacao one = nacao("Neutral1", "-"), other = nacao("Neutral2", "-");
 
         final RelationshipMatrix matrix = new HostilityDeriver()
                 .deriveNations(partida, Arrays.asList(one, other), null);
 
+        assertEquals(RelationshipMatrix.ALLY, matrix.getValor(one, other),
+                "the Judge answers ALLY for two equal flags and does not special-case this one");
+    }
+
+    /**
+     * {@code ;GSL;} grades a team internally, and the NUMBERS come from the Judge, not from the
+     * matching constant names.
+     *
+     * {@code GameStatusSettings.RELATIONSHIP_VASAL} is 4 and {@code RELATIONSHIP_LORD} is 3, while
+     * {@code RelationshipMatrix.VASSAL} is 3 and {@code LORD} is 4 - the client follows
+     * {@code BaseMsgs.nacaoRelacionamento} and {@code Nacao.isLord}, which read 4 as the lord. So
+     * transcribing the Judge branch by CONSTANT NAME writes the opposite number, which is what this
+     * code did until 2026-09-23. Combat does not notice ({@code dificuldadeBonus} is 25 at 2, 3 and
+     * 4 alike) but the Diplomacy panel names the cell from the number, and a derived cell has to
+     * agree with a read one.
+     */
+    @Test
+    public void teamWithLordUsesTheJudgesOwnNumbers() {
+        final Partida partida = new Partida();
+        partida.addHabilidade(habilidade(";GSL;"));
+        partida.addHabilidade(habilidade(";GND;"));
+        final Nacao lord = nacao("Lord", BLUE), vassal = nacao("Vassal", BLUE);
+        lord.addHabilidade(habilidade(";NSL;"));
+
+        final RelationshipMatrix matrix = new HostilityDeriver()
+                .deriveNations(partida, Arrays.asList(lord, vassal), null);
+
+        assertEquals(4, matrix.getValor(lord, vassal), "the Judge writes RELATIONSHIP_VASAL = 4");
+        assertEquals(3, matrix.getValor(vassal, lord), "and RELATIONSHIP_LORD = 3 the other way");
+    }
+
+    /**
+     * A free-for-all is settled at neutral BEFORE the team branches in the Judge, so team flags say
+     * nothing there even when the game somehow carries both.
+     */
+    @Test
+    public void freeForAllOutranksTheTeamFlags() {
+        final Partida partida = lockedTeams();
+        partida.addHabilidade(habilidade(";FFA;"));
+        final Nacao athens = nacao("Athens", BLUE), persia = nacao("Persia", RED);
+
+        final RelationshipMatrix matrix = new HostilityDeriver()
+                .deriveNations(partida, Arrays.asList(athens, persia), null);
+
         assertFalse(RelationshipMatrix.Origin.FROM_GAME_TYPE
-                .equals(matrix.getPairOrigin(one, other)),
-                "'-' means no team, so the team rule must not answer this pair");
+                .equals(matrix.getPairOrigin(athens, persia)),
+                "the team rule must stand down in a free-for-all");
     }
 
     /** {@code ;GLA;;GND;}, which is what {@code ConverterFactory} emits for every team type. */

@@ -326,6 +326,14 @@ public class HostilityDeriver {
         if (!withLord && !partidaFacade.isTeamLocked(partida)) {
             return null;
         }
+        // FFA is tested BEFORE the team branches in the Judge and settles every pair at neutral,
+        // so a game carrying both flags is a free-for-all and the team flags say nothing. Only a
+        // hand-built game can be in that state - ConverterFactory never emits the pair - but the
+        // whole claim of this method is that it is a transcription, and a transcription that skips
+        // a branch is just a paraphrase.
+        if (partidaFacade.isFreeForAll(partida)) {
+            return null;
+        }
         if (!partidaFacade.isDiplomacyDisabled(partida)) {
             return null;
         }
@@ -337,28 +345,43 @@ public class HostilityDeriver {
             return RelationshipMatrix.SWORN_ENEMY;
         }
         if (withLord) {
-            // Direction copied from the Judge rather than reasoned about: it asks FROM first and
-            // records VASSAL, then asks TO and records LORD. Reading it the other way round would
-            // invert every graded cell in a ;GSL; game, and the two values differ by a combat
-            // bonus - NacaoFacade.getBonusRelacionamento reads the number, not the sign.
+            // THE JUDGE'S NUMBERS, not the matching constant NAMES, and they are not the same
+            // thing: GameStatusSettings has RELATIONSHIP_VASAL = 4 and RELATIONSHIP_LORD = 3, while
+            // RelationshipMatrix - following BaseMsgs.nacaoRelacionamento and Nacao.isLord, which
+            // both read 4 as the LORD - has them the other way round. Transcribing by name would
+            // have written the opposite number into every graded cell of a ;GSL; game.
+            //
+            // It is the NUMBER that matters: getBonusRelacionamento indexes a table with it and
+            // the Diplomacy panel names it from BaseMsgs. Combat is unaffected either way -
+            // dificuldadeBonus is 25 at 2, 3 and 4 alike - so this is about the word the panel
+            // shows and about a read cell and a derived cell agreeing.
             if (from.hasHabilidade(";NSL;")) {
-                return RelationshipMatrix.VASSAL;
+                return 4;   // the Judge's RELATIONSHIP_VASAL
             }
             if (to.hasHabilidade(";NSL;")) {
-                return RelationshipMatrix.LORD;
+                return 3;   // the Judge's RELATIONSHIP_LORD
             }
         }
         return RelationshipMatrix.ALLY;
     }
 
-    /** A nation's team, or null when it has none. See {@link #byTeam} on why {@code "-"} is none. */
+    /**
+     * A nation's team EXACTLY as the Judge compares it, or null when the flag is absent entirely.
+     *
+     * <b>{@code "-"} is a team name here, and that is a correction.</b> This used to treat it as
+     * "no team" and fall through, on the reasoning that two teamless nations are not allies. The
+     * Judge does not agree and does not need to: {@code "BLUE".equals("-")} is false, so a teamed
+     * nation and a teamless one are SWORN ENEMIES, and two teamless ones are ALLIES. Falling
+     * through instead reproduced the exact bug this method was written to fix - a Hidden Team game
+     * ({@code ;GAP;}) hides the owner, so {@code isNacaoBarbarian} cannot identify the NPC either,
+     * and a barbarian stack against a foreign army came out NEUTRAL with Run disabled.
+     *
+     * Compared RAW, no trimming, because the Judge compares raw. A stray space in {@code nm_alianca}
+     * would then read as a different team in both places rather than as an unreported war in one.
+     */
     private static String teamOf(Nacao nacao) {
         final String ret = nacao == null ? null : nacao.getTeamFlag();
-        if (ret == null) {
-            return null;
-        }
-        final String trimmed = ret.trim();
-        return trimmed.isEmpty() || "-".equals(trimmed) ? null : trimmed;
+        return ret == null || ret.isEmpty() ? null : ret;
     }
 
     /**
@@ -370,9 +393,18 @@ public class HostilityDeriver {
      * about who is at war with whom, so there is no rule to consult. The sentence was describing a
      * rule that does not exist.
      *
-     * Through {@link PartidaFacade}, not {@code Partida.isDeathMatch()}: a flag declared by the
-     * SCENARIO counts as the game's, which is how the Judge reads it, and the model's own accessor
-     * would silently answer "no" for such a game.
+     * <b>Through {@link PartidaFacade}, which is a DELIBERATE DIVERGENCE and was documented as the
+     * opposite.</b> The facade chains game then scenario; the Judge does not.
+     * {@code PartidaControl.isDeathMatch()} is {@code getPartidaModel().isDeathMatch()}, i.e.
+     * {@code Partida.hasHabilidade(";GDM;")} against the GAME's own map only, and
+     * {@code doCarregaRelacionamentosFresh} never goes near the chaining accessor. This javadoc used
+     * to claim the chain was "how the Judge reads it", which is exactly backwards.
+     *
+     * The chain is kept because a scenario that declares a game type is describing the game, and
+     * answering "no" to it would be the worse failure. It is only reachable at all if a scenario row
+     * carries one of these codes: none of 25 sampled live EGFs does, so the divergence is latent
+     * today. The same applies to {@link #byTeam}'s reading of {@code ;GLA;}, {@code ;GSL;} and
+     * {@code ;GND;}.
      */
     private boolean isEveryoneHostile(Partida partida) {
         return partidaFacade.isDeathMatch(partida);
