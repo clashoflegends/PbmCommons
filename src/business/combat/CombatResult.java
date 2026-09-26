@@ -69,6 +69,7 @@ public class CombatResult {
     private final List<String> notes = new ArrayList<>();
     private final Map<String, Integer> noteCounts = new java.util.HashMap<>();
     private int rounds;
+    private transient business.combat.CityCombatResolver.CityResult cityResult;
 
     /**
      * What one platoon lost in one round.
@@ -225,6 +226,22 @@ public class CombatResult {
     /** Every platoon's losses, round by round, in the order they happened. */
     public List<RoundLoss> getRoundLosses() {
         return Collections.unmodifiableList(roundLosses);
+    }
+
+    /**
+     * What the city assault did, or null when no layer resolved one.
+     *
+     * Held whole rather than flattened into the per-army outcomes, because the city layer answers
+     * questions the army layer has no shape for: whether the walls held, whether the city was
+     * captured or razed, what the fortification lost to siege engines, and what each attacker took
+     * from a defender that cannot itself lose.
+     */
+    public business.combat.CityCombatResolver.CityResult getCityResult() {
+        return cityResult;
+    }
+
+    public void setCityResult(business.combat.CityCombatResolver.CityResult cityResult) {
+        this.cityResult = cityResult;
     }
 
     public int getRounds() {

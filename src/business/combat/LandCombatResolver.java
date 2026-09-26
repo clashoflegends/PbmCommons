@@ -104,26 +104,33 @@ public class LandCombatResolver {
      */
     public CombatResult resolve(CombatScenario scenario, Cenario cenario) {
         final CombatResult ret = new CombatResult();
-        // Stated on EVERY result, including the ones that resolve cleanly. A land-only answer read
-        // beside a fleet sitting on the same hex is wrong by omission, and omission is exactly what
-        // a footnote-only caveat produces. It leaves the moment the sea and city layers land.
         ret.addNote("BATTLESIM.RESULT.LANDONLY");
         if (scenario == null) {
             return ret;
         }
-        final List<ArmySim> fighters = new ArrayList<>();
-        final Map<ArmySim, ArmySim> toOriginal = new IdentityHashMap<>();
-        final Map<ArmySim, LayerParticipation> participation = scenario.getParticipation();
-        for (ArmySim original : scenario.getArmies()) {
-            final LayerParticipation part = participation.get(original);
-            if (part == null || !part.isIn(CombatLayer.ARMY)) {
-                continue;
-            }
-            final ArmySim copy = new ArmySim(original);
-            doAncoraBarcos(copy, scenario);
-            fighters.add(copy);
-            toOriginal.put(copy, original);
+        return resolve(scenario, cenario, CombatCopies.of(scenario), ret);
+    }
+
+    /**
+     * Fights the land battle on copies SOMEBODY ELSE owns, so a later layer inherits the result.
+     *
+     * This is the entry {@link CombatChain} uses, and the reason it exists is that the Judge runs
+     * every layer on ONE set of {@code ExercitoControl} objects: casualties from the army layer
+     * shrink what the city layer can bring to the walls, an army destroyed here does not assault,
+     * the one-time attack magic is spent once across all of them, and ships anchored for the land
+     * battle are gone from the troop share the city uses. A city layer handed the player's untouched
+     * setup gets every one of those wrong.
+     *
+     * @param copies the working set, already anchored. NOT the player's armies.
+     * @param ret    accumulated across layers, so one result describes the whole battle
+     */
+    CombatResult resolve(CombatScenario scenario, Cenario cenario, CombatCopies copies,
+            CombatResult ret) {
+        if (scenario == null || copies == null) {
+            return ret;
         }
+        final List<ArmySim> fighters = copies.inLayer(scenario, CombatLayer.ARMY);
+        final Map<ArmySim, ArmySim> toOriginal = copies.toOriginal();
         if (fighters.size() < 2) {
             return ret;
         }
@@ -219,7 +226,7 @@ public class LandCombatResolver {
      * A garrison keeps its ships: {@code doAncoraBarcoAll} returns early for one, since it is
      * already the thing the ships would be anchored into.
      */
-    private void doAncoraBarcos(ArmySim army, CombatScenario scenario) {
+    static void doAncoraBarcos(ArmySim army, CombatScenario scenario) {
         final boolean anchorable = scenario.getTerreno() != null
                 && scenario.getTerreno().isAncoravel();
         if (!anchorable || army.isGarrison()) {
@@ -256,7 +263,7 @@ public class LandCombatResolver {
      * it is meant to predict. Safe to zero because this is a copy - the player's own army keeps the
      * value he typed, so pressing Run twice still gives the same answer.
      */
-    private long getForcaPlus(ArmySim army, int round) {
+    long getForcaPlus(ArmySim army, int round) {
         if (round == 0) {
             // Round 0 counts ONLY a first-strike artifact, and `Artefato` carries no isFirstStrike
             // on this side of the wire, so this returns zero. Verified against a real turn rather
@@ -287,7 +294,7 @@ public class LandCombatResolver {
     }
 
     /** A combat artifact is worth its value, and anything else is worth nothing. */
-    private long combatArtifact(Personagem personagem) {
+    static long combatArtifact(Personagem personagem) {
         final Artefato artefato = personagem.getArtefatoCombateAtivo();
         return artefato != null && artefato.isCombate() ? artefato.getValor() : 0;
     }
