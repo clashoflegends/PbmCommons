@@ -306,6 +306,19 @@ public class CityCombatResolver {
      * {@code getAttack(1)}, recomputed after the walls have hit back, so this must run after the
      * casualties and not before.
      *
+     * <b>The ORDER decides a tie, and it is the hex's.</b> {@code doCityCaptured} iterates
+     * {@code atacantes}, built at 521-534 by walking {@code getExercitosAtacandoIterator()} and
+     * keeping the ones that qualify - so it is hex order, filtered. {@link #attackersOf} walks
+     * {@code copies.all()}, which is the same hex order, filtered by the same gate. With a strict
+     * {@code <} the FIRST army holding the maximum wins on both sides, so two attackers with equal
+     * attack hand the city to the same nation here as in the turn.
+     *
+     * <b>The Judge calls {@code getAttack(1)} twice per iteration</b> - once to compare at 773 and
+     * again to store at 776 - and {@code getForcaPlus} SPENDS the one-time attack magic on the
+     * first call. It is inert: every army in {@code atacantes} already spent it in the assault
+     * round, so both calls return the same number. Reproducing the double call would change
+     * nothing and would read like a rule.
+     *
      * <b>The dead are NOT skipped.</b> {@code doDebandaExercitos} runs at 746, after this, so a
      * destroyed attacker is still in {@code atacantes} and still answers {@code getAttack(1)} -
      * which is {@code getForcaPlus(1) + getArmyAttackBaseNot(";TTN;")}, and the first term survives

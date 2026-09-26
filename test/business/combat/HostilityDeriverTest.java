@@ -265,18 +265,4 @@ public class HostilityDeriverTest {
         assertFalse(m.hasCombat());
     }
 
-    @Test
-    public void cityHostilityUsesTheSameSafeReading() {
-        final Jogador me = jogador("j1");
-        final Nacao mine = myNacao("m", "Mine", me), owner = nacao("o", "Owner");
-        relate(mine, owner, -2);
-        final ArmySim army = army("me", mine);
-        final HostilityDeriver deriver = new HostilityDeriver();
-
-        assertTrue(deriver.isHostileToCity(partida(";FFA;"), army, owner, me));
-        assertFalse(deriver.isHostileToCity(partida(";FFA;"), army, mine, me),
-                "an army never assaults its own nation's city");
-        assertFalse(deriver.isHostileToCity(partida(";FFA;"), army, owner, null),
-                "with no observer there is no worst case to assume, so no assault");
-    }
 }

@@ -47,6 +47,10 @@ public class CityCombatOutcomeTest extends LandCombatFixture {
         ret.setCoordenadas("1428");
         ret.setTerreno(terreno);
         ret.setCidade(cidade);
+        // BOTH ways, as a loaded world has them: getCityDefenseCombat reaches the ground through
+        // city.getLocal(), so a city that does not know its own hex NPEs there the moment its
+        // owner has one of the four terrain habilidades.
+        cidade.setLocal(ret);
         return ret;
     }
 
@@ -158,6 +162,79 @@ public class CityCombatOutcomeTest extends LandCombatFixture {
                 "and somebody died for it: "
                 + exercitoFacade().getQtTropasTotal(survivor) + " of 900 left");
         assertEquals(900, inf.getQtd(), "on the COPY - the player's own platoon is untouched");
+    }
+
+    /**
+     * The Terrain combo has to move the CITY's defence, not just the armies'.
+     *
+     * {@code getCityDefenseCombat} reads the ground off {@code city.getLocal().getTerreno()}, and
+     * four national habilidades turn on it - {@code ;PCD;} on mountain is the one used here. The
+     * armies always honoured the override, because the platoon formula takes terrain as a
+     * parameter and {@code setTerreno} propagates it; the city did not, so a player moving the
+     * combo watched every number on screen change except the one he was attacking. A control that
+     * looks like it works is worse than one that is missing.
+     */
+    @Test
+    public void thePlayersTerrainOverrideMovesTheCityDefence() {
+        final Nacao attacker = nacao("att"), owner = nacao("own");
+        // ;PCD; doubles the defence on mountain ground
+        final Habilidade mountainDefence = new Habilidade();
+        mountainDefence.setCodigo(";PCD;");
+        mountainDefence.setNome(";PCD;");
+        mountainDefence.setValor(100);
+        owner.addHabilidade(mountainDefence);
+
+        final Local local = hexOf(PLAIN, city(owner, 3, false));
+        final CombatScenario scenario = atWar(local, attacker, owner);
+        scenario.addArmy(besiegerNamed("Besieger", attacker, local, 900),
+                CombatScenario.Provenance.EXACT);
+
+        final int onPlain = new CombatChain().resolve(scenario, null).getCityResult().getDefence();
+        scenario.setTerreno(inland());      // the fixture's mountain
+        final int onMountain =
+                new CombatChain().resolve(scenario, null).getCityResult().getDefence();
+
+        assertTrue(onMountain > onPlain,
+                "the mountain has to reach the walls: " + onPlain + " -> " + onMountain);
+        assertEquals(onPlain * 2, onMountain, ";PCD; at 100 percent doubles it");
+    }
+
+    /**
+     * Two attackers, equal strength: the city goes to the one standing FIRST on the hex.
+     *
+     * {@code doCityCaptured} compares with a strict {@code <} from a maximum of 0, walking
+     * {@code atacantes} in hex order, so the first army holding the maximum keeps it. This side
+     * walks {@code copies.all()}, which is the same order - and a tie is precisely where that
+     * stops being a detail, because the two armies belong to different nations and the city
+     * changes hands to one of them.
+     */
+    @Test
+    public void aTiedClaimGoesToTheArmyStandingFirstOnTheHex() {
+        final Nacao first = nacao("one"), second = nacao("two"), owner = nacao("own");
+        final Local local = hexOf(PLAIN, city(owner, 3, false));
+        final CombatScenario scenario = atWar(local, first, owner);
+        scenario.setRelacionamento(second, owner, RelationshipMatrix.SWORN_ENEMY);
+        // identical in every term that feeds getAttack(1)
+        final ArmySim one = besiegerNamed("Alpha", first, local, 4000);
+        final ArmySim two = besiegerNamed("Bravo", second, local, 4000);
+        scenario.addArmy(one, CombatScenario.Provenance.EXACT);
+        scenario.addArmy(two, CombatScenario.Provenance.EXACT);
+
+        final CombatResult ret = new CombatChain().resolve(scenario, null);
+
+        // a CAMP (size 1) is razed on capture rather than held, so this is a real city
+        assertEquals(CityCombatResolver.CityOutcome.CAPTURED, ret.getCityResult().getOutcome(),
+                "between them they beat the walls");
+        assertEquals(first, ret.getCityResult().getOwner().getNacao(),
+                "the tie goes to the army the hex lists first, as it does in the turn");
+    }
+
+    private static ArmySim besiegerNamed(String nome, Nacao nacao, Local local, int qtd) {
+        final ArmySim ret = army(nome, nacao, platoon(troopType("inf", 60, 40, false), qtd));
+        ret.setLocal(local);
+        ret.setCombatLevel(CombatLevel.ATTACK_CITY);
+        ret.setMoral(100);
+        return ret;
     }
 
     private static business.facade.ExercitoFacade exercitoFacade() {

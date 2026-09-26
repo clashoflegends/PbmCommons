@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import business.facade.ExercitoFacade;
+import model.Local;
 import model.Pelotao;
+import model.Terreno;
 
 /**
  * The armies the simulation actually fights with: ONE copy of each, shared by every layer.
@@ -94,12 +96,49 @@ final class CombatCopies {
         }
         final model.Cidade active = scenario.getCidadeAtiva();
         ret.city = active == null ? null : active.clone();
+        doApplyTerrainOverride(ret.city, scenario);
         for (ArmySim original : scenario.getArmies()) {
             final ArmySim copy = new ArmySim(original);
             ret.copies.add(copy);
             ret.toOriginal.put(copy, original);
         }
         return ret;
+    }
+
+    /**
+     * The city defends the ground the PLAYER chose, not the ground the EGF recorded.
+     *
+     * {@code BattleSimFacade.getCityDefenseCombat} and {@code getCityAttackCombat} read the terrain
+     * off {@code city.getLocal().getTerreno()} - the loaded world's hex - and four national
+     * habilidades turn on it: {@code ;PCD;} on mountain and {@code ;NWD;}/{@code ;NWS;} on forest
+     * and swamp for the defence, {@code ;NCM;} and {@code ;PAW;} for the sortie. So a player who
+     * moved the Terrain combo saw every army number change and the city's stay exactly where it
+     * was: a control that looks like it works.
+     *
+     * Fixed HERE rather than in the facade, because the Judge calls both methods
+     * ({@code CidadeControl:829,833}) and its terrain is never anything but the real hex. The run's
+     * city is already a copy; this points that copy at a copy of the Local carrying the chosen
+     * ground, so nothing the world owns is touched. The army side needed no fix - the platoon
+     * formula takes terrain as a parameter and {@code CombatScenario.setTerreno} propagates it to
+     * every {@code ArmySim}.
+     */
+    private static void doApplyTerrainOverride(model.Cidade city, CombatScenario scenario) {
+        final Terreno terreno = scenario.getTerreno();
+        if (city == null || terreno == null || city.getLocal() == null
+                || city.getLocal().getTerreno() == terreno) {
+            return;
+        }
+        try {
+            final Local ground = city.getLocal().clone();
+            ground.setTerreno(terreno);
+            // NOT ground.setCidade(city): Local's back-links are the same shape as the one that
+            // leaked a scenario's city into the real nation's list, and nothing here reads it.
+            city.setLocal(ground);
+        } catch (CloneNotSupportedException ex) {
+            // Leave the city on its real ground rather than mutate the world's Local. The numbers
+            // are then the EGF's, which is wrong but safe, and every other layer still honours the
+            // override.
+        }
     }
 
     /**

@@ -567,11 +567,12 @@ public class CombatScenario {
      */
     public Map<ArmySim, LayerParticipation> getParticipation() {
         final Cidade active = getCidadeAtiva();
-        // ONE table answers both layers. It used to ask deriver.isHostileToCity separately, which
-        // re-derives from the EGF and the game type WITHOUT the player's overrides - so declaring
-        // war on the city's owner in the diplomacy panel turned the grid red, made hasCombat()
-        // agree, and left the city layer reporting NOT_HOSTILE_TO_CITY. The army layer honoured his
-        // declaration and the city layer silently did not.
+        // ONE table answers both layers. There used to be a second reading for the city, deriving
+        // from the EGF and the game type WITHOUT the player's overrides - so declaring war on the
+        // city's owner in the diplomacy panel turned the grid red, made hasCombat() agree, and left
+        // the city layer reporting NOT_HOSTILE_TO_CITY. The army layer honoured his declaration and
+        // the city layer silently did not. That method is now DELETED rather than left unused: it
+        // read like the right way to ask the question, which is what made the bug easy to write.
         final RelationshipMatrix nations = getRelationships();
         final Map<ArmySim, Boolean> hostileToCity = new IdentityHashMap<>();
         for (ArmySim army : armies) {

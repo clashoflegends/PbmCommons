@@ -275,30 +275,6 @@ public class HostilityDeriver {
     }
 
     /**
-     * Is this army hostile to the owner of a city? The city-assault gate, answered by the same three
-     * sources and the same safe reading as {@link #derive}.
-     *
-     * Kept here rather than in {@link LayerParticipation} so that every relationship read in the
-     * simulator goes through one class. A caller tempted to write {@code mine.isInimigo(theirs)}
-     * inline would reintroduce exactly the silent-neutral miss this class exists to avoid.
-     *
-     * @return true when they fight; false covers both a known peace and an unresolvable pair, since
-     *         an army that cannot be shown to be hostile does not assault
-     */
-    public boolean isHostileToCity(Partida partida, IExercito army, Nacao cityOwner,
-            Jogador observer) {
-        if (army == null || cityOwner == null) {
-            return false;
-        }
-        final Nacao mine = army.getNacao();
-        if (mine == null || mine == cityOwner) {
-            return false;
-        }
-        return deriveNations(partida, Arrays.asList(mine, cityOwner), observer)
-                .isHostile(mine, cityOwner);
-    }
-
-    /**
      * A locked team game answers the WHOLE table from the team flags, for every pair, including two
      * nations the observer has nothing to do with.
      *
