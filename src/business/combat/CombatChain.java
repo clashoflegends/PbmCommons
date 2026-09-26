@@ -87,6 +87,11 @@ public class CombatChain {
         if (ret.getNoteCount("BATTLESIM.RESULT.UNKNOWNMORALE") == 0) {
             noteUnknownMorale(scenario, city, ret);
         }
+        // LAST, and over EVERY copy: the platoon table's After and Lost describe the end of the
+        // BATTLE, not the end of a layer. Taken at the end of the land layer it showed an army
+        // mauled at the walls at its pre-assault strength, and left a city-only attacker's table
+        // empty after a battle it had just fought.
+        LandCombatResolver.doSnapshotSurvivors(copies.all(), copies.toOriginal(), ret);
         return ret;
     }
 

@@ -159,6 +159,7 @@ public class LandCombatResolver {
             ret.addNote("BATTLESIM.RESULT.CAPPED");
         }
         report(scenario, fighters, toOriginal, engaged, round >= MAX_ROUNDS, ret);
+        doSnapshotSurvivors(fighters, toOriginal, ret);
         return ret;
     }
 
@@ -508,15 +509,37 @@ public class LandCombatResolver {
             ret.setOutcome(army, CombatLayer.ARMY, CombatResult.Outcome.DID_NOT_FIGHT);
         }
         for (ArmySim copy : fighters) {
+            ret.setOutcome(toOriginal.get(copy), CombatLayer.ARMY,
+                    outcomeOf(copy, engaged, capped));
+        }
+    }
+
+    /**
+     * What every platoon has LEFT at the end of the whole battle - the After and Lost columns.
+     *
+     * <b>Taken once, by the chain, after the last layer.</b> It used to be taken here, at the end of
+     * the land layer, over the land FIGHTERS only. Two things were wrong with that: an army mauled
+     * at the walls showed its pre-assault strength, so the platoon table contradicted the round
+     * table on the same screen; and an army that ONLY assaulted the city was never in {@code
+     * fighters} at all, so its platoon table stayed empty after a battle it had just fought.
+     *
+     * Ships are still skipped. They take no part ashore, and "--" is a different statement from
+     * surviving intact - the day the sea layer lands it is the sea layer's business to fill them in.
+     */
+    static void doSnapshotSurvivors(List<ArmySim> copies, Map<ArmySim, ArmySim> toOriginal,
+            CombatResult ret) {
+        for (ArmySim copy : copies) {
             final ArmySim original = toOriginal.get(copy);
+            if (original == null) {
+                continue;
+            }
             for (Pelotao was : original.getPelotoes().values()) {
                 if (was.getTipoTropa() != null && was.getTipoTropa().isBarcos()) {
-                    continue;   // ships take no part in the LAND layer - absent, not zero
+                    continue;
                 }
                 final Pelotao now = copy.getPelotoes().get(was.getCodigo());
                 ret.put(was, was.getQtd(), now == null ? 0 : now.getQtd());
             }
-            ret.setOutcome(original, CombatLayer.ARMY, outcomeOf(copy, engaged, capped));
         }
     }
 
