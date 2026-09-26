@@ -228,6 +228,23 @@ public class CombatScenario {
         return false;
     }
 
+    /**
+     * The relationships the PLAYER declared, as declared. For the transfer format.
+     *
+     * The derived {@link #getRelationships()} matrix is the wrong thing to serialise: it is built
+     * over {@link #getNacoes()}, which is the nations of the armies present plus the ACTIVE city's
+     * owner - so a nation the player has declared on but whose army is not on the hex, or whose
+     * city is switched off, silently has no row and its declaration would not travel. This is the
+     * edits themselves, which is what he actually set.
+     */
+    public Map<Nacao, Map<Nacao, Integer>> getRelationshipEdits() {
+        final Map<Nacao, Map<Nacao, Integer>> ret = new IdentityHashMap<>();
+        for (Map.Entry<Nacao, Map<Nacao, Integer>> row : relationshipEdits.entrySet()) {
+            ret.put(row.getKey(), java.util.Collections.unmodifiableMap(row.getValue()));
+        }
+        return java.util.Collections.unmodifiableMap(ret);
+    }
+
     public Partida getPartida() {
         return partida;
     }
