@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import com.thoughtworks.xstream.XStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
@@ -617,9 +618,12 @@ public class FidelityHarness {
                 "Mihke Hornug", "Barristan Selmy");
         assumeTrue(scenario != null, "hex 2442 in no EGF of that turn");
         applySpec(scenario, Arrays.asList(
-                // tactics from the turn's own orders: ambush is 5, surround is 3
-                "army|Mihke Hornug|tactic=5|moral=42",
-                "army|Barristan Selmy|tactic=3|moral=52|plus=500"));
+                // tactics from the turn's own orders: ambush is 5, surround is 3. Mihke is the one
+                // who attacked - the Judge's naval outer loop is getExercitosAtacandoIterator, so
+                // the battle happening means at least one of them did, and the ABSENCE of a land
+                // battle afterwards says which.
+                "army|Mihke Hornug|tactic=5|moral=42|level=1",
+                "army|Barristan Selmy|tactic=3|moral=52|plus=500|level=0"));
 
         final CombatResult result = new CombatChain().resolve(scenario,
                 scenario.getPartida().getCenario());
@@ -633,6 +637,15 @@ public class FidelityHarness {
         assertEquals(2, lostAtSea(result, "Barristan", "Triremes"), "and two of Barristan's");
         assertEquals(0, lostAtSea(result, "Barristan", "Cargo Ships"),
                 "the casualty order spent it all on the triremes");
+        // The turn published no land battle at 2442, and an absence is published output too.
+        // Barristan is still aboard, and temCombateTerra will not let an army ashore reach a fleet
+        // that has not landed. Asked symmetrically this fought, for 2,000 casualties that the
+        // Judge never inflicted.
+        assertEquals(0, result.getRounds(CombatLayer.ARMY),
+                "the Judge fought no land battle here");
+        // "After all ships sunk at 2442, many of the troops made to the shore. Many did not."
+        assertTrue(result.getNotes().contains("BATTLESIM.RESULT.DROWNINGUNKNOWN"),
+                "Mihke's cargo went down with the ships, and how much of it is a die roll");
     }
 
     /** By LAYER, never by round: the land battle also has a round 1 on this hex. */

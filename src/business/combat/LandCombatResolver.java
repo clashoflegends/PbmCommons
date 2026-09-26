@@ -553,16 +553,40 @@ public class LandCombatResolver {
      * sinks one side's transports changes it in the middle of the very hex it decides.
      */
     private boolean canReachAshore(ArmySim army, ArmySim other, CombatScenario scenario) {
-        final boolean afloat = exercitoFacade.isEsquadraEmbarcada(army);
-        final boolean otherAfloat = exercitoFacade.isEsquadraEmbarcada(other);
-        if (!afloat && !otherAfloat) {
-            return true;
-        }
-        if (afloat && otherAfloat) {
+        return startsIt(army, other, scenario) || startsIt(other, army, scenario);
+    }
+
+    /**
+     * {@code temCombateTerra} 1144-1173, asked of ONE attacker about ONE defender.
+     *
+     * The direction is the whole rule. The Judge's outer loop is
+     * {@code getExercitosAtacandoIterator()}, so the four embarkation cases are only ever evaluated
+     * from the side that gave the order - and two of the four say no:
+     *
+     * <ul>
+     *   <li><b>Attacker ashore, defender afloat:</b> ignored, and the Judge sends the player a
+     *       message saying so. A land army cannot reach a fleet that has not landed.</li>
+     *   <li><b>Both afloat:</b> the Judge THROWS ("combate naval deveria ter resolvido isto
+     *       antes"). Nothing to do on land.</li>
+     *   <li><b>Attacker afloat, defender ashore, anchorable ground:</b> the amphibious assault.
+     *       It fights.</li>
+     *   <li><b>Neither afloat:</b> an ordinary land battle.</li>
+     * </ul>
+     *
+     * Asking it symmetrically was wrong in a way that only showed once the sea layer ran: at 866
+     * t3 hex 2442 the naval battle sank one side's transports, leaving one army ashore and one
+     * still aboard. The Judge fought no land battle. Asked from both sides, the afloat one "could
+     * have landed" and the sim fought one, for 2,000 casualties that never happened.
+     */
+    private boolean startsIt(ArmySim attacker, ArmySim defender, CombatScenario scenario) {
+        if (attacker.getCombatLevel() == CombatLevel.DEFEND_ONLY) {
             return false;
         }
-        // Exactly one is afloat, and only the afloat one can close the distance - by landing.
-        return afloat && isAncoravel(scenario);
+        final boolean afloat = exercitoFacade.isEsquadraEmbarcada(attacker);
+        if (exercitoFacade.isEsquadraEmbarcada(defender)) {
+            return false;       // both afloat, or a land army reaching for a fleet: neither fights
+        }
+        return afloat ? isAncoravel(scenario) : true;
     }
 
     /**

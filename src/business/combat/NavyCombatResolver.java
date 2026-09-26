@@ -186,6 +186,14 @@ public class NavyCombatResolver {
             if (dano <= 0) {
                 continue;
             }
+            // KI-010, and the Judge's own comment says why: capacity and burden are read BEFORE
+            // the casualties, because once the hulls are gone getTransportesCapacity answers 0 and
+            // 0 cannot tell an escort that was carrying nobody from cargo ships that just sank.
+            // Reading it afterwards silently skipped the drowning of every army whose transports
+            // went down - which is the only army the drowning rule is about.
+            final float capacityBefore =
+                    exercitoFacade.getTransportesCapacity(fleet.getPelotoes());
+            final float burdenBefore = exercitoFacade.getTransportesBurden(fleet.getPelotoes());
             landResolver.doCasualtiesByRank(fleet, toOriginal.get(fleet), listaTropasAgua(fleet),
                     dano, round, ret, CombatLayer.NAVY);
             // getTropaQtTotal(), not the ship count: the Judge disbands on the WHOLE army being
@@ -194,7 +202,8 @@ public class NavyCombatResolver {
             if (exercitoFacade.getQtTropasTotal(fleet) <= 0) {
                 fleet.setDisband(true);
             }
-            doAfogamento(fleet, toOriginal, scenario, round, ret);
+            doAfogamento(fleet, toOriginal, scenario, capacityBefore, burdenBefore,
+                    round, ret);
         }
     }
 
@@ -225,11 +234,21 @@ public class NavyCombatResolver {
      * not resolved: see the class note.
      */
     private void doAfogamento(ArmySim fleet, Map<ArmySim, ArmySim> toOriginal,
-            CombatScenario scenario, int round, CombatResult ret) {
-        if (ships(fleet) > 0 || exercitoFacade.getQtTropasTotal(fleet) <= 0) {
+            CombatScenario scenario, float capacityBefore, float burdenBefore, int round,
+            CombatResult ret) {
+        final boolean agua = scenario.getTerreno() != null && scenario.getTerreno().isAgua();
+        if (ships(fleet) > 0) {
+            // Hulls left, but maybe not enough of them. On water the Judge throws overboard
+            // whatever no longer fits, deterministically, by weight - and it only asks this of an
+            // army that is NOT fully embarked.
+            if (agua && !exercitoFacade.isEsquadraEmbarcada(fleet)) {
+                doJettison(fleet, toOriginal, round, ret);
+            }
             return;
         }
-        final boolean agua = scenario.getTerreno() != null && scenario.getTerreno().isAgua();
+        if (exercitoFacade.getQtTropasTotal(fleet) <= 0) {
+            return;
+        }
         if (agua) {
             // Every hull lost in open water: the Judge disbands the army and removes every platoon.
             for (Pelotao pelotao : new ArrayList<>(fleet.getPelotoes().values())) {
@@ -244,13 +263,50 @@ public class NavyCombatResolver {
             ret.addNote("BATTLESIM.RESULT.DROWNED");
             return;
         }
-        if (exercitoFacade.getTransportesCapacity(fleet.getPelotoes()) <= 0) {
-            // An escort with no cargo capacity was never carrying anybody: they walk ashore.
+        if (capacityBefore <= 0f) {
+            // KI-010 case 1: an escort with no cargo capacity - a lone trireme, say - was never
+            // carrying anybody, so they were ashore all along and walk away.
             return;
         }
-        // Ashore, and it was carrying troops. 10% to 24% of each platoon, and which one the turn
-        // gets is a die roll - so the honest answer is the range, not a sample of it.
-        ret.addNote("BATTLESIM.RESULT.DROWNINGUNKNOWN");
+        // KI-010 cases 2 and 3 both roll. Which one fired changes only the bound, not the range.
+        if (burdenBefore > 0f) {
+            ret.addNote("BATTLESIM.RESULT.DROWNINGUNKNOWN");
+        }
+    }
+
+    /**
+     * Too few hulls left for the load, on water: the excess goes over the side.
+     *
+     * {@code doAfogamento}'s third top-level branch, and the one piece of the drowning rule that is
+     * pure arithmetic - platoons are dropped whole while their weight fits inside the overload, and
+     * the one that straddles it loses the fraction that does. No die anywhere.
+     */
+    private void doJettison(ArmySim fleet, Map<ArmySim, ArmySim> toOriginal, int round,
+            CombatResult ret) {
+        float over = exercitoFacade.getTransportesBurden(fleet.getPelotoes())
+                - exercitoFacade.getTransportesCapacity(fleet.getPelotoes());
+        if (over <= 0f) {
+            return;
+        }
+        for (Pelotao pelotao : new ArrayList<>(fleet.getPelotoes().values())) {
+            if (over <= 0f || pelotao.getTipoTropa() == null
+                    || pelotao.getTipoTropa().isBarcos() || pelotao.getQtd() <= 0) {
+                continue;
+            }
+            final float peso = exercitoFacade.getTransportesBurden(pelotao);
+            final int was = pelotao.getQtd();
+            final int lost = peso <= over ? was
+                    : (int) Math.min(was, Math.ceil(over / peso * was));
+            if (lost <= 0) {
+                continue;
+            }
+            pelotao.setQtd(was - lost);
+            ret.addRoundLoss(round, toOriginal.get(fleet),
+                    LandCombatResolver.originalOf(toOriginal.get(fleet), pelotao), lost,
+                    was - lost, CombatLayer.NAVY);
+            over -= peso <= over ? peso : over;
+        }
+        ret.addNote("BATTLESIM.RESULT.OVERLOADED");
     }
 
     /** {@code getForcaBasicaNaval}: the SHIPS' attack, and only the ships'. */
@@ -333,7 +389,12 @@ public class NavyCombatResolver {
             if (toOriginal.get(fleet).getNacao() == toOriginal.get(other).getNacao()) {
                 continue;
             }
-            if (matrix.isInimigo(toOriginal.get(fleet), toOriginal.get(other))) {
+            // The Judge's naval outer loop is getExercitosAtacandoIterator() too, so a pair only
+            // engages when one of them gave the order. Two fleets that are both standing off draw
+            // no blood, and on a three-way hex that is the difference between a battle and a
+            // stand-off.
+            if ((attacks(fleet) || attacks(other))
+                    && matrix.isInimigo(toOriginal.get(fleet), toOriginal.get(other))) {
                 ret.add(other);
             }
         }
@@ -376,6 +437,10 @@ public class NavyCombatResolver {
                 }
             }
         }
+    }
+
+    private static boolean attacks(ArmySim fleet) {
+        return fleet.getCombatLevel() != CombatLevel.DEFEND_ONLY;
     }
 
     private static long banked(Map<ArmySim, Long> pending, ArmySim army) {

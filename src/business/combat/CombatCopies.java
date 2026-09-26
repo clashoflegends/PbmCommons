@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import business.facade.ExercitoFacade;
 import model.Pelotao;
 
 /**
@@ -70,6 +71,7 @@ final class CombatCopies {
      * reports a different defense and possibly a different verdict with nothing changed.
      */
     private model.Cidade city;
+    private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
     /** Per copy, the ship platoons anchored out of it. The sim's hex garrison. */
     private final Map<ArmySim, SortedMap<String, Pelotao>> anchored = new IdentityHashMap<>();
 
@@ -110,6 +112,14 @@ final class CombatCopies {
             return;
         }
         for (ArmySim copy : copies) {
+            // doAncoraEsquadras' own first test: a fleet that is still aboard and was not ordered
+            // to attack does not put its boats on the beach. It matters because staying aboard is
+            // what keeps it out of the land battle - temCombateTerra will not let a land army
+            // reach a fleet that has not landed.
+            if (copy.getCombatLevel() == CombatLevel.DEFEND_ONLY
+                    && exercitoFacade.isEsquadraEmbarcada(copy)) {
+                continue;
+            }
             final SortedMap<String, Pelotao> aside =
                     LandCombatResolver.doAncoraBarcos(copy, scenario);
             if (aside.isEmpty()) {
