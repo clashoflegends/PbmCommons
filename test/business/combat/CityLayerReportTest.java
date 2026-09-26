@@ -126,6 +126,46 @@ public class CityLayerReportTest extends LandCombatFixture {
                 "the city layer starts where the land layer finished");
     }
 
+    /**
+     * The city table's last column has to be what the assault LEFT, not what went into it.
+     *
+     * A round number belongs to the resolver, and the two layers do not start counting in the same
+     * place: the land battle opens at round 0, the city assault is round 1. The table subtracted
+     * from "the round after this one" without allowing for that, so the city's only column fell one
+     * off the end of a one-round row and every casualty at the walls was dropped. On screen: a
+     * table reading 1,300 into the assault and 1,300 out of it, directly beneath a summary saying
+     * the same army had just lost 593.
+     */
+    @Test
+    public void theCityTableEndsWhereTheCasualtySummarySays() {
+        final Nacao attacker = nacao("att"), owner = nacao("own");
+        final Local local = hexWithCity(owner);
+        final CombatScenario scenario = assaultOnly(attacker, owner, local);
+        final ArmySim besieger = besieger("Besieger", attacker, local, 900);
+        scenario.addArmy(besieger, CombatScenario.Provenance.EXACT);
+
+        final CombatResult ret = new CombatChain().resolve(scenario, null);
+        final LayerReport city = LayerReport.of(scenario, ret, CombatLayer.CITY);
+
+        int lost = 0;
+        for (CombatResult.RoundLoss loss : ret.getRoundLosses()) {
+            if (loss.getLayer() == CombatLayer.CITY) {
+                lost += loss.getLost();
+            }
+        }
+        assertTrue(lost > 0, "the walls killed somebody, or this proves nothing");
+        assertEquals(city.getRemaining(besieger, 0) - lost,
+                city.getRemaining(besieger, city.getRounds()),
+                "start minus the losses IS the last column");
+        // and the platoon table, which reads the survivor snapshot, has to agree with both
+        int after = 0;
+        for (Pelotao pelotao : besieger.getPelotoes().values()) {
+            after += ret.getAfter(pelotao);
+        }
+        assertEquals(after, city.getRemaining(besieger, city.getRounds()),
+                "the two tables on one screen must not contradict each other");
+    }
+
     /** Nobody may read as "city layer not simulated" once it has been. */
     @Test
     public void everyArmyGetsACityVerdictOnceTheLayerRuns() {

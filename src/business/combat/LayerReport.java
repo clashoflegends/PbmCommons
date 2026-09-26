@@ -72,6 +72,7 @@ public class LayerReport {
         for (ArmySim army : scenario.getArmies()) {
             ret.addArmy(army, startOf(army, result, layer));
         }
+        final int base = baseRoundOf(result, layer);
         for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
             if (loss.getLayer() != layer) {
                 continue;
@@ -82,11 +83,32 @@ public class LayerReport {
             }
             // every column from this round onward drops, because the table is a running total and
             // an army that loses 200 in round 1 is 200 lighter for the rest of the battle
-            for (int col = loss.getRound() + 1; col < row.length; col++) {
+            for (int col = loss.getRound() - base + 1; col < row.length; col++) {
                 row[col] -= loss.getLost();
             }
         }
         return ret;
+    }
+
+    /**
+     * The round number this layer's FIRST column stands for.
+     *
+     * A round number is the resolver's, not the table's, and the two layers do not start counting
+     * in the same place: the land battle's first exchange is round 0, but the city assault is round
+     * 1 - deliberately, because {@code getForcaPlus} answers zero at round 0 and the siege round
+     * occupies it. Subtracting the base is what lets one table shape serve both. Without it the
+     * city's only column fell one off the end of a one-round row and every casualty at the walls
+     * was silently dropped: a table showing 1,300 into the assault and 1,300 out of it, beside a
+     * summary saying the same army had lost 593.
+     */
+    private static int baseRoundOf(CombatResult result, CombatLayer layer) {
+        int ret = Integer.MAX_VALUE;
+        for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
+            if (loss.getLayer() == layer) {
+                ret = Math.min(ret, loss.getRound());
+            }
+        }
+        return ret == Integer.MAX_VALUE ? 0 : ret;
     }
 
     /**
