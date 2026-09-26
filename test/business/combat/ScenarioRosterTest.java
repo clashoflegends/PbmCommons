@@ -105,8 +105,9 @@ public class ScenarioRosterTest {
         from.getRelacionamentos().put(to, valor);
     }
 
+    /** One node per nation, its own armies under it, its own troop total. */
     @Test
-    public void myArmiesAndMyEnemiesLandInTheRightNodes() {
+    public void armiesAreGroupedByTheNationThatOwnsThem() {
         final Jogador me = jogador("j1");
         final Nacao mine = nacao("m", me), foe = nacao("f", null);
         relate(mine, foe, -2);
@@ -114,148 +115,129 @@ public class ScenarioRosterTest {
         final CombatScenario s = new CombatScenario(partida(";FFA;"), local());
         s.setObserver(me);
         final ArmySim ours = army("ours", mine, platoon(troopType("inf", false), 900));
+        final ArmySim more = army("more", mine, platoon(troopType("inf2", false), 100));
         final ArmySim theirs = army("theirs", foe, platoon(troopType("einf", false), 500));
-        s.addArmy(ours, CombatScenario.Provenance.EXACT);
-        s.addArmy(theirs, CombatScenario.Provenance.ESTIMATED);
+        for (ArmySim one : new ArmySim[]{ours, more, theirs}) {
+            s.addArmy(one, CombatScenario.Provenance.ESTIMATED);
+        }
 
         final ScenarioRoster roster = ScenarioRoster.of(s);
 
-        assertEquals(ScenarioRoster.Group.MINE, roster.getGroup(ours));
-        assertEquals(ScenarioRoster.Group.FIGHTING_AGAINST_ME, roster.getGroup(theirs));
-        assertEquals(Arrays.asList(ScenarioRoster.Group.MINE,
-                ScenarioRoster.Group.FIGHTING_AGAINST_ME),
-                roster.getGroups(), "empty groups are not tree nodes");
-        assertEquals(900, roster.getQtTropas(ScenarioRoster.Group.MINE));
-        assertEquals(500, roster.getQtTropas(ScenarioRoster.Group.FIGHTING_AGAINST_ME));
+        assertEquals(Arrays.asList(mine, foe), roster.getNacoes(), "hex order, and no duplicates");
+        assertEquals(Arrays.asList(ours, more), roster.getArmies(mine));
+        assertEquals(Arrays.asList(theirs), roster.getArmies(foe));
+        assertEquals(1000, roster.getQtTropas(mine));
+        assertEquals(500, roster.getQtTropas(foe));
     }
 
     /**
-     * Fighting WITH me is read off the matrix like everything else: it is not hostile to me, and it
-     * is hostile to something that is. No alliance, no team, no loaded file comes into it.
+     * Each nation node carries who it fights, and that is not optional decoration.
+     *
+     * The four me-relative groups this replaced were the ONLY place in the window that said who
+     * fights whom. Dropping them without this would have been a loss, not a simplification.
      */
     @Test
-    public void anArmyFightingMyEnemyIsFightingWithMe() {
-        final Jogador me = jogador("j1");
-        final Nacao mine = nacao("m", me), foe = nacao("f", null), friend = nacao("a", null);
-        relate(mine, foe, -2);
-        relate(mine, friend, 2);
+    public void eachNationNodeNamesTheNationsItFightsHere() {
+        final Nacao one = nacao("one", null), two = nacao("two", null), bystander = nacao("by", null);
+        relate(one, two, -2);
 
-        final CombatScenario s = new CombatScenario(partida(";FFA;"), local());
-        s.setObserver(me);
-        final ArmySim ours = army("ours", mine, platoon(troopType("inf", false), 900));
-        final ArmySim enemy = army("enemy", foe, platoon(troopType("einf", false), 500));
-        final ArmySim other = army("other", friend, platoon(troopType("ainf", false), 300));
-        s.addArmy(ours, CombatScenario.Provenance.EXACT);
-        s.addArmy(enemy, CombatScenario.Provenance.ESTIMATED);
-        s.addArmy(other, CombatScenario.Provenance.ESTIMATED);
+        // ;SPD;, because a FOREIGN row is only believed under public diplomacy - otherwise
+        // HostilityDeriver cannot prove it complete and the pair falls to the assumed default.
+        // The grouping is what is under test here, not the derivation.
+        final CombatScenario s = new CombatScenario(partida(";FFA;,;SPD;"), local());
+        s.addArmy(army("a", one, platoon(troopType("i1", false), 100)),
+                CombatScenario.Provenance.ESTIMATED);
+        s.addArmy(army("b", two, platoon(troopType("i2", false), 100)),
+                CombatScenario.Provenance.ESTIMATED);
+        s.addArmy(army("c", bystander, platoon(troopType("i3", false), 100)),
+                CombatScenario.Provenance.ESTIMATED);
 
-        // Nothing in my EGF says whether the third nation fights my enemy, and two factions I
-        // cannot read are assumed FRIENDLY with each other - the worst case for me is that neither
-        // of them is distracted by the other. So it is not fighting with me, yet.
-        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(other));
+        final ScenarioRoster roster = ScenarioRoster.of(s);
 
-        // the matrix is the law, and the player may state it
-        s.setHostile(other, enemy, true);
-
-        assertEquals(ScenarioRoster.Group.FIGHTING_WITH_ME, ScenarioRoster.of(s).getGroup(other));
-        assertEquals(300, ScenarioRoster.of(s).getQtTropas(ScenarioRoster.Group.FIGHTING_WITH_ME));
+        assertEquals(Arrays.asList(two), roster.getEnemies(one));
+        assertEquals(Arrays.asList(one), roster.getEnemies(two),
+                "hostility is the OR of both directions, as the Judge reads it");
+        assertTrue(roster.getEnemies(bystander).isEmpty(),
+                "a nation at war with nobody here gets no clause at all");
     }
 
-    /** A friendly relationship on its own puts nobody in the battle. */
+    /**
+     * THE REGRESSION THIS CHANGE EXISTS FOR: with no army of the observer's own, the tree still
+     * names both nations and the war between them.
+     *
+     * It used to collapse into one node headed "Not fighting me" over a battle it was simulating -
+     * game 802 turn 40 hex 1530, watched by a third party, was exactly that.
+     */
     @Test
-    public void beingOnGoodTermsWithMeIsNotFightingWithMe() {
+    public void aBattleTheObserverIsNotInStillReadsAsTwoNationsAtWar() {
         final Jogador me = jogador("j1");
-        final Nacao mine = nacao("m", me), friend = nacao("a", null);
-        relate(mine, friend, 2);
+        final Nacao one = nacao("one", null), two = nacao("two", null);
+        relate(one, two, -2);
+
+        final CombatScenario s = new CombatScenario(partida(";FFA;,;SPD;"), local());
+        s.setObserver(me);          // owns neither nation on this hex
+        final ArmySim a = army("a", one, platoon(troopType("i1", false), 400));
+        final ArmySim b = army("b", two, platoon(troopType("i2", false), 600));
+        s.addArmy(a, CombatScenario.Provenance.ESTIMATED);
+        s.addArmy(b, CombatScenario.Provenance.ESTIMATED);
+
+        final ScenarioRoster roster = ScenarioRoster.of(s);
+
+        assertEquals(2, roster.getNacoes().size(), "two nations, two nodes - not one bucket");
+        assertEquals(Arrays.asList(two), roster.getEnemies(one));
+        assertEquals(400, roster.getQtTropas(one));
+        assertEquals(600, roster.getQtTropas(two));
+        assertTrue(s.hasCombat(), "and they really are fighting");
+    }
+
+    /** A player's declaration reaches the nation nodes, and survives a rebuild. */
+    @Test
+    public void aPlayerEditOutranksTheDerivationAndSurvivesRebuilds() {
+        final Jogador me = jogador("j1");
+        final Nacao mine = nacao("m", me), foe = nacao("f", null);
 
         final CombatScenario s = new CombatScenario(partida(";FFA;"), local());
         s.setObserver(me);
         s.addArmy(army("ours", mine, platoon(troopType("inf", false), 900)),
                 CombatScenario.Provenance.EXACT);
-        final ArmySim other = army("other", friend, platoon(troopType("ainf", false), 300));
-        s.addArmy(other, CombatScenario.Provenance.ESTIMATED);
+        s.addArmy(army("theirs", foe, platoon(troopType("einf", false), 500)),
+                CombatScenario.Provenance.ESTIMATED);
 
-        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(other));
-    }
+        // Nothing can be read about the foreign nation, and the last-resort default is deliberately
+        // the worst case FOR THE OBSERVER - so they start out assumed hostile, not assumed at peace.
+        assertEquals(Arrays.asList(foe), ScenarioRoster.of(s).getEnemies(mine),
+                "unreadable, so assumed against him");
 
-    /**
-     * Watching someone else's battle. With no army of the observer's own there is no "me" to be with
-     * or against, so everyone is outside his battle - and the fight between them is still reported.
-     */
-    @Test
-    public void withNoArmyOfMyOwnNobodyIsWithOrAgainstMe() {
-        final Jogador me = jogador("j1");
-        final Nacao x = nacao("x", null), y = nacao("y", null);
-        final CombatScenario s = new CombatScenario(partida(";GDM;"), local());
-        s.setObserver(me);
-        final ArmySim one = army("one", x, platoon(troopType("xinf", false), 900));
-        final ArmySim two = army("two", y, platoon(troopType("yinf", false), 500));
-        s.addArmy(one, CombatScenario.Provenance.ESTIMATED);
-        s.addArmy(two, CombatScenario.Provenance.ESTIMATED);
-
-        final ScenarioRoster roster = ScenarioRoster.of(s);
-
-        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, roster.getGroup(one));
-        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, roster.getGroup(two));
-        assertTrue(s.hasCombat(), "they are still fighting each other, just not me");
-        assertTrue(s.getMatrix().isInimigo(one, two));
-    }
-
-    /**
-     * The player outranks the derivation. "Suppose he declares on me this turn" is a legitimate
-     * what-if, and the edit has to survive the matrix being rebuilt - which it is, on every call.
-     */
-    @Test
-    public void aPlayerEditOutranksTheDerivationAndSurvivesRebuilds() {
-        final Jogador me = jogador("j1");
-        final Nacao mine = nacao("m", me), other = nacao("x", null);
-
-        // A STATED peace, so the baseline is a read fact rather than an absence: since 2026-09-21
-        // an unread pair is assumed hostile, and this test is about the player's edit outranking a
-        // derivation, not about what the default happens to be.
-        relate(mine, other, 0);
-
-        final CombatScenario s = new CombatScenario(partida(";FFA;"), local());
-        s.setObserver(me);
-        final ArmySim ours = army("ours", mine, platoon(troopType("inf", false), 900));
-        final ArmySim theirs = army("theirs", other, platoon(troopType("xinf", false), 500));
-        s.addArmy(ours, CombatScenario.Provenance.EXACT);
-        s.addArmy(theirs, CombatScenario.Provenance.ESTIMATED);
-
-        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(theirs));
-
-        s.setHostile(ours, theirs, true);
-
-        assertEquals(ScenarioRoster.Group.FIGHTING_AGAINST_ME, ScenarioRoster.of(s).getGroup(theirs));
-        assertEquals(HostilityMatrix.Origin.PLAYER_EDITED, s.getMatrix().getOrigin(ours, theirs));
-        assertEquals(1, s.getEditedCount());
-        assertTrue(s.getMatrix().isInimigo(ours, theirs), "still there on a second rebuild");
+        s.setRelacionamento(mine, foe, RelationshipMatrix.NEUTRAL);
+        s.setRelacionamento(foe, mine, RelationshipMatrix.NEUTRAL);
+        assertTrue(ScenarioRoster.of(s).getEnemies(mine).isEmpty(),
+                "the player said otherwise, and the roster is rebuilt from the matrix every time");
 
         s.clearHostilityEdits();
-
-        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(theirs));
-        assertEquals(0, s.getEditedCount());
+        assertEquals(Arrays.asList(foe), ScenarioRoster.of(s).getEnemies(mine),
+                "reset puts the assumption back");
     }
 
-    /** An edit can also call off a fight the rules would impose. */
+    /** And peace can be declared even where the game type says everyone fights. */
     @Test
     public void aPlayerEditCanMakePeaceInADeathMatch() {
-        final Jogador me = jogador("j1");
+        final Nacao mine = nacao("m", null), foe = nacao("f", null);
+
         final CombatScenario s = new CombatScenario(partida(";GDM;"), local());
-        s.setObserver(me);
-        final ArmySim ours = army("ours", nacao("m", me), platoon(troopType("inf", false), 900));
-        final ArmySim theirs = army("theirs", nacao("f", null), platoon(troopType("einf", false), 500));
-        s.addArmy(ours, CombatScenario.Provenance.EXACT);
-        s.addArmy(theirs, CombatScenario.Provenance.ESTIMATED);
+        s.addArmy(army("ours", mine, platoon(troopType("inf", false), 900)),
+                CombatScenario.Provenance.EXACT);
+        s.addArmy(army("theirs", foe, platoon(troopType("einf", false), 500)),
+                CombatScenario.Provenance.ESTIMATED);
 
-        assertTrue(s.getMatrix().isInimigo(ours, theirs));
+        assertEquals(Arrays.asList(foe), ScenarioRoster.of(s).getEnemies(mine),
+                "a Death Match makes every pair hostile by construction");
 
-        s.setHostile(ours, theirs, false);
-
-        assertFalse(s.getMatrix().isInimigo(ours, theirs));
-        assertFalse(s.hasCombat(), "nobody left to fight");
-        assertEquals(ScenarioRoster.Group.NOT_FIGHTING_ME, ScenarioRoster.of(s).getGroup(theirs));
+        s.setRelacionamento(mine, foe, RelationshipMatrix.NEUTRAL);
+        s.setRelacionamento(foe, mine, RelationshipMatrix.NEUTRAL);
+        assertTrue(ScenarioRoster.of(s).getEnemies(mine).isEmpty(),
+                "and the player still outranks it");
     }
+
 
     @Test
     public void aDeathMatchNeedsNoRowsAndGuessesNothing() {

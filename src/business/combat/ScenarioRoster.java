@@ -3,169 +3,127 @@ package business.combat;
 import business.facade.ExercitoFacade;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import model.Nacao;
 
 /**
- * The roster tree's shape: my armies, the ones fighting with me, the ones fighting against me, and
- * the ones not fighting me.
+ * The roster tree's shape: one node per NATION on the hex, its armies under it, and who it fights.
  *
- * <h3>The matrix is the only input</h3>
+ * <h3>It used to group by relation to the player, and that was wrong</h3>
  *
- * Every answer here comes from {@link HostilityMatrix} and nothing else. Not from teams, not from
- * alliances, not from whose file is loaded, not from any notion of a "side". Those are constructs
- * that exist outside a battle and are irrelevant inside one: the Judge itself does not model sides,
- * it gives each army a list of enemies it takes damage from, and that list is the whole of it. A hex
- * with thirteen mutually hostile nations has thirteen armies that each fight twelve others, and
- * naming that "thirteen sides" adds nothing.
+ * The four groups were MINE, FIGHTING_WITH_ME, FIGHTING_AGAINST_ME and NOT_FIGHTING_ME. They read
+ * well while the player was always in the fight, and they fell apart the moment he was not: with no
+ * army of his own on the hex there is no "me", so every army landed in NOT_FIGHTING_ME and the tree
+ * showed a single node headed <i>"Not fighting me (28,594)"</i> over a battle it was actively
+ * simulating. Game 802 turn 40 hex 1530, watched by a third party, is exactly that.
  *
- * So this class does not partition anything. It answers one question per army, against the matrix,
- * from the observer's point of view, and the observer's point of view is the only thing that makes
- * "with" and "against" mean anything at all.
+ * John, 2026-09-23: <i>"The narrative might be different, but the battle outcome/casualties will be
+ * the same. Judge's math is POV agnostic. We can drop the POV view from BattleSim if it simplifies
+ * things."</i> It does. The observer decides which numbers arrive pre-filled - that is provenance,
+ * and it stays - but it decides nothing about the answer, so it has no business shaping the tree.
  *
- * <h3>Why the fourth group is "not fighting ME"</h3>
+ * <h3>Nation is the honest grouping, and it is the Judge's own</h3>
  *
- * The four categories are the player's own: mine, with me, against me, not fighting. The last is
- * written as NOT_FIGHTING_ME because that is what it can actually test. An army with no enemies at
- * all and an army busy with a private war against a third party are both outside the player's
- * battle, and the roster has no basis for separating them - the second one IS fighting, so calling
- * it "not fighting" would be false. Its enemies are listed on its own row, which is where that
- * information belongs.
+ * This class's previous javadoc already argued most of the way there: the Judge "does not model
+ * sides, it gives each army a list of enemies it takes damage from, and that list is the whole of
+ * it", and naming a crowded hex "thirteen sides" adds nothing. One node per nation with its enemies
+ * on it IS that structure, and it reads identically whether or not the player has an army present.
  *
- * <h3>With no army of the observer's own present</h3>
+ * <h3>The enemies have to come with it</h3>
  *
- * Nothing special happens, deliberately. "With me" and "against me" are empty because there is no
- * "me", so every army lands in NOT_FIGHTING_ME and its own enemy list carries the battle. Watching
- * two other nations fight over a hex is a legitimate use and it reports the fight correctly.
+ * Dropping the four groups would otherwise LOSE information rather than simplify: they were the only
+ * place in the whole window that said who fights whom. Nothing else shows it - the army editor
+ * answers per LAYER, and the full matrix lives behind the Diplomacy button. So a nation node carries
+ * {@link #getEnemies}, the matrix projected onto the nations actually present, which is the same
+ * fact the four groups were encoding and is now stated directly instead of relative to somebody.
  */
 public class ScenarioRoster {
 
-    /** Where an army sits relative to the player at the keyboard. Derived, never assigned. */
-    public enum Group {
-        /** The observer's own. */
-        MINE,
-        /** Not hostile to the observer, and hostile to something that IS hostile to the observer. */
-        FIGHTING_WITH_ME,
-        /** Hostile to at least one of the observer's armies here. */
-        FIGHTING_AGAINST_ME,
-        /**
-         * Everyone else: outside the observer's battle.
-         *
-         * Not an error state, and not a claim that the army is idle. In a free-for-all this is where
-         * most of a crowded hex lives.
-         */
-        NOT_FIGHTING_ME
-    }
-
     private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
 
-    private final Map<Group, List<ArmySim>> byGroup = new EnumMap<>(Group.class);
-    private final Map<ArmySim, Group> ofArmy = new IdentityHashMap<>();
+    /**
+     * Identity-keyed and insertion-ordered, both deliberately.
+     *
+     * Identity because {@code Nacao} inherits {@code BaseModel.compareTo}, which orders by codigo
+     * and would collapse two distinct nations that happen to share one. Insertion order because it
+     * is the hex's own order: sorting by strength would be friendlier to read once and useless to
+     * read twice, since a row would move every time the player edited a quantity.
+     */
+    private final Map<Nacao, List<ArmySim>> byNacao = new IdentityHashMap<>();
+    private final List<Nacao> order = new ArrayList<>();
+    private final Map<Nacao, List<Nacao>> enemies = new IdentityHashMap<>();
 
     private ScenarioRoster() {
-        for (Group group : Group.values()) {
-            byGroup.put(group, new ArrayList<ArmySim>());
-        }
     }
 
     /**
-     * Groups a scenario's armies.
+     * Groups a scenario's armies by the nation that owns them.
      *
-     * Order within a group is load order, which is the hex's own order. Deliberately not sorted by
-     * strength: the roster is a map of who is present, and re-ordering it as the player edits would
-     * make rows move under the cursor.
+     * An army with no nation is not dropped - it gets its own node under a null key, because losing
+     * a row is worse than an odd-looking one and {@code ScenarioLoader} forces a stand-in owner
+     * precisely so this should not happen.
      */
     public static ScenarioRoster of(CombatScenario scenario) {
         final ScenarioRoster ret = new ScenarioRoster();
         if (scenario == null) {
             return ret;
         }
-        final List<ArmySim> armies = scenario.getArmies();
-        final HostilityMatrix matrix = scenario.getMatrix();
-        final List<ArmySim> mine = new ArrayList<>();
-        for (ArmySim army : armies) {
-            if (isMine(army, scenario)) {
-                mine.add(army);
-            }
+        for (ArmySim army : scenario.getArmies()) {
+            ret.put(army.getNacao(), army);
         }
-        final List<ArmySim> againstMe = new ArrayList<>();
-        for (ArmySim army : armies) {
-            if (!isMine(army, scenario) && isHostileToAny(matrix, army, mine)) {
-                againstMe.add(army);
+        final RelationshipMatrix relations = scenario.getRelationships();
+        for (Nacao one : ret.order) {
+            final List<Nacao> hostile = new ArrayList<>();
+            for (Nacao other : ret.order) {
+                if (one != other && one != null && other != null
+                        && relations.isHostile(one, other)) {
+                    hostile.add(other);
+                }
             }
-        }
-        for (ArmySim army : armies) {
-            ret.put(army, groupOf(army, scenario, mine, againstMe, matrix));
+            ret.enemies.put(one, hostile);
         }
         return ret;
     }
 
-    private static Group groupOf(ArmySim army, CombatScenario scenario, List<ArmySim> mine,
-            List<ArmySim> againstMe, HostilityMatrix matrix) {
-        if (isMine(army, scenario)) {
-            return Group.MINE;
+    private void put(Nacao nacao, ArmySim army) {
+        List<ArmySim> armies = byNacao.get(nacao);
+        if (armies == null) {
+            armies = new ArrayList<>();
+            byNacao.put(nacao, armies);
+            order.add(nacao);
         }
-        if (isHostileToAny(matrix, army, mine)) {
-            return Group.FIGHTING_AGAINST_ME;
-        }
-        // It fights someone who is fighting me, and it is not fighting me. That is the whole of
-        // what "with me" can mean, and it is read off the matrix like everything else. With no
-        // army of my own present againstMe is empty, so this cannot fire, which is correct.
-        if (isHostileToAny(matrix, army, againstMe)) {
-            return Group.FIGHTING_WITH_ME;
-        }
-        return Group.NOT_FIGHTING_ME;
+        armies.add(army);
     }
 
-    private static boolean isHostileToAny(HostilityMatrix matrix, ArmySim army,
-            List<ArmySim> others) {
-        for (ArmySim other : others) {
-            if (matrix.isInimigo(army, other)) {
-                return true;
-            }
-        }
-        return false;
+    /** Every nation with an army here, in the hex's own order. The tree's nodes. */
+    public List<Nacao> getNacoes() {
+        return Collections.unmodifiableList(order);
     }
 
-    private static boolean isMine(ArmySim army, CombatScenario scenario) {
-        final Nacao nacao = army.getNacao();
-        return nacao != null && scenario.getObserver() != null
-                && nacao.getOwner() == scenario.getObserver();
+    /** This nation's armies, in load order. */
+    public List<ArmySim> getArmies(Nacao nacao) {
+        final List<ArmySim> ret = byNacao.get(nacao);
+        return ret == null ? Collections.<ArmySim>emptyList() : Collections.unmodifiableList(ret);
     }
 
-    private void put(ArmySim army, Group group) {
-        byGroup.get(group).add(army);
-        ofArmy.put(army, group);
+    /**
+     * Who this nation fights, among the nations ON THIS HEX.
+     *
+     * Scoped to the hex because the node is about this battle: a war with somebody who is not here
+     * changes nothing about what happens on this ground, and listing it would pad every row with
+     * diplomacy the player did not ask about. Empty is a real and common answer.
+     */
+    public List<Nacao> getEnemies(Nacao nacao) {
+        final List<Nacao> ret = enemies.get(nacao);
+        return ret == null ? Collections.<Nacao>emptyList() : Collections.unmodifiableList(ret);
     }
 
-    /** Groups that actually hold an army, in enum order. An empty group is not a tree node. */
-    public List<Group> getGroups() {
-        final List<Group> ret = new ArrayList<>();
-        for (Group group : Group.values()) {
-            if (!byGroup.get(group).isEmpty()) {
-                ret.add(group);
-            }
-        }
-        return ret;
-    }
-
-    public List<ArmySim> getArmies(Group group) {
-        return Collections.unmodifiableList(byGroup.get(group));
-    }
-
-    /** An army the roster never saw is outside the battle, the group that claims least. */
-    public Group getGroup(ArmySim army) {
-        final Group ret = ofArmy.get(army);
-        return ret == null ? Group.NOT_FIGHTING_ME : ret;
-    }
-
-    /** Running troop total for a group node, as in the wireframe's right-hand column. */
-    public int getQtTropas(Group group) {
+    /** Running troop total for a nation node, as in the wireframe's right-hand column. */
+    public int getQtTropas(Nacao nacao) {
         int ret = 0;
-        for (ArmySim army : byGroup.get(group)) {
+        for (ArmySim army : getArmies(nacao)) {
             ret += exercitoFacade.getQtTropasTotal(army);
         }
         return ret;
