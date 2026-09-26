@@ -86,14 +86,33 @@ public class LandCombatResolver {
     private static final int MAX_ROUNDS = 100;
 
     /**
-     * An NPC travelling with a commander is worth its commander skill times this.
+     * What a travelling NPC adds to an army's attack, HERE: nothing. T-808, decision D-10.
      *
-     * {@code NpcBase.getBonusCombate()} is {@code getComandante() * 100}, and it is VITALITY
-     * INDEPENDENT - a wounded dragon is worth exactly what a healthy one is. Verified at 811 t58
-     * hex 1630, where the gap between the sim and the turn in round 1 was 34,600 to the troop,
-     * which is Vhagar at skill 346.
+     * <h3>Withheld by design, not missing by accident</h3>
+     *
+     * NPC combat impact is one of the few things the game deliberately keeps private (John,
+     * 2026-09-18, amending the parity target to "roughly 97 percent": "we don't want to give away
+     * the few secrets such as NPCs behaviours and the calculation details of their impact in
+     * combat"). This class is in PUBLIC PbmCommons, read by external collaborators, so the formula
+     * cannot live here - and it did, spelled out, along with a worked magnitude. That is what this
+     * removes.
+     *
+     * <h3>The player is not left stuck</h3>
+     *
+     * He is left INFORMED, which is the same seam an enemy commander's combat artifact already
+     * uses: the result discloses the exclusion, and the army's **Attack bonus** field is where he
+     * types what he believes it is worth. A number he supplied is honest; a number this class
+     * derived from a private formula would be neither honest nor private.
+     *
+     * <h3>What this costs, stated plainly</h3>
+     *
+     * A battle with a dragon in it forecasts low until he fills that in. The gap is large - it was
+     * the single biggest term in one checked battle. Design 6.1 is also candid that the protection
+     * is weak: a deterministic simulator plus a published turn makes a flat additive term
+     * recoverable by subtraction, so this buys friction rather than secrecy. That trade is John's
+     * and it is recorded as D-10; if it moves, this constant and its disclosure move with it.
      */
-    private static final int NPC_COMBAT_PER_SKILL = 100;
+    private static final int NPC_COMBAT_CONTRIBUTION = 0;
 
     private static final BattleSimFacade battleSimFacade = new BattleSimFacade();
     private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
@@ -333,16 +352,14 @@ public class LandCombatResolver {
         }
         ret += combatArtifact(comandante);
         // Characters travelling WITH the commander, which is what getLiderados() holds - the same
-        // set the Judge walks as getPersonagemViajandoIterator(). A dragon is the big one: its
-        // bonus is commander skill x 100, and at 811 t58 Vhagar was worth 34,600 to an army whose
-        // whole troop attack was 197,000.
+        // set the Judge walks as getPersonagemViajandoIterator(). A PLAYER character contributes
+        // its combat artifact; an NPC contributes nothing here, and the result says so - see
+        // NPC_COMBAT_CONTRIBUTION.
         for (Personagem traveller : comandante.getLiderados().values()) {
             if (traveller == null || traveller.isRefem()) {
                 continue;
             }
-            ret += traveller.isNpc()
-                    ? (long) traveller.getPericiaComandante() * NPC_COMBAT_PER_SKILL
-                    : combatArtifact(traveller);
+            ret += traveller.isNpc() ? NPC_COMBAT_CONTRIBUTION : combatArtifact(traveller);
         }
         return ret;
     }

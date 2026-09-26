@@ -57,6 +57,7 @@ public class CombatChain {
             return ret;
         }
         final CombatCopies copies = CombatCopies.of(scenario);
+        doNoteWhatIsWithheld(scenario, ret);
 
         // NOBODY has fought the sea or the city yet. Seeded BEFORE any layer, because a null
         // outcome MEANS "not simulated" - so without this the defending garrison, every neutral
@@ -106,6 +107,34 @@ public class CombatChain {
         LandCombatResolver.doSnapshotSurvivors(copies.all(), copies.toOriginal(),
                 copies.anchored(), foughtAtSea, ret);
         return ret;
+    }
+
+    /**
+     * What this result leaves out ON PURPOSE, said before a single number is computed. T-804/T-808/T-815.
+     *
+     * Two different kinds of thing live in the result's notes and they must not read as one list:
+     *
+     * <ul>
+     *   <li><b>What can move these numbers</b> - per-run caveats that SHRINK as the work lands. An
+     *       unknown morale is fixed by typing one; the drowning estimate goes away when T-817
+     *       does. These are added by the layers as they run.</li>
+     *   <li><b>Withheld by design</b> - added here, and this list never empties. It is not a gap to
+     *       be closed later; it is the game keeping its secrets, and a player who cannot tell the
+     *       two apart will wait forever for one of them to be fixed.</li>
+     * </ul>
+     *
+     * Computed, never defaulted: each line appears only when the thing it describes is actually on
+     * this hex, so an empty list means "nothing was withheld here" rather than "nobody checked".
+     */
+    private void doNoteWhatIsWithheld(CombatScenario scenario, CombatResult ret) {
+        if (scenario.hasWithheldNpcContribution()) {
+            ret.addNote("BATTLESIM.WITHHELD.NPC");
+        }
+        if (scenario.isCityCombatOtherEngine()) {
+            // NOT a caveat about precision - a statement that the wrong engine is being modelled.
+            // It belongs with the withheld list because the player cannot fix it either.
+            ret.addNote("BATTLESIM.WITHHELD.OTHERENGINE");
+        }
     }
 
     /**

@@ -183,6 +183,51 @@ public class CombatScenario {
         return ret;
     }
 
+    /**
+     * Does this game resolve CITY battles with the OTHER engine family? T-815.
+     *
+     * <h3>It is knowable, and it is per GAME</h3>
+     *
+     * `OrdemJudgeFactory` builds a `MilestoneCityCombats` - which runs `CombatCity`, the NEW
+     * engine - when the scenario carries an order row named `MilestoneCityCombates`. Those rows
+     * ride the EGF in `Cenario.getOrdens()`, so the simulator can tell rather than guess. Checked:
+     * game 866's scenario has `MilestoneCombates` and NOT the city one, which is why its assault at
+     * Summerhall resolved through `CombateTmpbm` and why validating against it was sound.
+     *
+     * <h3>Why it has to be said out loud</h3>
+     *
+     * This whole layer models `CombateTmpbm`. In a game that runs the milestone, every army sitting
+     * in an enemy city is resolved by a DIFFERENT engine with a different resolution model - and
+     * the simulator would answer confidently and be modelling the wrong thing, with nothing on
+     * screen to say so. Being wrong is recoverable; being wrong silently is not.
+     */
+    public boolean isCityCombatOtherEngine() {
+        return CombatEngines.isOtherFamily(partida);
+    }
+
+    /**
+     * Is any army here travelling with an NPC whose combat contribution is withheld? T-808.
+     *
+     * The contribution itself is deliberately zero here - see
+     * {@code LandCombatResolver.NPC_COMBAT_CONTRIBUTION} - so this is what turns a silent omission
+     * into a stated one. Scoped to armies that have a commander, because a garrison has none and
+     * therefore nobody travelling with it.
+     */
+    public boolean hasWithheldNpcContribution() {
+        for (ArmySim army : armies) {
+            final model.Personagem comandante = army.getComandanteModel();
+            if (comandante == null) {
+                continue;
+            }
+            for (model.Personagem traveller : comandante.getLiderados().values()) {
+                if (traveller != null && traveller.isNpc() && !traveller.isRefem()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public Partida getPartida() {
         return partida;
     }
