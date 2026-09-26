@@ -684,6 +684,56 @@ public class FidelityHarness {
         return ret;
     }
 
+    /**
+     * A REAL battle, written to a REAL file, read back, and re-fought to the same numbers. T-845.
+     *
+     * The unit tests round-trip a string. This rounds the whole thing through the disk in UTF-8
+     * with a genuine EGF's data - accented nation names, a scenario's own troop codes, a city - and
+     * then RE-RUNS the battle, because the only claim worth making about a save file is that the
+     * ally who opens it sees what the sender saw. Comparing the XML would not prove that; comparing
+     * the casualties does.
+     */
+    @Test
+    public void aSavedBattleReopensToTheSameNumbers() throws Exception {
+        final CombatScenario scenario = loadFromAnyPlayer("866_GoT12c_866", "002", "2442",
+                "Mihke Hornug", "Barristan Selmy");
+        assumeTrue(scenario != null, "hex 2442 in no EGF of that turn");
+        applySpec(scenario, Arrays.asList(
+                "army|Mihke Hornug|tactic=5|moral=42|level=1",
+                "army|Barristan Selmy|tactic=3|moral=52|plus=500|level=0"));
+        final CombatResult before = new CombatChain().resolve(scenario,
+                scenario.getPartida().getCenario());
+
+        final java.io.File file = java.io.File.createTempFile("battlesim", ".bsim");
+        file.deleteOnExit();
+        java.nio.file.Files.write(file.toPath(),
+                BattleSimTransfer.write(scenario).getBytes(StandardCharsets.UTF_8));
+        final String read = new String(java.nio.file.Files.readAllBytes(file.toPath()),
+                StandardCharsets.UTF_8);
+
+        final java.util.SortedMap<String, model.Nacao> nacoes = new java.util.TreeMap<>();
+        for (ArmySim army : scenario.getArmies()) {
+            nacoes.put(army.getNacao().getCodigo(), army.getNacao());
+        }
+        if (scenario.getCidade() != null && scenario.getCidade().getNacao() != null) {
+            nacoes.put(scenario.getCidade().getNacao().getCodigo(),
+                    scenario.getCidade().getNacao());
+        }
+        final CombatScenario reopened =
+                BattleSimTransfer.read(read, scenario.getPartida(), nacoes);
+        final CombatResult after = new CombatChain().resolve(reopened,
+                scenario.getPartida().getCenario());
+
+        assertEquals(before.getRounds(CombatLayer.NAVY), after.getRounds(CombatLayer.NAVY),
+                "the sea battle is the same length");
+        assertEquals(1057, attackAtSea(after, "Mihke"), "and the same attack");
+        assertEquals(10881, attackAtSea(after, "Barristan"), "including the supplied artifact");
+        assertEquals(lostAtSea(before, "Mihke", "Cargo Ships"),
+                lostAtSea(after, "Mihke", "Cargo Ships"), "the same hulls go down");
+        assertEquals(lostAtSea(before, "Barristan", "Triremes"),
+                lostAtSea(after, "Barristan", "Triremes"), "on both sides");
+    }
+
     private static long attackOn(CityCombatResolver.CityResult city, String who) {
         for (ArmySim army : city.getAttackers()) {
             if (army.getNome().contains(who)) {
