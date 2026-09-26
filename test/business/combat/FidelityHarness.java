@@ -75,8 +75,48 @@ public class FidelityHarness {
         if (args.length > 2) {
             applySpec(scenario, new File(args[2]));
         }
-        report(scenario, new LandCombatResolver().resolve(scenario,
-                scenario.getPartida() == null ? null : scenario.getPartida().getCenario()));
+        // THE CHAIN, not the land resolver alone: a city assault only resolves if the layers run
+        // in the Judge's order on one set of copies.
+        final CombatResult result = new CombatChain().resolve(scenario,
+                scenario.getPartida() == null ? null : scenario.getPartida().getCenario());
+        report(scenario, result);
+        reportCity(scenario, result);
+    }
+
+    /**
+     * The city layer's numbers, in the shape the Judge publishes them, so a turn report can be read
+     * straight down beside this output.
+     *
+     * The three lines to compare are {@code COMBATE.FEZ.DANO.CIDADE.ATAQUE} (what each attacker
+     * inflicted), {@code COMBATE.FEZ.DANO.CIDADE.DEFESA} (what the city inflicted back) and the
+     * casualties under each. {@code isShowCombatValues()} returns true unconditionally, so every
+     * live game publishes them.
+     */
+    private static void reportCity(CombatScenario scenario, CombatResult result) {
+        final CityCombatResolver.CityResult city = result.getCityResult();
+        if (city == null || city.getAttackers().isEmpty()) {
+            System.out.println("CITY|no assault");
+            return;
+        }
+        System.out.println("CITY|" + city.getOutcome()
+                + "|defence=" + city.getDefence()
+                + "|attackTotal=" + city.getAttackTotal()
+                + "|fortificationLost=" + city.getFortificationReduction()
+                + "|raze=" + city.isRaze()
+                + "|owner=" + (city.getOwner() == null ? "-" : city.getOwner().getNome()));
+        for (ArmySim army : city.getAttackers()) {
+            System.out.println("CITYATTACK|" + army.getNome()
+                    + "|attack=" + city.getAttack(army)
+                    + "|siege=" + city.getSiegeAttack(army)
+                    + "|tookDamage=" + city.getDamage(army));
+        }
+        for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
+            System.out.println("CITYLOSS|" + loss.getArmy().getNome()
+                    + "|" + (loss.getPlatoon().getTipoTropa() == null
+                            ? "?" : loss.getPlatoon().getTipoTropa().getNome())
+                    + "|lost=" + loss.getLost() + "|left=" + loss.getLeft()
+                    + "|round=" + loss.getRound());
+        }
     }
 
     /** Builds the scenario exactly as the window does, so the harness cannot drift from the app. */
@@ -110,6 +150,44 @@ public class FidelityHarness {
      * on the nation's NAME as the roster prints it, case-insensitive, so a spec is readable next to
      * a turn report.
      */
+    /**
+     * {@code city|tamanho=3|fortificacao=2|lealdade=52|docas=0} - the city as the DB holds it at
+     * turn N-1.
+     *
+     * The city is the input a player is least able to supply from his own results: size,
+     * fortification and loyalty all feed {@code getCityDefenseCombat}, and for an enemy city all
+     * three are filtered. Summerhall at 866 t1 is the worked example - the EGF gave a defense of
+     * 14,000 where the Judge used 10,640, and every downstream number moved with it.
+     */
+    private static void applyCity(CombatScenario scenario, String line) {
+        final model.Cidade city = scenario.getCidade();
+        if (city == null) {
+            System.out.println("NOCITY|" + line);
+            return;
+        }
+        for (String part : line.split("\\|")) {
+            final String[] kv = part.split("=", 2);
+            if (kv.length < 2) {
+                continue;
+            }
+            final int value = Integer.parseInt(kv[1].trim());
+            if ("tamanho".equals(kv[0])) {
+                city.setTamanho(value);
+            } else if ("fortificacao".equals(kv[0])) {
+                city.setFortificacao(value);
+            } else if ("lealdade".equals(kv[0])) {
+                city.setLealdade(value);
+            } else if ("docas".equals(kv[0])) {
+                city.setDocas(value);
+            }
+        }
+        System.out.println("CITYIN|" + city.getNome()
+                + "|tamanho=" + city.getTamanho()
+                + "|fortificacao=" + city.getFortificacao()
+                + "|lealdade=" + city.getLealdade()
+                + "|docas=" + city.getDocas());
+    }
+
     private static void applyWar(CombatScenario scenario, String line) {
         final String[] parts = line.split("\\|");
         if (parts.length < 3) {
@@ -159,6 +237,16 @@ public class FidelityHarness {
                 applyWar(scenario, line);
             }
         }
+        // THE CITY, from the DB and not the EGF. An enemy city's size, fortification and loyalty
+        // are what the OWNER knows; what the player sees is filtered, and the defense is built из
+        // all three. Asserting them is the city half of the validation loop: turn N-1 state for
+        // armies AND cities from the Judge or the DB, simulate, compare against turn N.
+        for (String raw : lines) {
+            final String line = raw.trim();
+            if (line.startsWith("city|")) {
+                applyCity(scenario, line);
+            }
+        }
         for (String raw : lines) {
             final String line = raw.trim();
             if (!line.startsWith("army|")) {
@@ -184,6 +272,16 @@ public class FidelityHarness {
                     // Supplying it is the point - it separates "the model is wrong" from "the
                     // player could not know", and only the first is a defect.
                     army.setBonusAttack(Integer.parseInt(kv[1].trim()));
+                } else if ("level".equals(kv[0])) {
+                    // Combat intent does NOT ride the EGF - combateNivel lives on the Judge's
+                    // ExercitoControl - so every army loads at ATTACK_ARMY and a city assault can
+                    // only be reproduced by asserting what the player actually ordered.
+                    // 0 defend, 1 attack armies, 2 attack city, 3 raze.
+                    for (CombatLevel one : CombatLevel.values()) {
+                        if (one.getNivel() == Integer.parseInt(kv[1].trim())) {
+                            army.setCombatLevel(one);
+                        }
+                    }
                 } else if ("attack".equals(kv[0])) {
                     target = Integer.valueOf(kv[1].trim());
                 }

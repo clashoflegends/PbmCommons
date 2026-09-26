@@ -80,8 +80,12 @@ public class CombatChain {
             case RAZED:
                 return CombatResult.Outcome.WON;
             case CAPTURED_NO_SURVIVOR:
-                // the walls fell and nobody held them: not a win for anybody still standing
-                return CombatResult.Outcome.LOST;
+                // A WIN, however it reads. The verdict block at CombateTmpbm:718-738 re-tests only
+                // ataqueTotal <= defesa and destroiCidade, so the no-survivor path falls into the
+                // final else and calls setCombateVenceu(TRUE, atacanteComandante) at 737 - after
+                // doCityCaptured has already returned CombateAtaqueFalhouNosurvivor. The commanders
+                // are credited with the victory. An earlier comment here asserted the opposite.
+                return CombatResult.Outcome.WON;
             case REPELLED:
                 return CombatResult.Outcome.LOST;
             default:

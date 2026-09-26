@@ -3,7 +3,9 @@ package business.combat;
 import model.Cidade;
 import model.Local;
 import model.Nacao;
+import model.Habilidade;
 import model.Pelotao;
+import model.TipoTropa;
 import model.Terreno;
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +36,22 @@ public class CombatChainTest extends LandCombatFixture {
         return ret;
     }
 
+    /**
+     * A siege engine. WITHOUT one the round-0 fortification path never runs at all, which is what
+     * made the two repeatability assertions below vacuous: they asserted the fortification was
+     * unchanged while {@code isSiegeExpected} was false in every fixture, so the line that changes
+     * it was never reached.
+     */
+    private static Pelotao siegeEngine(int qtd) {
+        final TipoTropa tipo = troopType("cat", 60, 40, false);
+        final Habilidade tts = new Habilidade();
+        tts.setCodigo(";TTS;");
+        tts.setNome(";TTS;");
+        tts.setValor(200);
+        tipo.addHabilidade(tts);
+        return platoon(tipo, qtd);
+    }
+
     private static Local hexWithCity(Cidade cidade) {
         final Local ret = hex();
         ret.setCidade(cidade);
@@ -59,7 +77,8 @@ public class CombatChainTest extends LandCombatFixture {
         final Cidade cidade = city(owner, 3, 2);
         final Local local = hexWithCity(cidade);
         final CombatScenario scenario = new CombatScenario(null, local);
-        final ArmySim army = armyAt("Besieger", attacker, local, platoon(troopType("inf", 60, 40, false), 900));
+        final ArmySim army = armyAt("Besieger", attacker, local,
+                platoon(troopType("inf", 60, 40, false), 900), siegeEngine(40));
         army.setCombatLevel(CombatLevel.ATTACK_CITY);
         army.setCombateAtaqueOnetime(500);
         scenario.addArmy(army, CombatScenario.Provenance.EXACT);
@@ -68,7 +87,7 @@ public class CombatChainTest extends LandCombatFixture {
         final int troopsBefore = army.getPelotoes().get("inf").getQtd();
         final int fortBefore = scenario.getCidade().getFortificacao();
 
-        new CombatChain().resolve(scenario, null);
+        final CombatResult ret = new CombatChain().resolve(scenario, null);
 
         assertEquals(500, army.getCombateAtaqueOnetime(),
                 "the one-time magic is the player's input and must survive a Run");
@@ -76,6 +95,9 @@ public class CombatChainTest extends LandCombatFixture {
                 "and so must his troop counts");
         assertEquals(fortBefore, scenario.getCidade().getFortificacao(),
                 "and the city's fortification, or a second Run starts from a reduced wall");
+        assertTrue(ret.getCityResult().getSiegeAttack(
+                ret.getCityResult().getAttackers().get(0)) > 0,
+                "the siege round MUST have run, or this test proves nothing");
     }
 
     /** Twice through the chain gives the same answer, which is the observable form of the above. */
@@ -84,7 +106,8 @@ public class CombatChainTest extends LandCombatFixture {
         final Nacao attacker = nacao("att"), owner = nacao("own");
         final Local local = hexWithCity(city(owner, 3, 2));
         final CombatScenario scenario = new CombatScenario(null, local);
-        final ArmySim army = armyAt("Besieger", attacker, local, platoon(troopType("inf", 60, 40, false), 900));
+        final ArmySim army = armyAt("Besieger", attacker, local,
+                platoon(troopType("inf", 60, 40, false), 900), siegeEngine(40));
         army.setCombatLevel(CombatLevel.ATTACK_CITY);
         army.setCombateAtaqueOnetime(500);
         scenario.addArmy(army, CombatScenario.Provenance.EXACT);
@@ -100,6 +123,12 @@ public class CombatChainTest extends LandCombatFixture {
                 second.getCityResult().getAttackTotal(),
                 "same inputs, same assault - anything else means a layer edited the setup");
         assertEquals(first.getCityResult().getOutcome(), second.getCityResult().getOutcome());
+        assertEquals(first.getCityResult().getFortificationReduction(),
+                second.getCityResult().getFortificationReduction(),
+                "the siege must bite the same wall both times, not a wall the first run lowered");
+        assertTrue(first.getCityResult().getFortificationReduction() > 0
+                || first.getCityResult().getDefence() > 0,
+                "and the siege path must actually be exercised");
     }
 
     /**

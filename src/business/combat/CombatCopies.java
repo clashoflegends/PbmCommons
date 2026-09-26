@@ -45,6 +45,16 @@ final class CombatCopies {
 
     private final List<ArmySim> copies = new ArrayList<>();
     private final Map<ArmySim, ArmySim> toOriginal = new IdentityHashMap<>();
+    /**
+     * The city, copied PER RUN for the same reason the armies are.
+     *
+     * {@code CombatScenario.setLocal} clones the loaded world's city ONCE, at load - which protects
+     * the world but makes that clone the player's durable input, sitting behind the Ground panel's
+     * size, fortification and loyalty controls. The siege round subtracts from the fortification,
+     * so without a second copy Run #1 lowers the wall, Run #2 starts from the lowered wall and
+     * reports a different defense and possibly a different verdict with nothing changed.
+     */
+    private model.Cidade city;
 
     private CombatCopies() {
     }
@@ -61,6 +71,8 @@ final class CombatCopies {
         if (scenario == null) {
             return ret;
         }
+        final model.Cidade active = scenario.getCidadeAtiva();
+        ret.city = active == null ? null : active.clone();
         for (ArmySim original : scenario.getArmies()) {
             final ArmySim copy = new ArmySim(original);
             LandCombatResolver.doAncoraBarcos(copy, scenario);
@@ -68,6 +80,11 @@ final class CombatCopies {
             ret.toOriginal.put(copy, original);
         }
         return ret;
+    }
+
+    /** The city this run may damage, or null when no city takes part. Never the scenario's own. */
+    model.Cidade city() {
+        return city;
     }
 
     /** Every copy, in the hex's own order. */

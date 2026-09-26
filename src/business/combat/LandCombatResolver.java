@@ -135,7 +135,7 @@ public class LandCombatResolver {
             return ret;
         }
         noteWhatWasSkipped(fighters, ret);
-        noteUnknownMorale(scenario, toOriginal, ret);
+        noteUnknownMorale(scenario, fighters, toOriginal, ret);
 
         final RelationshipMatrix relations = scenario.getRelationships();
         final HostilityMatrix matrix = scenario.getMatrix();
@@ -227,13 +227,26 @@ public class LandCombatResolver {
      * already the thing the ships would be anchored into.
      */
     static void doAncoraBarcos(ArmySim army, CombatScenario scenario) {
-        final boolean anchorable = scenario.getTerreno() != null
-                && scenario.getTerreno().isAncoravel();
-        if (!anchorable || army.isGarrison()) {
+        // TERRAIN OR DOCKS, the same Hexagono.isAncoravel() the Judge anchors on in both
+        // executaMsgBasicaCombateLand and doAncoraEsquadras. The docks half was added to the two
+        // GATES and not here, to the one place that actually removes the ships - so at a port city
+        // on non-anchorable ground a fleet joined the assault with its boats still aboard, took an
+        // inflated share of the city's returned damage and left its allies short. That is the
+        // Seagard defect one layer over.
+        if (!isAncoravel(scenario) || army.isGarrison()) {
             return;
         }
         army.getPelotoes().values().removeIf(pelotao -> pelotao.getTipoTropa() != null
                 && pelotao.getTipoTropa().isBarcos());
+    }
+
+    /** {@code Hexagono.isAncoravel()}: anchorable terrain, or a city with docks. */
+    private static boolean isAncoravel(CombatScenario scenario) {
+        if (scenario.getTerreno() != null && scenario.getTerreno().isAncoravel()) {
+            return true;
+        }
+        final model.Cidade city = scenario.getCidade();
+        return city != null && new business.facade.CidadeFacade().isDocasPorto(city);
     }
 
     /**
@@ -546,10 +559,14 @@ public class LandCombatResolver {
      * So it is counted and stated. Guessing a better number would be worse - it would be just as
      * wrong and no longer visible.
      */
-    private void noteUnknownMorale(CombatScenario scenario, Map<ArmySim, ArmySim> toOriginal,
-            CombatResult ret) {
+    private void noteUnknownMorale(CombatScenario scenario, List<ArmySim> fighters,
+            Map<ArmySim, ArmySim> toOriginal, CombatResult ret) {
         int unknown = 0;
-        for (ArmySim copy : toOriginal.keySet()) {
+        // FIGHTERS, not every copy. toOriginal used to hold only this layer's participants; since
+        // CombatCopies took over the copying it holds every army on the hex, so counting its keys
+        // reported unscouted fleets offshore as unknown-morale armies in a LAND battle none of them
+        // were in. The note is the fidelity disclosure - inflating it fails R-15 from the other side.
+        for (ArmySim copy : fighters) {
             if (scenario.isMoraleUnknown(toOriginal.get(copy))) {
                 unknown++;
             }

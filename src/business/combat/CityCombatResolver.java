@@ -119,7 +119,9 @@ public class CityCombatResolver {
         if (scenario == null || copies == null) {
             return ret;
         }
-        final Cidade city = scenario.getCidadeAtiva();
+        // the RUN'S copy, not the scenario's: round 0 subtracts from the fortification and the
+        // scenario's clone is the player's input, behind the Ground panel's own controls
+        final Cidade city = copies.city();
         if (city == null || city.getNacao() == null) {
             return ret;
         }
@@ -303,14 +305,21 @@ public class CityCombatResolver {
      * behind {@code CombateAtaqueFalhouNosurvivor}. The attack it compares is
      * {@code getAttack(1)}, recomputed after the walls have hit back, so this must run after the
      * casualties and not before.
+     *
+     * <b>The dead are NOT skipped.</b> {@code doDebandaExercitos} runs at 746, after this, so a
+     * destroyed attacker is still in {@code atacantes} and still answers {@code getAttack(1)} -
+     * which is {@code getForcaPlus(1) + getArmyAttackBaseNot(";TTN;")}, and the first term survives
+     * having no troops. An army annihilated taking the walls can still be the one that holds them,
+     * on its commander's artifact or a travelling NPC. Zero is the only disqualification.
      */
     private ArmySim claimantOf(List<ArmySim> attackers) {
         ArmySim ret = null;
         long best = 0;
         for (ArmySim army : attackers) {
-            if (army.isDisband()) {
-                continue;
-            }
+            // NO isDisband skip: doDebandaExercitos runs at 746, AFTER doCityCaptured, so the Judge
+            // looks at the dead too - and getAttack(1) is getForcaPlus + base, neither of which
+            // needs a living platoon. An army wiped out by the walls it just breached still claims
+            // the city on its commander's combat artifact or a travelling dragon worth skill x 100.
             final long attack = landResolver.getForcaPlus(army, CITY_ROUND)
                     + battleSimFacade.getArmyAttackBaseLand(army, army.getLocal());
             if (best < attack) {
