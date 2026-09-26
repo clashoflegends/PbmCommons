@@ -332,6 +332,7 @@ public class NavyCombatResolver {
         if (over <= 0f) {
             return;
         }
+        boolean any = false;
         for (Pelotao pelotao : new ArrayList<>(fleet.getPelotoes().values())) {
             if (over <= 0f || pelotao.getTipoTropa() == null
                     || pelotao.getTipoTropa().isBarcos() || pelotao.getQtd() <= 0) {
@@ -349,8 +350,11 @@ public class NavyCombatResolver {
                     LandCombatResolver.originalOf(toOriginal.get(fleet), pelotao), lost,
                     was - lost, CombatLayer.NAVY);
             over -= peso <= over ? peso : over;
+            any = true;
         }
-        ret.addNote("BATTLESIM.RESULT.OVERLOADED");
+        if (any) {
+            ret.addNote("BATTLESIM.RESULT.OVERLOADED");
+        }
     }
 
     /** {@code getForcaBasicaNaval}: the SHIPS' attack, and only the ships'. */

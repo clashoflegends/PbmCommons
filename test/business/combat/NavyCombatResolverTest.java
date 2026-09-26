@@ -195,6 +195,68 @@ public class NavyCombatResolverTest extends LandCombatFixture {
                 "18% of the 400 infantry, and the 2 hulls are the rest of the layer's losses");
     }
 
+    /**
+     * A fleet that was carrying only PART of its army drowns only the part that was aboard.
+     *
+     * This is the embarked-versus-not distinction, and the Judge does not decide it with
+     * {@code isEsquadraEmbarcada()} even though its own comment says so: {@code doAfogamento}
+     * branches on {@code capacityBefore < burdenBefore}, which is the same predicate spelled out.
+     * The consequence is a BOUND - the total drowned WEIGHT stops at the cargo capacity, because
+     * the rest of the army was standing on the beach the whole time.
+     *
+     * Here: one transport of capacity 50 carrying 400 infantry, each weighing 1. The flat rate
+     * would drown 72; the bound allows 50. Asserting the bound bites is the point - a test where
+     * 18% happens to fit inside the capacity would pass with no bound at all.
+     */
+    @Test
+    public void aPartlyEmbarkedArmyDrownsOnlyWhatWasAboard() {
+        final Nacao mine = nacao("m"), foe = nacao("f");
+        final Local local = hexOf(PLAIN);
+        final CombatScenario scenario = atSea(local, mine, foe);
+        final ArmySim carrier = fleet("Carrier", foe, local,
+                platoon(shipWith("ng2", 50), 1), platoon(troopType("inf", 60, 40, false), 400));
+        carrier.setCombatLevel(CombatLevel.DEFEND_ONLY);
+        scenario.addArmy(fleet("Armada", mine, local, platoon(shipWith("ng", 0), 900)),
+                CombatScenario.Provenance.EXACT);
+        scenario.addArmy(carrier, CombatScenario.Provenance.EXACT);
+
+        final CombatResult ret = new CombatChain().resolve(scenario, null);
+
+        final int drowned = lost(ret, "Carrier", CombatLayer.NAVY) - 1;   // minus the one hull
+        assertEquals(50, drowned, "bounded by what the transport could ever have been carrying");
+        assertTrue(drowned < 400 * NavyCombatResolver.DROWNING_PERCENT / 100,
+                "and that is strictly less than the flat rate, or the bound did nothing");
+    }
+
+    /**
+     * Fully embarked, so there is no bound and every platoon loses the flat rate.
+     *
+     * The Judge's third branch iterates {@code pelotoes.values()} with no capacity test at all -
+     * the whole army was at sea, so there is nothing to hold back.
+     */
+    @Test
+    public void aFullyEmbarkedArmyDrownsTheFlatRateFromEveryPlatoon() {
+        final Nacao mine = nacao("m"), foe = nacao("f");
+        final Local local = hexOf(PLAIN);
+        final CombatScenario scenario = atSea(local, mine, foe);
+        // capacity 2 x 500 = 1,000 against a burden of 300 + 200 = 500: comfortably embarked
+        final ArmySim carrier = fleet("Carrier", foe, local,
+                platoon(shipWith("ng2", 500), 2),
+                platoon(troopType("inf", 60, 40, false), 300),
+                platoon(troopType("bow", 55, 35, false), 200));
+        carrier.setCombatLevel(CombatLevel.DEFEND_ONLY);
+        scenario.addArmy(fleet("Armada", mine, local, platoon(shipWith("ng", 0), 900)),
+                CombatScenario.Provenance.EXACT);
+        scenario.addArmy(carrier, CombatScenario.Provenance.EXACT);
+
+        final CombatResult ret = new CombatChain().resolve(scenario, null);
+
+        final int rate = NavyCombatResolver.DROWNING_PERCENT;
+        assertEquals(300 * rate / 100 + 200 * rate / 100 + 2,
+                lost(ret, "Carrier", CombatLayer.NAVY),
+                "both platoons at the flat rate, plus the two hulls");
+    }
+
     /** An escort that was carrying nobody loses its hulls and nobody drowns. */
     @Test
     public void anEscortCarryingNobodyLosesOnlyItsHulls() {
