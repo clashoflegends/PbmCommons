@@ -68,6 +68,19 @@ public class NavyCombatResolver {
     public static final int FIRST_ROUND = 1;
     /** Same guard as the land layer: a battle that cannot end is a bug, not a long battle. */
     private static final int MAX_ROUNDS = 100;
+    /**
+     * Coastal drowning, as a flat percentage. John's call, 2026-09-26 (T-816).
+     *
+     * The Judge rolls {@code pelotao.getQtd() * (SysApoio.rand(15) + 10) / 100}, and
+     * {@code SysApoio.rand(n)} is {@code (int)(Math.random() * n) + 1} - so it is 1 to 15, and the
+     * rate is 11% to 25%, not the 10% to 24% an earlier reading of it said. 18 is the midpoint,
+     * which makes this the expected value rather than a guess at one.
+     *
+     * It is a stand-in. The agreed answer is T-817: drowning as a function of the commander's
+     * skill, with the die removed on BOTH sides. Until that lands the Judge still rolls, so this
+     * layer's cargo casualties are an estimate and the result says so. See KI-056.
+     */
+    static final int DROWNING_PERCENT = 18;
 
     private final BattleSimFacade battleSimFacade = new BattleSimFacade();
     private final CenarioFacade cenarioFacade = new CenarioFacade();
@@ -268,9 +281,40 @@ public class NavyCombatResolver {
             // carrying anybody, so they were ashore all along and walk away.
             return;
         }
-        // KI-010 cases 2 and 3 both roll. Which one fired changes only the bound, not the range.
-        if (burdenBefore > 0f) {
-            ret.addNote("BATTLESIM.RESULT.DROWNINGUNKNOWN");
+        if (burdenBefore <= 0f) {
+            return;
+        }
+        // KI-010 cases 2 and 3 differ only in the BOUND. Case 2 is a fleet that was carrying part
+        // of its army, so only the embarked part was ever at sea and the drowned weight stops at
+        // the capacity; case 3 carried all of it and has no bound to apply.
+        final float bound = capacityBefore < burdenBefore ? capacityBefore : Float.MAX_VALUE;
+        float drowned = 0f;
+        boolean any = false;
+        for (Pelotao pelotao : new ArrayList<>(fleet.getPelotoes().values())) {
+            if (pelotao.getTipoTropa() == null || pelotao.getTipoTropa().isBarcos()
+                    || pelotao.getQtd() <= 0 || drowned >= bound) {
+                continue;
+            }
+            final int was = pelotao.getQtd();
+            int lost = was * DROWNING_PERCENT / 100;
+            final float pesoPorTropa = exercitoFacade.getTransportesBurden(pelotao) / was;
+            if (pesoPorTropa > 0f && bound != Float.MAX_VALUE) {
+                lost = (int) Math.min(lost, (bound - drowned) / pesoPorTropa);
+            }
+            if (lost <= 0) {
+                continue;
+            }
+            pelotao.setQtd(was - lost);
+            ret.addRoundLoss(round, toOriginal.get(fleet),
+                    LandCombatResolver.originalOf(toOriginal.get(fleet), pelotao), lost,
+                    was - lost, CombatLayer.NAVY);
+            drowned += lost * pesoPorTropa;
+            any = true;
+        }
+        if (any) {
+            // The number above is the expected one, not the turn's. Said once, because a player
+            // planning a landing needs to know the figure can move either way.
+            ret.addNote("BATTLESIM.RESULT.DROWNINGESTIMATED", DROWNING_PERCENT);
         }
     }
 

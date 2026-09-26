@@ -145,8 +145,8 @@ public class NavyCombatResolverTest extends LandCombatFixture {
         final CombatResult ret = new CombatChain().resolve(scenario, null);
 
         assertTrue(ret.getNotes().contains("BATTLESIM.RESULT.DROWNED"), "they drowned");
-        assertFalse(ret.getNotes().contains("BATTLESIM.RESULT.DROWNINGUNKNOWN"),
-                "nothing is uncertain about open water");
+        assertFalse(ret.getNotes().contains("BATTLESIM.RESULT.DROWNINGESTIMATED"),
+                "nothing is estimated about open water: everyone drowns");
         // Asked of the RESULT, not of the army: the sim fights on copies and the player's own
         // platoons are never touched, so the doomed army still reads full strength on the screen
         // behind the dialog. That is the contract, not a leak.
@@ -160,15 +160,20 @@ public class NavyCombatResolverTest extends LandCombatFixture {
     }
 
     /**
-     * Ashore, it is a die roll - and the simulator says so rather than picking a number.
+     * Ashore, the cargo drowns at the agreed flat rate and the result says the figure is an
+     * estimate.
      *
-     * KI-010 is the trap and it was live here for an afternoon: capacity has to be read BEFORE the
-     * hulls sink, because afterwards it reads zero, and zero is also how an escort that was
-     * carrying nobody reads. Taking it afterwards silently skipped the drowning of exactly the
+     * The Judge still rolls 11% to 25% until T-817 replaces the die on both sides with a function
+     * of the commander's skill, so the number here is the midpoint rather than the turn's. That is
+     * John's call (T-816) and the note is what stops it reading as a promise. See KI-056.
+     *
+     * KI-010 is the trap underneath and it was live here for an afternoon: capacity has to be read
+     * BEFORE the hulls sink, because afterwards it reads zero, and zero is also how an escort that
+     * was carrying nobody reads. Taking it afterwards silently skipped the drowning of exactly the
      * army the rule is about.
      */
     @Test
-    public void ashoreTheDrowningIsDisclosedRatherThanGuessed() {
+    public void ashoreTheCargoDrownsAtTheAgreedRate() {
         final Nacao mine = nacao("m"), foe = nacao("f");
         final Local local = hexOf(PLAIN);       // anchorable, not water
         final CombatScenario scenario = atSea(local, mine, foe);
@@ -181,10 +186,13 @@ public class NavyCombatResolverTest extends LandCombatFixture {
 
         final CombatResult ret = new CombatChain().resolve(scenario, null);
 
-        assertTrue(ret.getNotes().contains("BATTLESIM.RESULT.DROWNINGUNKNOWN"),
-                "10 to 24 percent is a range, and the player is told so rather than shown one draw");
+        assertTrue(ret.getNotes().contains("BATTLESIM.RESULT.DROWNINGESTIMATED"),
+                "the rate is fixed, and the player is told the turn can still move it");
         assertFalse(ret.getNotes().contains("BATTLESIM.RESULT.DROWNED"),
                 "they are not in open water");
+        assertEquals(400 * NavyCombatResolver.DROWNING_PERCENT / 100,
+                lost(ret, "Carrier", CombatLayer.NAVY) - 2,
+                "18% of the 400 infantry, and the 2 hulls are the rest of the layer's losses");
     }
 
     /** An escort that was carrying nobody loses its hulls and nobody drowns. */
@@ -201,7 +209,7 @@ public class NavyCombatResolverTest extends LandCombatFixture {
 
         final CombatResult ret = new CombatChain().resolve(scenario, null);
 
-        assertFalse(ret.getNotes().contains("BATTLESIM.RESULT.DROWNINGUNKNOWN"),
+        assertFalse(ret.getNotes().contains("BATTLESIM.RESULT.DROWNINGESTIMATED"),
                 "there was nobody aboard to drown");
     }
 

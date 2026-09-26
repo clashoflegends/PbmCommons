@@ -644,8 +644,12 @@ public class FidelityHarness {
         assertEquals(0, result.getRounds(CombatLayer.ARMY),
                 "the Judge fought no land battle here");
         // "After all ships sunk at 2442, many of the troops made to the shore. Many did not."
-        assertTrue(result.getNotes().contains("BATTLESIM.RESULT.DROWNINGUNKNOWN"),
-                "Mihke's cargo went down with the ships, and how much of it is a die roll");
+        assertTrue(result.getNotes().contains("BATTLESIM.RESULT.DROWNINGESTIMATED"),
+                "Mihke's cargo went down with the ships");
+        // 2,800 archers at the agreed 18%. The Judge rolled its own number in that turn and the
+        // result says so, which is the whole reason T-817 exists.
+        assertEquals(2800 * NavyCombatResolver.DROWNING_PERCENT / 100,
+                lostAtSea(result, "Mihke", "Archers"), "the estimated drowning");
     }
 
     /** By LAYER, never by round: the land battle also has a round 1 on this hex. */
