@@ -187,6 +187,95 @@ public class BattleSimTransferTest extends LandCombatFixture {
         assertFalse(xml.contains("business.combat.ArmySim"), "and no engine class either");
     }
 
+    /** One army on the clipboard, with everything the player set on it. T-841. */
+    @Test
+    public void oneArmyRoundTripsAsAFragment() throws Exception {
+        final Cenario cenario = catalogue();
+        final Partida partida = partida(cenario);
+        final Nacao mine = nacao("m"), foe = nacao("f");
+        final ArmySim source = only(edited(partida, mine, foe));
+
+        final java.util.List<ArmySim> back = BattleSimTransfer.readArmies(
+                BattleSimTransfer.writeArmy(source), partida, nacoes(mine, foe));
+
+        assertEquals(1, back.size());
+        assertEquals(3, back.get(0).getTatica(), "tactic");
+        assertEquals(42, back.get(0).getMoral(), "morale");
+        assertEquals(CombatLevel.RAZE_CITY, back.get(0).getCombatLevel(), "combat level");
+        assertEquals(900, back.get(0).getPelotoes().values().iterator().next().getQtd(),
+                "the platoon came with it");
+    }
+
+    /**
+     * A WHOLE saved battle on the clipboard yields its armies too.
+     *
+     * Both are things a player will plausibly have copied - the army he selected, or the contents
+     * of a .bsim someone sent him - and refusing the second would be a distinction he has no reason
+     * to expect.
+     */
+    @Test
+    public void awholeSavedBattleYieldsItsArmies() throws Exception {
+        final Cenario cenario = catalogue();
+        final Partida partida = partida(cenario);
+        final Nacao mine = nacao("m"), foe = nacao("f");
+
+        final java.util.List<ArmySim> back = BattleSimTransfer.readArmies(
+                BattleSimTransfer.write(edited(partida, mine, foe)), partida, nacoes(mine, foe));
+
+        assertEquals(1, back.size(), "the battle's one army");
+    }
+
+    /**
+     * A pasted army arrives with NO hex, and the receiving side must supply one.
+     *
+     * The file cannot carry a Local - it is the receiver's world that has hexes - so the army comes
+     * back with a null one. That is not cosmetic: every attack lookup runs through the shared
+     * formula with that Local, and the formula SWALLOWS the resulting NPE and returns zero, so a
+     * pasted army would go into battle with no attack at all and nothing on screen to say why. The
+     * same trap doAddArmy already carries a comment about. This pins the precondition that
+     * doAddPastedArmy exists to satisfy.
+     */
+    @Test
+    public void aPastedArmyHasNoHexUntilTheReceiverGivesItOne() throws Exception {
+        final Cenario cenario = catalogue();
+        final Partida partida = partida(cenario);
+        final Nacao mine = nacao("m"), foe = nacao("f");
+        final ArmySim source = only(edited(partida, mine, foe));
+
+        final ArmySim back = BattleSimTransfer.readArmies(
+                BattleSimTransfer.writeArmy(source), partida, nacoes(mine, foe)).get(0);
+
+        assertEquals(null, back.getLocal(),
+                "the transfer does not invent a hex - doAddPastedArmy supplies it");
+    }
+
+    /** A fragment carrying a foreign troop type refuses, like a whole file does. */
+    @Test
+    public void aFragmentWithAnUnknownTroopDeclines() {
+        final Nacao mine = nacao("m"), foe = nacao("f");
+        final String xml = BattleSimTransfer.writeArmy(
+                only(edited(partida(catalogue()), mine, foe)));
+        final Cenario other = catalogue();
+        other.getTipoTropas().remove(TROOP);
+
+        final BattleSimTransfer.TransferException ex =
+                assertThrows(BattleSimTransfer.TransferException.class,
+                        () -> BattleSimTransfer.readArmies(xml, partida(other), nacoes(mine, foe)));
+
+        assertEquals("BATTLESIM.TRANSFER.TROOP", ex.getReasonKey());
+        assertEquals(TROOP, ex.getOffending());
+    }
+
+    /** And the clipboard usually holds something else entirely. */
+    @Test
+    public void pastingRubbishDeclinesCleanly() {
+        for (String junk : new String[]{"", "an army", "<battlesim-army", "hello world"}) {
+            assertThrows(BattleSimTransfer.TransferException.class,
+                    () -> BattleSimTransfer.readArmies(junk, partida(catalogue()), nacoes()),
+                    "should refuse: " + junk);
+        }
+    }
+
     // ------------------------------------------------------------------ the refusals
 
     private static String writtenIn(Cenario cenario, Nacao mine, Nacao foe) {

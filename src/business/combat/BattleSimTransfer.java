@@ -69,6 +69,8 @@ public final class BattleSimTransfer {
 
     /** The root tag, deliberately nothing an EGF would ever contain. */
     private static final String ROOT = "battlesim";
+    /** One army on the clipboard. A different root so a reader can tell them apart at a glance. */
+    private static final String FRAGMENT_ROOT = "battlesim-army";
 
     private BattleSimTransfer() {
     }
@@ -165,6 +167,26 @@ public final class BattleSimTransfer {
         ret.docas = cidade.getDocas();
         ret.nacao = cidade.getNacao() == null ? null : cidade.getNacao().getCodigo();
         return ret;
+    }
+
+    /**
+     * ONE army as text, for the clipboard. The fragment half of the format.
+     *
+     * A fragment rather than a whole battle because that is what the player selected, and because
+     * pasting a whole scenario into another one would have to decide what happens to the ground and
+     * the city it brought with it. An army carries nothing but itself.
+     *
+     * The existing {@code Copy} button is NOT this and must not become it: it writes translated
+     * display names for a spreadsheet ({@code tipoTropa.getNome()}), which is lossy, unparseable
+     * and would make a Portuguese Counselor's copy unreadable in an English one. T-446 fixes that
+     * contract because players paste it into their own sheets. This is the second, machine-readable
+     * flavour beside it.
+     */
+    public static String writeArmy(ArmySim army) {
+        final Fragment dto = new Fragment();
+        dto.version = VERSION;
+        dto.army = armyOf(army);
+        return xstream().toXML(dto);
     }
 
     // ------------------------------------------------------------------ read
@@ -312,6 +334,54 @@ public final class BattleSimTransfer {
 
     // ------------------------------------------------------------------ xml
 
+    /**
+     * The armies from whatever is on the clipboard: one fragment, or a whole saved battle.
+     *
+     * Both are accepted because both are things a player will plausibly have copied - the army he
+     * selected, or the contents of a {@code .bsim} someone sent him - and refusing the second would
+     * be a distinction he has no reason to expect. The mismatch rule is the same either way: any
+     * army that cannot be rebuilt refuses the WHOLE paste, so he never gets a partial import he
+     * cannot see the seams of.
+     */
+    public static List<ArmySim> readArmies(String xml, Partida partida,
+            SortedMap<String, Nacao> nacoes) throws TransferException {
+        final Object parsed = parseAny(xml);
+        final Cenario cenario = partida == null ? null : partida.getCenario();
+        final List<ArmySim> ret = new ArrayList<>();
+        if (parsed instanceof Fragment) {
+            final Fragment one = (Fragment) parsed;
+            requireKnownVersion(one.version);
+            ret.add(army(one.army, cenario, nacoes));
+        } else {
+            final Transfer all = (Transfer) parsed;
+            requireKnownVersion(all.version);
+            for (Army one : all.armies) {
+                ret.add(army(one, cenario, nacoes));
+            }
+        }
+        return ret;
+    }
+
+    private static void requireKnownVersion(int version) throws TransferException {
+        if (version > VERSION) {
+            throw new TransferException("BATTLESIM.TRANSFER.VERSION", String.valueOf(version));
+        }
+    }
+
+    private static Object parseAny(String xml) throws TransferException {
+        try {
+            final Object ret = xstream().fromXML(xml);
+            if (!(ret instanceof Transfer) && !(ret instanceof Fragment)) {
+                throw new TransferException("BATTLESIM.TRANSFER.FORMAT", "");
+            }
+            return ret;
+        } catch (TransferException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
+            throw new TransferException("BATTLESIM.TRANSFER.FORMAT", "");
+        }
+    }
+
     private static Transfer parse(String xml) throws TransferException {
         try {
             final Object ret = xstream().fromXML(xml);
@@ -332,9 +402,10 @@ public final class BattleSimTransfer {
         final XStream ret = new XStream();
         // ONLY these four. A wildcard over model.** is what an EGF reader needs and would let this
         // one deserialise arbitrary world classes from a file a stranger emailed.
-        ret.allowTypes(new Class[]{Transfer.class, Army.class, Platoon.class, City.class,
-            Rel.class});
+        ret.allowTypes(new Class[]{Transfer.class, Fragment.class, Army.class, Platoon.class,
+            City.class, Rel.class});
         ret.alias(ROOT, Transfer.class);
+        ret.alias(FRAGMENT_ROOT, Fragment.class);
         ret.alias("army", Army.class);
         ret.alias("platoon", Platoon.class);
         ret.alias("city", City.class);
@@ -354,6 +425,13 @@ public final class BattleSimTransfer {
         City city;
         List<Army> armies = new ArrayList<>();
         List<Rel> relationships = new ArrayList<>();
+    }
+
+    /** One army, alone. Versioned in its own right: a clipboard outlives a session. */
+    static class Fragment {
+
+        int version;
+        Army army;
     }
 
     static class Army {
