@@ -54,12 +54,26 @@ public class ArmySim extends BaseModel implements IExercito {
      * Combat intent, the Judge's {@code ExercitoControl.combateNivel}. Editable, because without it
      * the simulator cannot tell "defend in place" from "storm the city".
      *
-     * Defaults to {@link CombatLevel#ATTACK_ARMY}: an army loaded into the simulator is there to be
-     * fought over, so defaulting to defend-only would silently answer a different question than the
-     * one the player asked. It stops short of the city, which is the half that needs an explicit
-     * order.
+     * Defaults to {@link CombatLevel#ATTACK_CITY} (John, 2026-09-26). An army loaded into the
+     * simulator is there to be fought over, so defaulting to defend-only would silently answer a
+     * different question than the one the player asked - and stopping at ATTACK_ARMY, as this used
+     * to, answered a different question just as silently whenever the hex had a city.
+     *
+     * It is the shape of the thing being asked that settles it. Combat intent does NOT ride the
+     * EGF: {@code combateNivel} lives on the Judge's {@code ExercitoControl}, so EVERY army arrives
+     * here at whatever this default says, never at what its player actually ordered. The default is
+     * therefore a guess in all cases, and the useful guess is the one that shows the battle rather
+     * than hiding a third of it. QA at 866 t1 hex 1660 is the case: two armies on an enemy city,
+     * the only possible battle an assault, and the simulator opened with Run disabled and three
+     * dots against both because neither was ordered to attack it.
+     *
+     * The wider net costs nothing it cannot take back. An assault still needs the army to be
+     * HOSTILE to the city's owner and able to get ashore, so a garrison never storms its own walls
+     * and a neutral bystander is not dragged in; and a player who meant "stay out of the city"
+     * changes one combo, which is the same move the old default asked of everyone who meant the
+     * opposite.
      */
-    private CombatLevel combatLevel = CombatLevel.ATTACK_ARMY;
+    private CombatLevel combatLevel = CombatLevel.ATTACK_CITY;
     /**
      * Whom to attack, mirroring {@code ExercitoControl.getCombateNacaoNumero()}: null means every
      * enemy, anything else singles out one nation.

@@ -192,6 +192,11 @@ public class ScenarioLoaderTest {
      * Combat intent is NOT in the EGF - {@code combateNivel} and {@code combateNacaoNumero} live on
      * the Judge's ExercitoControl. Every army therefore loads at the default and the player states
      * his assumptions. Tactic IS carried, and used to be dropped by both copy constructors.
+     *
+     * The default is ATTACK_CITY since 2026-09-26. Because intent never rides the EGF, the default
+     * is a guess for EVERY army rather than a fallback for a few, and the useful guess is the one
+     * that shows the whole battle: stopping at ATTACK_ARMY hid the city layer on every hex that had
+     * a city, which is what QA hit at 866 t1 hex 1660.
      */
     @Test
     public void tacticSurvivesTheLoadAndIntentIsAlwaysTheDefault() {
@@ -202,7 +207,7 @@ public class ScenarioLoaderTest {
                 .load(partida(";FFA;"), local, null).getArmies().get(0);
 
         assertEquals(3, loaded.getTatica());
-        assertEquals(CombatLevel.ATTACK_ARMY, loaded.getCombatLevel());
+        assertEquals(CombatLevel.ATTACK_CITY, loaded.getCombatLevel());
         assertEquals(null, loaded.getTargetNacao());
     }
 
