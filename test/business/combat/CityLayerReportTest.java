@@ -187,17 +187,24 @@ public class CityLayerReportTest extends LandCombatFixture {
         assertNotEquals(null, ret.getOutcome(besieger, CombatLayer.CITY));
     }
 
-    /** The chain says what it could not do, even when no land battle ran to say it for it. */
+    /**
+     * A chain that resolves every layer must not announce one it skipped.
+     *
+     * The note existed while the sea layer had no resolver. Leaving it in place afterwards would be
+     * the same defect the other way round: a result telling the player something is missing from it
+     * when it is not.
+     */
     @Test
-    public void theChainDisclosesTheMissingSeaLayer() {
+    public void theChainNoLongerClaimsTheSeaLayerIsMissing() {
         final Nacao attacker = nacao("att"), owner = nacao("own");
         final Local local = hexWithCity(owner);
         final CombatScenario scenario = assaultOnly(attacker, owner, local);
         scenario.addArmy(besieger("Besieger", attacker, local, 900),
                 CombatScenario.Provenance.EXACT);
 
-        assertTrue(new CombatChain().resolve(scenario, null).getNotes()
-                .contains("BATTLESIM.RESULT.NAVYNOTSIMULATED"),
-                "a result that omits what it skipped looks complete");
+        for (String note : new CombatChain().resolve(scenario, null).getNotes()) {
+            assertNotEquals("BATTLESIM.RESULT.NAVYNOTSIMULATED", note,
+                    "the sea layer resolves now, and a note saying otherwise is a lie");
+        }
     }
 }

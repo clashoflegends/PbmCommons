@@ -26,18 +26,22 @@ import model.Cenario;
  * untouched scenario: carried-forward casualties, the dead not assaulting, one-time attack magic
  * spent once rather than once per layer, and ships anchored away before the troop share is divided.
  *
- * <h3>What is not here yet</h3>
+ * <h3>All three layers resolve</h3>
  *
- * The sea layer. {@code LandCombatResolver} is the only engine besides the new city one, so the
- * chain runs land then city and the result says plainly that the sea layer was not simulated. That
- * is a missing resolver, not a missing hook: when it arrives it goes in front of the land call and
- * needs no other change, because the copies are already threaded.
+ * Sea, then land, then city, with the anchoring between the first two - which is where
+ * {@code executaMsgBasicaCombateLand} puts it, and it is load-bearing: anchor before the sea layer
+ * and every ship is gone before the first naval round.
+ *
+ * What the chain still cannot answer is named in the result's notes rather than left to be
+ * inferred: coastal drowning is a die roll, and the scorpion anti-dragon strike needs dragon
+ * vitality that does not cross the wire.
  */
 public class CombatChain {
 
     /** A city assault is one round, always - {@code rounds++} happens once, before the army loop. */
     private static final int CITY_ROUNDS = 1;
 
+    private final NavyCombatResolver navyResolver = new NavyCombatResolver();
     private final LandCombatResolver landResolver = new LandCombatResolver();
     private final CityCombatResolver cityResolver = new CityCombatResolver();
 
@@ -53,18 +57,26 @@ public class CombatChain {
             return ret;
         }
         final CombatCopies copies = CombatCopies.of(scenario);
-        // The sea layer has no resolver yet, so say so ONCE, here, rather than leaving the caller to
-        // infer it. The land resolver's own 2-arg entry carries this note for its own callers; the
-        // chain has to carry it for the chain, or a city-only battle reports nothing skipped at all.
-        ret.addNote("BATTLESIM.RESULT.NAVYNOTSIMULATED");
 
-        // NOBODY has fought the city yet. Seeded BEFORE either layer, because a null outcome MEANS
-        // "not simulated" - so without this the defending garrison, every neutral army and, when no
-        // assault happens, EVERY army would read as though the layer never ran. The land resolver
-        // does the same thing for its own layer and for the same reason.
+        // NOBODY has fought the sea or the city yet. Seeded BEFORE any layer, because a null
+        // outcome MEANS "not simulated" - so without this the defending garrison, every neutral
+        // army and, when no assault happens, EVERY army would read as though the layer never ran.
+        // The land resolver does the same thing for its own layer and for the same reason.
         for (ArmySim army : scenario.getArmies()) {
+            ret.setOutcome(army, CombatLayer.NAVY, CombatResult.Outcome.DID_NOT_FIGHT);
             ret.setOutcome(army, CombatLayer.CITY, CombatResult.Outcome.DID_NOT_FIGHT);
         }
+
+        // SEA, first and with every hull still aboard. executaCombates calls executaCombateNaval()
+        // before either of the Judge's two anchoring sites, so the fleets fight with their ships
+        // and only the survivors put anything ashore.
+        final java.util.Set<ArmySim> foughtAtSea = new java.util.HashSet<>(
+                navyResolver.resolve(scenario, cenario, copies, ret));
+
+        // ANCHOR, between the two, exactly where executaMsgBasicaCombateLand does it. Before the
+        // sea layer existed this happened at copy time, which was the same thing; it is not any
+        // more, and doing it here is the whole reason CombatCopies no longer does it itself.
+        copies.doAnchor(scenario);
 
         // LAND. Accumulates into ret: rounds, per-army outcomes, casualties, the fidelity notes.
         landResolver.resolve(scenario, cenario, copies, ret);
@@ -91,7 +103,8 @@ public class CombatChain {
         // BATTLE, not the end of a layer. Taken at the end of the land layer it showed an army
         // mauled at the walls at its pre-assault strength, and left a city-only attacker's table
         // empty after a battle it had just fought.
-        LandCombatResolver.doSnapshotSurvivors(copies.all(), copies.toOriginal(), ret);
+        LandCombatResolver.doSnapshotSurvivors(copies.all(), copies.toOriginal(),
+                copies.anchored(), foughtAtSea, ret);
         return ret;
     }
 

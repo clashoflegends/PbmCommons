@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import model.Pelotao;
 
 /**
  * The armies the simulation actually fights with: ONE copy of each, shared by every layer.
@@ -34,12 +37,24 @@ import java.util.Map;
  * {@code CityCombatResolver} broke before this class existed: it spent the one-time magic on the
  * originals and zeroed the player's own spinner.
  *
- * <h3>Anchoring happens once, here</h3>
+ * <h3>Anchoring happens ONCE, and AFTER the sea layer</h3>
  *
  * Ships leave an army that fights ashore, and the Judge does it per layer -
- * {@code doAncoraBarcoAll} for the land battle, {@code doAncoraEsquadras} before the city one. On a
- * single working set the second call has nothing left to do, so doing it once at copy time is the
- * same thing and cannot be forgotten by a layer added later.
+ * {@code doAncoraBarcoAll} inside {@code executaMsgBasicaCombateLand} for the land battle,
+ * {@code doAncoraEsquadras} before a city-only one. On a single working set the second call has
+ * nothing left to do, so doing it once is the same thing.
+ *
+ * WHEN it happens is not a detail. {@code executaCombates} calls {@code executaCombateNaval()}
+ * FIRST, before either anchoring site, so the fleets fight at sea with their hulls and only then
+ * put troops ashore. This class used to anchor at copy time, which was indistinguishable from the
+ * Judge while the sea layer did not exist and became wrong the moment it did: every ship would have
+ * been gone before the first naval round. So it is {@link #doAnchor} now, called by the chain
+ * between the sea and land layers, and by the standalone land entry that has no sea layer in front
+ * of it.
+ *
+ * The ships are SET ASIDE, not destroyed. {@link #anchored} is where they go - the sim's stand-in
+ * for the hex garrison {@code sumBarcoAncorado} puts them in - so the final snapshot can tell a
+ * fleet that beached its boats from one that lost them.
  */
 final class CombatCopies {
 
@@ -55,16 +70,20 @@ final class CombatCopies {
      * reports a different defense and possibly a different verdict with nothing changed.
      */
     private model.Cidade city;
+    /** Per copy, the ship platoons anchored out of it. The sim's hex garrison. */
+    private final Map<ArmySim, SortedMap<String, Pelotao>> anchored = new IdentityHashMap<>();
 
     private CombatCopies() {
     }
 
     /**
-     * One copy of every army on the hex, anchored, ready for the first layer.
+     * One copy of every army on the hex, ships still aboard, ready for the SEA layer.
      *
      * EVERY army, not just the ones fighting on some layer: an army that takes no part still has to
      * be reported, and a later layer may admit an army an earlier one declined. Filtering is the
      * layer's job, through {@link #inLayer}.
+     *
+     * Not anchored. See {@link #doAnchor}, and the class note on why the order matters.
      */
     static CombatCopies of(CombatScenario scenario) {
         final CombatCopies ret = new CombatCopies();
@@ -75,11 +94,34 @@ final class CombatCopies {
         ret.city = active == null ? null : active.clone();
         for (ArmySim original : scenario.getArmies()) {
             final ArmySim copy = new ArmySim(original);
-            LandCombatResolver.doAncoraBarcos(copy, scenario);
             ret.copies.add(copy);
             ret.toOriginal.put(copy, original);
         }
         return ret;
+    }
+
+    /**
+     * Puts every fleet's boats ashore, once, before anybody fights on land.
+     *
+     * Idempotent, because the Judge's two anchoring sites are: the second finds nothing left to do.
+     */
+    void doAnchor(CombatScenario scenario) {
+        if (scenario == null) {
+            return;
+        }
+        for (ArmySim copy : copies) {
+            final SortedMap<String, Pelotao> aside =
+                    LandCombatResolver.doAncoraBarcos(copy, scenario);
+            if (aside.isEmpty()) {
+                continue;
+            }
+            anchored.computeIfAbsent(copy, key -> new TreeMap<>()).putAll(aside);
+        }
+    }
+
+    /** Per copy, the ship platoons this run put ashore. Never null. */
+    Map<ArmySim, SortedMap<String, Pelotao>> anchored() {
+        return anchored;
     }
 
     /** The city this run may damage, or null when no city takes part. Never the scenario's own. */

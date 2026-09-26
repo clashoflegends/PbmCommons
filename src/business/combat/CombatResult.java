@@ -192,13 +192,28 @@ public class CombatResult {
         private final ArmySim defender;
         private final long attack;
         private final long damage;
+        /**
+         * Which layer landed this blow.
+         *
+         * A round number alone does not identify one. The land battle counts from 0 and the sea
+         * battle from 1, so both have a round 1 on the same hex in the same result - and a trace
+         * read by round alone hands back whichever was recorded first. The layer stamp on
+         * {@link RoundLoss} exists for the same reason.
+         */
+        private final CombatLayer layer;
 
-        RoundDamage(int round, ArmySim attacker, ArmySim defender, long attack, long damage) {
+        RoundDamage(int round, ArmySim attacker, ArmySim defender, long attack, long damage,
+                CombatLayer layer) {
             this.round = round;
             this.attacker = attacker;
             this.defender = defender;
             this.attack = attack;
             this.damage = damage;
+            this.layer = layer;
+        }
+
+        public CombatLayer getLayer() {
+            return layer;
         }
 
         public int getRound() {
@@ -224,8 +239,8 @@ public class CombatResult {
     }
 
     public void addRoundDamage(int round, ArmySim attacker, ArmySim defender, long attack,
-            long damage) {
-        roundDamage.add(new RoundDamage(round, attacker, defender, attack, damage));
+            long damage, CombatLayer layer) {
+        roundDamage.add(new RoundDamage(round, attacker, defender, attack, damage, layer));
     }
 
     /**

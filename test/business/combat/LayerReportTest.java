@@ -81,7 +81,7 @@ public class LayerReportTest extends LandCombatFixture {
     public void alayerThatDidNotHappenCarriesItsReason() {
         final LayerReport report = new LayerReport(CombatLayer.NAVY, 0);
         assertFalse(report.isFought());
-        report.setNotFoughtReason("BATTLESIM.LAYER.NOTSIMULATED");
-        assertEquals("BATTLESIM.LAYER.NOTSIMULATED", report.getNotFoughtReason());
+        report.setNotFoughtReason("BATTLESIM.LAYER.NOBATTLE");
+        assertEquals("BATTLESIM.LAYER.NOBATTLE", report.getNotFoughtReason());
     }
 }

@@ -410,13 +410,14 @@ public class FidelityHarness {
         // round by round, so a divergence is located in the round it STARTS in rather than being
         // read off a total five rounds later
         for (CombatResult.RoundDamage hit : result.getRoundDamage()) {
-            System.out.println(String.format("DMG|%d|%s|%s|%d|%d", hit.getRound(),
-                    hit.getAttacker().getNome(), hit.getDefender().getNome(),
+            System.out.println(String.format("DMG|%s|%d|%s|%s|%d|%d", hit.getLayer(),
+                    hit.getRound(), hit.getAttacker().getNome(), hit.getDefender().getNome(),
                     hit.getAttack(), hit.getDamage()));
         }
         for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
-            System.out.println(String.format("LOSS|%d|%s|%s|%d|%d", loss.getRound(),
-                    loss.getArmy().getNome(), loss.getPlatoon().getTipoTropa().getNome(),
+            System.out.println(String.format("LOSS|%s|%d|%s|%s|%d|%d", loss.getLayer(),
+                    loss.getRound(), loss.getArmy().getNome(),
+                    loss.getPlatoon().getTipoTropa().getNome(),
                     loss.getLost(), loss.getLeft()));
         }
         for (String note : result.getNotes()) {
@@ -486,17 +487,31 @@ public class FidelityHarness {
     }
 
     /**
-     * Whether this copy shows those armies' COMPOSITION, not merely their names.
+     * Whether this copy shows those armies' REAL composition, not a size-band guess at it.
      *
-     * The distinction is the whole fog of war: an unscouted enemy arrives in the EGF as a name and
-     * a size band with ZERO platoons, so a copy that "has" both armies can still have nothing to
-     * fight with. Searching on the name alone picked exactly such a copy and the assault reported
-     * NO_ASSAULT - the right answer to the question that copy could actually ask.
+     * The whole fog of war is in this test, and it has two levels. An unscouted enemy can arrive
+     * with no platoons at all - which picked a copy where the city assault correctly reported
+     * NO_ASSAULT, there being nothing to assault with. It can also arrive with the PLACEHOLDER
+     * pair: two invented platoons carrying the size band, which look like a composition and are
+     * not. That picked a copy of the navy battle whose numbers were a guess at the enemy's hulls.
+     *
+     * The tell for the second is TRAINING. The placeholder pair is built from real catalogue troop
+     * types - so checking the catalogue proves nothing, which was the first thing tried - but it is
+     * built with no training at all, because training is not something you can see from a distance.
+     * A real platoon the observer can see always carries one. So: a copy is usable when at least
+     * one of each named army's platoons has been trained.
      */
     private static boolean showsAll(CombatScenario scenario, String... names) {
         for (String name : names) {
             final ArmySim army = find(scenario, name);
             if (army == null || army.getPelotoes().isEmpty()) {
+                return false;
+            }
+            boolean trained = false;
+            for (Pelotao pelotao : army.getPelotoes().values()) {
+                trained |= pelotao.getTreino() > 0;
+            }
+            if (!trained) {
                 return false;
             }
         }
@@ -573,6 +588,83 @@ public class FidelityHarness {
         assertEquals(4626, damageOn(city, "Quentyn"), "and to Quentyn");
         assertEquals(336, cityLoss(result, "Garth"), "Heavy Infantry lost at the walls");
         assertEquals(309, cityLoss(result, "Quentyn"), "Sand Cavalry lost at the walls");
+    }
+
+    /**
+     * THE KNOWN ANSWER FOR THE SEA LAYER. Game 866 turn 3, the navy battle at 2442.
+     *
+     * Twelve cargo ships against thirty triremes and twenty more cargo ships, and it is over in one
+     * round - which is the shape the sea layer had to get right before anything else, because every
+     * term in it differs from the land battle: the attack counts only hulls, the damage is shared
+     * out by hull count rather than by bodies, and the counter opens at 1 with no first-strike
+     * round in front of it.
+     *
+     * The engine is confirmed, not assumed: the turn carries "a navy conflict took place in the
+     * early morning hours" and "commanded the navy to", which are
+     * {@code COMBATE.NO.CLIMA.MANHA.NAVAL} and {@code COMBATE.NAVAL.ORDEM.TATICA} - two of the five
+     * naval tokens {@code CombatNavy} does not emit. The damage line itself is shared by both
+     * engines and would not have settled it.
+     *
+     * The commander's artifact is supplied, exactly as Seagard supplies a fitted morale: Barristan
+     * carries the sword Lion's Tooth and it is worth a flat 500 to his attack, which is the
+     * difference between the 10,381 this can see and the 10,881 the Judge printed. An enemy
+     * commander's artifact does not cross the wire (T-808), and that is the secrecy seam rather
+     * than a fidelity gap.
+     */
+    @Test
+    public void reproducesTheNavyBattleAt2442Exactly() throws Exception {
+        final CombatScenario scenario = loadFromAnyPlayer("866_GoT12c_866", "002", "2442",
+                "Mihke Hornug", "Barristan Selmy");
+        assumeTrue(scenario != null, "hex 2442 in no EGF of that turn");
+        applySpec(scenario, Arrays.asList(
+                // tactics from the turn's own orders: ambush is 5, surround is 3
+                "army|Mihke Hornug|tactic=5|moral=42",
+                "army|Barristan Selmy|tactic=3|moral=52|plus=500"));
+
+        final CombatResult result = new CombatChain().resolve(scenario,
+                scenario.getPartida().getCenario());
+
+        assertEquals(1, result.getRounds(CombatLayer.NAVY), "one round, and the Judge fought one");
+        assertEquals(1057, attackAtSea(result, "Mihke"), "Mihke Hornug's attack");
+        assertEquals(10881, attackAtSea(result, "Barristan"), "Barristan Selmy's attack");
+        assertEquals(1057, damageAtSea(result, "Mihke"), "and what it did to Barristan");
+        assertEquals(10881, damageAtSea(result, "Barristan"), "and his to Mihke");
+        assertEquals(12, lostAtSea(result, "Mihke", "Cargo Ships"), "every hull Mihke had");
+        assertEquals(2, lostAtSea(result, "Barristan", "Triremes"), "and two of Barristan's");
+        assertEquals(0, lostAtSea(result, "Barristan", "Cargo Ships"),
+                "the casualty order spent it all on the triremes");
+    }
+
+    /** By LAYER, never by round: the land battle also has a round 1 on this hex. */
+    private static long attackAtSea(CombatResult result, String who) {
+        for (CombatResult.RoundDamage hit : result.getRoundDamage()) {
+            if (hit.getLayer() == CombatLayer.NAVY
+                    && hit.getAttacker().getNome().contains(who)) {
+                return hit.getAttack();
+            }
+        }
+        return -1;
+    }
+
+    private static long damageAtSea(CombatResult result, String who) {
+        for (CombatResult.RoundDamage hit : result.getRoundDamage()) {
+            if (hit.getLayer() == CombatLayer.NAVY
+                    && hit.getAttacker().getNome().contains(who)) {
+                return hit.getDamage();
+            }
+        }
+        return -1;
+    }
+
+    private static int lostAtSea(CombatResult result, String who, String troop) {
+        int ret = 0;
+        for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
+            if (loss.getLayer() == CombatLayer.NAVY && loss.getArmy().getNome().contains(who)
+                    && troop.equals(loss.getPlatoon().getTipoTropa().getNome())) {
+                ret += loss.getLost();
+            }
+        }
+        return ret;
     }
 
     private static long attackOn(CityCombatResolver.CityResult city, String who) {

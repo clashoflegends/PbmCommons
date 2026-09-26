@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import model.Artefato;
 import model.Cenario;
 import model.Pelotao;
@@ -92,8 +95,8 @@ public class LandCombatResolver {
      */
     private static final int NPC_COMBAT_PER_SKILL = 100;
 
-    private final BattleSimFacade battleSimFacade = new BattleSimFacade();
-    private final ExercitoFacade exercitoFacade = new ExercitoFacade();
+    private static final BattleSimFacade battleSimFacade = new BattleSimFacade();
+    private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
     private final CenarioFacade cenarioFacade = new CenarioFacade();
 
     /**
@@ -108,7 +111,12 @@ public class LandCombatResolver {
         if (scenario == null) {
             return ret;
         }
-        return resolve(scenario, cenario, CombatCopies.of(scenario), ret);
+        // No sea layer in front of this entry, so the anchoring the chain does between the two
+        // happens here instead. Without it the boats stay aboard and inflate their owner's share of
+        // the incoming damage - the Seagard defect.
+        final CombatCopies copies = CombatCopies.of(scenario);
+        copies.doAnchor(scenario);
+        return resolve(scenario, cenario, copies, ret);
     }
 
     /**
@@ -147,9 +155,9 @@ public class LandCombatResolver {
         final Map<ArmySim, Boolean> engaged = new IdentityHashMap<>();
 
         int round = 0;
-        while (round < MAX_ROUNDS && hasLiveFight(fighters, matrix, toOriginal)) {
-            doDistributeDamage(fighters, matrix, toOriginal, relations, cenario, pending, engaged,
-                    round, ret);
+        while (round < MAX_ROUNDS && hasLiveFight(scenario, fighters, matrix, toOriginal)) {
+            doDistributeDamage(scenario, fighters, matrix, toOriginal, relations, cenario, pending,
+                    engaged, round, ret);
             doApplyCasualties(fighters, toOriginal, cenario, pending, round, ret);
             round++;
         }
@@ -169,12 +177,12 @@ public class LandCombatResolver {
      * simultaneo" - pretend it is simultaneous. That is why the order of armies within a round
      * cannot change the answer, and why every strength below is read before anything falls.
      */
-    private void doDistributeDamage(List<ArmySim> fighters, HostilityMatrix matrix,
-            Map<ArmySim, ArmySim> toOriginal, RelationshipMatrix relations, Cenario cenario,
-            Map<ArmySim, Long> pending, Map<ArmySim, Boolean> engaged, int round,
+    private void doDistributeDamage(CombatScenario scenario, List<ArmySim> fighters,
+            HostilityMatrix matrix, Map<ArmySim, ArmySim> toOriginal, RelationshipMatrix relations,
+            Cenario cenario, Map<ArmySim, Long> pending, Map<ArmySim, Boolean> engaged, int round,
             CombatResult ret) {
         for (ArmySim army : fighters) {
-            final List<ArmySim> enemies = enemiesOf(army, fighters, matrix, toOriginal);
+            final List<ArmySim> enemies = enemiesOf(army, fighters, matrix, toOriginal, scenario);
             if (enemies.isEmpty()) {
                 continue;
             }
@@ -204,7 +212,7 @@ public class LandCombatResolver {
                         exercitoFacade.getQtTropasTotal(enemy) * ataqueFinal / qtTropsInimigo;
                 pending.put(enemy, banked(pending, enemy) + dano);
                 ret.addRoundDamage(round, toOriginal.get(army), toOriginal.get(enemy),
-                        ataqueFinal, dano);
+                        ataqueFinal, dano, CombatLayer.ARMY);
             }
         }
     }
@@ -227,18 +235,38 @@ public class LandCombatResolver {
      * A garrison keeps its ships: {@code doAncoraBarcoAll} returns early for one, since it is
      * already the thing the ships would be anchored into.
      */
-    static void doAncoraBarcos(ArmySim army, CombatScenario scenario) {
+    static SortedMap<String, Pelotao> doAncoraBarcos(ArmySim army, CombatScenario scenario) {
+        final SortedMap<String, Pelotao> ret = new TreeMap<>();
         // TERRAIN OR DOCKS, the same Hexagono.isAncoravel() the Judge anchors on in both
         // executaMsgBasicaCombateLand and doAncoraEsquadras. The docks half was added to the two
         // GATES and not here, to the one place that actually removes the ships - so at a port city
         // on non-anchorable ground a fleet joined the assault with its boats still aboard, took an
         // inflated share of the city's returned damage and left its allies short. That is the
         // Seagard defect one layer over.
-        if (!isAncoravel(scenario) || army.isGarrison()) {
-            return;
+        //
+        // The other three conditions are doAncoraBarcoAll's own first line, and they were missing:
+        // a WATER hex has nothing to anchor to, a fleet carrying no land troops has no reason to
+        // put anything ashore, and a garrison IS the thing ships are anchored into.
+        if (!isAncoravel(scenario) || army.isGarrison()
+                || isAgua(scenario) || exercitoFacade.isBarcoOnly(army)) {
+            return ret;
         }
-        army.getPelotoes().values().removeIf(pelotao -> pelotao.getTipoTropa() != null
-                && pelotao.getTipoTropa().isBarcos());
+        for (Pelotao pelotao : new ArrayList<>(army.getPelotoes().values())) {
+            // getQtd() <= 0 is skipped by the Judge, and KI-033 is why: anchoring an empty platoon
+            // creates a garrison entry for a boat that is not there.
+            if (pelotao.getQtd() <= 0 || pelotao.getTipoTropa() == null
+                    || !pelotao.getTipoTropa().isBarcos()) {
+                continue;
+            }
+            army.getPelotoes().remove(pelotao.getCodigo());
+            ret.put(pelotao.getCodigo(), pelotao);
+        }
+        return ret;
+    }
+
+    /** {@code Hexagono.isAgua()}, through the player's Terrain override. */
+    private static boolean isAgua(CombatScenario scenario) {
+        return scenario.getTerreno() != null && scenario.getTerreno().isAgua();
     }
 
     /** {@code Hexagono.isAncoravel()}: anchorable terrain, or a city with docks. */
@@ -284,6 +312,18 @@ public class LandCombatResolver {
             // than assumed: at 811 t58 hex 1630 every round-0 number matches exactly with zero here.
             return 0;
         }
+        return getForcaPlusFlat(army);
+    }
+
+    /**
+     * The same additions, with no round-0 rule in front of them.
+     *
+     * The sea layer needs this: its counter opens at 1 and there is no first-strike round at sea,
+     * so {@code getForcaPlusNaval} lands in the FIRST round rather than the second. Sharing the
+     * body is what keeps the one-time magic spent once across both - it is zeroed on the copy here,
+     * so whichever layer swings first is the one that gets it.
+     */
+    static long getForcaPlusFlat(ArmySim army) {
         final long onetime = army.getCombateAtaqueOnetime();
         army.setCombateAtaqueOnetime(0);
         long ret = army.getAttackBonus() + onetime;
@@ -321,7 +361,7 @@ public class LandCombatResolver {
      * so the same two armies can hit 35% harder or 25% softer on the strength of one cell. Worth
      * knowing when reading a result whose relationships were assumed rather than read.
      */
-    private int getBonusRelacionamento(RelationshipMatrix relations, ArmySim army, ArmySim enemy) {
+    static int getBonusRelacionamento(RelationshipMatrix relations, ArmySim army, ArmySim enemy) {
         if (relations == null || army == null || enemy == null
                 || army.getNacao() == null || enemy.getNacao() == null) {
             return 0;
@@ -416,7 +456,21 @@ public class LandCombatResolver {
      */
     private void doCasualtiesByRank(ArmySim army, ArmySim original, long dano, int round,
             CombatResult ret, CombatLayer layer) {
-        for (Pelotao pelotao : exercitoFacade.listaTropasTerra(army)) {
+        doCasualtiesByRank(army, original, exercitoFacade.listaTropasTerra(army), dano, round, ret,
+                layer);
+    }
+
+    /**
+     * The same rule, over whichever list the layer consumes.
+     *
+     * The sea layer hands it SHIPS - {@code listaTropasAgua()} - and takes the identical path,
+     * because {@code doCombateDano} routes every naval army through {@code doCombateDanoTatica}
+     * whatever the scenario's casualty rule says. One implementation of the Judge's rank rule, so
+     * the two layers cannot drift.
+     */
+    void doCasualtiesByRank(ArmySim army, ArmySim original, List<Pelotao> platoons, long dano,
+            int round, CombatResult ret, CombatLayer layer) {
+        for (Pelotao pelotao : platoons) {
             if (dano <= 0) {
                 return;
             }
@@ -445,11 +499,11 @@ public class LandCombatResolver {
      * "Some army still has an enemy and still has something to fight with." Rebuilt every round
      * rather than cached, exactly as the Judge drops a wiped-out army out of everyone's enemy list.
      */
-    private boolean hasLiveFight(List<ArmySim> fighters, HostilityMatrix matrix,
-            Map<ArmySim, ArmySim> toOriginal) {
+    private boolean hasLiveFight(CombatScenario scenario, List<ArmySim> fighters,
+            HostilityMatrix matrix, Map<ArmySim, ArmySim> toOriginal) {
         for (ArmySim one : fighters) {
             if (isStillInTheLandBattle(one)
-                    && !enemiesOf(one, fighters, matrix, toOriginal).isEmpty()) {
+                    && !enemiesOf(one, fighters, matrix, toOriginal, scenario).isEmpty()) {
                 return true;
             }
         }
@@ -464,15 +518,51 @@ public class LandCombatResolver {
      * battle resolves in zero rounds.
      */
     private List<ArmySim> enemiesOf(ArmySim army, List<ArmySim> fighters, HostilityMatrix matrix,
-            Map<ArmySim, ArmySim> toOriginal) {
+            Map<ArmySim, ArmySim> toOriginal, CombatScenario scenario) {
         final List<ArmySim> ret = new ArrayList<>();
         for (ArmySim other : fighters) {
             if (other != army && isStillInTheLandBattle(other)
+                    && canReachAshore(army, other, scenario)
                     && matrix.isInimigo(toOriginal.get(army), toOriginal.get(other))) {
                 ret.add(other);
             }
         }
         return ret;
+    }
+
+    /**
+     * Can these two actually come to blows on land, or is one of them still afloat?
+     *
+     * {@code executaMsgBasicaCombateLand} 1014-1022, which is four cases and only two of them
+     * fight. {@code isEsquadraEmbarcada()} means the army fits entirely in its own transports - it
+     * is at sea, not ashore:
+     *
+     * <ul>
+     *   <li><b>Both afloat:</b> the Judge THROWS here ("combate naval deveria ter resolvido isto
+     *       antes"). Nothing to do on land.</li>
+     *   <li><b>Only the other one afloat:</b> ignored, and its own comment says why - a land army
+     *       cannot reach a fleet that has not landed.</li>
+     *   <li><b>This one afloat, on anchorable ground, the other ashore:</b> the amphibious assault.
+     *       It fights.</li>
+     *   <li><b>Neither afloat:</b> an ordinary land battle.</li>
+     * </ul>
+     *
+     * Asked of the COPIES and after the chain has anchored, because that is when the Judge asks it:
+     * an army that put its boats on the beach is no longer aboard them. Before the sea layer
+     * existed this could not change during a run and the rule went unmodelled; a naval battle that
+     * sinks one side's transports changes it in the middle of the very hex it decides.
+     */
+    private boolean canReachAshore(ArmySim army, ArmySim other, CombatScenario scenario) {
+        final boolean afloat = exercitoFacade.isEsquadraEmbarcada(army);
+        final boolean otherAfloat = exercitoFacade.isEsquadraEmbarcada(other);
+        if (!afloat && !otherAfloat) {
+            return true;
+        }
+        if (afloat && otherAfloat) {
+            return false;
+        }
+        // Exactly one is afloat, and only the afloat one can close the distance - by landing.
+        return afloat && isAncoravel(scenario);
     }
 
     /**
@@ -527,16 +617,51 @@ public class LandCombatResolver {
      */
     static void doSnapshotSurvivors(List<ArmySim> copies, Map<ArmySim, ArmySim> toOriginal,
             CombatResult ret) {
+        doSnapshotSurvivors(copies, toOriginal, null, null, ret);
+    }
+
+    /**
+     * The same snapshot, with the ships the run set aside and the ones that actually fought.
+     *
+     * <h3>Why an anchored ship is not a sunk one</h3>
+     *
+     * Anchoring REMOVES the ship platoons from the army, so a snapshot that only reads the copy
+     * finds nothing where the boats were and reports the whole fleet destroyed. The anchored set is
+     * where they went, and reading it back is what makes "left them on the beach" different from
+     * "lost them".
+     *
+     * <h3>Why ships are in the table only when they fought</h3>
+     *
+     * The summary counts what the battle put at risk. A fleet that anchored and marched inland
+     * risked its troops and not its boats, and adding 40 anchored ships to its Before and After
+     * would move the percentage in the cost line without a single ship having been in danger. So a
+     * ship platoon enters the table only for an army that fought at SEA - where ships are exactly
+     * what was at risk, and where leaving them out would give a fleet that lost half its hulls a
+     * casualty table reading nothing lost.
+     *
+     * @param anchored     per copy, the ship platoons the run put ashore; null when none were
+     * @param foughtAtSea  the copies the sea layer resolved for; null before that layer exists
+     */
+    static void doSnapshotSurvivors(List<ArmySim> copies, Map<ArmySim, ArmySim> toOriginal,
+            Map<ArmySim, SortedMap<String, Pelotao>> anchored, Set<ArmySim> foughtAtSea,
+            CombatResult ret) {
         for (ArmySim copy : copies) {
             final ArmySim original = toOriginal.get(copy);
             if (original == null) {
                 continue;
             }
+            final SortedMap<String, Pelotao> aside =
+                    anchored == null ? null : anchored.get(copy);
+            final boolean atSea = foughtAtSea != null && foughtAtSea.contains(copy);
             for (Pelotao was : original.getPelotoes().values()) {
-                if (was.getTipoTropa() != null && was.getTipoTropa().isBarcos()) {
+                final boolean ships = was.getTipoTropa() != null && was.getTipoTropa().isBarcos();
+                if (ships && !atSea) {
                     continue;
                 }
-                final Pelotao now = copy.getPelotoes().get(was.getCodigo());
+                Pelotao now = copy.getPelotoes().get(was.getCodigo());
+                if (now == null && aside != null) {
+                    now = aside.get(was.getCodigo());
+                }
                 ret.put(was, was.getQtd(), now == null ? 0 : now.getQtd());
             }
         }
@@ -620,7 +745,7 @@ public class LandCombatResolver {
      * in terms of the armies the player is looking at, not the clones. Matching on the troop code is
      * the same join {@code report} uses to hand back survivors.
      */
-    private Pelotao originalOf(ArmySim original, Pelotao copy) {
+    static Pelotao originalOf(ArmySim original, Pelotao copy) {
         if (original == null || copy == null) {
             return copy;
         }

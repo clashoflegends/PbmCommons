@@ -83,6 +83,12 @@ public class LayerReport {
             }
             // every column from this round onward drops, because the table is a running total and
             // an army that loses 200 in round 1 is 200 lighter for the rest of the battle
+            if (!counts(loss.getPlatoon(), layer == CombatLayer.NAVY)) {
+                // Drowning is stamped NAVY and kills troops, so it belongs to the sea layer's
+                // events and to the LAND layer's numbers. The sea table counts hulls and must not
+                // subtract it; startOf already carried it into what came ashore.
+                continue;
+            }
             for (int col = loss.getRound() - base + 1; col < row.length; col++) {
                 row[col] -= loss.getLost();
             }
@@ -124,18 +130,38 @@ public class LayerReport {
      * them in, so {@code ordinal()} is the chain.
      */
     private static int startOf(ArmySim army, CombatResult result, CombatLayer layer) {
-        final int ret = startOf(army, result);
+        final int ret = startOf(army, result, layer == CombatLayer.NAVY);
         if (ret == ABSENT) {
             return ABSENT;
         }
         int lostEarlier = 0;
         for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
             if (loss.getArmy() == army && loss.getLayer() != null
-                    && loss.getLayer().ordinal() < layer.ordinal()) {
+                    && loss.getLayer().ordinal() < layer.ordinal()
+                    && counts(loss.getPlatoon(), layer == CombatLayer.NAVY)) {
                 lostEarlier += loss.getLost();
             }
         }
         return Math.max(0, ret - lostEarlier);
+    }
+
+    /**
+     * Each layer counts the platoons IT puts at risk: the sea counts hulls, the others count
+     * troops.
+     *
+     * Not a presentation choice. A fleet of 40 ships carrying 900 infantry would otherwise open the
+     * sea table at 940 and the land table at 940, and neither number is anything: the sea battle
+     * can only sink the 40 and the land battle can only kill the 900. Mixing them also breaks the
+     * carry-over the tables exist to show, because the sea layer's losses are hulls and subtracting
+     * them from a troop count is arithmetic on two different things.
+     *
+     * It is also what makes the land table's start honest after a sea battle. Drowning is stamped
+     * NAVY but kills TROOPS, so it is an earlier-layer loss that the land layer does count - which
+     * is exactly right: what reaches shore is what did not drown.
+     */
+    private static boolean counts(Pelotao pelotao, boolean naval) {
+        return pelotao != null && pelotao.getTipoTropa() != null
+                && naval == pelotao.getTipoTropa().isBarcos();
     }
 
     /**
@@ -148,10 +174,10 @@ public class LayerReport {
      * screen. Seen at 829 t24, where a vast navy and a second fleet sat in the land table as rows of
      * zeroes beside their own "--" in the summary above.
      */
-    private static int startOf(ArmySim army, CombatResult result) {
+    private static int startOf(ArmySim army, CombatResult result, boolean naval) {
         int ret = ABSENT;
         for (Pelotao pelotao : army.getPelotoes().values()) {
-            if (result.has(pelotao)) {
+            if (result.has(pelotao) && counts(pelotao, naval)) {
                 ret = Math.max(ret, 0) + pelotao.getQtd();
             }
         }
