@@ -97,7 +97,7 @@ public class CombatChain {
         // resolver returns before writing it when fewer than two armies engage, which is exactly a
         // city-only assault. Written here when the land layer did not.
         if (ret.getNoteCount("BATTLESIM.RESULT.UNKNOWNMORALE") == 0) {
-            noteUnknownMorale(scenario, city, ret);
+            noteUnknownMorale(scenario, copies, city, ret);
         }
         // LAST, and over EVERY copy: the platoon table's After and Lost describe the end of the
         // BATTLE, not the end of a layer. Taken at the end of the land layer it showed an army
@@ -115,11 +115,18 @@ public class CombatChain {
      * resolver counts its own fighters for the same reason; neither should count an army standing
      * on the hex taking no part.
      */
-    private void noteUnknownMorale(CombatScenario scenario, CityCombatResolver.CityResult city,
-            CombatResult ret) {
+    private void noteUnknownMorale(CombatScenario scenario, CombatCopies copies,
+            CityCombatResolver.CityResult city, CombatResult ret) {
         int unknown = 0;
         for (ArmySim attacker : city.getAttackers()) {
-            if (scenario.isMoraleUnknown(attacker)) {
+            // THE ORIGINAL. getAttackers returns the run's copies, and provenance is an
+            // IdentityHashMap keyed on the armies the scenario knows - so asking it about a copy
+            // answers MANUAL, "the player typed this himself", and the disclosure never fired. A
+            // city-only battle between two foreign armies therefore reported no unknown morale at
+            // all, which is the one case where every attacker's morale IS unknown. Found in QA at
+            // 906 t3 hex 1360: both attackers at "Morale (?) 0", both wiped out by the walls, and
+            // not a word about why their attack was a fraction of what it will be.
+            if (scenario.isMoraleUnknown(copies.originalOf(attacker))) {
                 unknown++;
             }
         }

@@ -166,6 +166,37 @@ public class CityLayerReportTest extends LandCombatFixture {
                 "the two tables on one screen must not contradict each other");
     }
 
+    /**
+     * A city-only battle between armies the player cannot see still discloses the unknown morale.
+     *
+     * This is the one case where EVERY attacker's morale is a guess, and it was the one case that
+     * said nothing. {@code CityResult.getAttackers()} hands back the run's COPIES, and provenance
+     * is an IdentityHashMap keyed on the armies the scenario knows - so asking it about a copy
+     * answered MANUAL, "the player typed this himself", and the count came out zero.
+     *
+     * Found in QA at 906 t3 hex 1360: two foreign armies at "Morale (?) 0", both annihilated by the
+     * walls, and not a word about why their attack was a fraction of what it will really be. The
+     * numbers were not wrong; the reason they were low was missing, which is worse, because the
+     * player has no way to tell a crushing defeat from a defeat he caused by not filling in a field.
+     */
+    @Test
+    public void aCityOnlyBattleStillDisclosesUnknownMorale() {
+        final Nacao attacker = nacao("att"), owner = nacao("own");
+        final Local local = hexWithCity(owner);
+        final CombatScenario scenario = assaultOnly(attacker, owner, local);
+        final ArmySim besieger = besieger("Besieger", attacker, local, 900);
+        besieger.setMoral(0);           // never exported for an army seen from outside
+        // ESTIMATED, which is what an army the player did not scout arrives as
+        scenario.addArmy(besieger, CombatScenario.Provenance.ESTIMATED);
+
+        final CombatResult ret = new CombatChain().resolve(scenario, null);
+
+        assertTrue(ret.getNotes().contains("BATTLESIM.RESULT.UNKNOWNMORALE"),
+                "every attacker here is fighting on a morale the player had to guess");
+        assertEquals(1, ret.getNoteCount("BATTLESIM.RESULT.UNKNOWNMORALE"),
+                "and the count is the armies, not the copies of them");
+    }
+
     /** Nobody may read as "city layer not simulated" once it has been. */
     @Test
     public void everyArmyGetsACityVerdictOnceTheLayerRuns() {
