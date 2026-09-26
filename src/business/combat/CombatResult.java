@@ -68,7 +68,6 @@ public class CombatResult {
     private final List<RoundDamage> roundDamage = new ArrayList<>();
     private final List<String> notes = new ArrayList<>();
     private final Map<String, Integer> noteCounts = new java.util.HashMap<>();
-    private int rounds;
     private transient business.combat.CityCombatResolver.CityResult cityResult;
     private final Map<CombatLayer, Integer> roundsByLayer = new EnumMap<>(CombatLayer.class);
 
@@ -253,9 +252,9 @@ public class CombatResult {
     /**
      * How many rounds a given layer fought.
      *
-     * Per layer, because {@link #getRounds} is the LAND battle's count and always was: it is set
-     * once, and a city assault - which is exactly one round and never touches it - reported zero,
-     * so {@code LayerReport.isFought} declared a layer that had just razed a city unfought.
+     * Per layer, because a layer is where a round means anything: the land battle's rounds are a
+     * sequence of exchanges, the city's single round is an assault, and adding them together only
+     * makes sense as the answer to "did anything happen at all".
      */
     public int getRounds(CombatLayer layer) {
         final Integer ret = roundsByLayer.get(layer);
@@ -287,12 +286,22 @@ public class CombatResult {
         this.cityResult = cityResult;
     }
 
+    /**
+     * Every round this battle fought, across every layer.
+     *
+     * It used to be the LAND battle's count alone, and callers read it as "did a battle happen" -
+     * so once the chain could resolve a city assault with no land battle in front of it, an army
+     * that stormed a city and razed it produced zero rounds, a "No land battle took place" verdict
+     * and a title reading "0 rounds". The layers are each other's context, so the question the
+     * callers are actually asking has to be asked of all of them; when they want ONE layer's
+     * rounds, and the per-layer tables do, they ask {@link #getRounds(CombatLayer)}.
+     */
     public int getRounds() {
-        return rounds;
-    }
-
-    public void setRounds(int rounds) {
-        this.rounds = rounds;
+        int ret = 0;
+        for (Integer rounds : roundsByLayer.values()) {
+            ret += rounds;
+        }
+        return ret;
     }
 
     /**

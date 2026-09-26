@@ -27,7 +27,12 @@
         <junitlauncher haltOnFailure="false" printSummary="true">
             <classpath path="${run.test.classpath}"/>
             <testclasses outputdir="${build.test.results.dir}">
-                <fileset dir="${build.test.classes.dir}" includes="**/*Test.class"/>
+                <!-- FidelityHarness is not named *Test because it is also a main() the
+                     calibration runs drive, but it holds the known-answer regressions: real
+                     battles the Judge published, replayed from the turn before. Included by name
+                     so Ant and Maven run the same set. They skip themselves off the LAN. -->
+                <fileset dir="${build.test.classes.dir}"
+                         includes="**/*Test.class,**/FidelityHarness.class"/>
                 <fork dir="${basedir}">
                     <jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
                     <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>

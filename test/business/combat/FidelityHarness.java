@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -215,8 +216,18 @@ public class FidelityHarness {
     }
 
     private static void applySpec(CombatScenario scenario, File spec) throws Exception {
+        applySpec(scenario, Files.readAllLines(spec.toPath(), StandardCharsets.UTF_8));
+    }
+
+    /**
+     * The same spec, held in the test rather than in a file beside it.
+     *
+     * A known-answer test IS its spec - the turn N-1 numbers read off the Judge are the input the
+     * assertion is about - so keeping them in the method keeps the claim and its evidence together,
+     * and stops a test passing because somebody edited a file it does not name.
+     */
+    private static void applySpec(CombatScenario scenario, List<String> lines) throws Exception {
         final BattleSimFacade bsf = new BattleSimFacade();
-        final List<String> lines = Files.readAllLines(spec.toPath(), StandardCharsets.UTF_8);
         // COMPOSITION FIRST, in its own pass. The army pass fits the commander skill against the
         // attack the Judge published, and that fit is meaningless until the army is holding the
         // right troops - run in file order it fitted the placeholder composition and reported a
@@ -453,10 +464,83 @@ public class FidelityHarness {
         final CombatResult result = new LandCombatResolver().resolve(scenario,
                 scenario.getPartida().getCenario());
 
-        assertEquals(2, result.getRounds(), "the Judge fought two rounds");
+        assertEquals(2, result.getRounds(CombatLayer.ARMY), "the Judge fought two rounds");
         assertEquals(518, survivors(scenario, result, "Waldon"), "Waldon Wynch's Reavers");
         assertEquals(523, survivors(scenario, result, "Joron"), "Joron Blacktide's Reavers");
         assertEquals(0, survivors(scenario, result, "Dorian"), "Dorian Rivers was destroyed");
+    }
+
+    private static final String SUMMERHALL =
+            "//marte/Users/gurgel/Documents/Cpbm/Saves/866_GoT12c_866/001/"
+            + "game_866_1.jpessoa.rr.egf";
+
+    /**
+     * THE KNOWN ANSWER FOR THE CITY LAYER. Game 866 turn 2, the storming of Summerhall at 1660.
+     *
+     * Two armies with no land battle between them - they are allies - assault a city and raze it,
+     * which is the shape the land resolver alone cannot produce and the whole reason the chain
+     * exists. The Judge published every number this asserts, and the inputs are the turn 1 state
+     * read off the DB rather than off the EGF: the city's own size, fortification and loyalty are
+     * not exported to an enemy, and the tactic is the one the turn 2 orders carried, not the turn
+     * 1 one the EGF still holds.
+     *
+     * Skipped when the share is unreachable, so CI and a machine without it are unaffected.
+     */
+    @Test
+    public void reproducesSummerhallExactly() throws Exception {
+        final File egf = new File(SUMMERHALL);
+        assumeTrue(egf.exists(), "EGF not reachable: " + SUMMERHALL);
+        final CombatScenario scenario = load(egf, "1660");
+        assumeTrue(scenario != null, "hex 1660 not in this EGF");
+        applySpec(scenario, Arrays.asList(
+                "city|tamanho=3|fortificacao=2|lealdade=52|docas=0",
+                "army|Garth Tyrell|level=2|tactic=0",
+                "army|Quentyn Martell|level=3|tactic=0"));
+
+        final CombatResult result = new CombatChain().resolve(scenario,
+                scenario.getPartida().getCenario());
+        final CityCombatResolver.CityResult city = result.getCityResult();
+
+        assertEquals(CityCombatResolver.CityOutcome.RAZED, city.getOutcome(),
+                "the Judge razed Summerhall");
+        assertEquals(10640, city.getDefence(), "the walls");
+        assertEquals(13881, city.getAttackTotal(), "and what came at them");
+        assertEquals(1, result.getRounds(), "an assault with no land battle is still ONE round");
+        assertEquals(8006, attackOn(city, "Garth"), "Garth Tyrell's attack");
+        assertEquals(5875, attackOn(city, "Quentyn"), "Quentyn Martell's attack");
+        assertEquals(6013, damageOn(city, "Garth"), "what the walls did to Garth");
+        assertEquals(4626, damageOn(city, "Quentyn"), "and to Quentyn");
+        assertEquals(336, cityLoss(result, "Garth"), "Heavy Infantry lost at the walls");
+        assertEquals(309, cityLoss(result, "Quentyn"), "Sand Cavalry lost at the walls");
+    }
+
+    private static long attackOn(CityCombatResolver.CityResult city, String who) {
+        for (ArmySim army : city.getAttackers()) {
+            if (army.getNome().contains(who)) {
+                return city.getAttack(army);
+            }
+        }
+        return -1;
+    }
+
+    private static long damageOn(CityCombatResolver.CityResult city, String who) {
+        for (ArmySim army : city.getAttackers()) {
+            if (army.getNome().contains(who)) {
+                return city.getDamage(army);
+            }
+        }
+        return -1;
+    }
+
+    /** What that army lost IN THE CITY LAYER, so a land casualty cannot be counted here. */
+    private static int cityLoss(CombatResult result, String who) {
+        int ret = 0;
+        for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
+            if (loss.getLayer() == CombatLayer.CITY && loss.getArmy().getNome().contains(who)) {
+                ret += loss.getLost();
+            }
+        }
+        return ret;
     }
 
     private static int survivors(CombatScenario scenario, CombatResult result, String who) {

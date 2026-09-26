@@ -101,6 +101,17 @@
                         --add-opens java.base/java.text=ALL-UNNAMED
                         --add-opens java.base/java.util.concurrent=ALL-UNNAMED
                     </argLine>
+                    <!--
+                        FidelityHarness holds the KNOWN-ANSWER tests: real battles the Judge has
+                        already published, replayed from the turn before. It is not named *Test
+                        because it is also a main() the calibration runs drive, so the default
+                        include pattern skipped it and two regression guards never ran. They gate
+                        themselves on a share being reachable, so this is a no-op off the LAN.
+                    -->
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/FidelityHarness.java</include>
+                    </includes>
                 </configuration>
             </plugin>
 

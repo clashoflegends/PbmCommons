@@ -96,13 +96,6 @@ public class CombatChain {
     }
 
     /**
-     * How the assault ended, from the attacker's point of view.
-     *
-     * Every attacker shares one verdict because the Judge compares ONE summed {@code ataqueTotal}
-     * with the defense - there is no per-army success in the city layer, which is what makes it a
-     * different battle from the army one rather than a variation on it.
-     */
-    /**
      * How many of the armies AT THE WALLS are fighting on a morale the player had to guess.
      *
      * Scoped to the attackers, because that is who this layer's numbers depend on. The land
@@ -122,6 +115,13 @@ public class CombatChain {
         }
     }
 
+    /**
+     * How the assault ended, from the attacker's point of view.
+     *
+     * Every attacker shares one verdict because the Judge compares ONE summed {@code ataqueTotal}
+     * with the defense - there is no per-army success in the city layer, which is what makes it a
+     * different battle from the army one rather than a variation on it.
+     */
     private CombatResult.Outcome outcomeOf(CityCombatResolver.CityResult city) {
         switch (city.getOutcome()) {
             case CAPTURED:

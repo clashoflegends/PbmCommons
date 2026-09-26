@@ -153,7 +153,6 @@ public class LandCombatResolver {
             doApplyCasualties(fighters, toOriginal, cenario, pending, round, ret);
             round++;
         }
-        ret.setRounds(round);
         ret.setRounds(CombatLayer.ARMY, round);
         if (round >= MAX_ROUNDS) {
             ret.addNote("BATTLESIM.RESULT.CAPPED");
