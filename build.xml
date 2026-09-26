@@ -32,7 +32,7 @@
                      battles the Judge published, replayed from the turn before. Included by name
                      so Ant and Maven run the same set. They skip themselves off the LAN. -->
                 <fileset dir="${build.test.classes.dir}"
-                         includes="**/*Test.class,**/FidelityHarness.class"/>
+                         includes="**/*Test.class,**/Test*.class,**/*Tests.class,**/*TestCase.class,**/FidelityHarness.class"/>
                 <fork dir="${basedir}">
                     <jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
                     <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>

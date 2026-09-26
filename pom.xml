@@ -109,7 +109,16 @@
                         themselves on a share being reachable, so this is a no-op off the LAN.
                     -->
                     <includes>
+                        <!--
+                            Naming an include REPLACES surefire's defaults, so the other three
+                            default patterns have to be restated or a test named Test*.java would
+                            stop running the day somebody writes one - silently, which is the same
+                            trap that left the known-answer regressions dormant in the first place.
+                        -->
                         <include>**/*Test.java</include>
+                        <include>**/Test*.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*TestCase.java</include>
                         <include>**/FidelityHarness.java</include>
                     </includes>
                 </configuration>
