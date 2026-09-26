@@ -195,7 +195,57 @@ public class CombatScenario {
      */
     public void setCityOwnerIfUnknown(Nacao fallback) {
         if (fallback != null && cidade != null && cidade.getNacao() == null) {
-            cidade.setNacao(fallback);
+            setCityOwner(fallback);
+        }
+    }
+
+    /**
+     * Gives the scenario's CLONED city an owner without registering the clone on the real nation.
+     *
+     * <h3>Why this is not just {@code cidade.setNacao(nacao)}</h3>
+     *
+     * {@code Cidade.setNacao} back-links: it calls {@code nacao.addCidade(this)}, and
+     * {@code Nacao.addCidade} is {@code cidades.add(cidade)} on a plain {@code ArrayList} with no
+     * dedup. The city here is a CLONE - {@link #setLocal} clones it so a what-if cannot reach the
+     * loaded world - so every call appended a phantom city to the LOADED nation's list and left it
+     * there for the rest of the session. It fired once on every load whose city had no visible
+     * owner, which {@code ScenarioLoader} puts at 27 of 207 cities in a live GoT12c EGF, and again
+     * on every change of the Ground panel's owner combo, which the player can cycle freely.
+     *
+     * That is a write from the simulator into the loaded world, which is the failure this whole
+     * class was restructured to prevent - the same shape as the v2.1.928 defect where the BattleSim
+     * edited the real armies.
+     *
+     * <h3>Un-registered by IDENTITY</h3>
+     *
+     * {@code List.remove(Object)} uses {@code equals}, and {@code BaseModel} overrides only
+     * {@code compareTo} - by {@code codigo} - so {@code equals} is identity TODAY and a plain
+     * remove would happen to work. It would stop working the moment anybody gave {@code BaseModel}
+     * an {@code equals}, and then it would silently remove the REAL city of the same codigo from
+     * the nation. Walking the list and comparing with {@code ==} cannot acquire that bug.
+     */
+    public void setCityOwner(Nacao nacao) {
+        if (cidade == null || nacao == null) {
+            return;
+        }
+        final Nacao previous = cidade.getNacao();
+        cidade.setNacao(nacao);
+        doUnregisterClone(nacao);
+        // and the previous owner too: an earlier setNacao may have left the clone on it, and a
+        // player cycling the combo would otherwise leave one phantom per nation he passed through
+        doUnregisterClone(previous);
+    }
+
+    /** Takes the scenario's cloned city back off a nation's list, comparing by identity. */
+    private void doUnregisterClone(Nacao nacao) {
+        if (nacao == null || nacao.getCidades() == null) {
+            return;
+        }
+        final java.util.Iterator<Cidade> each = nacao.getCidades().iterator();
+        while (each.hasNext()) {
+            if (each.next() == cidade) {
+                each.remove();
+            }
         }
     }
 
