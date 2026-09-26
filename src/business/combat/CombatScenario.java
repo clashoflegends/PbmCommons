@@ -604,7 +604,25 @@ public class CombatScenario {
 
     /** Is any pair hostile? A property of the MATRIX alone - see {@link RunGate#NO_ENGAGEMENT}. */
     public boolean hasCombat() {
-        return getMatrix().hasCombat();
+        if (getMatrix().hasCombat()) {
+            return true;
+        }
+        // THE CITY COUNTS AS A SIDE. The matrix is built from ARMY PAIRS - HostilityDeriver.project
+        // walks the armies - and a city has no army, so the one case this whole layer exists for,
+        // a single besieger against an ungarrisoned enemy city, produced no hostile pair at all and
+        // left Run disabled saying "no two armies here are hostile". True of the armies, and beside
+        // the point: the city is the other side.
+        final Cidade active = getCidadeAtiva();
+        if (active == null || active.getNacao() == null) {
+            return false;
+        }
+        final RelationshipMatrix nations = getRelationships();
+        for (ArmySim army : armies) {
+            if (nations.isHostileFrom(army.getNacao(), active.getNacao())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

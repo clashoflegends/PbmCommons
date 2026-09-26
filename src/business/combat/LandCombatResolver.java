@@ -154,6 +154,7 @@ public class LandCombatResolver {
             round++;
         }
         ret.setRounds(round);
+        ret.setRounds(CombatLayer.ARMY, round);
         if (round >= MAX_ROUNDS) {
             ret.addNote("BATTLESIM.RESULT.CAPPED");
         }
@@ -368,9 +369,9 @@ public class LandCombatResolver {
             }
             final ArmySim original = toOriginal.get(army);
             if (CasualtyMode.of(army, cenario, layer) == CasualtyMode.BY_RANK) {
-                doCasualtiesByRank(army, original, dano, round, ret);
+                doCasualtiesByRank(army, original, dano, round, ret, layer);
             } else {
-                doCasualtiesProportional(army, original, dano, round, ret);
+                doCasualtiesProportional(army, original, dano, round, ret, layer);
             }
             if (exercitoFacade.getQtTropasTotal(army) <= 0) {
                 army.setDisband(true);
@@ -387,7 +388,7 @@ public class LandCombatResolver {
      * predict the turn that will actually run.
      */
     private void doCasualtiesProportional(ArmySim army, ArmySim original, long dano, int round,
-            CombatResult ret) {
+            CombatResult ret, CombatLayer layer) {
         final float constituicao = battleSimFacade.getArmyDefenseTotalLand(army);
         if (constituicao <= 0) {
             return;
@@ -402,7 +403,7 @@ public class LandCombatResolver {
                     : (int) Math.min(pelotao.getQtd(), Math.ceil(pelotao.getQtd() * percent / 100F));
             final int before = pelotao.getQtd();
             exercitoFacade.subTropaQt(army, tipo, qtd);
-            ret.addRoundLoss(round, original, originalOf(original, pelotao), qtd, before - qtd);
+            ret.addRoundLoss(round, original, originalOf(original, pelotao), qtd, before - qtd, layer);
         }
     }
 
@@ -414,7 +415,7 @@ public class LandCombatResolver {
      * down; the first platoon that survives absorbs what is left and the damage stops there.
      */
     private void doCasualtiesByRank(ArmySim army, ArmySim original, long dano, int round,
-            CombatResult ret) {
+            CombatResult ret, CombatLayer layer) {
         for (Pelotao pelotao : exercitoFacade.listaTropasTerra(army)) {
             if (dano <= 0) {
                 return;
@@ -426,13 +427,13 @@ public class LandCombatResolver {
             final int before = pelotao.getQtd();
             if (dano >= constituicao) {
                 exercitoFacade.subTropaQt(army, pelotao.getTipoTropa(), before);
-                ret.addRoundLoss(round, original, originalOf(original, pelotao), before, 0);
+                ret.addRoundLoss(round, original, originalOf(original, pelotao), before, 0, layer);
                 dano -= (long) constituicao;
             } else {
                 final int qtd = (int) Math.min(before, Math.ceil(before * dano / constituicao));
                 exercitoFacade.subTropaQt(army, pelotao.getTipoTropa(), qtd);
                 ret.addRoundLoss(round, original, originalOf(original, pelotao), qtd,
-                        before - qtd);
+                        before - qtd, layer);
                 return;
             }
         }

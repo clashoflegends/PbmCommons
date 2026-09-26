@@ -70,6 +70,7 @@ public class CombatResult {
     private final Map<String, Integer> noteCounts = new java.util.HashMap<>();
     private int rounds;
     private transient business.combat.CityCombatResolver.CityResult cityResult;
+    private final Map<CombatLayer, Integer> roundsByLayer = new EnumMap<>(CombatLayer.class);
 
     /**
      * What one platoon lost in one round.
@@ -86,13 +87,33 @@ public class CombatResult {
         private final Pelotao platoon;
         private final int lost;
         private final int left;
+        private final CombatLayer layer;
 
-        RoundLoss(int round, ArmySim army, Pelotao platoon, int lost, int left) {
+        RoundLoss(int round, ArmySim army, Pelotao platoon, int lost, int left, CombatLayer layer) {
             this.round = round;
             this.army = army;
             this.platoon = platoon;
             this.lost = lost;
             this.left = left;
+            this.layer = layer;
+        }
+
+        /**
+         * WHICH BATTLE killed them, and the table is unreadable without it.
+         *
+         * Each layer's rounds table is a running total from its own start column, so a loss with no
+         * layer lands in every table: the city's round-1 casualties were being subtracted from the
+         * LAND table's columns 2 onward, showing an army melting from an assault that happened
+         * after the land battle had ended. On a pure city assault they vanished instead, because
+         * the land table is only as wide as the land battle's rounds.
+         *
+         * It also gives the sea layer somewhere to put a loss that belongs to no round at all:
+         * coastal drowning happens at the sea-to-land BOUNDARY, and troops that disappear between
+         * one table's last column and the next table's start are the unexplained gap the start
+         * column exists to prevent.
+         */
+        public CombatLayer getLayer() {
+            return layer;
         }
 
         public int getRound() {
@@ -218,9 +239,31 @@ public class CombatResult {
 
     /** Records a platoon's losses for one round, keyed on the SCENARIO'S army and platoon. */
     public void addRoundLoss(int round, ArmySim army, Pelotao platoon, int lost, int left) {
+        addRoundLoss(round, army, platoon, lost, left, CombatLayer.ARMY);
+    }
+
+    /** As above, stamped with the layer that did the killing. See {@link RoundLoss#getLayer}. */
+    public void addRoundLoss(int round, ArmySim army, Pelotao platoon, int lost, int left,
+            CombatLayer layer) {
         if (lost > 0) {
-            roundLosses.add(new RoundLoss(round, army, platoon, lost, left));
+            roundLosses.add(new RoundLoss(round, army, platoon, lost, left, layer));
         }
+    }
+
+    /**
+     * How many rounds a given layer fought.
+     *
+     * Per layer, because {@link #getRounds} is the LAND battle's count and always was: it is set
+     * once, and a city assault - which is exactly one round and never touches it - reported zero,
+     * so {@code LayerReport.isFought} declared a layer that had just razed a city unfought.
+     */
+    public int getRounds(CombatLayer layer) {
+        final Integer ret = roundsByLayer.get(layer);
+        return ret == null ? 0 : ret;
+    }
+
+    public void setRounds(CombatLayer layer, int rounds) {
+        roundsByLayer.put(layer, rounds);
     }
 
     /** Every platoon's losses, round by round, in the order they happened. */

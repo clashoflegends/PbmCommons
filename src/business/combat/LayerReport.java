@@ -40,22 +40,42 @@ public class LayerReport {
         this.rounds = rounds;
     }
 
-    /**
-     * Builds the land layer's table from a finished result.
-     *
-     * Every army in the scenario gets a row, including the ones that never fought: an army standing
-     * on the hex is part of what the player is looking at, and dropping it would leave him counting
-     * rows to work out who is missing.
-     */
+    /** The land layer, kept for callers that only ever wanted that one. */
     public static LayerReport ofLand(CombatScenario scenario, CombatResult result) {
-        final LayerReport ret = new LayerReport(CombatLayer.ARMY, result.getRounds());
+        return of(scenario, result, CombatLayer.ARMY);
+    }
+
+    /**
+     * Builds ONE layer's table from a finished result.
+     *
+     * <h3>Only this layer's losses</h3>
+     *
+     * Each table is a running total from its own start column, so a loss belonging to another layer
+     * poisons it: the city's round-1 casualties were being subtracted from the LAND table's columns
+     * 2 onward, showing an army melting from an assault that happened after the land battle ended -
+     * and on a pure city assault they vanished entirely, because the land table is only as wide as
+     * the land battle's rounds. The layer stamp on {@link CombatResult.RoundLoss} is what makes the
+     * filter possible.
+     *
+     * <h3>START is what ENTERED THIS layer</h3>
+     *
+     * Not the composition on the hex. An army that lost 200 at sea enters the land layer at 1,100,
+     * and reading `start` down the page - 1,300, 1,100, 764 - is how the carry-over becomes
+     * auditable by eye instead of taken on trust. It is computed by rewinding: the army's CURRENT
+     * strength plus everything it lost in THIS layer and in every later one.
+     */
+    public static LayerReport of(CombatScenario scenario, CombatResult result, CombatLayer layer) {
+        final LayerReport ret = new LayerReport(layer, result.getRounds(layer));
         if (scenario == null) {
             return ret;
         }
         for (ArmySim army : scenario.getArmies()) {
-            ret.addArmy(army, startOf(army, result));
+            ret.addArmy(army, startOf(army, result, layer));
         }
         for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
+            if (loss.getLayer() != layer) {
+                continue;
+            }
             final int[] row = ret.remaining.get(loss.getArmy());
             if (row == null || row[0] == ABSENT) {
                 continue;
@@ -67,6 +87,33 @@ public class LayerReport {
             }
         }
         return ret;
+    }
+
+    /**
+     * What this army had when it ENTERED the given layer.
+     *
+     * The plain {@link #startOf(ArmySim, CombatResult)} reads the SCENARIO's own platoons, and the
+     * simulation fights on copies - so it is the strength at the START OF THE BATTLE, not the
+     * current one. Entering a later layer therefore means subtracting what the EARLIER layers took,
+     * which is what makes each table's start equal the previous table's last column without either
+     * of them knowing about the other.
+     *
+     * Layer order is the enum's own - sea, land, city - and it is the order the Judge resolves
+     * them in, so {@code ordinal()} is the chain.
+     */
+    private static int startOf(ArmySim army, CombatResult result, CombatLayer layer) {
+        final int ret = startOf(army, result);
+        if (ret == ABSENT) {
+            return ABSENT;
+        }
+        int lostEarlier = 0;
+        for (CombatResult.RoundLoss loss : result.getRoundLosses()) {
+            if (loss.getArmy() == army && loss.getLayer() != null
+                    && loss.getLayer().ordinal() < layer.ordinal()) {
+                lostEarlier += loss.getLost();
+            }
+        }
+        return Math.max(0, ret - lostEarlier);
     }
 
     /**

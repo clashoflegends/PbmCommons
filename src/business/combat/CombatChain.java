@@ -35,6 +35,9 @@ import model.Cenario;
  */
 public class CombatChain {
 
+    /** A city assault is one round, always - {@code rounds++} happens once, before the army loop. */
+    private static final int CITY_ROUNDS = 1;
+
     private final LandCombatResolver landResolver = new LandCombatResolver();
     private final CityCombatResolver cityResolver = new CityCombatResolver();
 
@@ -50,19 +53,39 @@ public class CombatChain {
             return ret;
         }
         final CombatCopies copies = CombatCopies.of(scenario);
+        // The sea layer has no resolver yet, so say so ONCE, here, rather than leaving the caller to
+        // infer it. The land resolver's own 2-arg entry carries this note for its own callers; the
+        // chain has to carry it for the chain, or a city-only battle reports nothing skipped at all.
+        ret.addNote("BATTLESIM.RESULT.NAVYNOTSIMULATED");
+
+        // NOBODY has fought the city yet. Seeded BEFORE either layer, because a null outcome MEANS
+        // "not simulated" - so without this the defending garrison, every neutral army and, when no
+        // assault happens, EVERY army would read as though the layer never ran. The land resolver
+        // does the same thing for its own layer and for the same reason.
+        for (ArmySim army : scenario.getArmies()) {
+            ret.setOutcome(army, CombatLayer.CITY, CombatResult.Outcome.DID_NOT_FIGHT);
+        }
 
         // LAND. Accumulates into ret: rounds, per-army outcomes, casualties, the fidelity notes.
         landResolver.resolve(scenario, cenario, copies, ret);
 
         // CITY, on whoever is still standing. The re-test lives inside attackersOf, which reads the
         // copies and skips anything the land battle disbanded.
-        final CityCombatResolver.CityResult city = cityResolver.resolve(scenario, cenario, copies, ret);
+        final CityCombatResolver.CityResult city =
+                cityResolver.resolve(scenario, cenario, copies, ret);
         ret.setCityResult(city);
+        ret.setRounds(CombatLayer.CITY, city.getAttackers().isEmpty() ? 0 : CITY_ROUNDS);
         for (ArmySim attacker : city.getAttackers()) {
             final ArmySim original = copies.originalOf(attacker);
             if (original != null) {
                 ret.setOutcome(original, CombatLayer.CITY, outcomeOf(city));
             }
+        }
+        // The unknown-morale disclosure belongs to the BATTLE, not to the land layer - and the land
+        // resolver returns before writing it when fewer than two armies engage, which is exactly a
+        // city-only assault. Written here when the land layer did not.
+        if (ret.getNoteCount("BATTLESIM.RESULT.UNKNOWNMORALE") == 0) {
+            noteUnknownMorale(scenario, city, ret);
         }
         return ret;
     }
@@ -74,6 +97,26 @@ public class CombatChain {
      * with the defense - there is no per-army success in the city layer, which is what makes it a
      * different battle from the army one rather than a variation on it.
      */
+    /**
+     * How many of the armies AT THE WALLS are fighting on a morale the player had to guess.
+     *
+     * Scoped to the attackers, because that is who this layer's numbers depend on. The land
+     * resolver counts its own fighters for the same reason; neither should count an army standing
+     * on the hex taking no part.
+     */
+    private void noteUnknownMorale(CombatScenario scenario, CityCombatResolver.CityResult city,
+            CombatResult ret) {
+        int unknown = 0;
+        for (ArmySim attacker : city.getAttackers()) {
+            if (scenario.isMoraleUnknown(attacker)) {
+                unknown++;
+            }
+        }
+        if (unknown > 0) {
+            ret.addNote("BATTLESIM.RESULT.UNKNOWNMORALE", unknown);
+        }
+    }
+
     private CombatResult.Outcome outcomeOf(CityCombatResolver.CityResult city) {
         switch (city.getOutcome()) {
             case CAPTURED:
