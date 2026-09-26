@@ -117,6 +117,72 @@ public class CombatScenario {
         this.cityParticipates = this.cidade != null;
     }
 
+    /**
+     * A fork of this scenario: everything the player has typed, none of it shared.
+     *
+     * <h3>What a clone is for</h3>
+     *
+     * John, 2026-09-26: "launch the BS, edit what they want, Run Sim, Clone, apply changes, run sim
+     * again, Clone... then they can compare results between many options, values, tactics." So the
+     * copy has to carry EVERY edit - diplomacy, tactics, combat level, morale, platoon numbers,
+     * terrain, the city - or the fork starts from something the player has already moved past.
+     *
+     * <h3>Why this cannot be the (partida, local) constructor</h3>
+     *
+     * Because {@link #setLocal} re-derives the terrain and the city FROM THE HEX, which is exactly
+     * the state the player has been editing. Rebuilding from the Local would hand back the ground
+     * and the walls as the EGF recorded them and quietly discard the overrides.
+     *
+     * <h3>The identity maps are the whole risk</h3>
+     *
+     * {@code armyProvenance} and {@code platoonProvenance} are keyed by object IDENTITY, and a copy
+     * is by definition a different object. Re-keying them is not tidying: provenance is what draws
+     * the "(?)" on an unknown morale, what prints EXACT or ESTIMATED under an army, and what the
+     * unknown-morale disclosure counts. A clone that dropped it would look right and would quietly
+     * stop telling the player which of his numbers were guesses. That exact failure - asking
+     * provenance about a copy - shipped once already, in {@code CombatChain}, and is why this
+     * method builds an explicit old-to-new map rather than trusting anything to line up.
+     *
+     * <h3>What is deliberately SHARED</h3>
+     *
+     * {@code Partida}, {@code Jogador}, {@code Local}, {@code Terreno} and {@code Nacao} are the
+     * loaded world's own objects. They are read-only here - nothing in the simulator writes to a
+     * Nacao or a Terreno - so sharing them is correct and copying them would be worse: two scenarios
+     * would disagree about which nation is which, and the relationship maps are keyed on identity
+     * too.
+     */
+    public CombatScenario copy() {
+        final CombatScenario ret = new CombatScenario();
+        ret.partida = this.partida;
+        ret.observer = this.observer;
+        ret.local = this.local;
+        // the EDITED ground and the EDITED walls, not the hex's - see the class note above
+        ret.terreno = this.terreno;
+        ret.cidade = this.cidade == null ? null : this.cidade.clone();
+        ret.cityParticipates = this.cityParticipates;
+
+        for (ArmySim army : armies) {
+            final ArmySim copy = new ArmySim(army);
+            ret.armies.add(copy);
+            ret.armyProvenance.put(copy, getProvenance(army));
+            // BY CODIGO, because that is what the copy constructor keys the cloned platoons on.
+            // Walking both maps in parallel would rely on iteration order agreeing, which is the
+            // kind of assumption that holds until somebody adds a platoon.
+            for (Pelotao was : army.getPelotoes().values()) {
+                final Pelotao now = copy.getPelotoes().get(was.getCodigo());
+                if (now != null) {
+                    ret.platoonProvenance.put(now, getProvenance(was));
+                }
+            }
+        }
+        for (Map.Entry<Nacao, Map<Nacao, Integer>> row : relationshipEdits.entrySet()) {
+            // the INNER map is copied too: sharing it would make a declaration in one window appear
+            // in the other, which is the opposite of what a fork is for
+            ret.relationshipEdits.put(row.getKey(), new IdentityHashMap<>(row.getValue()));
+        }
+        return ret;
+    }
+
     public Partida getPartida() {
         return partida;
     }
