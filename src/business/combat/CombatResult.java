@@ -61,7 +61,7 @@ public class CombatResult {
      * A fleet can win at sea and the troops it lands can still be destroyed ashore; an army can
      * sweep the field and then break on the city walls. One verdict per army would have to pick one
      * of those and hide the rest, so the roster shows three marks and each says what happened in its
-     * own layer. A layer with no entry has not been resolved - today that is the sea and the city.
+     * own layer. A layer with no entry has not been resolved - today that is the sea alone.
      */
     private final Map<IExercito, Map<CombatLayer, Outcome>> outcomes = new IdentityHashMap<>();
     private final List<RoundLoss> roundLosses = new ArrayList<>();

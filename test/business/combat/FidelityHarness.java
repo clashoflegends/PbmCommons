@@ -401,7 +401,12 @@ public class FidelityHarness {
 
     /** Machine-readable, because the diff is done by the Python side against the turn text. */
     private static void report(CombatScenario scenario, CombatResult result) {
-        System.out.println("ROUNDS|" + result.getRounds());
+        // PER LAYER. The total is the answer to "did anything happen"; the Judge publishes a
+        // land round count and a city assault separately, and a diff against one summed number
+        // reads a land+city hex as one round too many.
+        for (CombatLayer layer : CombatLayer.values()) {
+            System.out.println("ROUNDS|" + layer.name() + "|" + result.getRounds(layer));
+        }
         // round by round, so a divergence is located in the round it STARTS in rather than being
         // read off a total five rounds later
         for (CombatResult.RoundDamage hit : result.getRoundDamage()) {
@@ -433,9 +438,70 @@ public class FidelityHarness {
 
     // ------------------------------------------------------------------ regression
 
-    private static final String SEAGARD =
-            "//marte/Users/gurgel/Documents/Cpbm/Saves/901_GoT12c_901/007/"
-            + "game_901_7.murazorgames.rr.egf";
+    /**
+     * The saves root, from {@code -Dclash.saves} or the {@code CLASH_SAVES} environment variable.
+     *
+     * NOT a path in the source. This is a PUBLIC repository, and a hard-coded save location names
+     * the maintainer's machine and his user directory; the file names under it name the players.
+     * Unset means the known-answer tests skip, which is what a contributor without the archive
+     * should get - and skipping on the property rather than on {@code File.exists} also means a
+     * machine off that network never touches a share that is not there, which on Windows is a
+     * multi-second stall in the middle of the suite, not a quick false.
+     */
+    private static String savesRoot() {
+        final String ret = System.getProperty("clash.saves", System.getenv("CLASH_SAVES"));
+        return ret == null || ret.trim().isEmpty() ? null : ret.trim();
+    }
+
+    /**
+     * The pre-turn scenario for one hex, from whichever player's EGF shows all of {@code mustSee}.
+     *
+     * By SEARCH rather than by file name, because this is a public repository and the EGF names
+     * carry the players' logins. The search is not "any copy that has the hex", though: an EGF is
+     * one player's intelligence, and most of the copies that contain 1660 show an empty hex or a
+     * placeholder army. The armies the spec names are the ones the assertions are about, so the
+     * right copy is the first one that can see them all - which is a property of the battle, not
+     * of who happened to be watching it.
+     */
+    private static CombatScenario loadFromAnyPlayer(String game, String turn, String hex,
+            String... mustSee) throws Exception {
+        final String root = savesRoot();
+        assumeTrue(root != null,
+                "set -Dclash.saves=<Saves folder> to run the known-answer regressions");
+        final File dir = new File(new File(root, game), turn);
+        assumeTrue(dir.isDirectory(), "turn folder not reachable: " + dir);
+        final File[] files = dir.listFiles();
+        assumeTrue(files != null, "turn folder unreadable: " + dir);
+        Arrays.sort(files);
+        for (File egf : files) {
+            if (!egf.getName().endsWith(".rr.egf")) {
+                continue;
+            }
+            final CombatScenario ret = load(egf, hex);
+            if (ret != null && showsAll(ret, mustSee)) {
+                return ret;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Whether this copy shows those armies' COMPOSITION, not merely their names.
+     *
+     * The distinction is the whole fog of war: an unscouted enemy arrives in the EGF as a name and
+     * a size band with ZERO platoons, so a copy that "has" both armies can still have nothing to
+     * fight with. Searching on the name alone picked exactly such a copy and the assault reported
+     * NO_ASSAULT - the right answer to the question that copy could actually ask.
+     */
+    private static boolean showsAll(CombatScenario scenario, String... names) {
+        for (String name : names) {
+            final ArmySim army = find(scenario, name);
+            if (army == null || army.getPelotoes().isEmpty()) {
+                return false;
+            }
+        }
+        return names.length > 0;
+    }
 
     /**
      * THE KNOWN ANSWER. Game 901 turn 8, the battle at 1141 (Seagard).
@@ -443,15 +509,14 @@ public class FidelityHarness {
      * The Judge published Waldon Wynch on 518 survivors and Joron Blacktide on 523, and this pins
      * the resolver to both. Given the turn's own tactics (both Charge, from the orders - the EGF has
      * last turn's Flank and Standard) and Dorian's morale fitted to his published attack of 2,609,
-     * the resolver has to reproduce them exactly. Skipped when the share is unreachable, so CI and
-     * a machine without it are unaffected.
+     * the resolver has to reproduce them exactly. Skipped unless the saves root is configured,
+     * so CI and a machine without the archive are unaffected.
      */
     @Test
     public void reproducesSeagardExactly() throws Exception {
-        final File egf = new File(SEAGARD);
-        assumeTrue(egf.exists(), "EGF not reachable: " + SEAGARD);
-        final CombatScenario scenario = load(egf, "1141");
-        assumeTrue(scenario != null, "hex 1141 not in this EGF");
+        final CombatScenario scenario = loadFromAnyPlayer("901_GoT12c_901", "007", "1141",
+                "Waldon", "Joron", "Dorian");
+        assumeTrue(scenario != null, "hex 1141 in no EGF of that turn");
 
         final BattleSimFacade bsf = new BattleSimFacade();
         for (ArmySim army : scenario.getArmies()) {
@@ -470,10 +535,6 @@ public class FidelityHarness {
         assertEquals(0, survivors(scenario, result, "Dorian"), "Dorian Rivers was destroyed");
     }
 
-    private static final String SUMMERHALL =
-            "//marte/Users/gurgel/Documents/Cpbm/Saves/866_GoT12c_866/001/"
-            + "game_866_1.jpessoa.rr.egf";
-
     /**
      * THE KNOWN ANSWER FOR THE CITY LAYER. Game 866 turn 2, the storming of Summerhall at 1660.
      *
@@ -484,14 +545,14 @@ public class FidelityHarness {
      * not exported to an enemy, and the tactic is the one the turn 2 orders carried, not the turn
      * 1 one the EGF still holds.
      *
-     * Skipped when the share is unreachable, so CI and a machine without it are unaffected.
+     * Skipped unless the saves root is configured, so CI and a machine without the archive
+     * are unaffected.
      */
     @Test
     public void reproducesSummerhallExactly() throws Exception {
-        final File egf = new File(SUMMERHALL);
-        assumeTrue(egf.exists(), "EGF not reachable: " + SUMMERHALL);
-        final CombatScenario scenario = load(egf, "1660");
-        assumeTrue(scenario != null, "hex 1660 not in this EGF");
+        final CombatScenario scenario = loadFromAnyPlayer("866_GoT12c_866", "001", "1660",
+                "Garth Tyrell", "Quentyn Martell");
+        assumeTrue(scenario != null, "hex 1660 in no EGF of that turn");
         applySpec(scenario, Arrays.asList(
                 "city|tamanho=3|fortificacao=2|lealdade=52|docas=0",
                 "army|Garth Tyrell|level=2|tactic=0",

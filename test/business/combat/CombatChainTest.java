@@ -154,7 +154,7 @@ public class CombatChainTest extends LandCombatFixture {
 
         final CombatResult ret = new CombatChain().resolve(scenario, null);
 
-        assertTrue(ret.getRounds() > 0, "the land battle happened");
+        assertTrue(ret.getRounds(CombatLayer.ARMY) > 0, "the land battle happened");
         assertTrue(ret.getCityResult().getAttackers().isEmpty(),
                 "and the army that died in it is not at the walls: "
                 + ret.getCityResult().getAttackers().size() + " attacker(s)");
