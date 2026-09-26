@@ -322,8 +322,22 @@ public class LandCombatResolver {
      * {@link CasualtyMode} already names above the platoon table - so what the player was told about
      * the order is what actually happens to him here.
      */
-    private void doApplyCasualties(List<ArmySim> fighters, Map<ArmySim, ArmySim> toOriginal,
+    void doApplyCasualties(List<ArmySim> fighters, Map<ArmySim, ArmySim> toOriginal,
             Cenario cenario, Map<ArmySim, Long> pending, int round, CombatResult ret) {
+        doApplyCasualties(fighters, toOriginal, cenario, pending, round, ret, CombatLayer.ARMY);
+    }
+
+    /**
+     * The same machinery for any layer, because in the Judge it IS the same machinery.
+     *
+     * {@code exercito.sumCombateDano(dano)} then {@code doCombateDano()} is what turns damage into
+     * dead platoons, and {@code executaCombateCidade} calls exactly that pair - so a city assault
+     * kills by the same BY_RANK or PROPORTIONAL rule, chosen by the same tactic test. The layer is
+     * a parameter only because {@link CasualtyMode} short-circuits the sea layer to BY_RANK.
+     */
+    void doApplyCasualties(List<ArmySim> fighters, Map<ArmySim, ArmySim> toOriginal,
+            Cenario cenario, Map<ArmySim, Long> pending, int round, CombatResult ret,
+            CombatLayer layer) {
         for (ArmySim army : fighters) {
             long dano = banked(pending, army);
             pending.put(army, 0L);
@@ -340,7 +354,7 @@ public class LandCombatResolver {
                 continue;
             }
             final ArmySim original = toOriginal.get(army);
-            if (CasualtyMode.of(army, cenario, CombatLayer.ARMY) == CasualtyMode.BY_RANK) {
+            if (CasualtyMode.of(army, cenario, layer) == CasualtyMode.BY_RANK) {
                 doCasualtiesByRank(army, original, dano, round, ret);
             } else {
                 doCasualtiesProportional(army, original, dano, round, ret);

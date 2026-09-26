@@ -7,7 +7,9 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import model.Cenario;
+import business.facade.CidadeFacade;
 import model.Cidade;
+import model.Terreno;
 import model.Pelotao;
 
 /**
@@ -86,7 +88,15 @@ public class CityCombatResolver {
         /** The city fell and changes hands. */
         CAPTURED,
         /** The city fell and is destroyed: ordered to raze, or a captured camp. */
-        RAZED
+        RAZED,
+        /**
+         * The walls fell and nobody was left to hold them.
+         *
+         * A real Judge outcome, not a corner case invented here: the city's returned damage can
+         * wipe the attackers' land troops in the same round their summed attack beat the defense,
+         * and {@code doCityCaptured} then finds no army with an attack above zero.
+         */
+        CAPTURED_NO_SURVIVOR
     }
 
     private final BattleSimFacade battleSimFacade = new BattleSimFacade();
@@ -103,7 +113,8 @@ public class CityCombatResolver {
      * magic already spent if the army layer swung. {@link CombatCopies} is what carries all of
      * that across, and {@link CombatChain} is what runs the layers in the Judge's order.
      */
-    CityResult resolve(CombatScenario scenario, CombatCopies copies) {
+    CityResult resolve(CombatScenario scenario, Cenario cenario, CombatCopies copies,
+            CombatResult into) {
         final CityResult ret = new CityResult();
         if (scenario == null || copies == null) {
             return ret;
@@ -151,16 +162,39 @@ public class CityCombatResolver {
         }
         ret.setAttackTotal(attackTotal);
 
-        // The city's whole defense comes back at the attackers, split by troop share.
+        // The city's whole defense comes back at the attackers, split by troop share, and is then
+        // SUFFERED - the Judge does sumCombateDano(danoPer) then doCombateDano(), which is the same
+        // BY_RANK / PROPORTIONAL machinery the army layer uses. Banked first and applied in one
+        // pass, because defence and troopsTotal are both fixed before the Judge's loop, so an
+        // attacker's share cannot depend on what an earlier attacker already lost.
+        final Map<ArmySim, Long> pending = new IdentityHashMap<>();
         if (troopsTotal > 0) {
             for (ArmySim army : attackers) {
                 final long damage =
                         (long) defence * exercitoFacade.getQtTropasTotal(army) / troopsTotal;
                 ret.putDamage(army, damage);
+                pending.put(army, damage);
             }
+            landResolver.doApplyCasualties(attackers, copies.toOriginal(), cenario, pending,
+                    CITY_ROUND, into, CombatLayer.CITY);
         }
-        ret.setOutcome(attackTotal <= defence ? CityOutcome.REPELLED
-                : ret.isRaze() ? CityOutcome.RAZED : CityOutcome.CAPTURED);
+
+        if (attackTotal <= defence) {
+            ret.setOutcome(CityOutcome.REPELLED);
+            return ret;
+        }
+        if (ret.isRaze()) {
+            ret.setOutcome(CityOutcome.RAZED);
+            return ret;
+        }
+        // CAPTURED only if somebody is left to hold it. doCityCaptured picks the new owner as the
+        // attacker with the highest getAttack(1) - recomputed AFTER casualties - starting from
+        // maxAttack = 0 with a strict <, so an army reduced to nothing cannot claim the city. When
+        // none of them clears zero the Judge returns CombateAtaqueFalhouNosurvivor: the walls fell
+        // and nobody took them.
+        ret.setOwner(claimantOf(attackers));
+        ret.setOutcome(ret.getOwner() == null
+                ? CityOutcome.CAPTURED_NO_SURVIVOR : CityOutcome.CAPTURED);
         return ret;
     }
 
@@ -216,8 +250,28 @@ public class CityCombatResolver {
         if (exercitoFacade.isBarcoOnly(army)) {
             return false;       // all ships: nothing to put against a wall
         }
-        return !(exercitoFacade.isEsquadraEmbarcada(army)
-                && scenario.getLocal() != null && !scenario.getLocal().getTerreno().isAncoravel());
+        return !(exercitoFacade.isEsquadraEmbarcada(army) && !isAncoravel(scenario, city));
+    }
+
+    /**
+     * Can a fleet put troops ashore here? {@code Hexagono.isAncoravel()} in full.
+     *
+     * TWO clauses, and the second was missing: anchorable terrain <b>OR a city with docks</b>. A
+     * fleet assaulting a port city on non-coastal ground is admitted by the Judge at both the gate
+     * and the selection filter, and was being turned away here - while {@code LayerParticipation},
+     * which gets it right, still showed the army a city badge. The two halves of the same window
+     * disagreed.
+     *
+     * Reads {@code scenario.getTerreno()}, the player's override, not the hex's real terrain: the
+     * Terrain combo changes every other combat number and has to change this one too, or "what if
+     * this were fought on a shore" moves the maths and not the landing.
+     */
+    private boolean isAncoravel(CombatScenario scenario, Cidade city) {
+        final Terreno terreno = scenario.getTerreno();
+        if (terreno != null && terreno.isAncoravel()) {
+            return true;
+        }
+        return city != null && new CidadeFacade().isDocasPorto(city);
     }
 
     /**
@@ -239,6 +293,32 @@ public class CityCombatResolver {
             }
         }
         return false;
+    }
+
+    /**
+     * Who ends up holding the city: the attacker with the highest POST-CASUALTY attack, or null.
+     *
+     * {@code doCityCaptured} iterates with {@code maxAttack} starting at 0 and a strict
+     * {@code <}, so an attack of exactly zero never claims anything - which is the whole mechanism
+     * behind {@code CombateAtaqueFalhouNosurvivor}. The attack it compares is
+     * {@code getAttack(1)}, recomputed after the walls have hit back, so this must run after the
+     * casualties and not before.
+     */
+    private ArmySim claimantOf(List<ArmySim> attackers) {
+        ArmySim ret = null;
+        long best = 0;
+        for (ArmySim army : attackers) {
+            if (army.isDisband()) {
+                continue;
+            }
+            final long attack = landResolver.getForcaPlus(army, CITY_ROUND)
+                    + battleSimFacade.getArmyAttackBaseLand(army, army.getLocal());
+            if (best < attack) {
+                best = attack;
+                ret = army;
+            }
+        }
+        return ret;
     }
 
     private boolean isSiegeExpected(List<ArmySim> attackers) {
@@ -349,6 +429,7 @@ public class CityCombatResolver {
         private int fortificationReduction;
         private long attackTotal;
         private boolean raze;
+        private ArmySim owner;
 
         public List<ArmySim> getAttackers() {
             return attackers;
@@ -400,6 +481,15 @@ public class CityCombatResolver {
 
         void setRaze(boolean raze) {
             this.raze = raze;
+        }
+
+        /** The army that ends up holding the city, or null when nobody could. */
+        public ArmySim getOwner() {
+            return owner;
+        }
+
+        void setOwner(ArmySim owner) {
+            this.owner = owner;
         }
 
         public int getSiegeAttack(ArmySim army) {

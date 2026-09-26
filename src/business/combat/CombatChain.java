@@ -56,7 +56,7 @@ public class CombatChain {
 
         // CITY, on whoever is still standing. The re-test lives inside attackersOf, which reads the
         // copies and skips anything the land battle disbanded.
-        final CityCombatResolver.CityResult city = cityResolver.resolve(scenario, copies);
+        final CityCombatResolver.CityResult city = cityResolver.resolve(scenario, cenario, copies, ret);
         ret.setCityResult(city);
         for (ArmySim attacker : city.getAttackers()) {
             final ArmySim original = copies.originalOf(attacker);
@@ -79,6 +79,9 @@ public class CombatChain {
             case CAPTURED:
             case RAZED:
                 return CombatResult.Outcome.WON;
+            case CAPTURED_NO_SURVIVOR:
+                // the walls fell and nobody held them: not a win for anybody still standing
+                return CombatResult.Outcome.LOST;
             case REPELLED:
                 return CombatResult.Outcome.LOST;
             default:
