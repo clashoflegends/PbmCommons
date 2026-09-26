@@ -102,6 +102,40 @@ public class FidelityHarness {
      * reproduces it the nearest is used and the gap is printed - a miss here explains every
      * downstream difference and must not be swallowed.
      */
+    /**
+     * {@code war|<nation>|<nation>} - the player's own declaration, both directions.
+     *
+     * Named by nation, not by army, because that is what diplomacy IS: the Judge reads
+     * {@code getNacaoControl().isInimigo(...)} and no property of the army takes part. Matching is
+     * on the nation's NAME as the roster prints it, case-insensitive, so a spec is readable next to
+     * a turn report.
+     */
+    private static void applyWar(CombatScenario scenario, String line) {
+        final String[] parts = line.split("\\|");
+        if (parts.length < 3) {
+            System.out.println("BADWAR|" + line);
+            return;
+        }
+        final model.Nacao one = findNacao(scenario, parts[1]), two = findNacao(scenario, parts[2]);
+        if (one == null || two == null) {
+            System.out.println("NONATION|" + (one == null ? parts[1] : parts[2]));
+            return;
+        }
+        scenario.setRelacionamento(one, two, RelationshipMatrix.SWORN_ENEMY);
+        scenario.setRelacionamento(two, one, RelationshipMatrix.SWORN_ENEMY);
+        System.out.println("WAR|" + one.getNome() + "|" + two.getNome());
+    }
+
+    private static model.Nacao findNacao(CombatScenario scenario, String nome) {
+        for (model.Nacao one : scenario.getNacoes()) {
+            if (one != null && one.getNome() != null
+                    && one.getNome().trim().equalsIgnoreCase(nome.trim())) {
+                return one;
+            }
+        }
+        return null;
+    }
+
     private static void applySpec(CombatScenario scenario, File spec) throws Exception {
         final BattleSimFacade bsf = new BattleSimFacade();
         final List<String> lines = Files.readAllLines(spec.toPath(), StandardCharsets.UTF_8);
@@ -113,6 +147,16 @@ public class FidelityHarness {
         for (String raw : lines) {
             if (raw.trim().startsWith("platoon|")) {
                 applyPlatoon(scenario, raw.trim(), cleared);
+            }
+        }
+        // DECLARATIONS next, because participation is derived from the matrix and everything after
+        // this reads it. "war|A|B" is exactly what the player does in the Diplomacy panel, and in a
+        // free-for-all it is the only way a battle between two FOREIGN nations can be resolved at
+        // all: neither row is readable, so the pair is assumed neutral and nothing engages.
+        for (String raw : lines) {
+            final String line = raw.trim();
+            if (line.startsWith("war|")) {
+                applyWar(scenario, line);
             }
         }
         for (String raw : lines) {
