@@ -145,7 +145,7 @@ public class CityCombatResolver {
             troopsTotal += exercitoFacade.getQtTropasTotal(army);
         }
         for (ArmySim army : attackers) {
-            final long attack = attackOf(army, city);
+            final long attack = attackOf(army, city, scenario.getRelationships());
             ret.putAttack(army, attack);
             attackTotal += attack;
         }
@@ -206,7 +206,11 @@ public class CityCombatResolver {
                 || army.getCombatLevel().getNivel() < ATTACK_CITY_LEVEL) {
             return false;
         }
-        if (army.getNacao() == null || !relations.isHostile(army.getNacao(), city.getNacao())) {
+        // isHostileFrom, not isHostile: the Judge's gate is exercito.isInimigo(cityOwner), which is
+        // the ATTACKER'S row and nothing else. A city whose owner hates a neutral army does not
+        // thereby drag it into an assault - the city never initiates.
+        if (army.getNacao() == null
+                || !relations.isHostileFrom(army.getNacao(), city.getNacao())) {
             return false;
         }
         if (exercitoFacade.isBarcoOnly(army)) {
@@ -288,7 +292,7 @@ public class CityCombatResolver {
      * the commander's combat artifact and any travelling characters. It is spent here exactly as it
      * is spent there, because in the Judge it is the same method on the same army.
      */
-    private long attackOf(ArmySim army, Cidade city) {
+    private long attackOf(ArmySim army, Cidade city, RelationshipMatrix relations) {
         final long forcaBasica =
                 battleSimFacade.getArmyAttackBaseLand(army, army.getLocal());
         // THE ARMY LAYER'S getForcaPlus, at round 1, and reused rather than reimplemented: in the
@@ -297,17 +301,40 @@ public class CityCombatResolver {
         // the one-time magic, the commander's combat artifact, a travelling dragon worth commander
         // skill x 100 - are exactly the ones a forecast is most wrong without.
         final long forcaPlus = landResolver.getForcaPlus(army, CITY_ROUND);
-        final long modRelacionamento = 100 - bonusRelacionamento(army, city);
+        final long modRelacionamento = 100 - bonusRelacionamento(army, city, relations);
         return forcaPlus + (forcaBasica * modRelacionamento / 100);
     }
 
-    /** {@code 100 - getBonusRelacionamento(cityOwner)}, off the same table the army layer reads. */
-    private int bonusRelacionamento(ArmySim army, Cidade city) {
+    /**
+     * {@code 100 - getBonusRelacionamento(cityOwner)}, read through the SCENARIO'S MATRIX.
+     *
+     * The arithmetic is the Judge's - {@code NacaoControl.getBonusRelacionamento} is literally
+     * {@code BaseMsgs.dificuldadeBonus[getRelacionamento(nacao) + 3]} - but the SOURCE matters more
+     * than the arithmetic, and reading it off the model directly was wrong three ways at once:
+     *
+     * <ul>
+     *   <li><b>The player's diplomacy edits never reached the number.</b> Declaring war in the
+     *       matrix panel should raise the assault by 25% of {@code forcaBasica} - sworn enemy is
+     *       -25 on the table, so {@code modRelacionamento} goes from 100 to 125 - and it did
+     *       nothing. {@code getParticipation} carries a note saying this exact bug, the city layer
+     *       re-deriving without the overrides, was already found and fixed once at the
+     *       participation level. It had come back in the damage maths.</li>
+     *   <li><b>A foreign nation ships an EMPTY relationship map.</b> The headline case - an enemy
+     *       assaulting MY city - read neutral and under-forecast the attacker by that same 25%,
+     *       while the resolver had already decided the pair WAS hostile. Internally contradictory.</li>
+     *   <li><b>{@code relacionamentos} is a TreeMap keyed by model objects</b>, which XStream
+     *       restores as references - the miss-on-a-key-that-is-in-keySet hazard the matrix is
+     *       identity-keyed to avoid.</li>
+     * </ul>
+     *
+     * DIRECTIONAL, like the gate: the Judge reads the attacker's row.
+     */
+    private int bonusRelacionamento(ArmySim army, Cidade city, RelationshipMatrix relations) {
         if (army.getNacao() == null || city.getNacao() == null) {
             return 0;
         }
         return msgs.BaseMsgs.dificuldadeBonus[
-                army.getNacao().getRelacionamento(city.getNacao()) + 3];
+                relations.getValor(army.getNacao(), city.getNacao()) + 3];
     }
 
     /** Everything one city assault produced, per attacker where it is per attacker. */

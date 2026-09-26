@@ -575,8 +575,11 @@ public class CombatScenario {
         final RelationshipMatrix nations = getRelationships();
         final Map<ArmySim, Boolean> hostileToCity = new IdentityHashMap<>();
         for (ArmySim army : armies) {
+            // isHostileFrom, not isHostile: the city assault reads the ATTACKER'S row only. The
+            // Judge's gate is exercito.isInimigo(cidade.getNacaoControl()), and a city that hates
+            // an army does not make that army assault it - the city never initiates.
             hostileToCity.put(army, active != null
-                    && nations.isHostile(army.getNacao(), active.getNacao()));
+                    && nations.isHostileFrom(army.getNacao(), active.getNacao()));
         }
         return LayerParticipation.forRoster(armies, terreno, active,
                 deriver.project(nations, armies), hostileToCity);

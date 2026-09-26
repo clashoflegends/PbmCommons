@@ -174,6 +174,22 @@ public class RelationshipMatrix {
     }
 
     /**
+     * Does {@code from} consider {@code to} an enemy? ONE direction, and deliberately not
+     * {@link #isHostile}.
+     *
+     * The army layer is symmetric - the Judge writes both enemy lists the moment either direction
+     * reads hostile - but the CITY layer is not. {@code CombateTmpbm} gates a city assault on
+     * {@code exercito.isInimigo(cidade.getNacaoControl())}, which is
+     * {@code getNacaoControl().getRelacionamento(cityOwner) < 0}: the attacker's own row and
+     * nothing else. A city whose owner hates a neutral army does not thereby drag it into an
+     * assault, because the city never initiates - it is attacked, it hits back, and it takes the
+     * result.
+     */
+    public boolean isHostileFrom(Nacao from, Nacao to) {
+        return from != null && to != null && from != to && getValor(from, to) < 0;
+    }
+
+    /**
      * Will these two fight? The OR of the two directions, because the Judge writes both enemy lists
      * the moment either direction reads hostile. See the class note.
      */
