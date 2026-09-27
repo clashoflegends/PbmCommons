@@ -1,6 +1,7 @@
 package business.combat;
 
 import model.Pelotao;
+import model.Raca;
 import model.TipoTropa;
 import org.junit.jupiter.api.Test;
 
@@ -152,6 +153,140 @@ public class WhatIfSearchTest extends LandCombatFixture {
 
         assertTrue(answer.getTrials() <= 24,
                 "17 halvings plus the rails and the check, not 65,536: " + answer.getTrials());
+    }
+
+    /**
+     * Worst case: the unidentified enemy becomes the hardest thing that nation could have put
+     * there, measured on THIS ground.
+     *
+     * The candidate set is rigged so the answer cannot be got by accident - the abstractly
+     * strongest type is deliberately poor on the battle's terrain, so a chooser reading raw
+     * catalogue numbers would pick it and this one must not.
+     */
+    @Test
+    public void worstCaseRetypesUnknownTroopsToTheStrongestOnThisGround() {
+        final TipoTropa onPaper = troopType("paper", 10, 10, false);
+        onPaper.setAtaqueTerreno(byTerrain(10));            // poor HERE, whatever it is elsewhere
+        final TipoTropa here = troopType("here", 90, 60, false);
+        final Raca raca = new Raca();
+        raca.getTropas().put(onPaper, 1);
+        raca.getTropas().put(here, 1);
+
+        final CombatScenario scenario = battle(platoon(INF, 900), platoon(NONE, 3000));
+        final ArmySim foe = scenario.getArmies().get(1);
+        foe.getNacao().setRaca(raca);
+
+        final WhatIfSearch.WorstCase swapped = WhatIfSearch.toWorstCase(scenario, null);
+
+        assertEquals(1, swapped.getPlatoons());
+        assertEquals(3000, swapped.getTroops());
+        assertEquals("here", foe.getPelotoes().values().iterator().next()
+                .getTipoTropa().getCodigo(), "measured on this terrain, not off the catalogue");
+        assertFalse(WhatIfSearch.hasUnidentifiedTroops(scenario),
+                "and nothing is unidentified any more");
+    }
+
+    /** The head count is intelligence and survives the swap. Only the TYPE is hypothetical. */
+    @Test
+    public void worstCaseKeepsTheHeadCount() {
+        final Raca raca = new Raca();
+        raca.getTropas().put(troopType("elite", 90, 60, false), 1);
+        final CombatScenario scenario = battle(platoon(INF, 900), platoon(NONE, 3357));
+        scenario.getArmies().get(1).getNacao().setRaca(raca);
+
+        WhatIfSearch.toWorstCase(scenario, null);
+
+        assertEquals(3357, scenario.getArmies().get(1).getPelotoes().values().iterator().next()
+                .getQtd());
+    }
+
+    /** Ships stay ships, or a fleet's hulls come back as infantry and the sea layer vanishes. */
+    @Test
+    public void worstCaseDoesNotTurnHullsIntoInfantry() {
+        // ;TTN; matters: the real "ship" row carries it, and isBarcos() is what routes the swap.
+        final TipoTropa unknownShip = shipType(ScenarioDefaults.PLACEHOLDER_SHIP_CODE);
+        final Raca raca = new Raca();
+        raca.getTropas().put(troopType("elite", 90, 60, false), 1);
+        raca.getTropas().put(shipType("galley"), 1);
+
+        final CombatScenario scenario = battle(platoon(INF, 900), platoon(unknownShip, 40));
+        scenario.getArmies().get(1).getNacao().setRaca(raca);
+
+        WhatIfSearch.toWorstCase(scenario, null);
+
+        assertTrue(scenario.getArmies().get(1).getPelotoes().values().iterator().next()
+                .getTipoTropa().isBarcos(), "a hull must still be a hull");
+    }
+
+    /** Identified troops are left alone - it is a hypothesis about the UNKNOWN, not a rewrite. */
+    @Test
+    public void worstCaseLeavesIdentifiedTroopsAlone() {
+        final Raca raca = new Raca();
+        raca.getTropas().put(troopType("elite", 90, 60, false), 1);
+        final CombatScenario scenario = battle(platoon(INF, 900), platoon(INF, 500));
+        scenario.getArmies().get(1).getNacao().setRaca(raca);
+
+        final WhatIfSearch.WorstCase swapped = WhatIfSearch.toWorstCase(scenario, null);
+
+        assertEquals(0, swapped.getPlatoons());
+        assertEquals("inf", scenario.getArmies().get(1).getPelotoes().values().iterator().next()
+                .getTipoTropa().getCodigo());
+    }
+
+    /**
+     * The floor and the ceiling are different answers, and that is the whole point of the pair.
+     *
+     * Measured, not asserted from theory: against the unidentified enemy 68 men hold the field;
+     * against the same head count retyped to what that nation could really field, no number tried
+     * does. Two runs, two honest answers, and the player now knows the question is not "how many"
+     * but "how good".
+     */
+    @Test
+    public void theFloorAndTheWorstCaseGiveDifferentAnswers() {
+        final Raca raca = new Raca();
+        raca.getTropas().put(troopType("elite", 55, 45, false), 1);
+        final Pelotao mine = platoon(INF, 10);
+        final CombatScenario floor = battle(mine, platoon(NONE, 300));
+        final CombatScenario worst = floor.copy();
+        worst.getArmies().get(1).getNacao().setRaca(raca);
+        WhatIfSearch.toWorstCase(worst, null);
+
+        final WhatIfSearch.Answer atFloor = WhatIfSearch.forPlatoonQuantity(floor, null, 0,
+                mine.getCodigo(), WhatIfSearch.Goal.HOLD_THE_FIELD, 200000);
+        final WhatIfSearch.Answer atWorst = WhatIfSearch.forPlatoonQuantity(worst, null, 0,
+                mine.getCodigo(), WhatIfSearch.Goal.HOLD_THE_FIELD, 200000);
+
+        assertTrue(atFloor.isFound(), "unidentified troops fight at 1, so a small force clears them");
+        assertTrue(atFloor.isLowerBound(), "and that answer is a floor, which it must say");
+        assertFalse(atWorst.isFound(), "the same men, retyped, cannot be beaten by numbers");
+        assertFalse(atWorst.isLowerBound(), "nothing is unidentified once the swap has happened");
+    }
+
+    /**
+     * NUMBERS DO NOT BEAT QUALITY in this model, and the tool has to say which failure it hit.
+     *
+     * Found by probing the curve rather than by reading the resolver: against an enemy with a
+     * per-soldier edge, adding men LENGTHENS the battle - 2 rounds at 100, 6 at 1,000, 46 at
+     * 10,000 - until it reaches the round cap and ends UNDECIDED. So "no quantity wins" usually
+     * means "numbers are not the lever here", and a player told that will change his tactic or his
+     * training instead of recruiting into a stalemate. Reporting it as a plain defeat would send
+     * him the other way.
+     */
+    @Test
+    public void aStalemateIsReportedAsSomethingOtherThanADefeat() {
+        final Raca raca = new Raca();
+        raca.getTropas().put(troopType("elite", 55, 45, false), 1);
+        final Pelotao mine = platoon(INF, 10);
+        final CombatScenario worst = battle(mine, platoon(NONE, 300));
+        worst.getArmies().get(1).getNacao().setRaca(raca);
+        WhatIfSearch.toWorstCase(worst, null);
+
+        final WhatIfSearch.Answer answer = WhatIfSearch.forPlatoonQuantity(worst, null, 0,
+                mine.getCodigo(), WhatIfSearch.Goal.HOLD_THE_FIELD, 200000);
+
+        assertFalse(answer.isFound());
+        assertTrue(answer.isCeilingStalemate(),
+                "200,000 men ground to a halt; they did not lose");
     }
 
     /** Bad inputs answer "nothing found" rather than throwing into the event thread. */

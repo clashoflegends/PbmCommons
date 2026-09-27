@@ -67,6 +67,7 @@ public final class WhatIfSearch {
         private boolean lowerBound;
         private boolean verified;
         private boolean winsAtNothing;
+        private boolean ceilingStalemate;
 
         /** True when some value at or below the ceiling achieves the goal. */
         public boolean isFound() {
@@ -110,6 +111,19 @@ public final class WhatIfSearch {
         public boolean isWinsAtNothing() {
             return winsAtNothing;
         }
+
+        /**
+         * At the ceiling the battle did not resolve at all: it ran to the round cap, undecided.
+         *
+         * This is a DIFFERENT answer from "you lose", and the difference is the useful part. The
+         * model rewards quality over numbers - two evenly matched sides grind, and piling on men
+         * lengthens the battle rather than winning it - so "no quantity wins" often means "numbers
+         * are not the lever here", not "this is hopeless". A player told that will go and change
+         * his tactic, his training or his commander instead of recruiting into a stalemate.
+         */
+        public boolean isCeilingStalemate() {
+            return ceilingStalemate;
+        }
     }
 
     /**
@@ -145,7 +159,10 @@ public final class WhatIfSearch {
         }
         if (!wins(scenario, cenario, armyIndex, platoonCodigo, ret.ceiling, goal, ret)) {
             // Not reachable within the ceiling. Say how far it looked rather than "impossible":
-            // the player can raise it, and the two statements are not the same claim.
+            // the player can raise it, and the two statements are not the same claim. And record
+            // WHICH kind of failure it was - see isCeilingStalemate.
+            ret.ceilingStalemate = goal == Goal.HOLD_THE_FIELD && isStalemate(scenario, cenario,
+                    armyIndex, platoonCodigo, ret.ceiling);
             return ret;
         }
         int low = 1;
@@ -165,6 +182,21 @@ public final class WhatIfSearch {
         ret.verified = low <= 1
                 || !wins(scenario, cenario, armyIndex, platoonCodigo, low - 1, goal, ret);
         return ret;
+    }
+
+    /** Did the biggest army tried merely fail to finish, rather than lose? */
+    private static boolean isStalemate(CombatScenario scenario, Cenario cenario, int armyIndex,
+            String platoonCodigo, int quantity) {
+        final CombatScenario trial = scenario.copy();
+        final ArmySim army = trial.getArmies().get(armyIndex);
+        final Pelotao platoon = army.getPelotoes().get(platoonCodigo);
+        if (platoon == null) {
+            return false;
+        }
+        platoon.setQtd(quantity);
+        final CombatResult result = new CombatChain().resolve(trial, cenario);
+        return result != null
+                && result.getOutcome(army, CombatLayer.ARMY) == CombatResult.Outcome.UNDECIDED;
     }
 
     /** One trial: a fresh copy, one number changed, the whole chain run. */
@@ -193,6 +225,140 @@ public final class WhatIfSearch {
                     || city.getOutcome() == CityCombatResolver.CityOutcome.RAZED);
         }
         return result.getOutcome(army, CombatLayer.ARMY) == CombatResult.Outcome.WON;
+    }
+
+    /**
+     * What the player should read the FIRST answer against: assume the unknown troops are the worst
+     * they could be.
+     *
+     * John, 2026-09-27: <i>"a what-if when there is an unknown troops on the other side can be
+     * 'what if I am facing the worst case scenario, aka the strongest troops for that nation on
+     * that terrain'"</i>. It is the other end of the bracket. Left alone, an unidentified enemy
+     * fights at 1 and every forecast is a floor; retyped to the best that nation could field here,
+     * it becomes a ceiling. The truth is between them, and two runs bound it.
+     *
+     * <h3>Why this is allowed to guess a composition when {@code ScenarioDefaults} is not</h3>
+     *
+     * Because the two are doing opposite things, and a future reader will otherwise see a
+     * contradiction. {@code ScenarioDefaults} fills in what the player is PRESUMED to know, so a
+     * guessed composition there would be presented as intelligence - and John's reason for
+     * refusing it stands: troop strength is per terrain, so guessing cavalry on ground that
+     * punishes cavalry is not slightly wrong, it is differently wrong, and nobody can tell which.
+     * This is a NAMED HYPOTHESIS the player asked for by pressing a button labelled "worst case".
+     * Its whole value is that it is not what he knows.
+     *
+     * <h3>"Strongest" is measured, not judged</h3>
+     *
+     * Every troop type the army's race can field is tried in the platoon's place and scored with
+     * the same {@code getPlatoonAttack} the battle itself uses - so terrain, nation bonuses and the
+     * platoon's own training all count, and no separate notion of "best" can drift from the one
+     * that decides the fight. Attack ranks, defence breaks ties: what makes an enemy worst is that
+     * he kills more of you, and surviving longer to keep doing it is the tiebreak.
+     *
+     * Ships stay ships. A {@code ship} placeholder is retyped only among naval types and a
+     * {@code none} placeholder only among land ones, or a fleet's hulls would come back as
+     * infantry and the sea layer would vanish.
+     *
+     * <b>Mutates the scenario it is given</b>, like {@code ScenarioDefaults.fill}. Callers hand it
+     * a {@link CombatScenario#copy()} - the point is a second window beside the first, not a change
+     * to the battle the player set up.
+     *
+     * @return how many platoons were retyped, and the types chosen, for the sentence that explains
+     *         what he is now looking at.
+     */
+    public static WorstCase toWorstCase(CombatScenario scenario, Cenario cenario) {
+        final WorstCase ret = new WorstCase();
+        if (scenario == null) {
+            return ret;
+        }
+        final business.facade.ExercitoFacade facade = new business.facade.ExercitoFacade();
+        for (ArmySim army : scenario.getArmies()) {
+            for (Pelotao pelotao : army.getPelotoes().values()) {
+                if (!ScenarioDefaults.isPlaceholder(pelotao)) {
+                    continue;
+                }
+                final model.TipoTropa best = strongestFor(army, pelotao, cenario, facade);
+                if (best == null) {
+                    continue;
+                }
+                pelotao.setTipoTropa(best);
+                scenario.setProvenance(pelotao, CombatScenario.Provenance.ESTIMATED);
+                ret.platoons++;
+                ret.troops += pelotao.getQtd();
+                if (!ret.types.contains(best.getNome())) {
+                    ret.types.add(best.getNome());
+                }
+            }
+        }
+        return ret;
+    }
+
+    /** What a worst-case swap did, so the window can say what it is showing. */
+    public static final class WorstCase {
+
+        private int platoons;
+        private int troops;
+        private final java.util.List<String> types = new java.util.ArrayList<>();
+
+        public int getPlatoons() {
+            return platoons;
+        }
+
+        public int getTroops() {
+            return troops;
+        }
+
+        /** The types chosen, in the order found, for naming them in the explanation. */
+        public java.util.List<String> getTypes() {
+            return java.util.Collections.unmodifiableList(types);
+        }
+    }
+
+    /**
+     * The hardest-hitting type this army's race could have put in that platoon, on this ground.
+     *
+     * Scored through the real formula rather than off the catalogue's raw numbers, so a type that
+     * is strong in the abstract but poor on THIS terrain does not win. The race's own list is the
+     * candidate set - that is what "for that nation" means - and a nation whose race carries no
+     * list falls back to the scenario catalogue, which over-states rather than under-states and is
+     * the right direction for a worst case.
+     */
+    private static model.TipoTropa strongestFor(ArmySim army, Pelotao pelotao, Cenario cenario,
+            business.facade.ExercitoFacade facade) {
+        final boolean naval = pelotao.getTipoTropa() != null && pelotao.getTipoTropa().isBarcos();
+        final model.TipoTropa original = pelotao.getTipoTropa();
+        model.TipoTropa best = null;
+        int bestAttack = -1;
+        int bestDefence = -1;
+        for (model.TipoTropa candidate : candidates(army, cenario)) {
+            if (candidate == null || candidate.isBarcos() != naval
+                    || ScenarioDefaults.PLACEHOLDER_CODE.equals(candidate.getCodigo())
+                    || ScenarioDefaults.PLACEHOLDER_SHIP_CODE.equals(candidate.getCodigo())) {
+                continue;
+            }
+            // Measured by putting the candidate IN the platoon, which is the only way the training,
+            // the terrain and the nation bonuses all reach the number.
+            pelotao.setTipoTropa(candidate);
+            final int attack = facade.getAtaquePelotao(pelotao, army);
+            final int defence = facade.getDefesaPelotao(pelotao, army);
+            if (attack > bestAttack || (attack == bestAttack && defence > bestDefence)) {
+                best = candidate;
+                bestAttack = attack;
+                bestDefence = defence;
+            }
+        }
+        pelotao.setTipoTropa(original);
+        return best;
+    }
+
+    /** That nation's race, or the whole catalogue when it has none - see {@code strongestFor}. */
+    private static java.util.Collection<model.TipoTropa> candidates(ArmySim army, Cenario cenario) {
+        if (army.getNacao() != null && army.getNacao().getRaca() != null
+                && !army.getNacao().getRaca().getTropas().isEmpty()) {
+            return army.getNacao().getRaca().getTropas().keySet();
+        }
+        return cenario == null ? new java.util.ArrayList<model.TipoTropa>()
+                : cenario.getTipoTropas().values();
     }
 
     /**
