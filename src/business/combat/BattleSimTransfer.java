@@ -137,6 +137,7 @@ public final class BattleSimTransfer {
         ret.tactic = army.getTatica();
         ret.moral = army.getMoral();
         ret.comandante = army.getComandantePericia();
+        ret.sizeBandLandIndex = army.getSizeBandLandIndex();
         ret.combatLevel = army.getCombatLevel() == null ? null : army.getCombatLevel().name();
         ret.target = army.getTargetNacao() == null ? null : army.getTargetNacao().getCodigo();
         ret.attackBonus = army.getAttackBonus();
@@ -239,6 +240,10 @@ public final class BattleSimTransfer {
         ret.setTatica(dto.tactic);
         ret.setMoral(dto.moral);
         ret.setComandante(dto.comandante);
+        // Carried so a saved battle can still be filled from its size bands on the far side: the
+        // band is the only strength an unscouted army has, and losing it on save would quietly
+        // turn "vast army" into "no information" for whoever opens the file.
+        ret.setSizeBandLandIndex(dto.sizeBandLandIndex);
         ret.setCombatLevel(combatLevel(dto.combatLevel));
         ret.setTargetNacao(dto.target == null ? null : nacao(nacoes, dto.target));
         ret.setBonusAttack(dto.attackBonus);
@@ -442,6 +447,7 @@ public final class BattleSimTransfer {
         int tactic;
         int moral;
         int comandante;
+        int sizeBandLandIndex;
         String combatLevel;
         String target;
         int attackBonus;

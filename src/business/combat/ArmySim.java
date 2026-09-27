@@ -106,6 +106,16 @@ public class ArmySim extends BaseModel implements IExercito {
      * is the case that found it - a "huge navy" concealing a top-bucket vast army.
      */
     private String sizeBandLand = "";
+    /**
+     * The same land band as a NUMBER, 1..5, straight off {@code tamanhoExercito}.
+     *
+     * {@link #sizeBandLand} is the wording, which is what the window shows; this is what anything
+     * arithmetic has to use. Fitting a head count to a band means indexing a table by it
+     * ({@code ScenarioDefaults}), and doing that by matching the translated string would break the
+     * moment a player switched language - the wording is display, the index is data. 0 means the
+     * server did not rank this army on land at all, which is an absence rather than "tiny".
+     */
+    private int sizeBandLandIndex = 0;
     private String comandanteNome;
     /** BORROWED, never edited. See {@link #getComandanteModel}. */
     private Personagem comandanteModel;
@@ -139,6 +149,7 @@ public class ArmySim extends BaseModel implements IExercito {
         final ExercitoFacade facade = new ExercitoFacade();
         this.sizeBand = facade.getDescricaoTamanho(exercito);
         this.sizeBandLand = facade.getDescricaoTamanhoTerra(exercito);
+        this.sizeBandLandIndex = exercito.getTamanhoExercito();
         // A GARRISON IS AN ARMY WITHOUT A COMMANDER, and that is all it is. Reading the skill off
         // getComandante() threw for exactly those armies, and the catch set only the name - so the
         // field initializer stood and every garrison entered the simulator with a commander of
@@ -165,6 +176,7 @@ public class ArmySim extends BaseModel implements IExercito {
         this.nacao = exercito.getNacao();
         this.sizeBand = exercito.getSizeBand();
         this.sizeBandLand = exercito.getSizeBandLand();
+        this.sizeBandLandIndex = exercito.getSizeBandLandIndex();
         // Clone army has to mean CLONE. These four were dropped, so a clone silently reverted to
         // the field defaults: an army the player had set to "Defend only" came back as
         // ATTACK_ARMY - reported as initiating combat and entering a layer the original does not
@@ -221,6 +233,14 @@ public class ArmySim extends BaseModel implements IExercito {
      */
     public String getSizeBandLand() {
         return sizeBandLand == null ? "" : sizeBandLand;
+    }
+
+    public int getSizeBandLandIndex() {
+        return sizeBandLandIndex;
+    }
+
+    public void setSizeBandLandIndex(int sizeBandLandIndex) {
+        this.sizeBandLandIndex = sizeBandLandIndex;
     }
 
     public void setSizeBandLand(String sizeBandLand) {

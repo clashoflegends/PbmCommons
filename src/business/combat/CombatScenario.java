@@ -636,6 +636,20 @@ public class CombatScenario {
         return ret == null ? Provenance.MANUAL : ret;
     }
 
+    /**
+     * Registers a platoon the TOOL produced, which is neither read from the file nor typed.
+     *
+     * {@code ScenarioDefaults} seeds a head count from the size band, and an unregistered platoon
+     * reads MANUAL - "the player's own number" - which is the one thing a seeded guess must never
+     * claim to be. It would drop straight out of the "(?)" accounting that tells him how much of
+     * the answer he is responsible for.
+     */
+    public void setProvenance(Pelotao pelotao, Provenance provenance) {
+        if (pelotao != null && provenance != null) {
+            platoonProvenance.put(pelotao, provenance);
+        }
+    }
+
     /** Call when the player edits a value: what he typed is his, whatever it was before. */
     public void setEdited(Pelotao pelotao) {
         if (pelotao != null) {
