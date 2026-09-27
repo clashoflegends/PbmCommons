@@ -318,6 +318,56 @@ public class ScenarioDefaultsTest extends LandCombatFixture {
         assertTrue(army.getPelotoes().isEmpty());
     }
 
+    /**
+     * The army to look at first is the biggest pile of unidentified men, wherever it came from.
+     *
+     * John, 2026-09-27: the fill moves the focus there "so that the player can notice and adjust
+     * it". The scouted army here is the trap: the fill did NOT touch it, because its head count is
+     * real, but its composition is exactly as unknown and it is bigger. Ranking only what was just
+     * seeded would walk the player straight past it.
+     */
+    @Test
+    public void theFocusGoesToTheBiggestUnidentifiedArmyEvenIfTheFillDidNotTouchIt() {
+        final Local hex = hex();
+        final CombatScenario scenario = new CombatScenario(null, hex);
+        final ArmySim seeded = army("Seeded", nacao("f"), platoon(NONE, 1200));
+        final ArmySim scouted = army("Scouted", nacao("g"), platoon(NONE, 3357));
+        final ArmySim known = army("Known", nacao("h"), platoon(INF, 9000));
+        scenario.addArmy(seeded, CombatScenario.Provenance.ESTIMATED);
+        scenario.addArmy(scouted, CombatScenario.Provenance.ESTIMATED);
+        scenario.addArmy(known, CombatScenario.Provenance.EXACT);
+
+        assertEquals(scouted, ScenarioDefaults.largestUnknown(scenario));
+        assertEquals(0, ScenarioDefaults.unknownTroops(known),
+                "an identified army has nothing unknown in it, however big");
+    }
+
+    /** Nothing unidentified is the happy case, and it answers null rather than an arbitrary army. */
+    @Test
+    public void nothingUnidentifiedMeansNoFocus() {
+        final CombatScenario scenario = new CombatScenario(null, hex());
+        scenario.addArmy(army("Known", nacao("f"), platoon(INF, 900)),
+                CombatScenario.Provenance.EXACT);
+
+        assertEquals(null, ScenarioDefaults.largestUnknown(scenario));
+        assertEquals(null, ScenarioDefaults.largestUnknown(null));
+    }
+
+    /** Unknown hulls count too, but a host of unknown bodies outranks them - and should. */
+    @Test
+    public void unknownHullsCountButDoNotOutrankUnknownBodies() {
+        final CombatScenario scenario = new CombatScenario(null, hex());
+        final TipoTropa unknownShip = troopType(ScenarioDefaults.PLACEHOLDER_SHIP_CODE, 1, 1, false);
+        final ArmySim squadron = army("Squadron", nacao("f"), platoon(unknownShip, 40));
+        final ArmySim host = army("Host", nacao("g"), platoon(NONE, 3000));
+        scenario.addArmy(squadron, CombatScenario.Provenance.ESTIMATED);
+        scenario.addArmy(host, CombatScenario.Provenance.ESTIMATED);
+
+        assertEquals(40, ScenarioDefaults.unknownTroops(squadron), "the hulls are unidentified too");
+        assertEquals(host, ScenarioDefaults.largestUnknown(scenario),
+                "but 3,000 unknown bodies distort a land battle far more than 40 unknown hulls");
+    }
+
     /** A null sample or scenario is a caller bug, not a crash. */
     @Test
     public void nullsAreSurvivable() {

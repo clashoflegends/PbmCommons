@@ -252,6 +252,70 @@ public final class ScenarioDefaults {
         return true;
     }
 
+    /**
+     * The army the player should look at FIRST after a fill: the biggest one made of troops nobody
+     * has identified.
+     *
+     * John, 2026-09-27: <i>"After running this pre-fill, can we move the focus to the largest army
+     * with Unknown Troops? So that the player can notice and adjust it?"</i> - and it is the right
+     * instinct, because the unknown-troop platoon is the single largest error term in the whole
+     * forecast. Everything else the fill writes is an average that is roughly right; this one is
+     * wrong by a factor of fifty and only the player can fix it.
+     *
+     * <b>It deliberately includes armies the fill did not touch.</b> An army scouted to visibility
+     * 4 already carries its real head count as a {@code none} platoon, so the fill leaves it alone
+     * - but it is exactly as unidentified, and exactly as worth typing in. Ranking only the armies
+     * just seeded would send the player past the one that matters most.
+     *
+     * Ranked by head COUNT, which puts an unknown host ahead of an unknown squadron. That is the
+     * right priority: hulls at attack 1 distort a sea battle far less than three thousand bodies at
+     * attack 1 distort a land one.
+     *
+     * @return null when nothing on the hex is unidentified, which is the happy case.
+     */
+    public static ArmySim largestUnknown(CombatScenario scenario) {
+        if (scenario == null) {
+            return null;
+        }
+        ArmySim ret = null;
+        int most = 0;
+        for (ArmySim army : scenario.getArmies()) {
+            final int unknown = unknownTroops(army);
+            if (unknown > most) {
+                most = unknown;
+                ret = army;
+            }
+        }
+        return ret;
+    }
+
+    /** How many of this army's men are of a type nobody has identified. */
+    public static int unknownTroops(ArmySim army) {
+        int ret = 0;
+        if (army == null) {
+            return ret;
+        }
+        for (Pelotao pelotao : army.getPelotoes().values()) {
+            if (isPlaceholder(pelotao)) {
+                ret += pelotao.getQtd();
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * The two catalogue entries the server uses when it will not say what something is.
+     *
+     * Matched by {@code cd_tropa} because both rows are GLOBAL in {@code ex_tipo_tropa} - the same
+     * codes in every scenario - and because the alternative, matching the displayed name, is a
+     * translated string.
+     */
+    public static boolean isPlaceholder(Pelotao pelotao) {
+        return pelotao != null && pelotao.getTipoTropa() != null
+                && (PLACEHOLDER_CODE.equals(pelotao.getTipoTropa().getCodigo())
+                || PLACEHOLDER_SHIP_CODE.equals(pelotao.getTipoTropa().getCodigo()));
+    }
+
     /** Bodies, not hulls: ships are a different layer and a different band. */
     private static int landTroops(Collection<Pelotao> platoons) {
         int ret = 0;
@@ -271,4 +335,6 @@ public final class ScenarioDefaults {
 
     /** {@code ex_tipo_tropa.cd_tropa}, and it is global - the same row in every scenario. */
     public static final String PLACEHOLDER_CODE = "none";
+    /** Its naval twin, which {@code setVisPlatoonsUnknown} uses for hulls. */
+    public static final String PLACEHOLDER_SHIP_CODE = "ship";
 }
