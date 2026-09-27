@@ -209,7 +209,7 @@ public class CombatScenario {
      * Is any army here travelling with an NPC whose combat contribution is withheld? T-808.
      *
      * The contribution itself is deliberately zero here - see
-     * {@code LandCombatResolver.NPC_COMBAT_CONTRIBUTION} - so this is what turns a silent omission
+     * {@link NpcContributionWithheld} - so this is what turns a silent omission
      * into a stated one. Scoped to armies that have a commander, because a garrison has none and
      * therefore nobody travelling with it.
      */

@@ -110,9 +110,17 @@ public class LandCombatResolver {
      * the single biggest term in one checked battle. Design 6.1 is also candid that the protection
      * is weak: a deterministic simulator plus a published turn makes a flat additive term
      * recoverable by subtraction, so this buys friction rather than secrecy. That trade is John's
-     * and it is recorded as D-10; if it moves, this constant and its disclosure move with it.
+     * and it is recorded as D-10; if it moves, this field and its disclosure move with it.
+     *
+     * <h3>It is a SEAM now, not a constant (T-906)</h3>
+     *
+     * It used to be {@code NPC_COMBAT_CONTRIBUTION = 0} inlined in the traveller loop. It is an
+     * injected {@link NpcContribution} so that when the engine classes move into this package
+     * (T-903) the Judge can plug the real rule in from the private side without the rule ever
+     * existing here. Drawing the line while the rule still has ONE caller is the whole point: after
+     * the move it would be a public file with a private history.
      */
-    private static final int NPC_COMBAT_CONTRIBUTION = 0;
+    private static final NpcContribution NPC = NpcContributionWithheld.INSTANCE;
 
     private static final BattleSimFacade battleSimFacade = new BattleSimFacade();
     private static final ExercitoFacade exercitoFacade = new ExercitoFacade();
@@ -331,7 +339,7 @@ public class LandCombatResolver {
             // than assumed: at 811 t58 hex 1630 every round-0 number matches exactly with zero here.
             return 0;
         }
-        return getForcaPlusFlat(army);
+        return getForcaPlusFlat(army, round, false);
     }
 
     /**
@@ -342,7 +350,7 @@ public class LandCombatResolver {
      * body is what keeps the one-time magic spent once across both - it is zeroed on the copy here,
      * so whichever layer swings first is the one that gets it.
      */
-    static long getForcaPlusFlat(ArmySim army) {
+    static long getForcaPlusFlat(ArmySim army, int round, boolean naval) {
         final long onetime = army.getCombateAtaqueOnetime();
         army.setCombateAtaqueOnetime(0);
         long ret = army.getAttackBonus() + onetime;
@@ -353,14 +361,19 @@ public class LandCombatResolver {
         ret += combatArtifact(comandante);
         // Characters travelling WITH the commander, which is what getLiderados() holds - the same
         // set the Judge walks as getPersonagemViajandoIterator(). A PLAYER character contributes
-        // its combat artifact; an NPC contributes nothing here, and the result says so - see
-        // NPC_COMBAT_CONTRIBUTION.
+        // its combat artifact, which is his possession and is public.
         for (Personagem traveller : comandante.getLiderados().values()) {
-            if (traveller == null || traveller.isRefem()) {
+            if (traveller == null || traveller.isRefem() || traveller.isNpc()) {
                 continue;
             }
-            ret += traveller.isNpc() ? NPC_COMBAT_CONTRIBUTION : combatArtifact(traveller);
+            ret += combatArtifact(traveller);
         }
+        // The NPCs go through the T-906 seam instead of being skipped inline. On this side it
+        // answers zero and says it is not modelling them; the Judge's implementation carries the
+        // real rule and never ships here. Asking the army once rather than per traveller is what
+        // lets the private side keep its own gating - the round-0 rule, the dead and the hostages -
+        // instead of having it half-applied out here where it would then be public.
+        ret += NPC.npcAttack(army, round, naval);
         return ret;
     }
 

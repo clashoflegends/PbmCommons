@@ -370,7 +370,7 @@ public class NavyCombatResolver {
      * swings. Spending it on the copy is what stops the land layer crediting it a second time.
      */
     private long getForcaPlusNaval(ArmySim fleet) {
-        return LandCombatResolver.getForcaPlusFlat(fleet);
+        return LandCombatResolver.getForcaPlusFlat(fleet, FIRST_ROUND, true);
     }
 
     private final LandCombatResolver landResolver = new LandCombatResolver();
