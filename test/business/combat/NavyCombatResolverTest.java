@@ -180,18 +180,18 @@ public class NavyCombatResolverTest extends LandCombatFixture {
         final ArmySim carrier = fleet("Carrier", foe, local,
                 platoon(shipWith("ng2", 500), 2), platoon(troopType("inf", 60, 40, false), 400));
         carrier.setCombatLevel(CombatLevel.DEFEND_ONLY);        // so it stays aboard to be sunk
+        carrier.setComandante(50);                              // T-817: 50 is the 18% anchor
         scenario.addArmy(fleet("Armada", mine, local, platoon(shipWith("ng", 0), 900)),
                 CombatScenario.Provenance.EXACT);
         scenario.addArmy(carrier, CombatScenario.Provenance.EXACT);
 
         final CombatResult ret = new CombatChain().resolve(scenario, null);
 
-        assertTrue(ret.getNotes().contains("BATTLESIM.RESULT.DROWNINGESTIMATED"),
-                "the rate is fixed, and the player is told the turn can still move it");
+        assertTrue(ret.getNotes().contains("BATTLESIM.RESULT.DROWNINGSKILL"),
+                "the rate is named, because the player chose it when he chose the commander");
         assertFalse(ret.getNotes().contains("BATTLESIM.RESULT.DROWNED"),
                 "they are not in open water");
-        assertEquals(400 * NavyCombatResolver.DROWNING_PERCENT / 100,
-                lost(ret, "Carrier", CombatLayer.NAVY) - 2,
+        assertEquals(72, lost(ret, "Carrier", CombatLayer.NAVY) - 2,
                 "18% of the 400 infantry, and the 2 hulls are the rest of the layer's losses");
     }
 
@@ -216,6 +216,7 @@ public class NavyCombatResolverTest extends LandCombatFixture {
         final ArmySim carrier = fleet("Carrier", foe, local,
                 platoon(shipWith("ng2", 50), 1), platoon(troopType("inf", 60, 40, false), 400));
         carrier.setCombatLevel(CombatLevel.DEFEND_ONLY);
+        carrier.setComandante(50);                              // 18%, so the bound is what bites
         scenario.addArmy(fleet("Armada", mine, local, platoon(shipWith("ng", 0), 900)),
                 CombatScenario.Provenance.EXACT);
         scenario.addArmy(carrier, CombatScenario.Provenance.EXACT);
@@ -224,8 +225,8 @@ public class NavyCombatResolverTest extends LandCombatFixture {
 
         final int drowned = lost(ret, "Carrier", CombatLayer.NAVY) - 1;   // minus the one hull
         assertEquals(50, drowned, "bounded by what the transport could ever have been carrying");
-        assertTrue(drowned < 400 * NavyCombatResolver.DROWNING_PERCENT / 100,
-                "and that is strictly less than the flat rate, or the bound did nothing");
+        assertTrue(drowned < 72,
+                "and that is strictly less than the unbounded rate, or the bound did nothing");
     }
 
     /**
@@ -245,16 +246,47 @@ public class NavyCombatResolverTest extends LandCombatFixture {
                 platoon(troopType("inf", 60, 40, false), 300),
                 platoon(troopType("bow", 55, 35, false), 200));
         carrier.setCombatLevel(CombatLevel.DEFEND_ONLY);
+        carrier.setComandante(50);
         scenario.addArmy(fleet("Armada", mine, local, platoon(shipWith("ng", 0), 900)),
                 CombatScenario.Provenance.EXACT);
         scenario.addArmy(carrier, CombatScenario.Provenance.EXACT);
 
         final CombatResult ret = new CombatChain().resolve(scenario, null);
 
-        final int rate = NavyCombatResolver.DROWNING_PERCENT;
-        assertEquals(300 * rate / 100 + 200 * rate / 100 + 2,
-                lost(ret, "Carrier", CombatLayer.NAVY),
-                "both platoons at the flat rate, plus the two hulls");
+        assertEquals(54 + 36 + 2, lost(ret, "Carrier", CombatLayer.NAVY),
+                "both platoons at 18%, plus the two hulls");
+    }
+
+    /**
+     * The same fleet, the same battle, a different commander - and a different number of men reach
+     * the beach. T-817.
+     *
+     * This is the one test that would still pass if the rate were a constant, so it is written to
+     * fail in that case: it runs the identical scenario twice and only the commander changes. A
+     * garrison has no commander at all and takes the floor, which is John's call rather than a
+     * side effect of the clamp - see {@code DrowningRuleTest}.
+     */
+    @Test
+    public void whoCommandsTheFleetDecidesHowManyDrown() {
+        assertEquals(100, drownedUnderCommander(0), "no commander: the 25% floor");
+        assertEquals(72, drownedUnderCommander(50), "skill 50: 18%");
+        assertEquals(44, drownedUnderCommander(100), "skill 100: the 11% cap");
+    }
+
+    /** One transport, 400 infantry, every hull sunk ashore. Only the commander varies. */
+    private int drownedUnderCommander(int skill) {
+        final Nacao mine = nacao("m"), foe = nacao("f");
+        final Local local = hexOf(PLAIN);
+        final CombatScenario scenario = atSea(local, mine, foe);
+        final ArmySim carrier = fleet("Carrier", foe, local,
+                platoon(shipWith("ng2", 500), 2), platoon(troopType("inf", 60, 40, false), 400));
+        carrier.setCombatLevel(CombatLevel.DEFEND_ONLY);
+        carrier.setComandante(skill);
+        scenario.addArmy(fleet("Armada", mine, local, platoon(shipWith("ng", 0), 900)),
+                CombatScenario.Provenance.EXACT);
+        scenario.addArmy(carrier, CombatScenario.Provenance.EXACT);
+        final CombatResult ret = new CombatChain().resolve(scenario, null);
+        return lost(ret, "Carrier", CombatLayer.NAVY) - 2;     // minus the two hulls
     }
 
     /** An escort that was carrying nobody loses its hulls and nobody drowns. */

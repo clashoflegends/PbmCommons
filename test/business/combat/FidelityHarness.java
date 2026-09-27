@@ -644,12 +644,28 @@ public class FidelityHarness {
         assertEquals(0, result.getRounds(CombatLayer.ARMY),
                 "the Judge fought no land battle here");
         // "After all ships sunk at 2442, many of the troops made to the shore. Many did not."
-        assertTrue(result.getNotes().contains("BATTLESIM.RESULT.DROWNINGESTIMATED"),
+        assertTrue(result.getNotes().contains("BATTLESIM.RESULT.DROWNINGSKILL"),
                 "Mihke's cargo went down with the ships");
-        // 2,800 archers at the agreed 18%. The Judge rolled its own number in that turn and the
-        // result says so, which is the whole reason T-817 exists.
-        assertEquals(2800 * NavyCombatResolver.DROWNING_PERCENT / 100,
-                lostAtSea(result, "Mihke", "Archers"), "the estimated drowning");
+        // 2,800 archers, and 560 of them drown. THIS ONE LINE IS NOT A KNOWN ANSWER and cannot
+        // become one: the turn it is taken from rolled SysApoio.rand(15) + 10 for this figure, so
+        // whatever the Judge printed that day was one sample and is unreproducible by anything.
+        // What it pins instead is the rule that replaced the die (T-817) against real EGF data:
+        // Mihke Hornug commands at 40, DrowningRule puts 40 at 20 percent, and 20 percent of 2,800
+        // is 560. Written as literals so that a change to the curve fails HERE, loudly, rather
+        // than quietly agreeing with itself.
+        assertEquals(40, armyNamed(scenario, "Mihke").getComandantePericia(),
+                "Mihke Hornug's commander skill, straight off the EGF");
+        assertEquals(560, lostAtSea(result, "Mihke", "Archers"), "20 percent of his 2,800 archers");
+    }
+
+    /** The one army whose commander's name contains {@code who}. */
+    private static ArmySim armyNamed(CombatScenario scenario, String who) {
+        for (ArmySim army : scenario.getArmies()) {
+            if (army.getNome() != null && army.getNome().contains(who)) {
+                return army;
+            }
+        }
+        throw new IllegalStateException("no army named " + who);
     }
 
     /** By LAYER, never by round: the land battle also has a round 1 on this hex. */

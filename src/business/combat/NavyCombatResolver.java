@@ -2,6 +2,7 @@ package business.combat;
 
 import business.facade.BattleSimFacade;
 import business.facade.CenarioFacade;
+import business.facade.DrowningRule;
 import business.facade.ExercitoFacade;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -40,17 +41,17 @@ import model.Pelotao;
  *
  * <h3>What the walls are to the city layer, drowning is to this one</h3>
  *
- * When a fleet loses every hull the troops it was carrying are in the water. Two of the Judge's
- * four branches are arithmetic and are resolved here; two roll a die and are disclosed instead:
+ * When a fleet loses every hull the troops it was carrying are in the water. All of the Judge's
+ * branches are arithmetic now, so all of them are resolved here:
  *
  * <ul>
- *   <li><b>On water, all hulls lost:</b> everyone drowns and the army disbands. Deterministic.</li>
+ *   <li><b>On water, all hulls lost:</b> everyone drowns and the army disbands.</li>
  *   <li><b>Ashore, no cargo capacity at all</b> (an escort that was never carrying anyone): no
- *       casualties. Deterministic.</li>
- *   <li><b>Ashore, carrying troops:</b> {@code SysApoio.rand(15) + 10}, so 10% to 24% of each
- *       platoon, bounded by what was embarked. NOT resolved - the result would be one sample of a
- *       range, presented as a forecast. T-816 (pin coastal drowning at a fixed rate) is what would
- *       make this layer answerable end to end.</li>
+ *       casualties.</li>
+ *   <li><b>Ashore, carrying troops:</b> {@link business.facade.DrowningRule}, a function of the
+ *       fleet commander's skill, bounded by what was embarked. This used to be
+ *       {@code SysApoio.rand(15) + 10} and could only be estimated at its midpoint; T-817 removed
+ *       the die from the Judge, so this layer now answers it exactly rather than disclosing it.</li>
  * </ul>
  *
  * <h3>Out of reach, and said so</h3>
@@ -68,20 +69,6 @@ public class NavyCombatResolver {
     public static final int FIRST_ROUND = 1;
     /** Same guard as the land layer: a battle that cannot end is a bug, not a long battle. */
     private static final int MAX_ROUNDS = 100;
-    /**
-     * Coastal drowning, as a flat percentage. John's call, 2026-09-26 (T-816).
-     *
-     * The Judge rolls {@code pelotao.getQtd() * (SysApoio.rand(15) + 10) / 100}, and
-     * {@code SysApoio.rand(n)} is {@code (int)(Math.random() * n) + 1} - so it is 1 to 15, and the
-     * rate is 11% to 25%, not the 10% to 24% an earlier reading of it said. 18 is the midpoint,
-     * which makes this the expected value rather than a guess at one.
-     *
-     * It is a stand-in. The agreed answer is T-817: drowning as a function of the commander's
-     * skill, with the die removed on BOTH sides. Until that lands the Judge still rolls, so this
-     * layer's cargo casualties are an estimate and the result says so. See KI-056.
-     */
-    static final int DROWNING_PERCENT = 18;
-
     private final BattleSimFacade battleSimFacade = new BattleSimFacade();
     private final CenarioFacade cenarioFacade = new CenarioFacade();
     private final ExercitoFacade exercitoFacade = new ExercitoFacade();
@@ -243,8 +230,8 @@ public class NavyCombatResolver {
     /**
      * What happens to the cargo when the hulls are gone.
      *
-     * Only the two arithmetic branches of {@code doAfogamento}. The two that roll a die are noted,
-     * not resolved: see the class note.
+     * Every branch of the Judge's {@code doAfogamento} that this layer can reach, resolved. The
+     * rate itself comes from {@link business.facade.DrowningRule}, which the Judge calls too.
      */
     private void doAfogamento(ArmySim fleet, Map<ArmySim, ArmySim> toOriginal,
             CombatScenario scenario, float capacityBefore, float burdenBefore, int round,
@@ -288,6 +275,9 @@ public class NavyCombatResolver {
         // of its army, so only the embarked part was ever at sea and the drowned weight stops at
         // the capacity; case 3 carried all of it and has no bound to apply.
         final float bound = capacityBefore < burdenBefore ? capacityBefore : Float.MAX_VALUE;
+        // One rate for the fleet, read once, because a fleet has one commander. The Judge used to
+        // roll this per platoon; T-817 removed the die from both sides at the same call.
+        final int rate = DrowningRule.percent(fleet.getComandantePericia());
         float drowned = 0f;
         boolean any = false;
         for (Pelotao pelotao : new ArrayList<>(fleet.getPelotoes().values())) {
@@ -296,7 +286,7 @@ public class NavyCombatResolver {
                 continue;
             }
             final int was = pelotao.getQtd();
-            int lost = was * DROWNING_PERCENT / 100;
+            int lost = was * rate / 100;
             final float pesoPorTropa = exercitoFacade.getTransportesBurden(pelotao) / was;
             if (pesoPorTropa > 0f && bound != Float.MAX_VALUE) {
                 lost = (int) Math.min(lost, (bound - drowned) / pesoPorTropa);
@@ -312,9 +302,10 @@ public class NavyCombatResolver {
             any = true;
         }
         if (any) {
-            // The number above is the expected one, not the turn's. Said once, because a player
-            // planning a landing needs to know the figure can move either way.
-            ret.addNote("BATTLESIM.RESULT.DROWNINGESTIMATED", DROWNING_PERCENT);
+            // Said once, and it names the rate rather than the loss, because after T-817 the rate
+            // is a consequence of who the player put in command - which is the point of having
+            // removed the die, and is invisible unless the result says it out loud.
+            ret.addNote("BATTLESIM.RESULT.DROWNINGSKILL", rate);
         }
     }
 
