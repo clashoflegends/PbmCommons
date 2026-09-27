@@ -23,18 +23,47 @@ public class ComparatorCasualtiesSorter implements Comparator {
     private final Terreno terreno;
 
     /*
-     Standard	%	%	%	%	Id
-     Charge	Attack	Fast	Defense	Cost	Id
-     Flank	Defense	Attack	Cost	Fast	Id
-     Ambush	Cost	Attack	Fast	Defense	Id
-     Surround	Fast	Cost	Defense	Attack	Id
-     Guerrilla	Slow	Defense	Attack	Cost	Id
+     THE ORDER IN WHICH PLATOONS DIE. Index 0 takes casualties first.
 
-     Cost	1	10	Upkeep or recruit?
-     Attack	10	1	
-     Defense	10	1	
-     Fast	10	1	
-     Slow	1	10	
+     Rewritten 2026-09-27 to match the code. The old table had Guerrilla as "Slow, Defense, Attack,
+     Cost" and the implementation has always checked ATTACK first, which is the opposite end of the
+     one key that matters most - and it is the key the catapult rule players rely on turns on. The
+     legend underneath it ("Cost 1 10", "Attack 10 1") did not say which direction either, so each
+     key now carries its own. No behaviour was changed: this is the comment catching up with the
+     code, not the other way round.
+
+     Every comparator is the same shape - a list of keys, first difference wins, platoon id as the
+     final tie-break. DESC means the HIGHEST value dies first; ASC means the lowest does.
+
+     tactic          1st            2nd            3rd            4th           last
+     ------------------------------------------------------------------------------------
+     0 Charge        attack DESC    movement DESC  defence DESC   cost DESC     id
+     1 Flank         defence DESC   attack DESC    cost DESC      movement DESC id
+     2 Standard      (none)         -              -              -             id
+     3 Surround      movement DESC  cost DESC      defence DESC   attack DESC   id
+     4 Guerrilla     attack ASC     movement ASC   defence ASC    cost ASC      id
+     5 Ambush        cost DESC      attack DESC    movement DESC  defence DESC  id
+     6 Barrage       cost ASC       attack DESC    movement DESC  defence ASC   id
+     7 Shieldwall    defence ASC    attack ASC     cost ASC       movement ASC  id
+     8 Stand firm    movement ASC   cost ASC       defence ASC    attack ASC    id
+     9 Swarm         attack ASC     movement ASC   defence ASC    cost ASC      id
+
+     0-5 are the traditional set; 6-9 belong to the ;ST2; set, and 0, 1 and 3 appear in both. An
+     index from the wrong family sorts by the default branch (Charge) - see T-822, which is about
+     the matching hole in the tactic BONUS table.
+
+     Attack, defence and movement are read PER TERRAIN, so the same tactic orders the same army
+     differently on different ground. Cost is recruit money plus five turns of upkeep.
+
+     Two consequences worth knowing before reading any of this as strategy advice:
+
+     - CHARGE AND GUERRILLA ARE A MIRROR PAIR on attack. Charge spends your hardest hitters first,
+       Guerrilla spends them last. That is why an army that needs its siege engines alive at the
+       walls picks Guerrilla: high-attack, and therefore last in the queue.
+     - STANDARD HAS NO SEQUENCE AT ALL. Its comparator is the id tie-break alone, and
+       CasualtyMode.TATICA_STANDARD treats it as an even spread rather than a ranking. Choosing
+       Standard is choosing not to have a casualty order.
+     - SWARM AND GUERRILLA ARE IDENTICAL here. They differ only in the bonus table.
      */
     public ComparatorCasualtiesSorter(int aTatica, Terreno aTerreno) {
         this.tatica = aTatica;
