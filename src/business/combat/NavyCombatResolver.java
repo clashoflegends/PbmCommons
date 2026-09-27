@@ -274,6 +274,11 @@ public class NavyCombatResolver {
         // KI-010 cases 2 and 3 differ only in the BOUND. Case 2 is a fleet that was carrying part
         // of its army, so only the embarked part was ever at sea and the drowned weight stops at
         // the capacity; case 3 carried all of it and has no bound to apply.
+        // The cap is the RULE, ruled by John 2026-09-26 (D-23), not an artefact to be smoothed
+        // away: a proposal to take the rate off the embarked share instead - which would have made
+        // these two cases one - was declined. This mirrors the Judge exactly, down to the weight
+        // function: its ExercitoControlFacade.getPesoPelotao delegates to the same
+        // ExercitoFacade.getTransportesBurden called here, so one function bounds both sides.
         final float bound = capacityBefore < burdenBefore ? capacityBefore : Float.MAX_VALUE;
         // One rate for the fleet, read once, because a fleet has one commander. The Judge used to
         // roll this per platoon; T-817 removed the die from both sides at the same call.
