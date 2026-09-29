@@ -228,7 +228,12 @@ public final class BattleSimTransfer {
             throws TransferException {
         final Nacao nacao = nacao(nacoes, dto.nacao);
         final ArmySim ret = new ArmySim(dto.nome, null, nacao);
-        ret.setCodigo(dto.codigo);
+        // Only when the file HAS one. The constructor now supplies a codigo of its own, and this
+        // reads untrusted input - a hand-edited or older fragment with no codigo would otherwise
+        // put the null straight back and throw on the next clone.
+        if (dto.codigo != null) {
+            ret.setCodigo(dto.codigo);
+        }
         // TACTICS ARE A DECLINE CASE, and the first reading of this said they were not - see T-822.
         // The two engine families fill DIFFERENT, overlapping index sets of one array, so an index
         // from the wrong family reads a cell nobody filled, which is zero, and a modTatica of zero

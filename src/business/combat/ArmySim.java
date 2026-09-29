@@ -131,6 +131,16 @@ public class ArmySim extends BaseModel implements IExercito {
         this.comandanteNome = name;
         this.terreno = terrain;
         this.nacao = nation;
+        // A CODIGO, always. This constructor used to leave it null, and the copy constructor reads
+        // it - so "New army" then "Clone army" threw an NPE out of BaseModel.setCodigo, which calls
+        // removeAcentos on it. Crash 327292, game 898, on the old BattleSim where doNewArmy is the
+        // only caller that never assigned one afterwards.
+        //
+        // Fixed HERE rather than guarded in the copy constructor, because a codigo-less ArmySim is
+        // the defect: CombatScenario.copy() and CombatCopies read it too, so Clone window, the
+        // what-if search and the tactic sweep would each have hit the same throw the day any other
+        // caller forgot. Callers that want their own codigo still overwrite this one.
+        this.setCodigo("sim" + System.identityHashCode(this));
         // NO LOCAL. Callers that will fight this army must setLocal() themselves, and since T-801
         // that means all of them: the shared attack formula takes a Local for the city and
         // capital-distance rules, and it SWALLOWS a null one into an attack of zero rather than
