@@ -61,6 +61,19 @@ import persistenceCommons.SysApoio;
 public class MapaManager implements Serializable {
 
     private static final Log log = LogFactory.getLog(MapaManager.class);
+    /**
+     * How the order-composition overlays (scout footprints, converging moves) are drawn. One key, read
+     * on both sides of the jar: here for the classic bitmap marker, and in the Counselor for the vector
+     * overlay and its animation timer.
+     * <p>
+     * {@link #OVERLAY_STYLE_ANIMATED} is the default. {@link #OVERLAY_STYLE_STATIC} draws the same
+     * vectors with the dashes standing still. {@link #OVERLAY_STYLE_CIRCLE} restores the marker the
+     * game shipped from 2022 to 2026 and draws no vector overlay at all.
+     */
+    public static final String MAP_OVERLAY_STYLE = "mapOverlayStyle";
+    public static final String OVERLAY_STYLE_ANIMATED = "1";
+    public static final String OVERLAY_STYLE_STATIC = "2";
+    public static final String OVERLAY_STYLE_CIRCLE = "3";
     private Image[] desenhoTerrenoDetalhes;
     private Image[] desenhoDetalhes;
     private Image[] desenhoCidades;
@@ -455,12 +468,10 @@ public class MapaManager implements Serializable {
             for (PersonagemOrdem po : pers.getAcoes().values()) {
                 try {
                     if (acaoFacade.isScout(po)) {
-                        // Scout footprints moved to the Counselor's vector overlay (ScoutFootprint +
-                        // ScaledMapIcon): this bitmap is built at 1x and upscaled bicubically, which
-                        // smears a thin outline, and the old marker drew a decorative oval at the
-                        // target rather than the 7 hexes the order actually uncovers - so overlap
-                        // between two scouts could not be judged by eye. Nothing to draw here.
-                        continue;
+                        // Only under mapOverlayStyle=3, the classic marker. The other two styles draw
+                        // the footprint as a Counselor vector overlay instead (ScoutFootprint +
+                        // ScaledMapIcon) and drawScoutOnMap returns without touching the bitmap.
+                        drawScoutOnMap(po, pers, observer, big);
                     } else if (acaoFacade.isMovimentoDirection(po)) {
                         drawMovPathArmy(po, pers, observer, big);
                     } else if (acaoFacade.isMovimento(po)) {
@@ -582,12 +593,43 @@ public class MapaManager implements Serializable {
 
     /**
      * Draw the center of all scout actions (;ASR;) on map
+     * <p>
+     * The classic marker, restored unchanged from the 2022 original (two dashed ovals at the target,
+     * allies in the same colour as your own). It is drawn only when the player has chosen the classic
+     * style; {@code mapOverlayStyle} 1 and 2 leave the footprint to the Counselor's vector overlay.
      *
      * @param po
      * @param pers
      * @param observer
      * @param big
      */
+    private void drawScoutOnMap(PersonagemOrdem po, Personagem pers, Jogador observer, Graphics2D big) {
+        if (!SettingsManager.getInstance().isConfig(MAP_OVERLAY_STYLE, OVERLAY_STYLE_CIRCLE, OVERLAY_STYLE_ANIMATED)) {
+            //the vector overlay is drawing this one
+            return;
+        }
+        if (SettingsManager.getInstance().isConfig("drawScoutOnMap", "0", "1")) {
+            //don't draw
+            return;
+        }
+
+        //find target location of order or item
+        Local localDestination = acaoFacade.getLocalDestination(pers, po, getLocais());
+        if (localDestination == null) {
+            //find location according to order sequence i.e. recon after movement
+            localDestination = personagemFacade.getLocalDestination(pers, getLocais());
+        }
+        if (localDestination == null) {
+            //can't find local, don't do anything
+            return;
+        }
+        final Point dest = ConverterFactory.localToPoint(localDestination);
+        if (jogadorFacade.isMine(pers, observer)) {
+            imageFactory.doDrawScout(big, dest);
+        } else if (jogadorFacade.isAlly(pers, observer)) {
+            imageFactory.doDrawScoutAlly(big, dest);
+        }
+    }
 
     public BufferedImage redrawMapaGeral(Collection<Local> listaLocal, Collection<Personagem> listaPers, Jogador observer) {
         ImageManager.getInstance().doLoadTerrainImages();
