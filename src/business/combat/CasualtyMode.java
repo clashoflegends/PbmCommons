@@ -66,6 +66,16 @@ public enum CasualtyMode {
     public static final int TATICA_STANDARD = 2;
 
     /**
+     * The tactic id the game gives "Charge", and the one a fresh {@code ArmySim} starts on.
+     * <p>
+     * It is the old simulator's opening tactic for every army, whether newly created or pulled off the
+     * map. That is deliberate: the simulator is a place to ask "what if", and the casualty ranking it
+     * exists to show is empty under Standard, so opening on the army's stored tactic opened it on a
+     * blank list whenever the player had not yet ordered one this turn.
+     */
+    public static final int TATICA_CHARGE = 0;
+
+    /**
      * @param army   the army whose platoons are being shown
      * @param cenario the scenario, for {@code ;CTC;}
      * @param layer  which layer's platoons; naval always ranks
