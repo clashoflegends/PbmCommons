@@ -8,8 +8,11 @@ import baseLib.BaseModel;
 import business.converter.ConverterFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import model.Cenario;
@@ -147,6 +150,28 @@ public class AcaoFacade implements Serializable {
     public boolean isScout(PersonagemOrdem po) {
         try {
             return po.getOrdem().hasHabilidade(";ASR;");
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+    /**
+     * The orders that raise a city's SIZE, which is what the {@code ;SCC;} proximity cap governs.
+     *
+     * Keyed on the order code rather than on an order habilidade, because the code IS an order's
+     * behaviour here: PbmJudge's {@code OrdemJudgeFactory} dispatches on {@code switch (getCdOrdem())}
+     * and these six are exactly the codes it routes to {@code OrdemBaseImproveCity}, whose
+     * {@code criticaRequisitos} applies the cap. A code outside the set never reaches that class, so
+     * the set cannot drift from the server short of someone editing that switch. 548 is in it because
+     * it raises the size as well as the fortification.
+     */
+    private static final Set<Integer> IMPROVE_CITY_SIZE_ORDERS =
+            new HashSet<>(Arrays.asList(548, 550, 551, 552, 553, 554));
+
+    /** @see #IMPROVE_CITY_SIZE_ORDERS */
+    public boolean isImproveCitySize(PersonagemOrdem po) {
+        try {
+            return IMPROVE_CITY_SIZE_ORDERS.contains(SysApoio.parseInt(po.getOrdem().getCodigo()));
         } catch (NullPointerException e) {
             return false;
         }
