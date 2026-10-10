@@ -8,6 +8,7 @@ import business.converter.ConverterFactory;
 import business.facade.CenarioFacade;
 import business.services.ComparatorFactory;
 import java.io.Serializable;
+import business.combat.ScenarioDefaults;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -205,6 +206,10 @@ public class RegrasReportDefault implements Serializable {
                 }
                 final List<TipoTropa> tropas = new ArrayList<>();
                 for (TipoTropa tipoTropa : getPartida().getCenario().getTipoTropas().values()) {
+                    if (ScenarioDefaults.isPlaceholder(tipoTropa)) {
+                        //see printTropasTable: placeholders are not real troops
+                        continue;
+                    }
                     if (tipoTropa.isBarcos() == water) {
                         tropas.add(tipoTropa);
                     }
@@ -300,6 +305,9 @@ public class RegrasReportDefault implements Serializable {
 
     private void printTropasTable() throws PersistenceException {
         final List<TipoTropa> tropas = new ArrayList<>(getPartida().getCenario().getTipoTropas().values());
+        //the unscouted-enemy placeholders are not troops - they have no stats worth printing and a
+        //reader cannot recruit, fight or cost them. ScenarioDefaults owns the two codes.
+        tropas.removeIf(ScenarioDefaults::isPlaceholder);
         //sort array
         ComparatorFactory.getComparatorBaseModelNameSorter(tropas);
         getReport().writeTabela(6);

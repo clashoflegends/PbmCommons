@@ -311,9 +311,19 @@ public final class ScenarioDefaults {
      * translated string.
      */
     public static boolean isPlaceholder(Pelotao pelotao) {
-        return pelotao != null && pelotao.getTipoTropa() != null
-                && (PLACEHOLDER_CODE.equals(pelotao.getTipoTropa().getCodigo())
-                || PLACEHOLDER_SHIP_CODE.equals(pelotao.getTipoTropa().getCodigo()));
+        return pelotao != null && isPlaceholder(pelotao.getTipoTropa());
+    }
+
+    /**
+     * The same test against a bare type, for the places that iterate the scenario CATALOGUE rather
+     * than an army - the rules report's troop table and its casualty rankings. A placeholder has no
+     * stats worth printing and cannot be recruited, fought or costed, so listing it as a troop is
+     * noise at best and an invitation to spend a turn on it at worst.
+     */
+    public static boolean isPlaceholder(TipoTropa tipoTropa) {
+        return tipoTropa != null
+                && (PLACEHOLDER_CODE.equals(tipoTropa.getCodigo())
+                || PLACEHOLDER_SHIP_CODE.equals(tipoTropa.getCodigo()));
     }
 
     /** Bodies, not hulls: ships are a different layer and a different band. */
