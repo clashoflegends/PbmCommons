@@ -185,6 +185,56 @@ public class AcaoFacade implements Serializable {
         }
     }
 
+    /**
+     * True when this order relocates the character issuing it AND the destination can be computed
+     * from the parameters alone.
+     *
+     * <b>A movement-TYPED order is not necessarily a move.</b> Over the whole {@code ordem_cenario}
+     * catalogue, {@code tp_ordem='Mov'} covers sixteen orders and exactly two of them leave the
+     * character where it stands - {@code Bloq} (840), which sets a blockade facing and subtracts
+     * morale, and {@code MovCity} (845), which moves a CITY. Those two are the only ones whose first
+     * parameter is a bare {@code Direcao}; every real character move carries either a destination
+     * {@code Coordenada} or a plotted {@code Direcao_Ex} path. So the test is on parameter SHAPE and
+     * needs no list of codes, which is what keeps it true for a scenario that adds a movement order
+     * tomorrow.
+     * <p>
+     * {@code Coordenada} is looked for in ANY position, not just the first: {@code ArtMov} (826,
+     * "Use Movement Magic Item") carries it behind the item and {@code FeitMov} (825, "Cast Movement
+     * Spell") behind the spell, and both land the character on that hex.
+     *
+     * @see #isStationaryMovement
+     */
+    public boolean movesTheCharacter(PersonagemOrdem po) {
+        if (!isMovimento(po)) {
+            return false;
+        }
+        for (int ii = 0; ii < po.getOrdem().getParametrosIdeQtd(); ii++) {
+            if (po.getOrdem().getParametroIde(ii).contains("Coordenada")) {
+                return true;
+            }
+        }
+        return po.getOrdem().getParametroIde(0).contains("Direcao_Ex");
+    }
+
+    /**
+     * True for a movement-typed order that is KNOWN not to relocate the character: a bare
+     * {@code Direcao} first parameter, which across the catalogue is {@code Bloq} and {@code MovCity}
+     * and nothing else.
+     *
+     * This is deliberately not the negation of {@link #movesTheCharacter}. A third case exists - a
+     * movement order that does relocate the character to a hex the parameters do not name, such as
+     * {@code ArtMov} 805, which carries only {@code Artefato_Carried}. For that one the honest answer
+     * is "they move, I cannot say where", and a caller that must not guess needs to tell it apart
+     * from "they stay put".
+     */
+    public boolean isStationaryMovement(PersonagemOrdem po) {
+        if (!isMovimento(po)) {
+            return false;
+        }
+        final String first = po.getOrdem().getParametroIde(0);
+        return first.contains("Direcao") && !first.contains("Direcao_Ex");
+    }
+
     public boolean isResourceTransport(PersonagemOrdem po) {
         try {
             return po.getOrdem().hasHabilidade(";ART;");

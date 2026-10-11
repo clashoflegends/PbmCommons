@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 import model.Artefato;
 import model.Cenario;
 import model.Cidade;
@@ -257,33 +258,108 @@ public class PersonagemFacade implements Serializable {
         return local;
     }
 
+    /** Guards the {@code lider} chain against a cycle in corrupt data. */
+    private static final int MAX_LEADER_DEPTH = 8;
+
     /**
-     * PC can be moving by himself, in an army, or with a leader
+     * Where this character will be standing at the end of the turn: a BEST GUESS that falls back to
+     * the hex they are on now, for callers that are DRAWING and would rather be approximately right
+     * than silent.
      *
-     * @param pc
-     * @return
+     * Both drawings of a scout order go through here - {@code MapaManager.drawScoutOnMap} for the
+     * classic marker and the Counselor's {@code ScoutFootprint} for the vector ring - so they cannot
+     * disagree about where one order goes off.
+     *
+     * @see #getLocalDestination(Personagem, SortedMap, Predicate) for callers that must not guess
      */
     public Local getLocalDestination(Personagem pc, SortedMap<String, Local> locais) {
+        return getLocalDestination(pc, locais, null);
+    }
+
+    /**
+     * Where this character will be standing at the end of the turn, or <b>null when that is not
+     * knowable</b>.
+     *
+     * The resolution is the same for every caller; only the fallback differs, and it differs because
+     * being wrong costs them different things. A drawing caller would rather put a marker one hex off
+     * than draw nothing, so it uses the two-argument form and never sees a null it did not earn. A
+     * caller that puts a SENTENCE in front of the player cannot do that: a confident warning about an
+     * order that works is worse than no warning, so it passes a {@code stillPlanning} test and takes
+     * null for an answer.
+     * <p>
+     * Three things this gets right that the 2022 original did not, all three found while building the
+     * Counselor's turn review and all three visible on the map as well:
+     * <ol>
+     * <li><b>A movement-typed order is not necessarily a move.</b> The old test was
+     * {@code isMovimentoDirection}, i.e. {@code Mov} plus a parameter containing {@code Direcao},
+     * which is true of {@code Bloq} - a blockade facing that never touches the hex - and of
+     * {@code MovCity}, which moves a city. Both were walked as if they were a path, putting a
+     * blockading commander one hex from where they stand. {@link AcaoFacade#movesTheCharacter} is the
+     * corrected test.</li>
+     * <li><b>The leader branch belongs AFTER the loop, not inside it.</b> Sitting inside, it answered
+     * with the leader's destination the moment it met any non-movement order and never read a move in
+     * a later slot. The Judge does it the other way round: {@code Ordem.executa810} has an explicit
+     * {@code isViajandoCom} branch that takes a passenger out of the group, so a passenger's own move
+     * wins. Out here it also fixes the mirror case - a passenger with NO orders used to fall through
+     * the empty loop to its own current hex instead of following its leader.</li>
+     * <li><b>A move whose destination is not in the parameters is unknown, not stationary.</b>
+     * {@code ArtMov} 805 carries only {@code Artefato_Carried}. The character goes somewhere; nothing
+     * here can say where. A guessing caller still gets the current hex, a strict one gets null.</li>
+     * </ol>
+     *
+     * @param stillPlanning asked only when the character has no movement order and no leader, to tell
+     *                      "they are staying put" apart from "the player has not given them their
+     *                      orders yet". Null means the caller accepts a guess, and then this never
+     *                      returns null for a character standing on a hex.
+     */
+    public Local getLocalDestination(Personagem pc, SortedMap<String, Local> locais,
+            Predicate<Personagem> stillPlanning) {
+        return getLocalDestination(pc, locais, stillPlanning, 0);
+    }
+
+    private Local getLocalDestination(Personagem pc, SortedMap<String, Local> locais,
+            Predicate<Personagem> stillPlanning, int depth) {
+        if (pc == null) {
+            return null;
+        }
+        if (depth > MAX_LEADER_DEPTH) {
+            //a cycle in the lider chain is corrupt data. Say so and draw nothing, rather than
+            //quietly answering with a hex that is not where anybody is going.
+            log.warn(String.format("Leader chain too deep (>%d) at %s: giving no destination.",
+                    MAX_LEADER_DEPTH, pc.getNome()));
+            return null;
+        }
         for (PersonagemOrdem po : pc.getAcoes().values()) {
-            if (acaoFacade.isMovimentoDirection(po)) {
-                //FIXME: calculate final hex based on directions
-                final SortedMap<Integer, Local> pathMov = acaoFacade.getLocalDestinationPath(pc, po, locais);
-                //return last position
-                return pathMov.get(pathMov.size() - 1);
+            if (po == null || po.getOrdem() == null || !acaoFacade.isMovimento(po)) {
+                continue;
             }
-            if (acaoFacade.isMovimento(po)) {
-                //just get the final hex
-                final Local localDestination = acaoFacade.getLocalDestination(pc, po, locais);
-                if (localDestination != null) {
-                    return localDestination;
-                }
+            if (acaoFacade.movesTheCharacter(po)) {
+                return getMoveDestination(pc, po, locais);
             }
-            if (pc.getLider() != null) {
-                //if traveling with a leader then... BEWARE recursive code!!!
-                return getLocalDestination(pc.getLider(), locais);
+            if (!acaoFacade.isStationaryMovement(po)) {
+                //they move, and the parameters do not say where
+                return stillPlanning == null ? pc.getLocal() : null;
             }
         }
+        if (pc.getLider() != null) {
+            //no move of their own, so they go wherever whoever is carrying them goes
+            return getLocalDestination(pc.getLider(), locais, stillPlanning, depth + 1);
+        }
+        if (stillPlanning != null && stillPlanning.test(pc)) {
+            return null;
+        }
         return pc.getLocal();
+    }
+
+    /** The named hex, or the last hex of a plotted path, exactly as the map draws it. */
+    private Local getMoveDestination(Personagem pc, PersonagemOrdem po,
+            SortedMap<String, Local> locais) {
+        final Local coord = acaoFacade.getLocalDestination(pc, po, locais);
+        if (coord != null) {
+            return coord;
+        }
+        final SortedMap<Integer, Local> pathMov = acaoFacade.getLocalDestinationPath(pc, po, locais);
+        return pathMov.isEmpty() ? null : pathMov.get(pathMov.size() - 1);
     }
 
     public String getNacaoNome(Personagem personagem) {
