@@ -33,6 +33,71 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class LabelsIntegrityTest {
 
     private static final String[] LANGUAGES = {"es", "ca", "it", "pt"};
+
+    /**
+     * No key may be defined twice in the same bundle.
+     *
+     * {@code Properties.load} reads a file top to bottom into a map, so a key defined twice is not an
+     * error and raises nothing - no warning, no exception, no log line. The LAST definition silently
+     * wins and the earlier one becomes dead text that still looks authoritative in the file. The
+     * damage is that the game renders a string nobody chose: {@code DB.ARTEFATO.NOME.VIPERRING} was
+     * defined twice, so the item was called "Viper Ring" for an unknown length of time while the
+     * intended "Ring of the Viper" sat dead a thousand lines above it (KI-048).
+     *
+     * Scoped to the bundles in THIS module. {@code mensagens.properties} in PbmPersistenceServer has
+     * its own, much larger backlog and its own cascade; this guard keeps the ones already clean clean
+     * rather than failing a build over a backlog it cannot fix.
+     *
+     * Parsed the way Java parses: ISO-8859-1, key is everything before the first {@code =}, and
+     * blank / {@code #} / {@code !} lines ignored. The audit behind KI-048 confirmed these files use
+     * no line continuations and no {@code :} or whitespace separators, so this cannot disagree with
+     * {@code Properties.load}.
+     */
+    @Test
+    public void noBundleDefinesAKeyTwice() throws IOException {
+        final List<String> offenders = new ArrayList<>();
+        for (String bundle : BUNDLES) {
+            final List<String> keys = new ArrayList<>();
+            final List<String> dups = new ArrayList<>();
+            try (InputStream in = getClass().getResourceAsStream("/" + bundle)) {
+                if (in == null) {
+                    continue;
+                }
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new InputStreamReader(in, StandardCharsets.ISO_8859_1))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        final String trimmed = line.trim();
+                        if (trimmed.isEmpty() || trimmed.charAt(0) == '#' || trimmed.charAt(0) == '!'
+                                || line.indexOf('=') < 0) {
+                            continue;
+                        }
+                        final String key = line.substring(0, line.indexOf('=')).trim();
+                        if (keys.contains(key) && !dups.contains(key)) {
+                            dups.add(key);
+                        }
+                        keys.add(key);
+                    }
+                }
+            }
+            for (String dup : dups) {
+                offenders.add(bundle + ": " + dup);
+            }
+        }
+        Collections.sort(offenders);
+        assertTrue(offenders.isEmpty(),
+                "a key defined twice renders the LAST value and silently discards the first - "
+                + "delete the earlier line:\n  " + String.join("\n  ", offenders));
+    }
+
+    /** The bundles this module owns. */
+    private static final String[] BUNDLES = {
+        "labels.properties", "labels_es.properties", "labels_ca.properties",
+        "labels_it.properties", "labels_pt.properties",
+        "rulesandhelpothers.properties", "rulesandhelpgot.properties", "rulesandhelpgot_es.properties",
+        "lomrules.properties", "lomrules_es.properties"
+    };
+
     /** {@code %s}, {@code %d}, {@code %,d}, {@code %1$s} - the conversion, without the argument. */
     private static final Pattern PLACEHOLDER =
             Pattern.compile("%(?:\\d+\\$)?[-#+ 0,(]*\\d*(?:\\.\\d+)?([a-zA-Z%])");
