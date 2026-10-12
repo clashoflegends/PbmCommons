@@ -309,8 +309,12 @@ public class PersonagemFacade implements Serializable {
      *
      * @param stillPlanning asked only when the character has no movement order and no leader, to tell
      *                      "they are staying put" apart from "the player has not given them their
-     *                      orders yet". Null means the caller accepts a guess, and then this never
-     *                      returns null for a character standing on a hex.
+     *                      orders yet". Null means the caller accepts a guess.
+     *                      <p>
+     *                      <b>Even then this can return null</b>, and the drawing callers handle it
+     *                      by drawing nothing: a move order naming a hex that is not in
+     *                      {@code locais} resolves to nothing, and so does a cycle in the
+     *                      {@code lider} chain. Both are corrupt data rather than a missing guess.
      */
     public Local getLocalDestination(Personagem pc, SortedMap<String, Local> locais,
             Predicate<Personagem> stillPlanning) {
