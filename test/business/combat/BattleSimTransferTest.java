@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -204,6 +205,69 @@ public class BattleSimTransferTest extends LandCombatFixture {
         assertEquals(CombatLevel.RAZE_CITY, back.get(0).getCombatLevel(), "combat level");
         assertEquals(900, back.get(0).getPelotoes().values().iterator().next().getQtd(),
                 "the platoon came with it");
+    }
+
+    @Test
+    public void aFragmentResolvesNationsByTheirCodesInsteadOfWorldMapKeys() throws Exception {
+        final Partida partida = partida(catalogue());
+        final Nacao mine = nacao("4"), foe = nacao("9");
+        final ArmySim source = only(edited(partida, mine, foe));
+        source.setTargetNacao(foe);
+        final SortedMap<String, Nacao> receiving = new TreeMap<>();
+        receiving.put("0", null);
+        receiving.put("House One", mine);
+        receiving.put("House Two", foe);
+
+        final ArmySim back = BattleSimTransfer.readArmies(
+                BattleSimTransfer.writeArmy(source), partida, receiving).get(0);
+
+        assertSame(mine, back.getNacao());
+        assertSame(foe, back.getTargetNacao());
+        assertEquals(900, back.getPelotoes().values().iterator().next().getQtd());
+        assertEquals(3, receiving.size(), "resolution must not re-key the loaded world");
+        assertSame(mine, receiving.get("House One"));
+    }
+
+    @Test
+    public void aSavedBattleResolvesCityAndDiplomacyFromNationValues() throws Exception {
+        final Partida partida = partida(catalogue());
+        final Nacao mine = nacao("4"), foe = nacao("9");
+        final CombatScenario source = edited(partida, mine, foe);
+        only(source).setTargetNacao(foe);
+        final SortedMap<String, Nacao> receiving = new TreeMap<>();
+        // Swapped keys must not select a different nation that happens to use the source code.
+        receiving.put("9", mine);
+        receiving.put("4", foe);
+        final String xml = BattleSimTransfer.write(source);
+
+        final CombatScenario back = BattleSimTransfer.read(xml, partida, receiving);
+
+        assertSame(mine, only(back).getNacao());
+        assertSame(foe, only(back).getTargetNacao());
+        assertSame(foe, back.getCidade().getNacao());
+        assertEquals(RelationshipMatrix.SWORN_ENEMY, back.getRelationships().getValor(mine, foe));
+        assertSame(mine, BattleSimTransfer.readArmies(xml, partida, receiving).get(0).getNacao());
+    }
+
+    @Test
+    public void aMatchingMapKeyDoesNotHideAnAbsentNationCode() {
+        final Partida partida = partida(catalogue());
+        final Nacao mine = nacao("4"), foe = nacao("9");
+        final CombatScenario source = edited(partida, mine, foe);
+        final SortedMap<String, Nacao> receiving = new TreeMap<>();
+        receiving.put("4", foe);
+
+        final BattleSimTransfer.TransferException ex = assertThrows(
+                BattleSimTransfer.TransferException.class,
+                () -> BattleSimTransfer.readArmies(
+                        BattleSimTransfer.writeArmy(only(source)), partida, receiving));
+        assertEquals("BATTLESIM.TRANSFER.NACAO", ex.getReasonKey());
+        assertEquals("4", ex.getOffending());
+        final BattleSimTransfer.TransferException noNations = assertThrows(
+                BattleSimTransfer.TransferException.class,
+                () -> BattleSimTransfer.readArmies(
+                        BattleSimTransfer.writeArmy(only(source)), partida, null));
+        assertEquals("BATTLESIM.TRANSFER.NACAO", noNations.getReasonKey());
     }
 
     /**

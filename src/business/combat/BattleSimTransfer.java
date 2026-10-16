@@ -198,7 +198,8 @@ public final class BattleSimTransfer {
     /**
      * Rebuilds a scenario in the RECEIVER'S world, or refuses and says what it choked on.
      *
-     * @param nacoes the receiving world's nations, by code - {@code World.getNacoes()}. Passed in
+     * @param nacoes the receiving world's nations - {@code World.getNacoes()}. Map keys may differ
+     *               from the nation codes carried by this format. Passed in
      *               rather than reached for, because {@code World} is the Counselor's and this
      *               class is shared.
      */
@@ -306,11 +307,16 @@ public final class BattleSimTransfer {
         if (codigo == null) {
             return null;
         }
-        final Nacao ret = nacoes == null ? null : nacoes.get(codigo);
-        if (ret == null) {
-            throw new TransferException("BATTLESIM.TRANSFER.NACAO", codigo);
+        if (nacoes != null) {
+            // EGF nation maps may use names or other keys. The wire format writes getCodigo(),
+            // so resolve against values and retain the receiving world's nation identity.
+            for (Nacao nacao : nacoes.values()) {
+                if (nacao != null && codigo.equals(nacao.getCodigo())) {
+                    return nacao;
+                }
+            }
         }
-        return ret;
+        throw new TransferException("BATTLESIM.TRANSFER.NACAO", codigo);
     }
 
     private static Terreno terreno(Cenario cenario, String codigo) throws TransferException {
