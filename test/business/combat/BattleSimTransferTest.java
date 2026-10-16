@@ -371,7 +371,7 @@ public class BattleSimTransferTest extends LandCombatFixture {
     public void aFileFromTheFutureDeclines() {
         final Nacao mine = nacao("m"), foe = nacao("f");
         final String xml = writtenIn(catalogue(), mine, foe)
-                .replace("<version>1</version>", "<version>99</version>");
+                .replace("<version>" + BattleSimTransfer.VERSION + "</version>", "<version>99</version>");
 
         final BattleSimTransfer.TransferException ex =
                 assertThrows(BattleSimTransfer.TransferException.class,

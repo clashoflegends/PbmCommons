@@ -30,9 +30,9 @@ import model.Terreno;
  *
  * <h3>Ownership</h3>
  *
- * The scenario OWNS its {@link ArmySim}s and their {@link Pelotao}s, and BORROWS everything else
- * ({@code TipoTropa}, {@code Nacao}, {@code Terreno}, {@code Local}, {@code Cidade}) as read-only
- * references. The full table and the reasoning are in {@code BattleSimFacade}'s javadoc; it is
+ * The scenario OWNS its {@link ArmySim}s, their {@link Pelotao}s, its city and a detached
+ * battlefield Local. Catalogue types, nations, terrains, and the Local's collections are
+ * borrowed read-only. No simulated army is registered on the loaded world's hex. This is
  * enforced by {@code ArmySimOwnershipTest}.
  *
  * <h3>Provenance lives here, not on the model</h3>
@@ -65,6 +65,8 @@ public class CombatScenario {
     private final List<ArmySim> armies = new ArrayList<>();
     private final Map<ArmySim, Provenance> armyProvenance = new IdentityHashMap<>();
     private final Map<Pelotao, Provenance> platoonProvenance = new IdentityHashMap<>();
+    private final java.util.Set<ArmySim> destinationArmies =
+            Collections.newSetFromMap(new IdentityHashMap<ArmySim, Boolean>());
     /**
      * The player's diplomacy overrides, keyed by NATION and directional, as the model stores them.
      *
@@ -106,15 +108,77 @@ public class CombatScenario {
      * up special-casing a null nation inside the damage maths.
      */
     public final void setLocal(Local local) {
-        this.local = local;
-        if (local != null) {
-            this.terreno = local.getTerreno();
-            // CLONED, not borrowed: loyalty, size and fortification are all editable here, and the
-            // same sharing bug that let a retyped platoon reach the loaded world would let a
-            // retyped city do it. Cidade.clone() is shallow and that is the contract.
-            this.cidade = local.getCidade() == null ? null : local.getCidade().clone();
-        }
+        this.local = copyGround(local);
+        this.terreno = local == null ? null : local.getTerreno();
+        this.cidade = local == null || local.getCidade() == null
+                ? null : local.getCidade().clone();
+        bindCity();
         this.cityParticipates = this.cidade != null;
+        for (ArmySim army : armies) {
+            army.setLocal(this.local);
+            army.setTerreno(terreno);
+        }
+    }
+
+    /** Copy scalar battlefield configuration; the loaded hex's collections remain read-only. */
+    private static Local copyGround(Local source) {
+        if (source == null) {
+            return null;
+        }
+        try {
+            return source.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new IllegalStateException("Cannot copy simulation battlefield", ex);
+        }
+    }
+
+    private void bindCity() {
+        if (local != null) {
+            local.setCidade(cidade);
+            if (cidade != null) {
+                cidade.setLocal(local);
+            }
+        }
+    }
+
+    /** Retain the staged force, replace the previous destination's residents, and move the battle. */
+    public boolean chooseBattlefield(Local target, Nacao unknownOwner) {
+        if (target == null || (local != null && target.getCoordenadas() != null
+                && target.getCoordenadas().equals(local.getCoordenadas()))) {
+            return false;
+        }
+        final CombatScenario incoming = new ScenarioLoader().load(partida, target, observer,
+                unknownOwner);
+        for (ArmySim army : new ArrayList<>(destinationArmies)) {
+            remArmy(army);
+        }
+        setLocal(target);
+        setCityOwnerIfUnknown(unknownOwner);
+        for (ArmySim army : incoming.getArmies()) {
+            boolean present = false;
+            for (ArmySim retained : armies) {
+                if (army.getCodigo() != null && army.getCodigo().equals(retained.getCodigo())) {
+                    present = true;
+                    break;
+                }
+            }
+            if (!present) {
+                addArmy(army, incoming.getProvenance(army));
+                destinationArmies.add(army);
+            }
+        }
+        return true;
+    }
+
+    public boolean isDestinationArmy(ArmySim army) {
+        return destinationArmies.contains(army);
+    }
+
+    /** Restore destination membership from a saved simulation, never from an EGF. */
+    public void markDestinationArmy(ArmySim army) {
+        if (armies.contains(army)) {
+            destinationArmies.add(army);
+        }
     }
 
     /**
@@ -145,7 +209,7 @@ public class CombatScenario {
      *
      * <h3>What is deliberately SHARED</h3>
      *
-     * {@code Partida}, {@code Jogador}, {@code Local}, {@code Terreno} and {@code Nacao} are the
+     * {@code Partida}, {@code Jogador}, {@code Terreno} and {@code Nacao} are the
      * loaded world's own objects. They are read-only here - nothing in the simulator writes to a
      * Nacao or a Terreno - so sharing them is correct and copying them would be worse: two scenarios
      * would disagree about which nation is which, and the relationship maps are keyed on identity
@@ -155,15 +219,20 @@ public class CombatScenario {
         final CombatScenario ret = new CombatScenario();
         ret.partida = this.partida;
         ret.observer = this.observer;
-        ret.local = this.local;
+        ret.local = copyGround(this.local);
         // the EDITED ground and the EDITED walls, not the hex's - see the class note above
         ret.terreno = this.terreno;
         ret.cidade = this.cidade == null ? null : this.cidade.clone();
+        ret.bindCity();
         ret.cityParticipates = this.cityParticipates;
 
         for (ArmySim army : armies) {
             final ArmySim copy = new ArmySim(army);
+            copy.setLocal(ret.local);
             ret.armies.add(copy);
+            if (isDestinationArmy(army)) {
+                ret.destinationArmies.add(copy);
+            }
             ret.armyProvenance.put(copy, getProvenance(army));
             // BY CODIGO, because that is what the copy constructor keys the cloned platoons on.
             // Walking both maps in parallel would rely on iteration order agreeing, which is the
@@ -276,6 +345,9 @@ public class CombatScenario {
      */
     public void setTerreno(Terreno terreno) {
         this.terreno = terreno;
+        if (local != null) {
+            local.setTerreno(terreno);
+        }
         for (ArmySim army : armies) {
             army.setTerreno(terreno);
         }
@@ -286,7 +358,8 @@ public class CombatScenario {
     }
 
     public void setCidade(Cidade cidade) {
-        this.cidade = cidade;
+        this.cidade = cidade == null ? null : cidade.clone();
+        bindCity();
     }
 
     /** Is the city part of this fight? Always false when there is no city. */
@@ -593,6 +666,9 @@ public class CombatScenario {
             return;
         }
         armies.add(army);
+        if (local != null) {
+            army.setLocal(local);
+        }
         // and it fights on the scenario's ground, not on whatever it was carrying. An army added
         // after the player has changed the Terrain combo would otherwise be the one army on the hex
         // still fighting somewhere else.
@@ -619,6 +695,7 @@ public class CombatScenario {
      */
     public void remArmy(ArmySim army) {
         armies.remove(army);
+        destinationArmies.remove(army);
         armyProvenance.remove(army);
         for (Pelotao pelotao : army.getPelotoes().values()) {
             platoonProvenance.remove(pelotao);

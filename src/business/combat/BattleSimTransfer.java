@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.SortedMap;
 import model.Cenario;
 import model.Cidade;
+import model.Local;
 import model.Nacao;
 import model.Partida;
 import model.Pelotao;
@@ -65,7 +66,7 @@ public final class BattleSimTransfer {
      * Checked on read and refused when it is from the future, because a silently ignored unknown
      * field is how a shared battle loads looking complete and is not.
      */
-    public static final int VERSION = 1;
+    public static final int VERSION = 2;
 
     /** The root tag, deliberately nothing an EGF would ever contain. */
     private static final String ROOT = "battlesim";
@@ -110,7 +111,9 @@ public final class BattleSimTransfer {
         dto.cityParticipates = scenario.isCityParticipates();
         dto.city = cityOf(scenario.getCidade());
         for (ArmySim army : scenario.getArmies()) {
-            dto.armies.add(armyOf(army));
+            final Army one = armyOf(army);
+            one.destination = scenario.isDestinationArmy(army);
+            dto.armies.add(one);
         }
         // The EDITS, not the derived matrix. getRelationships() is built over getNacoes(), which
         // is the armies present plus the ACTIVE city's owner - so a nation the player declared on
@@ -210,12 +213,32 @@ public final class BattleSimTransfer {
         final Cenario cenario = partida == null ? null : partida.getCenario();
         final CombatScenario ret = new CombatScenario();
         ret.setPartida(partida);
+        ret.setObserver(partida == null ? null : partida.getJogadorAtivo());
+        // A legacy re-save can lack a hex. Its armies remain usable through readArmies, but
+        // previews and combat need a real location for capital-distance and city terrain powers.
+        if (dto.hex == null || dto.hex.isEmpty()) {
+            throw new TransferException("BATTLESIM.TRANSFER.HEX", "");
+        }
+        if (!dto.hex.matches("[0-9]{4}")) {
+            throw new TransferException("BATTLESIM.TRANSFER.FORMAT", "");
+        }
+        final Local ground = new Local();
+        ground.setCodigo(dto.hex);
+        ground.setCoordenadas(dto.hex);
+        ret.setLocal(ground);
         ret.setTerreno(dto.terreno == null ? null : terreno(cenario, dto.terreno));
         for (Army one : dto.armies) {
-            ret.addArmy(army(one, cenario, nacoes), CombatScenario.Provenance.MANUAL);
+            final ArmySim added = army(one, cenario, nacoes);
+            ret.addArmy(added, CombatScenario.Provenance.MANUAL);
+            if (one.destination) {
+                ret.markDestinationArmy(added);
+            }
         }
         if (dto.city != null) {
-            ret.setCidade(city(dto.city, nacoes));
+            ret.setCidade(city(dto.city));
+            if (dto.city.nacao != null) {
+                ret.setCityOwner(nacao(nacoes, dto.city.nacao));
+            }
         }
         ret.setCityParticipates(dto.cityParticipates);
         for (Rel rel : dto.relationships) {
@@ -265,7 +288,7 @@ public final class BattleSimTransfer {
         return ret;
     }
 
-    private static Cidade city(City dto, SortedMap<String, Nacao> nacoes) throws TransferException {
+    private static Cidade city(City dto) {
         final Cidade ret = new Cidade();
         ret.setCodigo(dto.codigo);
         ret.setNome(dto.nome);
@@ -273,9 +296,6 @@ public final class BattleSimTransfer {
         ret.setFortificacao(dto.fortificacao);
         ret.setLealdade(dto.lealdade);
         ret.setDocas(dto.docas);
-        if (dto.nacao != null) {
-            ret.setNacao(nacao(nacoes, dto.nacao));
-        }
         return ret;
     }
 
@@ -457,6 +477,7 @@ public final class BattleSimTransfer {
         String target;
         int attackBonus;
         int defenseBonus;
+        boolean destination;
         List<Platoon> platoons = new ArrayList<>();
     }
 
