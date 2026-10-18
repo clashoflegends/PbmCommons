@@ -39,7 +39,7 @@ public class ComandoDetail implements Serializable {
         }
         this.parametroId = parametrosId;
         this.parametroDisplay = parametrosDisplay;
-        this.updateTime = timeLastChange.toString();
+        this.updateTime = timeLastChange == null ? null : timeLastChange.toString();
     }
 
     public String getNacaoCodigo() {
@@ -120,6 +120,15 @@ public class ComandoDetail implements Serializable {
             return Instant.parse(updateTime);
         } else {
             return Instant.now();
+        }
+    }
+
+    /** Recorded client time only; old files have no timestamp. Does not invent an edit. */
+    public Instant getRecordedUpdateTime() {
+        try {
+            return updateTime == null ? null : Instant.parse(updateTime);
+        } catch (java.time.format.DateTimeParseException ex) {
+            return null;
         }
     }
 

@@ -116,6 +116,20 @@ public class PersonagemOrdem extends BaseModel {
         this.updateTime = updateTime.toString();
     }
 
+    /** Client-facing read preserving unknown timestamps in historical files. */
+    public Instant getRecordedUpdateTime() {
+        try {
+            return updateTime == null ? null : Instant.parse(updateTime);
+        } catch (java.time.format.DateTimeParseException ex) {
+            return null;
+        }
+    }
+
+    /** Uses the existing serialized field; null means no recorded time. */
+    public void setRecordedUpdateTime(Instant time) {
+        this.updateTime = time == null ? null : time.toString();
+    }
+
     private void setUpdateTime() {
         this.updateTime = Instant.now().toString();
     }
