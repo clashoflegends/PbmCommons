@@ -146,41 +146,21 @@ public class NacaoFacade implements Serializable {
         return ret;
     }
 
-    /**
-     * *
-     * Keep in sync with NacaoControl
-     */
+    /** Nation-wide upkeep allowance, shared with the turn processor. */
     public int getDescontoExercitoNacao(Nacao nacao, Collection<Exercito> exercitos) {
         if (!nacao.hasHabilidadeNacao("0053") && !nacao.hasHabilidade(";NMF;")) {
             return 0;
         }
         ExercitoFacade ef = new ExercitoFacade();
-        int discount = 0;
-        int qtdFreeBlood = nacao.getHabilidadeNacaoValor("0053");
-        int qtdFreeFast = nacao.getHabilidadeValor(";NMF;");
+        List<Pelotao> platoons = new ArrayList<>();
         for (Exercito exercito : exercitos) {
             if (nacao != ef.getNacao(exercito)) {
                 continue;
             }
-            for (Pelotao pelotao : ef.getPelotoes(exercito).values()) {
-                if (qtdFreeBlood + qtdFreeFast <= 0) {
-                    break;
-                }
-                if (qtdFreeBlood > 0 && pelotao.getTipoTropa().getCodigo().contains("cpblood") && nacao.hasHabilidadeNacao("0053")) {
-                    final int qtd = Math.min(qtdFreeBlood, pelotao.getQtd());
-                    discount += qtd * pelotao.getTipoTropa().getUpkeepMoney();
-                    qtdFreeBlood -= qtd;
-                    //only discount once
-                    continue;
-                }
-                if (qtdFreeFast > 0 && pelotao.getTipoTropa().isFastMovement() && nacao.hasHabilidade(";NMF;")) {
-                    final int qtd = Math.min(qtdFreeFast, pelotao.getQtd());
-                    discount += qtd * pelotao.getTipoTropa().getUpkeepMoney();
-                    qtdFreeFast -= qtd;
-                }
-            }
+            platoons.addAll(ef.getPelotoes(exercito).values());
         }
-        return discount;
+        return ArmyUpkeepAllowance.discount(platoons,
+                nacao.getHabilidadeNacaoValor("0053"), nacao.getHabilidadeValor(";NMF;"));
     }
 
     public int getPersonagens(Nacao nacao) {
