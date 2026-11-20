@@ -661,6 +661,12 @@ public class ExercitoFacade implements Serializable {
     }
 
     public HashMap<Local, ArmyPath> calculateArmyRangeHexes(SortedMap<String, Local> locais, MovimentoExercito movEx) {
+        // Preserve the established flood for unrelated routes, including its NPC consumers.
+        var landingHexes = movEx.isPorAgua() ? business.NavalRange.landingHexes(locais)
+                : java.util.Set.<Local>of();
+        MovimentoExercito landingSettings;
+        try { landingSettings = movEx.clone(); }
+        catch (CloneNotSupportedException e) { throw new IllegalStateException(e); }
         //range com custo para o hex
         HashMap<Local, ArmyPath> rangeHexes = new HashMap(); //hex, path to get here
         Local startHex = movEx.getOrigem();
@@ -686,6 +692,10 @@ public class ExercitoFacade implements Serializable {
                 }
                 if (vizinho == startHex) {
                     //ignora hex inicial
+                    continue;
+                }
+                if (landingHexes.contains(vizinho)) {
+                    // Stateful pass handles every arrival at an affected Landing, at actual cost.
                     continue;
                 }
                 //pega custo de mover para vizinho
@@ -744,6 +754,13 @@ public class ExercitoFacade implements Serializable {
                 }
             }
 //            log.info("atual processado: " + atual.getCoordenadas());
+        }
+        if (!landingHexes.isEmpty()) {
+            business.NavalRange.calculate(locais, landingSettings, landingHexes).forEach((hex, path) -> {
+                if (!rangeHexes.containsKey(hex) || path.getCost() < rangeHexes.get(hex).getCost()) {
+                    rangeHexes.put(hex, path);
+                }
+            });
         }
         return rangeHexes;
     }

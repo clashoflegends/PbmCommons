@@ -66,7 +66,7 @@ public final class BattleSimTransfer {
      * Checked on read and refused when it is from the future, because a silently ignored unknown
      * field is how a shared battle loads looking complete and is not.
      */
-    public static final int VERSION = 2;
+    public static final int VERSION = 3;
 
     /** The root tag, deliberately nothing an EGF would ever contain. */
     private static final String ROOT = "battlesim";
@@ -105,8 +105,9 @@ public final class BattleSimTransfer {
     /** The whole scenario as text: the save file, and the clipboard payload. */
     public static String write(CombatScenario scenario) {
         final Transfer dto = new Transfer();
-        dto.version = VERSION;
+        dto.version = business.NavalAccess.hasLanding(scenario.getLocal()) ? VERSION : 2;
         dto.hex = scenario.getLocal() == null ? null : scenario.getLocal().getCoordenadas();
+        dto.landing = dto.version == VERSION ? scenario.getLocal().getLanding() : null;
         dto.terreno = scenario.getTerreno() == null ? null : scenario.getTerreno().getCodigo();
         dto.cityParticipates = scenario.isCityParticipates();
         dto.city = cityOf(scenario.getCidade());
@@ -188,7 +189,7 @@ public final class BattleSimTransfer {
      */
     public static String writeArmy(ArmySim army) {
         final Fragment dto = new Fragment();
-        dto.version = VERSION;
+        dto.version = 2;
         dto.army = armyOf(army);
         return xstream().toXML(dto);
     }
@@ -226,6 +227,7 @@ public final class BattleSimTransfer {
         final Local ground = new Local();
         ground.setCodigo(dto.hex);
         ground.setCoordenadas(dto.hex);
+        ground.setLanding(dto.landing);
         ret.setLocal(ground);
         ret.setTerreno(dto.terreno == null ? null : terreno(cenario, dto.terreno));
         for (Army one : dto.armies) {
@@ -456,6 +458,7 @@ public final class BattleSimTransfer {
 
         int version;
         String hex;
+        String landing;
         String terreno;
         boolean cityParticipates;
         City city;

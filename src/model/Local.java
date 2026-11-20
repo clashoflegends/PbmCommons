@@ -129,7 +129,8 @@ public class Local extends BaseModel implements Cloneable {
     }
 
     public boolean isLanding(Integer direcao) {
-        return this.landing.contains(direcao.toString());
+        return direcao != null && direcao >= 1 && direcao <= 6
+                && this.landing != null && this.landing.contains(direcao.toString());
     }
 
     public Terreno getTerreno() {

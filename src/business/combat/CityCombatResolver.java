@@ -273,7 +273,9 @@ public class CityCombatResolver {
         if (terreno != null && terreno.isAncoravel()) {
             return true;
         }
-        return city != null && new CidadeFacade().isDocasPorto(city);
+        return (terreno != null && !terreno.isAgua()
+                && business.NavalAccess.hasLanding(scenario.getLocal()))
+                || (city != null && new CidadeFacade().isDocasPorto(city));
     }
 
     /**

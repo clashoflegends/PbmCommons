@@ -301,6 +301,8 @@ public class LandCombatResolver {
         if (scenario.getTerreno() != null && scenario.getTerreno().isAncoravel()) {
             return true;
         }
+        if (scenario.getTerreno() != null && !scenario.getTerreno().isAgua()
+                && business.NavalAccess.hasLanding(scenario.getLocal())) return true;
         final model.Cidade city = scenario.getCidade();
         return city != null && new business.facade.CidadeFacade().isDocasPorto(city);
     }

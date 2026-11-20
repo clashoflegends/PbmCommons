@@ -271,7 +271,8 @@ public class LayerParticipation {
     private static boolean cannotLand(IExercito army, Terreno terreno, Cidade cidade) {
         return exercitoFacade.isEsquadra(army)
                 && exercitoFacade.isEsquadraEmbarcada(army)
-                && !isAncoravel(terreno, cidade);
+                && !(isAncoravel(terreno, cidade) || (terreno != null && !terreno.isAgua()
+                    && business.NavalAccess.hasLanding(army.getLocal())));
     }
 
     /**

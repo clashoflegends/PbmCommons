@@ -216,6 +216,11 @@ public final class LocalFacade implements Serializable {
     }
 
     public boolean isAncoravel(Local local) {
+        return isAncoravelSemLanding(local) || business.NavalAccess.hasLanding(local);
+    }
+
+    /** Terrain/port criterion for callers that are not asking about a navy's anchoring rights. */
+    public boolean isAncoravelSemLanding(Local local) {
         return local.getTerreno().isAncoravel() || this.isDocas(local);
     }
 

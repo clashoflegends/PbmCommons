@@ -29,6 +29,25 @@ public class BattleSimTransferTest extends LandCombatFixture {
 
     private static final String TROOP = "inf", TROOP2 = "bow";
 
+    @Test public void landingSurvivesSharingAndOldFilesHaveNoLanding() throws Exception {
+        Partida game = partida(catalogue());
+        Nacao mine = nacao("m"), foe = nacao("f");
+        CombatScenario scenario = edited(game, mine, foe);
+        assertTrue(BattleSimTransfer.write(scenario).contains("<version>2</version>"));
+        assertFalse(BattleSimTransfer.write(scenario).contains("<landing"));
+        assertTrue(BattleSimTransfer.writeArmy(scenario.getArmies().get(0)).contains("<version>2</version>"));
+        scenario.getLocal().setLanding("36");
+        String xml = BattleSimTransfer.write(scenario);
+        CombatScenario loaded = BattleSimTransfer.read(xml, game, nacoes(mine, foe));
+        assertEquals("36", loaded.getLocal().getLanding());
+        assertTrue(new business.facade.LocalFacade().isAncoravel(loaded.getLocal()));
+        assertEquals("36", loaded.copy().getLocal().getLanding());
+        String legacy = xml.replace("<version>3</version>", "<version>2</version>")
+                .replace("<landing>36</landing>", "");
+        assertFalse(business.NavalAccess.hasLanding(BattleSimTransfer.read(legacy, game,
+                nacoes(mine, foe)).getLocal()));
+    }
+
     /**
      * The receiving world's catalogue: its terrains and its troop types.
      *
@@ -435,7 +454,7 @@ public class BattleSimTransferTest extends LandCombatFixture {
     public void aFileFromTheFutureDeclines() {
         final Nacao mine = nacao("m"), foe = nacao("f");
         final String xml = writtenIn(catalogue(), mine, foe)
-                .replace("<version>" + BattleSimTransfer.VERSION + "</version>", "<version>99</version>");
+                .replaceAll("<version>[0-9]+</version>", "<version>99</version>");
 
         final BattleSimTransfer.TransferException ex =
                 assertThrows(BattleSimTransfer.TransferException.class,

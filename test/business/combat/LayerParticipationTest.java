@@ -181,6 +181,25 @@ public class LayerParticipationTest {
         assertEquals("N \u00b7 \u00b7", p.getBadge());
     }
 
+    @Test public void landingLetsLoadedFleetFightAshoreAndAtCityWithoutChangingTerrain() {
+        final Nacao mine = nacao("m"), foe = nacao("f");
+        final ArmySim fleet = army("fleet", mine,
+                platoon(transportType("sh", 100), 400), platoon(troopType("inf", false), 10));
+        final ArmySim enemy = army("enemy", foe, platoon(troopType("inf", false), 500));
+        final Terreno hills = terreno("H", false);
+        final model.Local local = new model.Local();
+        local.setTerreno(hills); local.setLanding("6"); fleet.setLocal(local);
+        final Cidade city = cidade(foe, 0);
+        final LayerParticipation allowed = partOf(fleet, CombatLevel.RAZE_CITY, hills, city, true, enemy);
+        assertTrue(allowed.isIn(CombatLayer.ARMY));
+        assertTrue(allowed.isIn(CombatLayer.CITY));
+        local.setLanding(null);
+        assertEquals(LayerParticipation.Reason.CANNOT_LAND_HERE,
+                partOf(fleet, CombatLevel.RAZE_CITY, hills, city, true, enemy).getReason(CombatLayer.CITY));
+        assertEquals("H", hills.getCodigo());
+        assertFalse(hills.isAncoravel());
+    }
+
     /** A city with docks is anchorage even when the ground is not. */
     @Test
     public void aPortLetsTheSameFleetLand() {

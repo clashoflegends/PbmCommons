@@ -248,66 +248,18 @@ public final class MovimentoExercito implements Serializable, Cloneable {
         }
     }
 
+    public NavalAccess.Entry getNavalEntry() {
+        return NavalAccess.entry(getOrigem(), getDestino(), getDirecao(),
+                getDirecaoAnterior(), isDocas() || localFacade.isDocas(getDestino()));
+    }
+
+    public boolean isLandingStop() {
+        return isPorAgua() && getDirecao() != 0
+                && getNavalEntry() == NavalAccess.Entry.LANDING_STOP;
+    }
+
     private boolean isNavegavel() {
-        boolean ret = false;
-        //inicio do movimento:
-        if (getDirecaoAnterior() == 0 && getDestino().getTerreno().isAgua()) {
-            //getDirecaoAnterior() = 0 -> parado ou primeiro movimento.
-            //Logo pode sair de terra para agua ou cruzando um rio, mesmo em origem nao navegavel.
-            ret = true;
-        } else if (getDirecaoAnterior() == 0 && localFacade.isRioLado(getDestino(), getDirecao() + 3)) {
-            //anterior = 0 -> parado ou primeiro movimento.
-            //Logo pode sair de terra para agua ou cruzando um rio, mesmo em origem nao navegavel.
-            ret = true;
-        } else if (getOrigem().getTerreno().isAgua() && getDestino().getTerreno().getCodigo().equals("L")) {
-            //da agua para um litoral
-            ret = true;
-        } else if (getOrigem().getTerreno().isAgua() && localFacade.isAncoravel(getDestino())) {
-            //da agua para um ancoravel(litoral ou cidadeDocas), provavelmente terminando o movimento.
-            ret = true;
-        } else if (getOrigem().getTerreno().isAgua() && isDocas()) {
-            //TODO: compatibilidade entre Judge/Counselor enquanto Cidade != CentroPopulacional
-            //cidadeDocas), provavelmente terminando o movimento.
-            ret = true;
-        } else if (getOrigem().getTerreno().isAgua() && getDestino().getTerreno().isAgua()) {
-            //de agua paga agua
-            ret = true;
-        } else if (getOrigem().getTerreno().isAgua() && localFacade.isRioLado(getDestino(), getDirecao() + 3)) {
-            //da agua entrando em um rio.
-            ret = true;
-        } else if (localFacade.isRioLado(getOrigem(), getDirecao()) && getDestino().getTerreno().isAgua()) {
-            //de um rio para agua
-            ret = true;
-        } else if (localFacade.isRioLado(getOrigem(), getDirecao()) && localFacade.isRioLado(getDestino(), getDirecao() + 3)) {
-            //estes devem levar em contra o percurso, nao apenas destino e origem
-            //entao e de terra pra terra, ai tem que ver o percurso do rio.
-            int min, max;
-            min = Math.min(direcao, getDirecaoAnterior());
-            max = Math.max(direcao, getDirecaoAnterior());
-            if (min == max) {
-                ret = true;
-            } else {
-                boolean aux = true;
-                for (int ii = min + 1; aux && ii <= max - 1; ii++) {
-                    if (!getOrigem().isRio(ConverterFactory.getDirecao(ii))) {
-                        aux = false;
-                    }
-                }
-                if (!aux) {
-                    //testa pelo outro lado
-                    aux = true;
-                    for (int ii = max + 1; aux && ii <= min + 6 - 1; ii++) {
-                        if (!getOrigem().isRio(ConverterFactory.getDirecao(ii))) {
-                            aux = false;
-                        }
-                    }
-                }
-                ret = aux;
-            }
-            //entao e de terra pra terra, movimento de ou para cabeceira do rio?
-            //tambem se entrar em uma doca e tentar sair do do oturo lado pelo rio.
-        }
-        return ret;
+        return getNavalEntry().isAllowed();
     }
 
     /**
