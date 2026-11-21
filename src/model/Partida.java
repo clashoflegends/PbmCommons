@@ -193,7 +193,8 @@ public class Partida extends BaseModel {
     }
 
     public boolean isNewRules() {
-        return this.hasHabilidade(";GNR;");
+        //Trial adds to Standard; either settings marker keeps the shared mechanics active.
+        return this.hasHabilidade(";GNR;") || this.hasHabilidade(";GTR;");
     }
 
     /**
