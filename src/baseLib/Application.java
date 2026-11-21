@@ -484,7 +484,7 @@ public abstract class Application implements Thread.UncaughtExceptionHandler, Se
 
     // Blocks until the background threads exit, or maxWaitTime milliseconds has
     // expired.
-    private boolean waitForBackgroundThreadsToExit(long maxWaitTime) {
+    protected final boolean waitForBackgroundThreadsToExit(long maxWaitTime) {
         boolean done = false;
         long start = System.currentTimeMillis();
         while (!done) {

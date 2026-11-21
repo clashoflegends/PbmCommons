@@ -25,7 +25,11 @@ public class DialogTextArea extends javax.swing.JDialog implements Serializable 
     // End of variables declaration
 
     public DialogTextArea(boolean modal) {
-        super(new JFrame(), modal);
+        this(new JFrame(), modal);
+    }
+
+    public DialogTextArea(java.awt.Window owner, boolean modal) {
+        super(owner, modal ? java.awt.Dialog.ModalityType.APPLICATION_MODAL : java.awt.Dialog.ModalityType.MODELESS);
         this.setAlwaysOnTop(true);
         this.setPreferredSize(new Dimension(500, 400));
         initComponents();
