@@ -351,34 +351,37 @@ public class ComparatorCasualtiesSorter implements Comparator {
     }
 
     private static int getAtaqueTerrenoDesc(TipoTropa este, TipoTropa outro, Terreno terreno) {
-        return outro.getAtaqueTerreno().get(terreno) - este.getAtaqueTerreno().get(terreno);
+        return terrainValue(outro.getAtaqueTerreno(), terreno, 0) - terrainValue(este.getAtaqueTerreno(), terreno, 0);
     }
 
     private static int getAtaqueTerrenoAsc(TipoTropa este, TipoTropa outro, Terreno terreno) {
-        return este.getAtaqueTerreno().get(terreno) - outro.getAtaqueTerreno().get(terreno);
+        return terrainValue(este.getAtaqueTerreno(), terreno, 0) - terrainValue(outro.getAtaqueTerreno(), terreno, 0);
     }
 
     private static int getDefesaTerrenoDesc(TipoTropa este, TipoTropa outro, Terreno terreno) {
-        return outro.getDefesaTerreno().get(terreno) - este.getDefesaTerreno().get(terreno);
+        return terrainValue(outro.getDefesaTerreno(), terreno, 0) - terrainValue(este.getDefesaTerreno(), terreno, 0);
     }
 
     private static int getDefesaTerrenoAsc(TipoTropa este, TipoTropa outro, Terreno terreno) {
-        return este.getDefesaTerreno().get(terreno) - outro.getDefesaTerreno().get(terreno);
+        return terrainValue(este.getDefesaTerreno(), terreno, 0) - terrainValue(outro.getDefesaTerreno(), terreno, 0);
     }
 
     private static int getMovimentoTerrenoDesc(TipoTropa este, TipoTropa outro, Terreno terreno) {
-        try {
-            return outro.getMovimentoTerreno().get(terreno) - este.getMovimentoTerreno().get(terreno);
-        } catch (NullPointerException e) {
-            final SortedMap<Terreno, Integer> OmovimentoTerreno = outro.getMovimentoTerreno();
-            final SortedMap<Terreno, Integer> EmovimentoTerreno = este.getMovimentoTerreno();
-            return OmovimentoTerreno.get(terreno) - EmovimentoTerreno.get(terreno);
-            
-        }
+        return terrainValue(outro.getMovimentoTerreno(), terreno, 999) - terrainValue(este.getMovimentoTerreno(), terreno, 999);
     }
 
     private static int getMovimentoTerrenoAsc(TipoTropa este, TipoTropa outro, Terreno terreno) {
-        return este.getMovimentoTerreno().get(terreno) - outro.getMovimentoTerreno().get(terreno);
+        return terrainValue(este.getMovimentoTerreno(), terreno, 999) - terrainValue(outro.getMovimentoTerreno(), terreno, 999);
+    }
+
+    private static int terrainValue(SortedMap<Terreno, Integer> values, Terreno terreno, int wastelandDefault) {
+        Integer value = values.get(terreno);
+        // Older results omit off-map Wasteland stats. Match the catalogue backfill,
+        // without masking missing combat data on playable terrain or altering existing values.
+        if (value == null && terreno != null && terreno.isWasteland()) {
+            return wastelandDefault;
+        }
+        return value;
     }
 
     private static int getCostDesc(TipoTropa este, TipoTropa outro) {
